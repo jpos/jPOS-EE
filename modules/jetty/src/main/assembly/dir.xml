@@ -1,0 +1,38 @@
+<assembly>
+  <id>dir</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <baseDirectory>/</baseDirectory>
+  <includeSiteDirectory>false</includeSiteDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/lib</outputDirectory>
+      <useProjectArtifact>false</useProjectArtifact>
+      <unpack>false</unpack>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>cfg/*.xml</include>
+        <include>cfg/*.ks</include>
+        <include>cfg/context/*.xml</include>
+        <include>deploy/*.xml</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <files>
+    <file>
+      <source>target/jposee-jetty-${project.version}.jar</source>
+      <fileMode>0644</fileMode>
+    </file>
+  </files>
+</assembly>
+

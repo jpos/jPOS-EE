@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jpos.ee</groupId>
+  <artifactId>jposee-project</artifactId>
+  <version>1.8.3-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>jPOS-EE Project</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jpos</groupId>
+      <artifactId>jpos</artifactId>
+      <version>1.8.3-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <issueManagement>
+    <system>YouTrack</system>
+    <url>https://jpos.org/issues</url>
+  </issueManagement>
+  <inceptionYear>2005</inceptionYear>
+  <scm>
+    <connection>scm:git:git://github.com/jpos/jPOS-EE.git</connection>
+    <url>scm:git:git://github.com/jpos/jPOS-EE.git</url>
+    <developerConnection>scm:git:git://github.com/jpos/jPOS-EE.git</developerConnection>
+  </scm>
+  <licenses>
+    <license>
+      <name>GNU AFFERO GENERAL PUBLIC LICENSE v3</name>
+      <url>http://www.opensource.org/licenses/agpl-v3.html</url>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>jPOS.org</name>
+    <url>http://jpos.org</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>apr</id>
+      <name>Alejandro Revilla</name>
+      <email>apr@jpos.org</email>
+      <timezone>-3</timezone>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Jeronimo Paoletti</name>
+      <email>jpaoletti@jpos.org</email>
+      <roles>
+       <role>Jetty7</role>
+      </roles>
+      <timezone>-3</timezone>
+    </contributor>
+  </contributors>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.build.timestamp.format>yyyyMMdd_HHmm</maven.build.timestamp.format>
+    <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+  </properties>
+
+  <modules>
+    <module>modules/jetty</module>
+  </modules>
+
+  <build>
+     <filters>
+       <filter>src/main/filters/filter.properties</filter>
+     </filters>
+     <resources>
+       <resource>
+         <directory>src/main/resources</directory>
+         <filtering>true</filtering>
+         <excludes>
+          <exclude>**/deploy/*</exclude>
+          <exclude>**/log/*</exclude>
+          <exclude>**/cfg/packager/*</exclude>
+          <exclude>**/cfg/*</exclude>
+          <exclude>**/bin/*</exclude>
+         </excludes>
+       </resource>
+     </resources>
+   </build>
+
+  <repositories>
+    <repository>
+      <id>jpos</id>
+      <name>jPOS Maven Repository</name>
+      <url>http://jpos.org/maven</url>
+    </repository>
+    <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>jline</id>
+      <name>JLine Project Repository</name>
+      <url>http://jline.sourceforge.net/m2repo</url>
+    </repository>
+    <repository>
+      <id>jboss</id>
+      <name>JBoss Maven Repository</name>
+      <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+</project>

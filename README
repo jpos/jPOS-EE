@@ -6,3 +6,4 @@ For a stable version of jPOS-EE's modules, please see the HOWTO section at:
 
   http://jpos.org/doc/jPOS-Project-Guide.pdf
 
+In order to build jPOS-EE, you need to 'mvn install' jPOS first.

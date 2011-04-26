@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+	"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <property name="show_sql">false</property>
+        <property name="format_sql">false</property>
+        <property name="use_sql_comments">false</property>
+        <property name="generate_statistics">false</property>
+        <property name="max_fetch_depth">2</property>
+        <property name="default_batch_fetch_size">16</property>
+        <property name="use_streams_for_binary">true</property>
+        <property name="connection.isolation">2</property>
+        <property name="hibernate.transaction.flush_before_completion">true</property>
+
+        <property name="hibernate.c3p0.min_size">2</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">300</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+        <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
+
+        <property name="hibernate.cache.use_structured_entries">true</property>
+        <property name="hibernate.cache.use_query_cache">true</property>
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+        <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+
+        <!-- opt/hibernate_mysql/cfg/_hibernate.cfg.properties -->
+        <property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost/jposee?autoReconnect=true</property>
+        <property name="connection.username">sa</property>
+        <property name="connection.password"></property>
+
+        <mapping resource="org/jpos/ee/SysConfig.hbm.xml" />
+
+    </session-factory>
+</hibernate-configuration>
+

@@ -70,6 +70,7 @@
   <modules>
     <module>modules/jetty</module>
     <module>modules/eecore</module>
+    <module>modules/sysconfig</module>
   </modules>
 
   <build>

@@ -19,37 +19,27 @@
 package org.jpos.ee;
 
 import java.io.Serializable;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-
-/** @author Hibernate CodeGenerator */
+@SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
-
-    /** identifier field */
     private String id;
-
-    /** nullable persistent field */
     private String value;
-
-    /** nullable persistent field */
     private String readPerm;
-
-    /** nullable persistent field */
     private String writePerm;
-
-    /** full constructor */
     public SysConfig(String id, String value, String readPerm, String writePerm) {
         this.id = id;
         this.value = value;
         this.readPerm = readPerm;
         this.writePerm = writePerm;
     }
-
-    /** default constructor */
     public SysConfig() {
+        super();
     }
 
-    /** minimal constructor */
     public SysConfig(String id) {
         this.id = id;
     }
@@ -92,4 +82,16 @@ public class SysConfig extends Cloneable implements Serializable {
             .toString();
     }
 
+    public boolean equals(Object other) {
+        if ( !(other instanceof SysConfig) ) return false;
+        SysConfig castOther = (SysConfig) other;
+        return new EqualsBuilder()
+            .append(this.getId(), castOther.getId())
+            .isEquals();
+    }
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(getId())
+            .toHashCode();
+    }
 }

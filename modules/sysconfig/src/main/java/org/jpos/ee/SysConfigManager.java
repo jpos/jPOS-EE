@@ -25,6 +25,7 @@ import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 
+@SuppressWarnings("unused")
 public class SysConfigManager {
     DB db;
     String prefix = "";
@@ -114,7 +115,12 @@ public class SysConfigManager {
         if (prefix != null)
             name = prefix + name;
         try {
-            Transaction tx = db.beginTransaction();
+            boolean autoCommit = false;
+            Transaction tx = db.session().getTransaction();
+            if (tx == null || !tx.isActive()) {
+                tx = db.session().beginTransaction();
+                autoCommit = true;
+            }
             cfg = (SysConfig) db.session().get (SysConfig.class, name);
             boolean saveIt = false;
             if (cfg == null) {
@@ -127,7 +133,8 @@ public class SysConfigManager {
             cfg.setValue (value);
             if (saveIt)
                 db.session().save (cfg);
-            tx.commit();
+            if (autoCommit)
+                tx.commit();
         } catch (HibernateException e) {
             db.getLog().warn (e);
         }

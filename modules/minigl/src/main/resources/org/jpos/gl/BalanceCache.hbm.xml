@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.BalanceCache" table="balance_cache">
+    <composite-id>
+     <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
+     <key-many-to-one name="account" class="org.jpos.gl.Account" />
+     <key-property name="layers" type="string" length="32" />
+    </composite-id>
+    <property name="ref" type="long" />
+    <property name="balance" type="big_decimal">
+     <column name="balance" sql-type="numeric(14,2)" not-null="true" />
+    </property>
+  </class>
+</hibernate-mapping>
+

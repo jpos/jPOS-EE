@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.RuleInfo" table="ruleinfo">
+   <id name="id" column="id" type="long">
+     <generator class="native" />
+   </id>
+   <property name="description" type="string" />
+   <property name="clazz"       type="string" />
+   <property name="layers"      type="string" />
+   <property name="param"       type="string" />
+   <many-to-one name="journal"  not-null="false" />
+   <many-to-one name="account"  not-null="false" />
+ </class>
+</hibernate-mapping>
+

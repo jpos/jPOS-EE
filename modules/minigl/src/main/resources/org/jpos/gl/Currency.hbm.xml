@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.Currency" table="currency">
+    <id name="id" column="id" type="string" length="3">
+      <generator class="assigned" />
+    </id>
+    <property name="name" />
+    <property name="symbol">
+     <column name="symbol" sql-type="varchar(16)" not-null="true" />
+    </property>
+  </class>
+</hibernate-mapping>
+

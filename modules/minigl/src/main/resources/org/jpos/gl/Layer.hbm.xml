@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.Layer" table="layer">
+    <meta attribute="class-description">
+     Journal level layer information.
+    </meta>
+    <composite-id>
+     <key-property name="id" type="short" />
+     <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
+    </composite-id>
+    <property name="name" type="string" length="80" />
+  </class>
+</hibernate-mapping>
+

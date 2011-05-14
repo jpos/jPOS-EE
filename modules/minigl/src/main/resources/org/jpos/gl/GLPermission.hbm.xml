@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.GLPermission" table="glperm">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+    <property name="name">
+     <column name="name" sql-type="varchar(64)" not-null="true" 
+        index="perm_name"/>
+    </property>
+    <many-to-one name="user"
+            class="org.jpos.gl.GLUser" column="gluser" />
+    <many-to-one name="journal"
+            class="org.jpos.gl.Journal" column="journal" />
+  </class>
+</hibernate-mapping>
+

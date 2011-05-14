@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.GLTransaction" table="transacc">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+
+    <property name="detail" type="string" />
+    <property name="tags"   type="string" />
+    <property name="timestamp" type="timestamp">
+     <column name="timestamp" sql-type="timestamp" not-null="true" 
+        index="timestamp"/>
+    </property>
+    <property name="postDate"  type="timestamp">
+     <column name="postDate" sql-type="timestamp" not-null="false"
+        index="postDate"/>
+    </property>
+
+    <many-to-one name="journal" column="journal" not-null="true" />
+
+    <list name="entries" cascade="all-delete-orphan" lazy="true">
+     <key column="transaction" />
+     <index column="posn" />
+     <one-to-many class="org.jpos.gl.GLEntry" />
+    </list>
+  </class>
+</hibernate-mapping>
+
+

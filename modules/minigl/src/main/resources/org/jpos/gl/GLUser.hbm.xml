@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.GLUser" table="gluser">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+    <property name="nick">
+     <column name="nick" sql-type="varchar(32)" unique="true" 
+     not-null="true" />
+    </property>
+    <property name="name" length="128" not-null="true" />
+
+    <set name="permissions" lazy="true" cascade="all-delete-orphan">
+     <key column="gluser" />
+     <one-to-many class="org.jpos.gl.GLPermission" />
+    </set>
+  </class>
+</hibernate-mapping>
+

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.gl.Journal" table="journal">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+    <property name="name">
+     <column name="name" sql-type="varchar(32)" not-null="true" unique="true" />
+    </property>
+    <property name="start"     type="date" />
+    <property name="end"       type="date" column="end_" />
+    <property name="closed"    type="boolean" />
+    <property name="lockDate"  type="date"  />
+    <many-to-one name="chart"  not-null="true" />
+
+    <set name="layers" lazy="true">
+     <key column="journal" />
+     <one-to-many class="org.jpos.gl.Layer" />
+    </set>
+    <set name="permissions" lazy="true">
+     <key column="journal" />
+     <one-to-many class="org.jpos.gl.GLPermission" />
+    </set>
+  </class>
+</hibernate-mapping>
+

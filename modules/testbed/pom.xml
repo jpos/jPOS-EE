@@ -5,7 +5,7 @@
   <artifactId>testbed</artifactId>
   <version>1.8.3-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>jPOS-EE Sample Application</name>
+  <name>jPOS-EE Testbed Application</name>
 
   <parent>
     <groupId>org.jpos.ee</groupId>
@@ -18,6 +18,11 @@
     <dependency>
       <groupId>org.jpos.ee</groupId>
       <artifactId>sysconfig</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jpos.ee</groupId>
+      <artifactId>minigl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

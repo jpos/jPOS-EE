@@ -1,0 +1,225 @@
+<?xml version="1.0" ?>
+<!DOCTYPE minigl SYSTEM 'http://jpos.org/dtd/minigl.dtd'>
+<minigl>
+ <create-schema />
+
+ <user>
+  <nick>apr</nick>
+  <name>Alejandro Revilla</name>
+ </user>
+
+ <!-- ADD YOUR username here -->
+ 
+ <user>
+  <nick>bob</nick>
+  <name>Bob Book Keeper</name>
+  <grant>read</grant>
+  <grant>write</grant>
+  <grant>grant</grant>
+ </user>
+
+ <user>
+  <nick>eve</nick>
+  <name>Eve Noperm</name>
+ </user>
+
+ <currency id="840">
+  <symbol>USD</symbol>
+  <name>US Dollars</name>
+ </currency>
+
+ <currency id="032">
+  <symbol>ARG</symbol>
+  <name>Pesos argentinos</name>
+ </currency>
+
+ <currency id="858">
+  <symbol>$U</symbol>
+  <name>Pesos uruguayos</name>
+ </currency>
+
+ <chart-of-accounts code="TestChart" created="20050101">
+  <description>Test Chart</description>
+  <composite-account code="1" type="debit" >
+   <description>Assets</description>
+   <composite-account code="11" type="debit" >
+    <description>Cash</description>
+    <account code="111" type="debit" >
+     <description>Cash Dollars</description>
+    </account>
+    <account code="112" type="debit" currency="858">
+     <description>Cash Pesos</description>
+    </account>
+    <account code="113" type="debit">
+     <description>Bank Account</description>
+    </account>
+    <account code="120" type="debit">
+     <description>Trip Fund</description>
+    </account>
+   </composite-account>
+
+  </composite-account>
+  <composite-account code="2" type="credit" >
+   <description>Liabilities</description>
+   <account code="21" type="credit">
+    <description>Loan</description>
+   </account>
+   <composite-account code="23" type="credit">
+    <description>Cards</description>
+   </composite-account>
+  </composite-account>
+  <composite-account code="3" type="credit" >
+   <description>Equity</description>
+   <account code="31" type="credit" >
+    <description>Bob's equity</description>
+   </account>
+   <account code="32" type="credit" >
+    <description>Alice's equity</description>
+   </account>
+  </composite-account>
+  <composite-account code="4" type="credit" >
+   <description>Earnings</description>
+  </composite-account>
+  <composite-account code="5" type="debit" >
+   <description>Losses</description>
+  </composite-account>
+ </chart-of-accounts>
+
+ <!--
+   Layers plan:
+
+      Reporting currency (840) goes to layer 0 (reporting currency)
+      Uruguayan pesos (858) goes to layer 858
+      Virtual layer 1 is a trip fund
+      Virtual layer 2 is a budget layer
+
+ -->
+
+ <journal>
+  <name>TestJournal</name>
+  <start>20010101</start>
+  <end>20201231</end>
+  <status>open</status>
+  <chart>TestChart</chart>
+  <grant user="bob">post</grant>
+  <grant user="bob">checkpoint</grant>
+  <grant user="bob">summarize</grant>
+  <rule clazz="org.jpos.gl.rule.CanPost">
+   Verify permissions, start/end dates, status, and chart
+  </rule>
+  <rule clazz="org.jpos.gl.rule.DoubleEntry">
+   Verify that credits equals debits
+   <layers>0,1</layers>
+  </rule>
+  <rule clazz="org.jpos.gl.rule.CompositeMaxBalance" account="1">
+    Check assets doesn't go above one million
+    <param>1000000.00</param>
+  </rule>
+  <rule clazz="org.jpos.gl.rule.FinalMinBalance" account="112">
+    Check that the account has always a balance greater than 10.00
+    <param>10.00</param>
+    <layers>0,1</layers>
+  </rule>
+  <rule clazz="org.jpos.gl.rule.CompositeMinBalance" account="11">
+    Check that the account has always a balance greater than 45000.00
+    <param>45000.00</param>
+    <layers>0,1</layers>
+  </rule>
+  <rule clazz="org.jpos.gl.rule.FinalMaxBalance" account="31">
+    Put a limit to Bob's equity
+    <param>100000.00</param>
+    <layers>0,1</layers>
+  </rule>
+ </journal>
+ <journal>
+  <name>HistoryJournal</name>
+  <start>20010101</start>
+  <end>20201231</end>
+  <status>open</status>
+  <chart>TestChart</chart>
+  <grant user="bob">post</grant>
+  <grant user="bob">checkpoint</grant>
+  <grant user="bob">summarize</grant>
+  <rule clazz="org.jpos.gl.rule.CanPost">
+   Verifies permissions, start/end dates, status, and chart
+  </rule>
+  <rule clazz="org.jpos.gl.rule.DoubleEntry">
+   Verify that credits equals debits
+   <param>0.1</param>
+  </rule>
+ </journal>
+
+ <transaction post-date="20050101" date="20050101130000" journal="TestJournal">
+  <detail>Bob's initial deposit</detail>
+  <tags>tag1 tag2</tags>
+ 
+  <entry account="111" type="debit">
+   <detail>Bob Check #001 (USD layer 0)</detail>
+   <tags>the-debit</tags>
+   <amount>10000.00</amount>
+  </entry>
+  <entry account="31" type="credit">
+   <detail>Bob Initial cash (USD layer 0)</detail>
+   <tags>the-credit</tags>
+   <amount>10000.00</amount>
+  </entry>
+  <!-- a Virtual entry in Layer 1 - trip fund -->
+  <entry account="120" type="debit" layer="1">
+   <detail>Bob Check #001 20% to Trip Fund</detail>
+   <amount>2000.00</amount>
+  </entry>
+  <!-- a Virtual entry in Layer 2 - trip budget -->
+  <entry account="120" type="credit" layer="2">
+   <detail>Trip Budget 50000</detail>
+   <amount>50000.00</amount>
+  </entry>
+ </transaction>
+
+ <transaction post-date="20050101" date="20050101130001" journal="TestJournal">
+  <detail>Alice's initial deposit</detail>
+ 
+  <entry account="111" type="debit">
+   <detail>Alice Check #001</detail>
+   <amount>5000.00</amount>
+  </entry>
+  <entry account="112" type="debit">
+   <detail>Alice Check #002 represented in USD</detail>
+   <amount>5000.00</amount>
+  </entry>
+  <entry account="32" type="credit">
+   <detail>Alice Initial deposit converted to Pesos</detail>
+   <amount>10000.00</amount>
+  </entry>
+  <entry account="112" type="debit" layer="858">
+   <detail>Alice Check #002 in Pesos</detail>
+   <amount>12500.00</amount>
+  </entry>
+ </transaction>
+
+ <transaction post-date="20050102" date="20050102130000" journal="TestJournal">
+  <detail>Bob's second deposit</detail>
+ 
+  <entry account="111" type="debit">
+   <detail>Bob Check #002</detail>
+   <amount>10000.00</amount>
+  </entry>
+  <entry account="31" type="credit">
+   <detail>Bob More cash (USD)</detail>
+   <amount>10000.00</amount>
+  </entry>
+ </transaction>
+
+ <transaction post-date="20050102" date="20050102130000" journal="TestJournal">
+  <detail>Loan</detail>
+ 
+  <entry account="113" type="debit">
+   <detail>Deposit reference #1234</detail>
+   <amount>20000.00</amount>
+  </entry>
+  <entry account="21" type="credit">
+   <detail>Loan reference #4321</detail>
+   <amount>20000.00</amount>
+  </entry>
+ </transaction>
+</minigl>
+

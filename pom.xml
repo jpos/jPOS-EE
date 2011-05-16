@@ -77,23 +77,42 @@
   </modules>
 
   <build>
-     <filters>
+    <filters>
        <filter>src/main/filters/filter.properties</filter>
-     </filters>
-     <resources>
-       <resource>
-         <directory>src/main/resources</directory>
-         <filtering>true</filtering>
-         <excludes>
+    </filters>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <excludes>
           <exclude>**/deploy/*</exclude>
           <exclude>**/log/*</exclude>
           <exclude>**/cfg/packager/*</exclude>
           <exclude>**/cfg/*</exclude>
           <exclude>**/bin/*</exclude>
-         </excludes>
-       </resource>
-     </resources>
-   </build>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
+        <configuration>
+          <attach>true</attach>
+          <excludeResources>true</excludeResources>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <repositories>
     <repository>

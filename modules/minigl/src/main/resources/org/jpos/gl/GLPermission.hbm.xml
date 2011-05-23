@@ -13,9 +13,11 @@
         index="perm_name"/>
     </property>
     <many-to-one name="user"
-            class="org.jpos.gl.GLUser" column="gluser" />
+        class="org.jpos.gl.GLUser" column="gluser" 
+        foreign-key="FKPermissionUser" />
     <many-to-one name="journal"
-            class="org.jpos.gl.Journal" column="journal" />
+        class="org.jpos.gl.Journal" column="journal" 
+        foreign-key="FKPermissionJournal" />
   </class>
 </hibernate-mapping>
 

@@ -15,14 +15,14 @@
     <property name="end"       type="date" column="end_" />
     <property name="closed"    type="boolean" />
     <property name="lockDate"  type="date"  />
-    <many-to-one name="chart"  not-null="true" />
+    <many-to-one name="chart"  not-null="true" foreign-key="FKJournalChart" />
 
     <set name="layers" lazy="true">
-     <key column="journal" />
+     <key column="journal" foreign-key="FKJournalLayers" />
      <one-to-many class="org.jpos.gl.Layer" />
     </set>
     <set name="permissions" lazy="true">
-     <key column="journal" />
+     <key column="journal" foreign-key="FKJournalPermissions" />
      <one-to-many class="org.jpos.gl.GLPermission" />
     </set>
   </class>

@@ -12,8 +12,8 @@
    <property name="clazz"       type="string" />
    <property name="layers"      type="string" />
    <property name="param"       type="string" />
-   <many-to-one name="journal"  not-null="false" />
-   <many-to-one name="account"  not-null="false" />
+   <many-to-one name="journal"  not-null="false" foreign-key="FKRuleInfoJournal" />
+   <many-to-one name="account"  not-null="false" foreign-key="FKRuleInfoAccount" />
  </class>
 </hibernate-mapping>
 

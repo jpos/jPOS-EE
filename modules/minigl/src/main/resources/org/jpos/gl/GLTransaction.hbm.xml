@@ -20,7 +20,7 @@
         index="postDate"/>
     </property>
 
-    <many-to-one name="journal" column="journal" not-null="true" />
+    <many-to-one name="journal" column="journal" not-null="true" foreign-key="FKTransactionJournal" />
 
     <list name="entries" cascade="all-delete-orphan" lazy="true">
      <key column="transaction" />

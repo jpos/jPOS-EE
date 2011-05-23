@@ -9,8 +9,10 @@
      Journal level lock.
     </meta>
     <composite-id unsaved-value="any">
-     <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
-     <key-many-to-one name="account" class="org.jpos.gl.Account" />
+     <key-many-to-one name="journal" class="org.jpos.gl.Journal"
+         foreign-key="FKAccountLockJournal"/>
+     <key-many-to-one name="account" class="org.jpos.gl.Account" 
+         foreign-key="FKAccountLockAccount" />
     </composite-id>
   </class>
 </hibernate-mapping>

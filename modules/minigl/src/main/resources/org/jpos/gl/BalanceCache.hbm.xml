@@ -6,8 +6,10 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.BalanceCache" table="balance_cache">
     <composite-id>
-     <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
-     <key-many-to-one name="account" class="org.jpos.gl.Account" />
+     <key-many-to-one name="journal" class="org.jpos.gl.Journal"
+         foreign-key="FKBalanceCacheJournal"/>
+     <key-many-to-one name="account" class="org.jpos.gl.Account" 
+         foreign-key="FKBalanceCacheAccount" />
      <key-property name="layers" type="string" length="32" />
     </composite-id>
     <property name="ref" type="long" />

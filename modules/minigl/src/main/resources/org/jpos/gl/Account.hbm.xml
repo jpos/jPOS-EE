@@ -24,21 +24,19 @@
     <property name="currencyCode">
      <column name="currency" sql-type="char(3)" />
     </property>
-    <many-to-one name="root"   not-null="false"/>
-
+    <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" />
     <subclass name="org.jpos.gl.CompositeAccount" discriminator-value="C">
       <set name="children" cascade="all-delete-orphan,evict" sort="natural" lazy="true" inverse="true">
         <key column="parent" />
         <!-- index column="posn" / -->
         <one-to-many class="org.jpos.gl.Account" />
       </set>
-      <many-to-one name="parent" not-null="false" cascade="evict"/>
+      <many-to-one name="parent" not-null="false" cascade="evict" foreign-key="FKAccountParent" />
     </subclass>
 
     <subclass name="org.jpos.gl.FinalAccount" discriminator-value="F">
-      <many-to-one name="parent" not-null="false" cascade="evict"/>
+      <many-to-one name="parent" not-null="false" cascade="evict" foreign-key="FKAccountParent"/>
     </subclass>
-
   </class>
 </hibernate-mapping>
 

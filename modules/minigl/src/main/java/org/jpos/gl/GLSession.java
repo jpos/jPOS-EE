@@ -1194,6 +1194,7 @@ public class GLSession {
             }
         }
         else if (acct instanceof FinalAccount) {
+            lock (journal, acct);
             balance = getBalances (journal, acct, null, true, layers, maxId) [0];
             BalanceCache c = getBalanceCache (journal, acct, layers);
             if (c == null) {

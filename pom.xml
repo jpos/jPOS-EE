@@ -66,15 +66,7 @@
     <slf4j.version>1.6.1</slf4j.version>
     <javassist.version>3.4.GA</javassist.version>
     <jetty.version>7.3.0.v20110203</jetty.version>
-    <integration.database>jposee_test</integration.database>
-    <integration.database.host>localhost</integration.database.host>
-    <integration.database.port>3306</integration.database.port>
-    <integration.database.user>jpos</integration.database.user>
-    <integration.database.password></integration.database.password>
-    <integration.database.params>useUnicode=true&amp;characterEncoding=UTF-8</integration.database.params>
-    <integration.database.driver>com.mysql.jdbc.Driver</integration.database.driver>
-    <integration.database.hibernate.dialect>org.hibernate.dialect.MySQLDialect</integration.database.hibernate.dialect>
-    <integration.database.hibernate.show_sql>true</integration.database.hibernate.show_sql>
+    <mysql.connector.version>5.1.15</mysql.connector.version>
   </properties>
 
   <modules>
@@ -101,7 +93,17 @@
           <exclude>**/bin/*</exclude>
         </excludes>
       </resource>
+      <resource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

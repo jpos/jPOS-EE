@@ -25,23 +25,48 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.15</version>
+      <version>${mysql.connector.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <properties>
+    <dev.db.properties.file>
+      ${basedir}/src/test/resources/db.properties
+    </dev.db.properties.file>
+  </properties>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0-alpha-1</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <quiet>true</quiet>
+              <files>
+                <file>${dev.db.properties.file}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>sql-maven-plugin</artifactId>
         <version>1.2</version>
         <configuration>
-            <driver>${integration.database.driver}</driver>
+          <driver>${dev.db.driver}</driver>
           <url>
-            jdbc:mysql://${integration.database.host}:${integration.database.port}/?${integration.database.params}
+            jdbc:mysql://${dev.db.host}:${dev.db.port}/?${dev.db.params}
           </url>
-          <username>${integration.database.user}</username>
-          <password>${integration.database.password}</password>
+          <username>${dev.db.user}</username>
+          <password>${dev.db.password}</password>
           <autocommit>true</autocommit>
           <skip>${maven.test.skip}</skip>
         </configuration>
@@ -60,7 +85,7 @@
              <goal>execute</goal>
            </goals>
            <configuration>
-             <sqlCommand>DROP DATABASE IF EXISTS ${integration.database}</sqlCommand>
+             <sqlCommand>DROP DATABASE IF EXISTS ${dev.db}</sqlCommand>
           </configuration>
          </execution>
          <execution>
@@ -70,7 +95,7 @@
              <goal>execute</goal>
            </goals>
            <configuration>
-             <sqlCommand>CREATE DATABASE ${integration.database}</sqlCommand>
+             <sqlCommand>CREATE DATABASE ${dev.db}</sqlCommand>
            </configuration>
          </execution>
        </executions>
@@ -79,12 +104,16 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.8</version>
+        
         <configuration>
           <includes>
             <include>**/*Test.java</include>
           </includes>
           <skipTests>false</skipTests>
           <runOrder>alphabetical</runOrder>
+          <files>
+            <file>${dev.db.properties.file}</file>
+          </files>
           <!-- 
           <systemProperties>
             <property>

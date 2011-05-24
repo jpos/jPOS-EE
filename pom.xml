@@ -93,10 +93,6 @@
           <exclude>**/bin/*</exclude>
         </excludes>
       </resource>
-      <resource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </resource>
     </resources>
     <testResources>
       <testResource>

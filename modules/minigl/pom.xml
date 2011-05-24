@@ -32,6 +32,50 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>sql-maven-plugin</artifactId>
+        <version>1.2</version>
+        <configuration>
+            <driver>${integration.database.driver}</driver>
+          <url>
+            jdbc:mysql://${integration.database.host}:${integration.database.port}/?${integration.database.params}
+          </url>
+          <username>${integration.database.user}</username>
+          <password>${integration.database.password}</password>
+          <autocommit>true</autocommit>
+          <skip>${maven.test.skip}</skip>
+        </configuration>
+        <dependencies>
+          <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.13</version>
+        </dependency>
+       </dependencies>
+       <executions>
+         <execution>
+           <id>drop_db</id>
+           <phase>process-test-resources</phase>
+           <goals>
+             <goal>execute</goal>
+           </goals>
+           <configuration>
+             <sqlCommand>DROP DATABASE IF EXISTS ${integration.database}</sqlCommand>
+          </configuration>
+         </execution>
+         <execution>
+           <id>create_db</id>
+           <phase>process-test-resources</phase>
+           <goals>
+             <goal>execute</goal>
+           </goals>
+           <configuration>
+             <sqlCommand>CREATE DATABASE ${integration.database}</sqlCommand>
+           </configuration>
+         </execution>
+       </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.8</version>
@@ -41,6 +85,14 @@
           </includes>
           <skipTests>false</skipTests>
           <runOrder>alphabetical</runOrder>
+          <!-- 
+          <systemProperties>
+            <property>
+              <name>log4j.configuration</name>
+              <value>file:target/test-classes/log4j.xml</value>
+            </property>
+          </systemProperties>
+          -->
         </configuration>
       </plugin>
     </plugins>

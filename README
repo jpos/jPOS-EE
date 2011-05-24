@@ -7,3 +7,12 @@ For a stable version of jPOS-EE's modules, please see the HOWTO section at:
   http://jpos.org/doc/jPOS-Project-Guide.pdf
 
 In order to build jPOS-EE, you need to 'mvn install' jPOS first.
+
+Some tests use a local MySQL database called 'jposee_dev'. 
+
+Make sure you:
+
+  CREATE DATABASE jposee_dev;
+  GRANT ALL PRIVILEGES ON jposee_dev.* TO `jpos`@`localhost`;
+
+

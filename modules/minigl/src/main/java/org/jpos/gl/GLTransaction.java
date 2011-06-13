@@ -329,7 +329,8 @@ public class GLTransaction {
             Element tags = new Element ("tags").setText (getDetail());
             elem.addContent (tags);
         }
-        elem.setAttribute ("journal", getJournal().getName());
+        if (getJournal() != null) // we could be dumping an unposted transaction
+            elem.setAttribute ("journal", getJournal().getName());
 
         Iterator iter = getEntries().iterator();
         while (iter.hasNext()) {

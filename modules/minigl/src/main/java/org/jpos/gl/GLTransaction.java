@@ -342,7 +342,7 @@ public class GLTransaction {
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
-            .append("detail", getId())
+            .append("detail", getDetail())
             .toString();
     }
     public boolean equals(Object other) {

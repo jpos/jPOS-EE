@@ -17,7 +17,7 @@
      <column name="layer" sql-type="int(5)" not-null="true" />
     </property>
     <many-to-one name="account" not-null="true" foreign-key="FKGLEntryAccount" />
-    <many-to-one name="transaction" not-null="false" foreign-key="FKGLEntryTransaction" />
+    <many-to-one name="transaction" not-null="false" insert="false" update="false" foreign-key="FKGLEntryTransaction" />
 
     <property name="amount" type="big_decimal">
      <column name="amount" sql-type="numeric(14,2)" not-null="true" />

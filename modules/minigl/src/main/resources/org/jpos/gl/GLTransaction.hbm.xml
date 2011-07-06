@@ -22,9 +22,9 @@
 
     <many-to-one name="journal" column="journal" not-null="true" foreign-key="FKTransactionJournal" />
 
-    <list name="entries" cascade="all-delete-orphan" lazy="true">
+    <list name="entries" cascade="all,delete-orphan" lazy="true">
      <key column="transaction" />
-     <index column="posn" />
+     <list-index column="posn" />
      <one-to-many class="org.jpos.gl.GLEntry" />
     </list>
   </class>

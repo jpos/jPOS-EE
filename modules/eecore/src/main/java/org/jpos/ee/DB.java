@@ -18,8 +18,14 @@
 
 package org.jpos.ee;
 
+import java.io.Serializable;
 import java.util.Set;
+import java.util.List;
+import java.util.Iterator;
+import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.JDBCException;
+import org.hibernate.Hibernate;
 import org.hibernate.Transaction;
 import org.hibernate.SessionFactory;
 import org.hibernate.HibernateException;
@@ -28,9 +34,12 @@ import org.hibernate.engine.CollectionKey;
 import org.hibernate.engine.EntityKey;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.type.Type;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
+import org.jpos.core.Sequencer;
 
 /**
  * @author Alejandro P. Revilla
@@ -39,7 +48,6 @@ import org.jpos.util.Logger;
  * DB encapsulate some housekepping specific 
  * to Hibernate O/R mapping engine
  */
-@SuppressWarnings("unused")
 public class DB {
     protected static SessionFactory sf;
     protected static Configuration cfg;
@@ -80,7 +88,6 @@ public class DB {
      * Creates database schema
      * @param outputFile optional output file (may be null)
      * @param create true to actually issue the create statements
-     * @throws org.hibernate.HibernateException on error
      */
     public void createSchema (String outputFile, boolean create) 
         throws HibernateException 
@@ -94,7 +101,7 @@ public class DB {
     }
     /**
      * open a new HibernateSession if none exists 
-     * @throws HibernateException on error
+     * @throws HibernateException
      * @return HibernateSession associated with this DB object
      */
     public synchronized Session open () throws HibernateException {
@@ -104,7 +111,7 @@ public class DB {
     }
     /**
      * close hibernate session
-     * @throws HibernateException on error
+     * @throws HibernateException
      */
     public synchronized void close () throws HibernateException {
         if (session != null) {
@@ -121,7 +128,6 @@ public class DB {
     /**
      * handy method used to avoid having to call db.session().save (xxx)
      * @param obj to save
-     * @throws org.hibernate.HibernateException on error
      */
     public void save (Object obj) throws HibernateException {
         session.save (obj);
@@ -133,17 +139,31 @@ public class DB {
 
     /**
      * @return newly created Transaction
-     * @throws HibernateException on error
+     * @throws HibernateException
      */
     public synchronized Transaction beginTransaction () 
         throws HibernateException
     {
         return session.beginTransaction ();
     }
+    public synchronized void commit() {
+        if (session() != null) {
+            Transaction tx = session().getTransaction();
+            if (tx != null && tx.isActive())
+                tx.commit();
+        }
+    }
+    public synchronized void rollback() {
+        if (session() != null) {
+            Transaction tx = session().getTransaction();
+            if (tx != null && tx.isActive())
+                tx.rollback();
+        }
+    }
     /**
      * @param  timeout in seconds
      * @return newly created Transaction
-     * @throws HibernateException on error
+     * @throws HibernateException
      */
     public synchronized Transaction beginTransaction (int timeout) 
         throws HibernateException

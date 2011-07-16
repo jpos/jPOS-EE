@@ -1237,11 +1237,8 @@ public class GLSession {
         checkPermission (GLPermission.POST, journal);
         AccountLock lck = getLock (journal, acct, false);
         if (lck == null) {
-            // Transaction tx = session.beginTransaction();
             session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
             lck = getLock (journal, acct, true);
-            // tx.commit();
-            lck = getLock (journal, acct, false);   // re-get it
         }
     }
     
@@ -1387,8 +1384,10 @@ public class GLSession {
     {
         AccountLock key = new AccountLock (journal, acct);
         AccountLock lck = (AccountLock) session.get (AccountLock.class, key, LockOptions.UPGRADE);
-        if (lck == null && create)
+        if (lck == null && create) {
             session.save (lck = key);
+            session.flush();
+        }
         return lck;
     }
     private void createCheckpoint0 

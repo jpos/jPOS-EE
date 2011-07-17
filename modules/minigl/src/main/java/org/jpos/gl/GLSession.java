@@ -1235,11 +1235,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.POST, journal);
-        AccountLock lck = getLock (journal, acct, false);
-        if (lck == null) {
-            session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
-            lck = getLock (journal, acct, true);
-        }
+        AccountLock lck = getLock (journal, acct);
     }
     
     /**
@@ -1379,12 +1375,15 @@ public class GLSession {
     // -----------------------------------------------------------------------
     // PRIVATE METHODS
     // -----------------------------------------------------------------------
-    private AccountLock getLock (Journal journal, Account acct, boolean create) 
+    private AccountLock getLock (Journal journal, Account acct)
         throws HibernateException
     {
         AccountLock key = new AccountLock (journal, acct);
         AccountLock lck = (AccountLock) session.get (AccountLock.class, key, LockOptions.UPGRADE);
-        if (lck == null && create) {
+        if (lck == null)
+            session.buildLockRequest(LockOptions.UPGRADE).lock(journal); // need a journal level lock
+        lck = (AccountLock) session.get (AccountLock.class, key, LockOptions.UPGRADE); // try again
+        if (lck == null) {
             session.save (lck = key);
             session.flush();
         }

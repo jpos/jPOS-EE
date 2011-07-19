@@ -65,8 +65,8 @@
     <commons.logging.version>1.1</commons.logging.version>
     <slf4j.version>1.6.1</slf4j.version>
     <javassist.version>3.4.GA</javassist.version>
-    <jetty.version>7.3.0.v20110203</jetty.version>
-    <mysql.connector.version>5.1.15</mysql.connector.version>
+    <jetty.version>8.0.0.M3</jetty.version>
+    <mysql.connector.version>5.1.17</mysql.connector.version>
   </properties>
 
   <modules>

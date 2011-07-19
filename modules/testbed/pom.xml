@@ -24,11 +24,23 @@
       <groupId>org.jpos.ee</groupId>
       <artifactId>minigl</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <!-- Jetty provides a newer version -->
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions> 
+    </dependency>
+    <dependency>
+      <groupId>org.jpos.ee</groupId>
+      <artifactId>jposee-jetty</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.15</version>
+      <version>${mysql.connector.version}</version>
     </dependency>
   </dependencies>
 

@@ -25,6 +25,8 @@
         <include>cfg/*.bsh</include>
         <include>cfg/context/*.xml</include>
         <include>deploy/*.xml</include>
+        <include>log/*</include>
+        <include>webapps/*</include>
       </includes>
     </fileSet>
   </fileSets>

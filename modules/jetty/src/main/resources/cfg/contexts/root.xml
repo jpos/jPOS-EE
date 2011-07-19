@@ -1,0 +1,7 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <Set name="contextPath">/</Set>
+    <Set name="resourceBase">
+        <SystemProperty name="jetty.home" default="."/>/webapps/root
+    </Set>
+</Configure>

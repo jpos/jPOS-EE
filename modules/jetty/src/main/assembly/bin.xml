@@ -4,7 +4,7 @@
     <format>tar.gz</format>
     <format>zip</format>
   </formats>
-  <baseDirectory>jposee-jetty-${project.version}</baseDirectory>
+  <baseDirectory>${artifactId}-${project.version}</baseDirectory>
   <includeSiteDirectory>false</includeSiteDirectory>
 
   <dependencySets>
@@ -23,8 +23,11 @@
       <includes>
         <include>cfg/*.xml</include>
         <include>cfg/*.ks</include>
+        <include>cfg/*.bsh</include>
         <include>cfg/context/*.xml</include>
         <include>deploy/*.xml</include>
+        <include>log/*</include>
+        <include>webapps/**</include>
       </includes>
     </fileSet>
   </fileSets>

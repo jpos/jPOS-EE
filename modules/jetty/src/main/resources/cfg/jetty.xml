@@ -60,6 +60,9 @@
            <Item>
              <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
            </Item>
+           <Item>
+             <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+           </Item>
          </Array>
         </Set>
       </New>
@@ -71,7 +74,7 @@
     <New id="ServerLog" class="java.io.PrintStream">
       <Arg>
         <New class="org.eclipse.jetty.util.RolloverFileOutputStream">
-          <Arg><Property name="jetty.logs" default="./log"/>/yyyy_mm_dd.stderrout.log</Arg>
+          <Arg><Property name="jetty.logs" default="./log"/>/yyyy_mm_dd.jetty-stderrout.log</Arg>
           <Arg type="boolean">false</Arg>
           <Arg type="int">90</Arg>
           <Arg><Call class="java.util.TimeZone" name="getTimeZone"><Arg>GMT</Arg></Call></Arg>
@@ -81,6 +84,18 @@
     </New>
     <Call class="java.lang.System" name="setErr"><Arg><Ref id="ServerLog"/></Arg></Call>
     <Call class="java.lang.System" name="setOut"><Arg><Ref id="ServerLog"/></Arg></Call>
+
+    <Ref id="RequestLog">
+      <Set name="requestLog">
+        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+          <Arg><SystemProperty name="jetty.logs" default="./log"/>/yyyy_mm_dd.jetty-request.log</Arg>
+          <Set name="retainDays">90</Set>
+          <Set name="append">true</Set>
+          <Set name="extended">false</Set>
+          <Set name="LogTimeZone">GMT</Set>
+        </New>
+      </Set>
+    </Ref>
 
     <!-- =========================================================== -->
     <!-- extra options                                               -->
@@ -124,7 +139,7 @@
             <Arg>
               <New class="org.eclipse.jetty.deploy.providers.WebAppProvider">
                 <Set name="monitoredDir"><Property name="jetty.home" default="." />/webapps</Set>
-                <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+                <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/cfg/webdefault.xml</Set>
                 <Set name="scanInterval">5</Set>
                 <Set name="contextXmlDir"><Property name="jetty.home" default="." />/cfg/contexts</Set>
               </New>

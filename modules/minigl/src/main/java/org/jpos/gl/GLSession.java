@@ -27,8 +27,8 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.type.LongType;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+
 import org.jpos.ee.DB;
 
 /**
@@ -37,23 +37,14 @@ import org.jpos.ee.DB;
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
 public class GLSession {
-    private static Map<String, Object> ruleCache;
+    private static Map<String, Object> ruleCache = new HashMap<String, Object>();
     private GLUser user;
     private Session session;
-    private static final Log log = LogFactory.getLog (GLSession.class);
     private DB db;
     public static final short[] LAYER_ZERO = new short[] { 0 };
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
 
-    static {
-        try {
-            // init ();
-            ruleCache = new HashMap<String, Object>();
-        } catch (Exception e) {
-            log.fatal (e);
-        }
-    }
     /**
      * Construct a GLSession for a given user.
      *

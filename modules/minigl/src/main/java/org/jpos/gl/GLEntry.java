@@ -283,7 +283,7 @@ public class GLEntry {
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
-            .append("detail", getId())
+            .append("detail", getDetail())
             .toString();
     }
     private void setLayer (String s) {

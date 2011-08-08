@@ -18,9 +18,7 @@
 
 package org.jpos.gl.rule;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Iterator;
 import java.math.BigDecimal;
 import org.jpos.gl.Account;
 import org.jpos.gl.JournalRule;
@@ -29,15 +27,13 @@ import org.jpos.gl.GLException;
 import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
 import org.jpos.gl.Journal;
-import org.hibernate.Session;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class FinalBalance implements JournalRule {
     private static final BigDecimal ZERO = new BigDecimal ("0.00");
-    private static final Log log = 
-        LogFactory.getLog (FinalMinBalance.class);
+    Logger log = LoggerFactory.getLogger(FinalBalance.class);
 
     protected abstract String getRuleName();
     protected abstract boolean isError

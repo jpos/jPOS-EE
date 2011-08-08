@@ -18,15 +18,10 @@
 
 package org.jpos.gl.tools;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.text.ParseException;
@@ -34,22 +29,20 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.EntityResolver;
 
 import java.sql.SQLException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.Hibernate;
 import org.hibernate.Transaction;
 import org.hibernate.SessionFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.type.Type;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.jpos.gl.GLUser;
 import org.jpos.gl.Journal;
@@ -76,7 +69,7 @@ import org.jpos.gl.Layer;
 public class Import implements EntityResolver {
     SessionFactory sf;
     Configuration cfg;
-    Log log = LogFactory.getLog (Import.class);
+    Logger log = LoggerFactory.getLogger(Import.class);
     private static final String URL = "http://jpos.org/";
     public Import () throws HibernateException, GLException {
         super();

@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
 import java.math.BigDecimal;
-import org.hibernate.Session;
 import org.jpos.gl.JournalRule;
 import org.jpos.gl.GLSession;
 import org.jpos.gl.GLException;
@@ -31,8 +30,8 @@ import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
 import org.jpos.gl.GLPermission;
 import org.jpos.gl.Journal;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Verify that user can post to a given journal.
@@ -52,8 +51,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CanPost implements JournalRule {
     private static final BigDecimal ZERO = new BigDecimal ("0.00");
-    private static final Log log = 
-        LogFactory.getLog (CanPost.class);
+    Logger log = LoggerFactory.getLogger(CanPost.class);
 
     public void check (GLSession session, GLTransaction txn, 
             String param, Account account, int[] entryOffsets, short[] layers)

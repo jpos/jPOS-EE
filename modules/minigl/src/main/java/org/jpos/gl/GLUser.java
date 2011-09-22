@@ -135,16 +135,20 @@ public class GLUser {
     }
     /**
      * Revoke permission from user 
-     * @param perm the permission
+     * @param permName the permission
      */
     public void revoke (String permName) {
         Iterator iter = perms.iterator();
+        GLPermission toRemove = null;
         while (iter.hasNext()) {
             GLPermission p = (GLPermission) iter.next();
             if (permName.equals (p.getName())) {
-                perms.remove (p);
+                toRemove = p;
+                break;
             }
         }
+        if (toRemove != null)
+            perms.remove(toRemove);
     }
     /**
      * Revoke all permissions

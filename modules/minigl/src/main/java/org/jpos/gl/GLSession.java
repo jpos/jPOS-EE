@@ -705,6 +705,31 @@ public class GLSession {
      boolean findByPostDate, int pageNumber, int pageSize)
             throws HibernateException, GLException
     {
+        int firstResult = 0;
+        if (pageSize > 0 && pageNumber > 0)
+            firstResult = pageSize * (pageNumber - 1);
+
+        return createFindTransactionsCriteriaByRange(
+                journal, start, end, searchString, findByPostDate, firstResult, pageSize
+        );
+    }
+
+    /**
+     * @param journal the journal.
+     * @param start date (inclusive).
+     * @param end date (inclusive).
+     * @param searchString optional search string
+     * @param findByPostDate true to find by postDate, false to find by timestamp
+     * @param firstResult the first result
+     * @param pageSize the page size
+     * @return list of transactions
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public Criteria createFindTransactionsCriteriaByRange
+        (Journal journal, Date start, Date end, String searchString,
+     boolean findByPostDate, int firstResult, int pageSize)
+            throws HibernateException, GLException
+    {
         checkPermission (GLPermission.READ, journal);
         String dateField = findByPostDate ? "postDate" : "timestamp";
         if (findByPostDate) {
@@ -727,9 +752,9 @@ public class GLSession {
         if (searchString != null)
             crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
 
-        if (pageSize > 0 && pageNumber > 0) {
+        if (pageSize > 0 && firstResult > 0) {
             crit.setMaxResults (pageSize);
-            crit.setFirstResult (pageSize * (pageNumber - 1));
+            crit.setFirstResult (firstResult);
         }
         return crit;
     }

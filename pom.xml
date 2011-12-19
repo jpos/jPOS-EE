@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jpos.ee</groupId>
   <artifactId>jposee-project</artifactId>
-  <version>1.8.3-SNAPSHOT</version>
+  <version>1.8.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>jPOS-EE Project</name>
 
@@ -11,7 +11,7 @@
     <dependency>
       <groupId>org.jpos</groupId>
       <artifactId>jpos</artifactId>
-      <version>1.8.3-SNAPSHOT</version>
+      <version>1.8.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

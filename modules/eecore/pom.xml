@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.jpos.ee</groupId>
     <artifactId>jposee-project</artifactId>
-    <version>1.8.3-SNAPSHOT</version>
+    <version>1.8.5-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 

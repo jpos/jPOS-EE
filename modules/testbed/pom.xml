@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jpos</groupId>
   <artifactId>testbed</artifactId>
-  <version>1.8.3-SNAPSHOT</version>
+  <version>1.8.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>jPOS-EE Testbed Application</name>
 
   <parent>
     <groupId>org.jpos.ee</groupId>
     <artifactId>jposee-project</artifactId>
-    <version>1.8.3-SNAPSHOT</version>
+    <version>1.8.5-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 

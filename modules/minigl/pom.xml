@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.jpos.ee</groupId>
     <artifactId>jposee-project</artifactId>
-    <version>1.8.3-SNAPSHOT</version>
+    <version>1.8.5-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -21,6 +21,12 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>${mysql.connector.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

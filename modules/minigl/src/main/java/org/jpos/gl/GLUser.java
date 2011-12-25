@@ -113,6 +113,27 @@ public class GLUser {
         return perms.contains (perm);
     }
     /**
+     * Verifies user's permission in a given journal.
+     * @param action name
+     * @param j journal
+     * @return true if user has permission to perform given action.
+     * @see GLPermission
+     * @see Journal
+     */
+    public boolean hasPermission (String action, Journal j) {
+        Iterator iter = getPermissions().iterator();
+        while (iter.hasNext()) {
+            GLPermission p = (GLPermission) iter.next();
+            Journal pj = p.getJournal();
+            if (action.equals (p.getName()) &&
+                    (pj == null || (pj.getId() == j.getId())))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * @param perms Set of permissions
      */
     public void setPermissions (Set perms) {

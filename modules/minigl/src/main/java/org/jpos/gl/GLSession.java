@@ -214,17 +214,7 @@ public class GLSession {
      * @see Journal
      */
     public boolean hasPermission (String action, Journal j) {
-        Iterator iter = user.getPermissions().iterator();
-        while (iter.hasNext()) {
-            GLPermission p = (GLPermission) iter.next();
-            Journal pj = p.getJournal();
-            if (action.equals (p.getName()) &&
-                (pj == null || (pj.getId() == j.getId())))
-            {
-                return true;
-            }
-        }
-        return false;
+        return getUser().hasPermission(action, j);
     }
     /**
      * Check user's permission in a given journal.
@@ -1015,7 +1005,8 @@ public class GLSession {
                 Account a = (Account) iter.next();
                 BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
                 balance[0] = balance[0].add (b[0]);
-                // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
+                // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating
+                // a failed to lazily initialize a collection
             }
         }
         else if (acct instanceof FinalAccount) {

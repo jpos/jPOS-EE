@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2011 Alejandro P. Revilla
+ * Copyright (C) 2000-2012 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -276,6 +276,13 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
             return "credit";
         else
             return null;
+    }
+    public boolean isAncestor(CompositeAccount ancestor) {
+        for (Account p = getParent(); p != null; p = getParent()) {
+            if (p.equals(ancestor))
+                return true;
+        }
+        return false;
     }
     /**
      * Helper method used to create a JDOM Element as defined in

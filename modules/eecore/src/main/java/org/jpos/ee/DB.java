@@ -132,6 +132,13 @@ public class DB {
     public void save (Object obj) throws HibernateException {
         session.save (obj);
     }
+    /**
+     * handy method used to avoid having to call db.session().saveOrUpdate (xxx)
+     * @param obj to save or update
+     */
+    public void saveOrUpdate (Object obj) throws HibernateException {
+        session.saveOrUpdate(obj);
+    }
 
     public void delete (Object obj) {
         session.delete (obj);

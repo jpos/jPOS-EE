@@ -1009,7 +1009,7 @@ public class GLSession {
                 // a failed to lazily initialize a collection
             }
         }
-        else if (acct instanceof FinalAccount) {
+        else if (acct.isFinalAccount()) {
             Criteria entryCrit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
                 .add (Restrictions.in ("layer", toShortArray (layers)));

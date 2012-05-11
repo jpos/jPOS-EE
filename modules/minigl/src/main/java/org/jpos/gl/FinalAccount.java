@@ -53,4 +53,8 @@ public class FinalAccount extends Account {
     public Element toXML () {
         return super.toXML (new Element ("account"));
     }
+    public boolean isFinalAccount() {
+        return true;
+    }
 }
+

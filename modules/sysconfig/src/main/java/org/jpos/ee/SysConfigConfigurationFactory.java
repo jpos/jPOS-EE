@@ -56,9 +56,8 @@ public class SysConfigConfigurationFactory implements ConfigurationFactory {
                         ensureOpen();
                         value = mgr.get(value.substring(PREFIX_LENGTH), null);
                     } catch (Exception ex) {
-                        throw new ConfigurationException(ex);
-                    } finally {
                         close();
+                        throw new ConfigurationException(ex);
                     }
                 }
                 if (value != null) {
@@ -90,7 +89,9 @@ public class SysConfigConfigurationFactory implements ConfigurationFactory {
         }
     }
     private void close() {
-        if (db != null)
+        if (db != null) {
             db.close();
+            db = null;
+        }
     }
 }

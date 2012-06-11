@@ -1,0 +1,11 @@
+<isomsg>
+ <field id="0" value="1800" />
+ <field id="7" value="! get_date()" />
+ <field id="11" value="! System.currentTimeMillis() % 1000000" />
+ <field id="12" value="! previousTrace" />
+ <field id="63" value="! new Date()" />
+ <isomsg id="120">
+  <field id="0" value="! terminal" />
+ </isomsg>
+</isomsg>
+

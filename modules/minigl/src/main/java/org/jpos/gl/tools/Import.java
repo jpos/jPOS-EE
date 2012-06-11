@@ -18,47 +18,33 @@
 
 package org.jpos.gl.tools;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
-import java.text.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
+import org.jpos.core.ConfigurationException;
+import org.jpos.ee.support.JPosHibernateConfiguration;
+import org.jpos.gl.*;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.SessionFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.type.Type;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-
-import org.jpos.gl.GLUser;
-import org.jpos.gl.Journal;
-import org.jpos.gl.RuleInfo;
-import org.jpos.gl.GLPermission;
-import org.jpos.gl.CompositeAccount;
-import org.jpos.gl.FinalAccount;
-import org.jpos.gl.Account;
-import org.jpos.gl.GLEntry;
-import org.jpos.gl.GLDebit;
-import org.jpos.gl.GLCredit;
-import org.jpos.gl.GLSession;
-import org.jpos.gl.GLException;
-import org.jpos.gl.GLTransaction;
-import org.jpos.gl.Currency;
-import org.jpos.gl.Layer;
+import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Import an XML document as described in 
@@ -69,12 +55,13 @@ import org.jpos.gl.Layer;
 public class Import implements EntityResolver {
     SessionFactory sf;
     Configuration cfg;
-    Logger log = LoggerFactory.getLogger(Import.class);
+    Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
-    public Import () throws HibernateException, GLException {
+    public Import () throws HibernateException, GLException, IOException, ConfigurationException
+    {
         super();
-        cfg = new Configuration();
-        cfg.configure ();
+        cfg = new JPosHibernateConfiguration();
+        cfg.configure();
         sf = cfg.buildSessionFactory();
     }
 

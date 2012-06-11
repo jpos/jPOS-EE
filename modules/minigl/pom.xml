@@ -1,130 +1,145 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>minigl</artifactId>
-  <packaging>jar</packaging>
-  <name>jPOS-EE MiniGL Module</name>
-  <parent>
-    <groupId>org.jpos.ee</groupId>
-    <artifactId>jposee-project</artifactId>
-    <version>1.8.5-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
-  </parent>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
 
-  <dependencies>
-    <dependency>
-      <groupId>org.jpos.ee</groupId>
-      <artifactId>eecore</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>${mysql.connector.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  <properties>
-    <dev.db.properties.file>
-      ${basedir}/src/test/resources/db.properties
-    </dev.db.properties.file>
-  </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0-alpha-1</version>
-        <executions>
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <quiet>true</quiet>
-              <files>
-                <file>${dev.db.properties.file}</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>sql-maven-plugin</artifactId>
-        <version>1.2</version>
-        <configuration>
-          <driver>${dev.db.driver}</driver>
-          <url>
-            jdbc:mysql://${dev.db.host}:${dev.db.port}/?${dev.db.params}
-          </url>
-          <username>${dev.db.user}</username>
-          <password>${dev.db.password}</password>
-          <autocommit>true</autocommit>
-          <skip>${maven.test.skip}</skip>
-        </configuration>
-        <dependencies>
-          <dependency>
-          <groupId>mysql</groupId>
-          <artifactId>mysql-connector-java</artifactId>
-          <version>5.1.13</version>
+    <artifactId>jposee-minigl</artifactId>
+    <name>jPOS-EE :: MiniGL Module</name>
+
+    <parent>
+        <groupId>org.jpos.ee</groupId>
+        <artifactId>jposee-modules</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>..</relativePath>
+    </parent>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-core</artifactId>
         </dependency>
-       </dependencies>
-       <executions>
-         <execution>
-           <id>drop_db</id>
-           <phase>process-test-resources</phase>
-           <goals>
-             <goal>execute</goal>
-           </goals>
-           <configuration>
-             <sqlCommand>DROP DATABASE IF EXISTS ${dev.db}</sqlCommand>
-          </configuration>
-         </execution>
-         <execution>
-           <id>create_db</id>
-           <phase>process-test-resources</phase>
-           <goals>
-             <goal>execute</goal>
-           </goals>
-           <configuration>
-             <sqlCommand>CREATE DATABASE ${dev.db}</sqlCommand>
-           </configuration>
-         </execution>
-       </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.8</version>
-        
-        <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-          <skipTests>false</skipTests>
-          <runOrder>alphabetical</runOrder>
-          <files>
-            <file>${dev.db.properties.file}</file>
-          </files>
-          <!-- 
-          <systemProperties>
-            <property>
-              <name>log4j.configuration</name>
-              <value>file:target/test-classes/log4j.xml</value>
-            </property>
-          </systemProperties>
-          -->
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Don't run tests by default -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>selftest</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jpos.ee</groupId>
+                    <artifactId>jposee-db-h2</artifactId>
+                    <version>${jposee.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>2.4.1</version>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}/runtime/data</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>clean-data</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <id>basic-setup</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>org.jpos.ee.support.BasicSetup</mainClass>
+                                    <arguments>
+                                        <argument>${project.build.directory}/runtime</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.8.1</version>
+                        <executions>
+                            <execution>
+                                <id>run-tests</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <workingDirectory>${project.build.directory}/runtime</workingDirectory>
+                                    <includes>
+                                        <include>org/jpos/gl/AllTests.java</include>
+                                    </includes>
+                                    <skipTests>false</skipTests>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>src/test/data</directory>
+                        <targetPath>${project.build.directory}/runtime</targetPath>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+
+    </profiles>
+
 </project>

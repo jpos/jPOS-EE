@@ -60,12 +60,20 @@ public class AccountLockTest extends TestBase {
             }
         }.start();
         long start = System.currentTimeMillis();
-        gls2.lock (tj2, cash2);
+        try
+        {
+            gls2.lock (tj2, cash2);
+        }
+        catch (HibernateException e)
+        {
+        }
+        catch (GLException e)
+        {
+        }
         long end = System.currentTimeMillis();
-        assertTrue (end - start > 5000);
-        assertTrue (end - start < 6000);
+        assertTrue("Elapsed is " + (end - start), end - start > 5000);
+        assertTrue ("Elapsed is "+(end - start),end - start < 6000);
         tx2.commit();
         gls2.close();
     }
 }
-

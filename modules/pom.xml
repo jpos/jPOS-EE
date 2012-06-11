@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jpos.ee</groupId>
+        <artifactId>jposee-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>..</relativePath>
+    </parent>
+
+    <artifactId>jposee-modules</artifactId>
+    <name>jPOS-EE :: Modules</name>
+    <description>jPOS-EE Modules</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>core</module>
+        <module>freemarker-decorator</module>
+        <module>syslog</module>
+        <module>sysconfig</module>
+        <module>resultcode</module>
+        <module>txn</module>
+        <module>db-mysql</module>
+        <module>db-postgresql</module>
+        <module>db-h2</module>
+        <module>minigl</module>
+        <module>eeuser</module>
+        <module>status</module>
+    	<module>mail</module>
+    	<module>saf</module>
+    	<module>sshd</module>
+    	<module>things</module>
+    	<module>server-simulator</module>
+    	<module>client-simulator</module>
+  </modules>
+
+</project>

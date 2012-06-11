@@ -526,13 +526,16 @@ public class GLSession {
     public Journal getJournal (String name) 
         throws HibernateException, GLException
     {
-        checkPermission (GLPermission.READ);
         Query q = session.createQuery (
             "from journal in class org.jpos.gl.Journal where name=:name"
         );
         q.setParameter ("name", name);
         Iterator iter = q.list().iterator();
-        return (Journal) (iter.hasNext() ? iter.next() : null);
+        Journal j = iter.hasNext() ? (Journal) iter.next() : null;
+        if (j == null)
+            throw new GLException ("Journal '" + name + "' does not exist");
+        checkPermission (GLPermission.READ, j);
+        return j;
     }
 
     /**
@@ -1005,8 +1008,7 @@ public class GLSession {
                 Account a = (Account) iter.next();
                 BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
                 balance[0] = balance[0].add (b[0]);
-                // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating
-                // a failed to lazily initialize a collection
+                // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
             }
         }
         else if (acct.isFinalAccount()) {

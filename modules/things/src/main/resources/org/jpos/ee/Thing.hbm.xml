@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE hibernate-mapping
+  SYSTEM "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="org.jpos.ee">
+  <class name="Thing" table="things">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+    <property name="type" type="string" length="255" index="things_by_type" not-null="true" />    
+    <map name="stringProps" lazy="true" table="props_s" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="string" length="2048" />
+    </map>
+    <map name="textProps" lazy="true" table="props_t" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="text" />
+    </map>
+    <map name="longProps" lazy="true" table="props_l" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="long" />
+    </map>
+    <map name="dateProps" lazy="true" table="props_d" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="date" />
+    </map>
+    <map name="timestampProps" lazy="true" table="props_ts" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="timestamp" />
+    </map>
+    <map name="bigDecimalProps" lazy="true" table="props_bd" cascade="all-delete-orphan">
+        <key />
+        <index column="name" type="string" length="255" />
+        <element column="value" type="big_decimal" />
+    </map>
+  </class>
+  <!-- ================== String ================================= -->
+  <sql-query name="list-by-string-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_s as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-string-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_s as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-string-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_s as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+
+
+  <!-- ================== Text ================================= -->
+  <sql-query name="list-by-text-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_t as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-text-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_t as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-text-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_t as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+
+
+  <!-- ================== Long ================================= -->
+  <sql-query name="list-by-long-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_l as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-long-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_l as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-long-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_l as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+
+  <!-- ================== Date ================================= -->
+  <sql-query name="list-by-date-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_d as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-date-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_d as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-date-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_d as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+
+  <!-- ================== Timestamp ================================= -->
+  <sql-query name="list-by-timestamp-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_ts as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-timestamp-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_ts as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-timestamp-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_ts as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+
+  <!-- ================== BigDecimal ================================= -->
+  <sql-query name="list-by-big-decimal-name">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_bd as p
+      WHERE t.type = :type AND p.name = :name AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-big-decimal-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_bd as p
+      WHERE t.type = :type AND p.value = :value AND t.id = p.id
+  </sql-query>
+  <sql-query name="list-by-big-decimal-name-value">
+      <return alias="t" class="org.jpos.ee.Thing"/>
+      SELECT * FROM things as t, props_bd as p
+      WHERE t.type = :type AND p.name = :name AND p.value = :value AND t.id = p.id
+  </sql-query>
+</hibernate-mapping>

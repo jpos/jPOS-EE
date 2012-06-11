@@ -1,0 +1,53 @@
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<qbean name="clientSimulator" logger="Q2" realm="client-simulator"
+  class="org.jpos.simulator.TestRunner">
+
+  <property name="mux"     value="clientsimulator-mux" />
+  <property name="timeout" value="30000" />
+  <property name="sessions" value="1" />
+  <property name="shutdown" value="true" />
+
+  <init>
+    import java.util.Date;
+    import org.jpos.iso.ISODate;
+    int cnt = 1;
+    String terminal = "29110001";
+    String previousTrace = "000000";
+
+    String get_date() {
+        return ISODate.getDateTime(new Date());
+    }
+    String get_date (String format) {
+        return ISODate.formatDate (new Date(), format);
+    }
+  </init>
+
+
+  <test-suite>
+   <path>cfg/</path>
+   <test file="echo" count="20" continue="yes" name="Simple Echo Test">
+    <init>// print ("Init Script");</init>
+    <post>// print ("Post Script");</post>
+   </test>
+   <test file="echo" count="1" continue="yes" name="Simple Echo Test 2" />
+  </test-suite>
+
+</qbean>
+

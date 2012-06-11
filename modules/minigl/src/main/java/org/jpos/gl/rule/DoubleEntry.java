@@ -18,17 +18,21 @@
 
 package org.jpos.gl.rule;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
 import java.math.BigDecimal;
+import org.hibernate.Session;
 import org.jpos.gl.JournalRule;
 import org.jpos.gl.Account;
 import org.jpos.gl.GLSession;
 import org.jpos.gl.GLException;
 import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jpos.gl.GLPermission;
+import org.jpos.gl.Journal;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Verify that debits equals credits.
@@ -44,7 +48,9 @@ import org.slf4j.LoggerFactory;
  */
 public class DoubleEntry implements JournalRule {
     private static final BigDecimal ZERO = new BigDecimal ("0.00");
-    Logger log = LoggerFactory.getLogger(DoubleEntry.class);
+    private static final Log log = 
+        LogFactory.getLog (DoubleEntry.class);
+
     public void check (GLSession session, GLTransaction txn, 
             String param, Account account, int[] entryOffsets, short[] layers)
         throws GLException

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE hibernate-mapping
+  SYSTEM "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.ee.ResultCode" table="rc">
+    <id name="id" column="id" type="long">
+      <generator class="assigned" />
+    </id>
+    <property name="mnemonic"     type="string" length="32">
+     <meta attribute="finder-method">findByMnemonic</meta>
+     <!-- column name="mnemonic" index="mnemonic" unique="true" /-->
+     <column name="mnemonic" unique="true" />
+    </property>
+    <property name="description"  type="string" />
+
+    <map name="locales" lazy="true" table="rc_locale">
+      <key />
+      <index column="locale" type="string" length="32"/>
+      <composite-element class="org.jpos.ee.ResultCodeInfo">
+        <property name="resultCode" type="string" length="4" />
+        <property name="resultInfo" type="string" />
+        <property name="extendedResultCode" type="string" length="32" />
+      </composite-element>
+    </map>
+  </class>
+</hibernate-mapping>
+

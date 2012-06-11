@@ -1,0 +1,13 @@
+message.setResponseMTI ();
+
+Random random = new Random (System.currentTimeMillis());
+message.set (37, Integer.toString(Math.abs(random.nextInt()) % 1000000));
+message.set (38, Integer.toString(Math.abs(random.nextInt()) % 1000000));
+
+if ("000000009999".equals (message.getString (4)))
+    message.set (39, "01");
+else
+    message.set (39, "00");
+
+source.send (message);
+

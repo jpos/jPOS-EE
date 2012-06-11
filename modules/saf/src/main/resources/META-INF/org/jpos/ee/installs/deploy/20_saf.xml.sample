@@ -1,0 +1,17 @@
+<saf name='saf' logger='Q2' realm='saf' class='org.jpos.saf.SAF'>
+ <property name='space' value='jdbm:saf' />
+ <property name='mux' value='mux' />
+ <property name='flag-retransmissions' value='no'> 
+  if MTI is in list, messages would be retransmitted as xxx1
+ </property>
+ <property name='initial-delay' value='60000' />
+ <property name='inter-message-delay' value='1000' />
+ <property name='wait-for-response' value='60000' />
+ <property name='max-retransmissions' value='1000' />
+ <property name='expire-after' value='86400'>
+  in seconds
+ </property>
+ <property name='valid-response-codes' value='*' />
+ <property name='retry-response-codes' value='91,ZZ' />
+</saf>
+

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!ELEMENT minigl (
+    create-schema?,user*,currency*,chart-of-accounts*,journal*,transaction*
+)*>
+
+<!ELEMENT create-schema EMPTY>
+<!ELEMENT user (nick+, name?,grant*) >
+<!ELEMENT nick (#PCDATA) >
+<!ELEMENT name (#PCDATA) >
+
+<!ELEMENT grant (#PCDATA) >
+<!ATTLIST grant user CDATA #IMPLIED>
+
+<!ELEMENT currency (symbol+,name*) >
+<!ATTLIST currency id CDATA #REQUIRED>
+<!ELEMENT symbol (#PCDATA) >
+
+<!ELEMENT layer (#PCDATA) >
+<!ATTLIST layer id CDATA #REQUIRED>
+
+<!ELEMENT chart-of-accounts (description?,composite-account*,account*) >
+<!ATTLIST chart-of-accounts code CDATA #REQUIRED>
+<!ATTLIST chart-of-accounts created CDATA #IMPLIED>
+<!ELEMENT description (#PCDATA) >
+
+<!ELEMENT composite-account (description?,(account|composite-account)*) >
+<!ATTLIST composite-account code CDATA #REQUIRED>
+<!ATTLIST composite-account created CDATA #IMPLIED>
+<!ATTLIST composite-account type (debit|credit) #REQUIRED>
+
+<!ELEMENT account (description?) >
+<!ATTLIST account code CDATA #REQUIRED>
+<!ATTLIST account type (debit|credit) #REQUIRED>
+<!ATTLIST account created CDATA #IMPLIED>
+<!ATTLIST account currency CDATA #IMPLIED>
+
+<!ELEMENT journal (name+,start?,end?,status?,chart+,layer*,grant*,rule*) >
+<!ELEMENT start (#PCDATA) >
+<!ELEMENT end (#PCDATA) >
+<!ELEMENT status (#PCDATA) >
+<!ELEMENT chart (#PCDATA) >
+<!ELEMENT rule (#PCDATA|layers|param)* >
+<!ATTLIST rule clazz CDATA #REQUIRED>
+<!ATTLIST rule account CDATA #IMPLIED>
+<!ELEMENT param (#PCDATA) >
+<!ELEMENT layers (#PCDATA) >
+
+<!ELEMENT transaction (detail?,tags?,entry+) >
+<!ATTLIST transaction id CDATA #IMPLIED>
+<!ATTLIST transaction date CDATA #REQUIRED>
+<!ATTLIST transaction post-date CDATA #REQUIRED>
+<!ATTLIST transaction journal CDATA #REQUIRED>
+<!ELEMENT detail (#PCDATA) >
+<!ELEMENT tags (#PCDATA) >
+
+<!ELEMENT entry (detail?,tags?,amount?) >
+<!ATTLIST entry account CDATA #REQUIRED>
+<!ATTLIST entry type (debit|credit) #REQUIRED>
+<!ATTLIST entry layer CDATA #IMPLIED>
+<!ELEMENT amount (#PCDATA) >
+
+

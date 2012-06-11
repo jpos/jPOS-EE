@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!--
+  ~ jPOS Project [http://jpos.org]
+  ~ Copyright (C) 2000-2012 Alejandro P. Revilla
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE hibernate-mapping
+  SYSTEM "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.ee.User" table="eeuser">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+
+    <property name="nick" type="string">
+     <column name="nick" sql-type="varchar(32)" unique="true" not-null="true" />
+    </property>
+    <property name="password" length="40" type="string" />
+    <property name="name" length="128" not-null="false" type="string" />
+    <property name="email" length="128" not-null="false" type="string" />
+    <property name="active" type="yes_no" />
+    <property name="deleted" type="yes_no" />  
+    <property name="verified" type="yes_no" />
+
+    <set name="roles" lazy="false">
+     <key column="eeuser" foreign-key="FKUserRolesUser"/>
+     <many-to-many column="role" class="org.jpos.ee.Role" foreign-key="FKUserRolesRole"/>
+    </set>
+
+    <list name="passwordhistory"  table="eeuser_passwordhistory" cascade="all-delete-orphan">
+      <key column="eeuser" not-null="true"/>
+      <list-index column="id"/>
+      <composite-element class="org.jpos.ee.PasswordHistory">
+       <property name="value" type="string">
+       <column name="value" sql-type="varchar(40)" not-null="true" />
+       </property>
+      </composite-element>
+    </list>
+
+    <map name="props" lazy="true" table="eeuser_props" 
+        cascade="all-delete-orphan">
+        <key />
+        <index column="propName" type="string" length="32"/>
+        <element column="propValue" type="string"/>
+    </map>
+  </class>
+</hibernate-mapping>
+

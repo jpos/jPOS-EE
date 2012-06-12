@@ -302,7 +302,6 @@
     </build>
 
     <modules>
-        <module>deps</module>
         <module>modules</module>
         <module>testbed</module>
         <module>archetype</module>

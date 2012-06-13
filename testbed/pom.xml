@@ -35,8 +35,12 @@
 
         <dependency>
             <groupId>org.jpos.ee</groupId>
-            <artifactId>jposee-profile-essentials</artifactId>
-            <type>pom</type>
+            <artifactId>jposee-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-txn</artifactId>
         </dependency>
 
         <dependency>

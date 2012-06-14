@@ -26,8 +26,7 @@
     <session-factory name="default">
 
         <property name="jposee.db-property-file">cfg/db.properties</property>
-        <property name="jposee.active-core-modules">syslog,sysconfig,resultcode</property>
-        
+
         <property name="show_sql">false</property>
         <property name="format_sql">false</property>
         <property name="use_sql_comments">false</property>
@@ -43,12 +42,10 @@
         <property name="hibernate.c3p0.timeout">300</property>
         <property name="hibernate.c3p0.max_statements">300</property>
         <property name="hibernate.c3p0.idle_test_period">3000</property>
-        <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
-
         <property name="hibernate.cache.use_structured_entries">true</property>
         <property name="hibernate.cache.use_query_cache">true</property>
         <property name="hibernate.cache.use_second_level_cache">true</property>
-        <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
 
     </session-factory>
 

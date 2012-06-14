@@ -41,12 +41,12 @@
     <set name="events" lazy="true" cascade="all-delete-orphan" 
       order-by="id asc">
       <key column="status"/>
-      <one-to-many class="org.jpos.ee.SysLogEvent" />
+      <one-to-many class="org.jpos.ee.SysLog" />
     </set>
     <set name="revisions" lazy="true" cascade="all-delete-orphan" 
       order-by="id asc">
       <key column="status" />
-      <one-to-many class="org.jpos.ee.StatusRevisionEntry" />
+      <one-to-many class="org.jpos.ee.status.StatusRevision" />
     </set>
     <set name="tags" lazy="true" cascade="all-delete-orphan" 
       order-by="id asc">

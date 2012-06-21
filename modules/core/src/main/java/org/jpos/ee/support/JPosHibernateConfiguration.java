@@ -25,20 +25,28 @@ import org.dom4j.io.SAXReader;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.util.ReflectHelper;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.SettingsFactory;
 import org.jpos.core.ConfigurationException;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 public class JPosHibernateConfiguration extends Configuration
 {
+    public JPosHibernateConfiguration(SettingsFactory settingsFactory)
+    {
+        super(settingsFactory);
+    }
+
+    public JPosHibernateConfiguration()
+    {
+    }
+
     @Override
     protected Configuration doConfigure(Document doc) throws HibernateException
     {
@@ -56,7 +64,6 @@ public class JPosHibernateConfiguration extends Configuration
 
     private void configureMappings(Configuration cfg) throws ConfigurationException, IOException
     {
-        Set<String> cmpModules = new HashSet<String>();
         try
         {
             //Read DB properties.
@@ -66,16 +73,6 @@ public class JPosHibernateConfiguration extends Configuration
             if (dbProps != null)
             {
                 cfg.addProperties(dbProps);
-            }
-
-            //Get active core modules
-            String activeModules = cfg.getProperty("jposee.active-core-modules");
-            if (activeModules != null)
-            {
-                for (String module : activeModules.split(","))
-                {
-                    cmpModules.add(module.trim());
-                }
             }
 
             SAXReader reader = new SAXReader();
@@ -91,24 +88,10 @@ public class JPosHibernateConfiguration extends Configuration
                     addMappings(cfg, mappings, moduleConfig);
                 }
             }
-
-            final URL dbMappingRes = getClass().getResource("/META-INF/org/jpos/ee/core-dbmappings.xml");
-            Document doc = reader.read(dbMappingRes);
-
-            // Add to hibernate every mapping that belongs to the selected profile.
-            for (Iterator k = doc.getRootElement().elementIterator("module"); k.hasNext(); )
-            {
-                Element module = (Element) k.next();
-                final String moduleName = module.attributeValue("name");
-                if (moduleName != null && cmpModules.contains(moduleName))
-                {
-                    addMappings(cfg, module, moduleName);
-                }
-            }
         }
         catch (DocumentException e)
         {
-            throw new ConfigurationException("Could not parse core-dbmappings document", e);
+            throw new ConfigurationException("Could not parse mappings document", e);
         }
     }
 

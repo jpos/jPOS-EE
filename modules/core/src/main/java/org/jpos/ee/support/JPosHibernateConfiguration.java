@@ -38,6 +38,8 @@ import java.util.Properties;
 
 public class JPosHibernateConfiguration extends Configuration
 {
+    public static final String DB_PROPERTY_FILE = "jposee.db-property-file";
+
     public JPosHibernateConfiguration(SettingsFactory settingsFactory)
     {
         super(settingsFactory);
@@ -67,7 +69,7 @@ public class JPosHibernateConfiguration extends Configuration
         try
         {
             //Read DB properties.
-            String propFile = cfg.getProperty("jposee.db-property-file");
+            String propFile = cfg.getProperty(DB_PROPERTY_FILE);
             propFile = propFile == null ? "cfg/db.properties" : propFile;
             Properties dbProps = loadProperties(propFile);
             if (dbProps != null)
@@ -131,7 +133,12 @@ public class JPosHibernateConfiguration extends Configuration
     private Properties loadProperties(String filename) throws IOException
     {
         Properties props = new Properties();
-        props.load(new FileReader(filename.replaceAll("/", "\\" + File.separator)));
+        final String s = filename.replaceAll("/", "\\" + File.separator);
+        final File f = new File(s);
+        if(f.exists())
+        {
+            props.load(new FileReader(f));
+        }
         return props;
     }
 }

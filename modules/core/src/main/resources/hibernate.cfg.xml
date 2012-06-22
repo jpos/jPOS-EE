@@ -23,9 +23,7 @@
 
 <hibernate-configuration>
 
-    <session-factory name="default">
-
-        <property name="jposee.db-property-file">cfg/db.properties</property>
+    <session-factory>
 
         <property name="show_sql">false</property>
         <property name="format_sql">false</property>

@@ -25,6 +25,8 @@ import org.hibernate.Transaction;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.stat.SessionStatistics;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.jpos.ee.support.JPosHibernateConfiguration;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -41,9 +43,16 @@ import java.util.Set;
 @SuppressWarnings({"UnusedDeclaration"})
 public class DB
 {
-    DBManager dbManager=new DBManager();
     Session session;
     Log log;
+
+    private static class HibernateResourceHolder
+    {
+        public static volatile HibernateAccessService INSTANCE = new DefaultHibernateAccessService(null,
+                                                                                                   new JPosHibernateConfiguration(),
+                                                                                                   null,
+                                                                                                   false);
+    }
 
     public DB()
     {
@@ -59,7 +68,12 @@ public class DB
      */
     public SessionFactory getSessionFactory()
     {
-        return dbManager.getSessionFactory();
+        return getHibernateAccessService().getSessionFactory();
+    }
+
+    protected HibernateAccessService getHibernateAccessService()
+    {
+        return HibernateResourceHolder.INSTANCE;
     }
 
     /**
@@ -70,7 +84,13 @@ public class DB
      */
     public void createSchema(String outputFile, boolean create) throws HibernateException
     {
-        dbManager.createSchema(outputFile,create);
+        SchemaExport export = new SchemaExport(getHibernateAccessService().getConfiguration());
+        if (outputFile != null)
+        {
+            export.setOutputFile(outputFile);
+            export.setDelimiter(";");
+        }
+        export.create(true, create);
     }
 
     /**
@@ -84,6 +104,10 @@ public class DB
         if (session == null)
         {
             session = getSessionFactory().openSession();
+            if(getHibernateAccessService().isReadOnly())
+            {
+                session.setDefaultReadOnly(true);
+            }
         }
         return session;
     }

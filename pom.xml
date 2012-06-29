@@ -303,7 +303,6 @@
 
     <modules>
         <module>modules</module>
-        <module>testbed</module>
         <module>archetype</module>
     </modules>
 

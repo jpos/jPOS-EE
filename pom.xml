@@ -51,9 +51,9 @@
     <inceptionYear>2005</inceptionYear>
 
     <scm>
-        <connection>scm:git:git://github.com/jpos/jPOS-EE.git</connection>
-        <url>scm:git:git://github.com/jpos/jPOS-EE.git</url>
-        <developerConnection>scm:git:git://github.com/jpos/jPOS-EE.git</developerConnection>
+        <connection>scm:git:git@github.com:jpos/jPOS-EE.git</connection>
+        <url>scm:git:git@github.com:jpos/jPOS-EE.git</url>
+        <developerConnection>scm:git:git@github.com:jpos/jPOS-EE.git</developerConnection>
     </scm>
 
     <distributionManagement>

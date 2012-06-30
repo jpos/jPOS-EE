@@ -175,17 +175,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jpos.ee</groupId>
-                <artifactId>jposee-ha</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpos.ee</groupId>
                 <artifactId>jposee-minigl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpos.ee</groupId>
-                <artifactId>jposee-rspace</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -195,17 +185,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jpos.ee</groupId>
-                <artifactId>jposee-jgroups</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpos.ee</groupId>
                 <artifactId>jposee-eeuser</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpos.ee</groupId>
-                <artifactId>jposee-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -237,12 +217,6 @@
                 <groupId>org.jpos.ee</groupId>
                 <artifactId>jposee-client-simulator</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpos.ee</groupId>
-                <artifactId>jposee-profile-essentials</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>

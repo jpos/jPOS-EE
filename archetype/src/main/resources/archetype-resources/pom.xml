@@ -21,15 +21,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>${groupId}</groupId>
-    <artifactId>${artifactId}</artifactId>
-    <version>${version}</version>
+    <groupId>\${groupId}</groupId>
+    <artifactId>\${artifactId}</artifactId>
+    <version>\${version}</version>
 
     <name>jPOS-EE :: Quickstart</name>
 
     <properties>
-        <runtime.dir>${project.basedir}/runtime</runtime.dir>
-        <jposee.version>2.0.0-SNAPSHOT</jposee.version>
+        <runtime.dir>\${project.basedir}/runtime</runtime.dir>
+        <jposee.version>${project.version}</jposee.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -38,13 +38,13 @@
         <dependency>
             <groupId>org.jpos.ee</groupId>
             <artifactId>jposee-core</artifactId>
-            <version>${jposee.version}</version>
+            <version>\${jposee.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.jpos.ee</groupId>
             <artifactId>jposee-txn</artifactId>
-            <version>${jposee.version}</version>
+            <version>\${jposee.version}</version>
         </dependency>
 
         <!--
@@ -53,7 +53,7 @@
         <dependency>
             <groupId>org.jpos.ee</groupId>
             <artifactId>jposee-db-h2</artifactId>
-            <version>${jposee.version}</version>
+            <version>\${jposee.version}</version>
         </dependency>
 
     </dependencies>
@@ -94,7 +94,7 @@
                         <configuration>
                             <filesets>
                                 <fileset>
-                                    <directory>${runtime.dir}</directory>
+                                    <directory>\${runtime.dir}</directory>
                                     <includes>
                                         <include>lib/</include>
                                     </includes>
@@ -120,15 +120,15 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${runtime.dir}</outputDirectory>
+                            <outputDirectory>\${runtime.dir}</outputDirectory>
                             <stripVersion>true</stripVersion>
                             <!--suppress MavenModelInspection -->
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>${project.packaging}</type>
+                                    <groupId>\${project.groupId}</groupId>
+                                    <artifactId>\${project.artifactId}</artifactId>
+                                    <version>\${project.version}</version>
+                                    <type>\${project.packaging}</type>
                                     <destFileName>q2.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
@@ -142,7 +142,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${runtime.dir}/lib</outputDirectory>
+                            <outputDirectory>\${runtime.dir}/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

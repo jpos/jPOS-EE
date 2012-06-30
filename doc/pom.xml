@@ -4,161 +4,16 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.jpos.ee</groupId>
-        <artifactId>jposee-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-        <relativePath>..</relativePath>
-    </parent>
-
+    <groupId>org.jpos.ee</groupId>
     <artifactId>doc-base</artifactId>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-public</id>
-            <name>Sonatype Public</name>
-            <url>http://repository.sonatype.org/content/groups/public</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <modules>
+        <module>doc-parent</module>
         <module>docbkx-stylesheet</module>
         <!-- Different Languages -->
         <module>en</module>
     </modules>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.5</version>
-                    <executions>
-                        <execution>
-                            <id>copy-images</id>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>copy-resources</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${project.build.directory}/docbkx/source/images</outputDirectory>
-                                <resources>
-                                    <resource>
-                                        <directory>${project.basedir}/src/asciidoc/images</directory>
-                                        <filtering>false</filtering>
-                                    </resource>
-                                </resources>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.4</version>
-                    <executions>
-                        <execution>
-                            <id>unpack</id>
-                            <phase>package</phase>
-                            <goals>
-                                <!--suppress MavenModelInspection -->
-                                <goal>unpack</goal>
-                            </goals>
-                            <configuration>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>org.jpos.ee</groupId>
-                                        <artifactId>doc-docbkx-stylesheet</artifactId>
-                                        <version>${project.version}</version>
-                                        <type>jar</type>
-                                        <overWrite>true</overWrite>
-                                        <outputDirectory>${project.build.directory}/docbkx/source/docbkx-stylesheet</outputDirectory>
-                                        <includes>**/*.xsl</includes>
-                                    </artifactItem>
-                                </artifactItems>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.1</version>
-                    <executions>
-                        <execution>
-                            <id>asciidoc-to-docbook</id>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <executable>asciidoc</executable>
-                                <arguments>
-                                    <argument>--attribute</argument>
-                                    <argument>docinfo</argument>
-                                    <argument>--doctype</argument>
-                                    <argument>book</argument>
-                                    <argument>--backend</argument>
-                                    <argument>docbook</argument>
-                                    <argument>--out-file</argument>
-                                    <argument>${project.build.directory}/docbkx/source/book.xml</argument>
-                                    <argument>book.asc</argument>
-                                </arguments>
-                                <workingDirectory>${project.basedir}/src/asciidoc</workingDirectory>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.agilejava.docbkx</groupId>
-                    <artifactId>docbkx-maven-plugin</artifactId>
-                    <version>2.0.14</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>generate-pdf</goal>
-                            </goals>
-                            <configuration>
-                                <includes>book.xml</includes>
-                                <draftMode>no</draftMode>
-                                <sourceDirectory>${project.build.directory}/docbkx/source</sourceDirectory>
-                                <generatedSourceDirectory>${project.build.directory}/docbkx/generated</generatedSourceDirectory>
-                                <targetDirectory>${project.build.directory}/doc/pdf</targetDirectory>
-                                <xincludeSupported>false</xincludeSupported>
-                                <paperType>A4</paperType>
-                                <fop1Extensions>1</fop1Extensions>
-                                <highlightSource>1</highlightSource>
-                                <admonGraphics>1</admonGraphics>
-                                <calloutGraphics>1</calloutGraphics>
-                                <!--suppress MavenModelInspection -->
-                                <foCustomization>${project.build.directory}/docbkx/source/docbkx-stylesheet/fo.xsl</foCustomization>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>docbook</groupId>
-                            <artifactId>docbook-xml</artifactId>
-                            <version>4.5</version>
-                            <scope>runtime</scope>
-                        </dependency>
-                        <dependency>
-                            <groupId>net.sf.xslthl</groupId>
-                            <artifactId>xslthl</artifactId>
-                            <version>2.0.2</version>
-                            <scope>runtime</scope>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
 </project>

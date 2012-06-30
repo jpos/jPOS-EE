@@ -12,6 +12,8 @@
     <description>jPOS-EE Parent</description>
 
     <properties>
+        <distMgmtReleasesUrl>file:///mnt/prod/www/maven</distMgmtReleasesUrl>
+        <distMgmtSnapshotsUrl>file:///mnt/prod/www/maven</distMgmtSnapshotsUrl>
         <jposee.version>${project.version}</jposee.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMdd_HHmm</maven.build.timestamp.format>
@@ -53,6 +55,19 @@
         <url>scm:git:git://github.com/jpos/jPOS-EE.git</url>
         <developerConnection>scm:git:git://github.com/jpos/jPOS-EE.git</developerConnection>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>jpos-release-repository</id>
+            <name>jPOS Central Release Repository</name>
+            <url>${distMgmtReleasesUrl}</url>
+        </repository>
+        <snapshotRepository>
+            <id>jpos-snapshots-repository</id>
+            <name>jPOS Central Snapshots Repository</name>
+            <url>${distMgmtSnapshotsUrl}</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <licenses>
         <license>

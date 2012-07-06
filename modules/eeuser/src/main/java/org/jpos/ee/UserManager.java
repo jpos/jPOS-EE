@@ -127,8 +127,23 @@ public class UserManager {
         assertNotNull (password, "Password is null");
         return password.equals (getHash(u.getId(), clearpass));
     }
+    /**
+     * @param u the user
+     * @param clearpass new password in clear
+     * @return true if password is in PasswordHistory
+     */
+    public boolean checkNewPassword (User u, String clearpass) {
+        String newHash = getHash(u.getId(), clearpass);
+        if (newHash.equals(u.getPassword()))
+            return false;
+        for (PasswordHistory p : (List<PasswordHistory>)u.getPasswordhistory()) {
+            if (p.getValue().equals(newHash))
+                return false;
+        }
+        return true;
+    }
 
-    public void setPassword (User u, String clearpass) {
+    public void setPassword (User u, String clearpass){
         if (u.getPassword() != null)
             u.addPasswordHistoryValue(u.getPassword());
         u.setPassword (getHash (u.getId(), clearpass));

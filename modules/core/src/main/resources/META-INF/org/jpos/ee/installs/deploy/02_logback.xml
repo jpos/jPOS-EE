@@ -16,5 +16,6 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<modules>
-</modules>
+<logback name="logback-config" class="org.jpos.logging.logback.LogbackConfigurator">
+    <property name="config-resource" value="file:cfg/logback.xml"/>
+</logback>

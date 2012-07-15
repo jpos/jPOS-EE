@@ -1,0 +1,11 @@
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- 'Q2' Appender -->
+    <appender name="Q2" class="org.jpos.logging.logback.LogbackAppender"/>
+
+    <!-- By default all messages at level ERROR will go to the 'Q2' appender -->
+    <root level="ERROR">
+        <appender-ref ref="Q2"/>
+    </root>
+
+</configuration>

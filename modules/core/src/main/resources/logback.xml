@@ -1,0 +1,16 @@
+<!--
+This is the default logback.xml used by the system in case another one is not
+configured.
+-->
+
+<configuration>
+
+    <!-- 'Q2' Appender -->
+    <appender name="Q2" class="org.jpos.logging.logback.LogbackAppender"/>
+
+    <!-- By default all messages at level ERROR will go to the 'Q2' appender -->
+    <root level="ERROR">
+        <appender-ref ref="Q2"/>
+    </root>
+
+</configuration>

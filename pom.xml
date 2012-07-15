@@ -17,8 +17,8 @@
         <maven.build.timestamp.format>yyyyMMdd_HHmm</maven.build.timestamp.format>
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
         <hibernate.version>4.1.4.Final</hibernate.version>
-        <log4j.version>1.2.16</log4j.version>
-        <slf4j.version>1.6.1</slf4j.version>
+        <slf4j.version>1.6.4</slf4j.version>
+        <logback-classic.version>1.0.6</logback-classic.version>
         <jpos.version>1.8.6</jpos.version>
         <jasypt.version>1.7</jasypt.version>
         <bouncycastle.version>1.45</bouncycastle.version>

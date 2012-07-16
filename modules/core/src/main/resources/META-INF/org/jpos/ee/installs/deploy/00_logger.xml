@@ -24,10 +24,6 @@
     <property name="protect" value="2 14 35 45" />
     <property name="wipe"    value="52 55 120" />
   </log-listener>
-  <log-listener class="org.jpos.util.STLogListener">
-   <property name="path" value="cfg" />
-   <property name="skin" value="jpos.stg" />
-  </log-listener>
   -->
   <log-listener class="org.jpos.util.SimpleLogListener" />
 

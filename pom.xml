@@ -38,7 +38,7 @@
         <jgroups.version>2.10.0.GA</jgroups.version>
         <postgresql-jdbc.version>9.0-801.jdbc4</postgresql-jdbc.version>
         <mysql.connector.version>5.1.17</mysql.connector.version>
-        <freemarker.version>2.3.8</freemarker.version>
+        <freemarker.version>[2.3.19,2.4)</freemarker.version>
     </properties>
 
     <issueManagement>

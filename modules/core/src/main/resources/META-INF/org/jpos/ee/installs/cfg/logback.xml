@@ -3,6 +3,19 @@
     <!-- 'Q2' Appender -->
     <appender name="Q2" class="org.jpos.logging.logback.LogbackAppender"/>
 
+	<!-- Appender wrapping a specific pattern encoder -->
+	<!-- 
+	<appender name="sample" class="org.jpos.logging.logback.LogbackAppender">
+		<encoder>
+			<pattern><![CDATA[<meta thread='%thread' logger='%logger{0}'/>]]>%n%msg</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.jpos.logging.logback.demo" level="INFO" additivity="false">
+		<appender-ref ref="sample" />
+	</logger>
+ 	-->
+ 	
     <!-- By default all messages at level ERROR will go to the 'Q2' appender -->
     <root level="ERROR">
         <appender-ref ref="Q2"/>

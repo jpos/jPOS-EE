@@ -19,7 +19,6 @@
 package org.jpos.gl;
 
 import org.hibernate.Transaction;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -31,23 +30,20 @@ public class TransactionGroupTest extends TestBase {
         super.setUp();
         tj = gls.getJournal ("TestJournal");
     }
-    public void testCreateTransactionGroup () throws Exception {
+    public void testCreateTransactionGroupAndGetBalance () throws Exception {
         Date d = Util.parseDate ("20050101");
         Transaction tx = gls.beginTransaction();
-        List l = gls.findTransactions (tj, null, d, null, true);
+        List<GLTransaction> l = gls.findTransactions (tj, null, d, null, true);
         assertEquals ("List size for " + d + " should be 2", 2, l.size());
         gls.createGroup("Day01", l);
         tx.commit();
-    }
-    public void testFindTransactionsGroup () throws Exception {
         GLTransactionGroup group = gls.findTransactionGroup("Day01");
         assertNotNull("group should not be null", group);
         assertEquals("Day01 group ID should be 1", 1L, group.getId());
-    }
-    public void testGetBalance() throws Exception {
-        GLTransactionGroup group = gls.findTransactionGroup("Day01");
+
+        GLTransactionGroup group2 = gls.findTransactionGroup("Day01");
         Account cashUS = gls.getAccount ("TestChart", "111");
-        BigDecimal balance = gls.getBalance(tj, cashUS, group, GLSession.LAYER_ZERO);
+        BigDecimal balance = gls.getBalance(tj, cashUS, group2, GLSession.LAYER_ZERO);
         assertEquals ("Balance should be 15000.00",  new BigDecimal("15000.00"), balance);
     }
 }

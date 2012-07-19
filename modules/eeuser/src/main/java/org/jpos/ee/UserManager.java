@@ -144,11 +144,17 @@ public class UserManager {
     }
 
     public void setPassword (User u, String clearpass){
+        setPassword(u, clearpass, null);
+    }
+
+    public void setPassword (User u, String clearpass, User author){
         if (u.getPassword() != null)
             u.addPasswordHistoryValue(u.getPassword());
         u.setPassword (getHash (u.getId(), clearpass));
         RevisionManager revmgr = new RevisionManager(db);
-        revmgr.createRevision(u, "user." + u.getId(), "Password changed");
+        if (author == null)
+            author = u;
+        revmgr.createRevision (author, "user." + u.getId(), "Password changed");
         session.saveOrUpdate(u);
     }
     /**

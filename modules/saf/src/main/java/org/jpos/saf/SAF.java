@@ -67,6 +67,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     }
     public void run() {
         Thread.currentThread().setName (getName());
+        ISOUtil.sleep(initialDelay);
         while (running()) {
             if (!mux.isConnected()) {
                 ISOUtil.sleep (1000);

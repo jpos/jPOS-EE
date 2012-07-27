@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+<!-- 
+  For more information of how to configure this file please
+  refer to jetty project http://www.eclipse.org/jetty/
+-->
+
+
+    <!-- =========================================================== -->
+    <!-- Server Thread Pool                                          -->
+    <!-- =========================================================== -->
+    <Set name="ThreadPool">
+        <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
+            <Set name="minThreads">10</Set>
+            <Set name="maxThreads">2000</Set>
+            <Set name="detailedDump">false</Set>
+        </New>
+
+      <!-- Optional Java 5 bounded threadpool with job queue 
+      <New class="org.eclipse.jetty.thread.concurrent.ThreadPool">
+        <Arg type="int">0</Arg>
+        <Set name="corePoolSize">10</Set>
+        <Set name="maximumPoolSize">250</Set>
+      </New>
+      -->
+    </Set>
+
+    <!-- =========================================================== -->
+    <!-- Set connectors                                              -->
+    <!-- =========================================================== -->
+    <!-- One of each type!                                           -->
+    <!-- =========================================================== -->
+
+    <!-- Use this connector for many frequently idle connections
+         and for threadless continuations.
+    -->
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
+                <Set name="port">
+                    <SystemProperty name="jetty.port" default="8080"/>
+                </Set>
+                <Set name="maxIdleTime">30000</Set>
+                <Set name="Acceptors">2</Set>
+                <Set name="confidentialPort">8443</Set>
+            </New>
+        </Arg>
+    </Call>
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <!-- SSL Listener with test keystore listening on port 8443          -->
+    <!-- Configured to exclude weak SSL Ciphers                             -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+     <!--
+     SSL Keystore generated with the following command:
+     $ keytool -keystore keystore.ks -alias jetty -genkey -keyalg RSA -validity 5000 -keysize 1024
+         -->
+
+     
+     <Call name="addConnector">
+     	<Arg>
+            <New class="org.eclipse.jetty.server.ssl.SslSocketConnector">
+                <Set name="Port">8443</Set>
+                <Set name="maxIdleTime">30000</Set>
+                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/cfg/keystore.ks</Set>
+                <Set name="password">jposjposjposjpos</Set>
+                <Set name="keyPassword">jposjposjposjpos</Set>
+		<Set name="ExcludeCipherSuites">
+		    <Array type="java.lang.String">
+		        <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
+		        <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+		        <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+		        <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+		    </Array>
+                </Set>
+  	    </New>
+         </Arg>
+     </Call>
+
+    <!-- =========================================================== -->
+    <!-- Set handler Collection Structure                            -->
+    <!-- =========================================================== -->
+    <Set name="handler">
+        <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+            <Set name="handlers">
+                <Array type="org.eclipse.jetty.server.Handler">
+                    <Item>
+                        <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+                    </Item>
+                    <Item>
+                        <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+                    </Item>
+                </Array>
+            </Set>
+        </New>
+    </Set>
+
+    <Call name="addLifeCycle">
+      <Arg>
+        <New class="org.eclipse.jetty.deploy.ContextDeployer">
+          <Set name="contexts"><Ref id="Contexts"/></Set>
+          <Set name="configurationDir"> <Property name="jetty.home" default="." />/cfg/contexts</Set>
+          <Set name="scanInterval">5</Set>
+        </New>
+      </Arg>
+    </Call>
+
+    <Ref id="RequestLog">
+      <Set name="requestLog">
+        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+          <Arg><SystemProperty name="jetty.logs" default="./log"/>/yyyy_mm_dd.request.log</Arg>
+          <Set name="retainDays">90</Set>
+          <Set name="append">true</Set>
+          <Set name="extended">false</Set>
+          <Set name="LogTimeZone">GMT</Set>
+         </New>
+      </Set>
+    </Ref>
+
+    <!-- =========================================================== -->
+    <!-- extra options                                               -->
+    <!-- =========================================================== -->
+    <Set name="stopAtShutdown">true</Set>
+    <!-- ensure/prevent Server: header being sent to browsers        -->
+    <Set name="sendServerVersion">true</Set>
+    <Set name="dumpAfterStart">false</Set>
+    <Set name="dumpBeforeStop">false</Set>
+</Configure>

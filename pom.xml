@@ -200,6 +200,11 @@
             </dependency>
             <dependency>
                 <groupId>org.jpos.ee</groupId>
+                <artifactId>jposee-jetty</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jpos.ee</groupId>
                 <artifactId>jposee-saf</artifactId>
                 <version>${project.version}</version>
             </dependency>

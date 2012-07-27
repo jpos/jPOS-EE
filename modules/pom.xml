@@ -46,6 +46,7 @@
         <module>eeuser</module>
         <module>status</module>
     	<module>mail</module>
+    	<module>jetty</module>
     	<module>saf</module>
     	<module>sshd</module>
     	<module>things</module>

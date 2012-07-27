@@ -158,6 +158,12 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.jpos.ee.plugin</groupId>
+                <artifactId>jposee-maven-plugin</artifactId>
+                <version>${jposee.version}</version>
+            </plugin>
+
         </plugins>
     </build>
 

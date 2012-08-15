@@ -3,13 +3,12 @@ package org.jpos.ee.plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
-import java.io.File;
-
 /**
  * jPOS-EE Build Plugin :: Setup
  *
  * @goal setup
  */
+@SuppressWarnings("UnusedDeclaration")
 public class SetupMojo extends AbstractCommonMojo
 {
     /**
@@ -17,14 +16,22 @@ public class SetupMojo extends AbstractCommonMojo
      */
     private String setupDirectory;
 
+    public String getSetupDirectory()
+    {
+        return setupDirectory;
+    }
+
+    public void setSetupDirectory(String setupDirectory)
+    {
+        this.setupDirectory = setupDirectory;
+    }
+
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        final File runtimeDir = new File(getRuntimeDirectory());
-
         try
         {
             final Process p = new ProcessBuilder("java", "-jar", "q2.jar", "-c", "setup " + setupDirectory + " ; shutdown --force")
-                    .directory(runtimeDir).start();
+                    .directory(runtimeDirectory).start();
             run(p);
         }
         catch (Exception e)

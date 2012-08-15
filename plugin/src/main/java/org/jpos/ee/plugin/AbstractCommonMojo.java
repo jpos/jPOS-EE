@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+@SuppressWarnings("UnusedDeclaration")
 abstract class AbstractCommonMojo extends AbstractMojo
 {
     /**
@@ -16,22 +17,21 @@ abstract class AbstractCommonMojo extends AbstractMojo
      *
      * @parameter default-value="runtime"
      */
-    String runtimeDirectory;
+    File runtimeDirectory;
 
-    public String getRuntimeDirectory()
+    public File getRuntimeDirectory()
     {
         return runtimeDirectory;
     }
 
-    public void setRuntimeDirectory(String runtimeDirectory)
+    public void setRuntimeDirectory(File runtimeDirectory)
     {
         this.runtimeDirectory = runtimeDirectory;
     }
 
     protected void run(final Process p) throws IOException, InterruptedException
     {
-        final File runtimeDir = new File(getRuntimeDirectory());
-        final File shutdownXmlFile = new File(runtimeDir, "deploy/shutdown.xml");
+        final File shutdownXmlFile = new File(runtimeDirectory, "deploy/shutdown.xml");
 
         if (shutdownXmlFile.exists())
         {
@@ -124,7 +124,7 @@ abstract class AbstractCommonMojo extends AbstractMojo
             {
                 try
                 {
-                    int ret = -1;
+                    int ret;
                     while ((ret = src.read()) != -1)
                     {
                         dest.write(ret);

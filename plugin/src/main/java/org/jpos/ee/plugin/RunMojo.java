@@ -3,7 +3,6 @@ package org.jpos.ee.plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -11,6 +10,7 @@ import java.io.IOException;
  *
  * @goal run
  */
+@SuppressWarnings("UnusedDeclaration")
 public class RunMojo extends AbstractCommonMojo
 {
     public void execute() throws MojoExecutionException, MojoFailureException
@@ -28,7 +28,7 @@ public class RunMojo extends AbstractCommonMojo
     private void doRun() throws IOException, InterruptedException
     {
         final Process p = new ProcessBuilder("java", "-jar", "q2.jar", "-cli")
-                .directory(new File(getRuntimeDirectory())).start();
+                .directory(getRuntimeDirectory()).start();
         run(p);
     }
 }

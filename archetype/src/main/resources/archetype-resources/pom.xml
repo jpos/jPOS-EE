@@ -97,6 +97,7 @@
                                     <directory>\${runtime.dir}</directory>
                                     <includes>
                                         <include>lib/</include>
+                                        <include>q2.jar</include>
                                     </includes>
                                     <followSymlinks>false</followSymlinks>
                                 </fileset>

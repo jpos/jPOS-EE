@@ -30,10 +30,6 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <properties>
-        <sshd.version>0.6.0</sshd.version>
-    </properties>
-
     <dependencies>
 
         <dependency>

@@ -213,6 +213,13 @@ public class TestRunner
                                 evt.addMessage("field", "[" + i+ "] Boolean eval returned false");
                                 //return false;
                             }
+                            else if (ret instanceof String) {
+
+                                if (m.hasField(i) && !m.getString(i).equals(ret)) {
+                                    evt.addMessage("field", "[" + i + "] Received:[" + m.getString(i) + "]" + " Expected:["
+                                            + ret + "]");
+                                }
+                            }
                         m.unset (i);
                         expected.unset (i);
                     }

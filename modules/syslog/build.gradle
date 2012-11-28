@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: Syslog Module'
+
+dependencies {
+    compile project(':modules:dbsupport')
+}

@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: User Module'
+
+dependencies {
+    compile project(':modules:dbsupport')
+}

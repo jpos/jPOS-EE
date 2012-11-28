@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: Things Module'
+
+dependencies {
+    compile project(':modules:dbsupport')
+}

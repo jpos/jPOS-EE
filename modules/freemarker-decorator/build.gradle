@@ -1,0 +1,6 @@
+description = 'jPOS-EE :: Freemarker Decorator Module'
+
+dependencies {
+    compile project(':modules:core')
+    compile libraries.freemarker
+}

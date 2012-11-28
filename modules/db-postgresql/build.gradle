@@ -1,0 +1,6 @@
+description = 'jPOS-EE :: PostgreSQL support'
+
+dependencies {
+    compile project(':modules:dbsupport')
+    compile libraries.jdbcPostgresql
+}

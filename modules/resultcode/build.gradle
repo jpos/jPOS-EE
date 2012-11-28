@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: Resultcode Module'
+
+dependencies {
+    compile project(':modules:dbsupport')
+}

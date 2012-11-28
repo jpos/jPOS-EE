@@ -1,0 +1,53 @@
+apply plugin: 'groovy'
+apply plugin: 'idea'
+
+import org.jpos.buildtools.docs.DocbookPdf
+import org.jpos.buildtools.docs.DocbookHtml
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+task copySources(type: Sync) {
+    from "${projectDir}/src/asciidoc"
+    into "${buildDir}/docbook/source/"
+}
+
+task copyWebResources(type: Sync) {
+    from "${projectDir}/src/asciidoc"
+    include "images/**"
+    include "css/**"
+    into "${buildDir}/docbook/html/"
+}
+
+task a2x(dependsOn: copySources) << {
+    def inFile = "${buildDir}/docbook/source/book.asc"
+    def outFile = "${buildDir}/docbook/source/book.xml"
+    def cmd = "asciidoc -a docinfo -a lang=en -d book -b docbook -o ${outFile} ${inFile}"
+    def proc = cmd.execute(null, file(inFile).parentFile)
+    proc.in.eachLine { line -> println line }
+    proc.err.eachLine {line -> println 'ERROR: '+line }
+    proc.waitFor()
+}
+
+task createPDF(type: DocbookPdf) {
+    setDescription('Generates PDF docbook output.')
+    extension = 'fo'
+    dependsOn a2x
+    sourceFileName "book.xml"
+    sourceDirectory "${buildDir}/docbook/source/" as File
+    docsDir "${buildDir}/docbook/pdf/" as File
+    stylesheet "${projectDir}/src/xslt/fo.xsl" as File
+}
+
+task createHtml(type: DocbookHtml) {
+    setDescription('Generates HTML docbook output.')
+    dependsOn a2x,copyWebResources
+    sourceFileName "book.xml"
+    sourceDirectory "${buildDir}/docbook/source/" as File
+    docsDir "${buildDir}/docbook/html/" as File
+    stylesheet "${projectDir}/src/xslt/html.xsl" as File
+}
+
+task wrapper( type: Wrapper ) {
+    gradleVersion = '1.2'
+}

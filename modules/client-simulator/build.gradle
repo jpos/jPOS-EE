@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: Client Simulator'
+
+dependencies {
+    compile project(':modules:core')
+}

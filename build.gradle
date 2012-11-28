@@ -1,0 +1,45 @@
+apply from: './libraries.gradle'
+
+allprojects {
+    apply plugin: 'maven'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+
+    group = 'org.jpos.ee'
+    version = '2.0.1-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.5
+    targetCompatibility = 1.5
+
+    tasks.withType(Compile) {
+        options.warnings = false
+    }
+
+    jar.baseName="jposee-${project.name}"
+	uploadArchives {
+		repositories.mavenDeployer {
+			pom.artifactId="jposee-${project.name}"
+		}
+	}
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        mavenRepo url: "http://jpos.org/maven"
+        mavenRepo url: "http://download.oracle.com/maven"
+        mavenRepo url: "http://jline.sourceforge.net/m2repo"
+        mavenRepo url: "https://repository.jboss.org/nexus/content/repositories/releases"
+        mavenRepo url: "http://repository.atlassian.com/maven2"
+    }
+
+    dependencies {
+        testCompile libraries.junit
+    }
+}
+
+task wrapper( type: Wrapper ) {
+    gradleVersion = '1.2'
+}

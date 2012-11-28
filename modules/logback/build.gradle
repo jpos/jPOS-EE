@@ -1,0 +1,9 @@
+description = 'jPOS-EE :: Logback Support Module'
+
+dependencies {
+    compile project(':modules:core')
+    compile libraries.slf4j_api
+    compile libraries.jcl_over_slf4j
+    compile libraries.log4j_over_slf4j
+    compile libraries.logback
+}

@@ -1,0 +1,9 @@
+description = 'jPOS-EE :: Database Support Module'
+
+dependencies {
+    compile project(':modules:core')
+    compile libraries.hibernate_core
+    compile libraries.hibernate_envers
+    compile libraries.hibernate_c3p0
+    compile libraries.hibernate_ehcache
+}

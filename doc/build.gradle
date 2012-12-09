@@ -29,11 +29,11 @@ task a2x(dependsOn: copySources) << {
     proc.waitFor()
 }
 
-task createPDF(type: DocbookPdf) {
+task createPdf(type: DocbookPdf) {
     setDescription('Generates PDF docbook output.')
     extension = 'fo'
     dependsOn a2x
-    sourceFileName "book.xml"
+    sourceFileName 'book.xml'
     sourceDirectory "${buildDir}/docbook/source/" as File
     docsDir "${buildDir}/docbook/pdf/" as File
     stylesheet "${projectDir}/src/xslt/fo.xsl" as File
@@ -48,6 +48,16 @@ task createHtml(type: DocbookHtml) {
     stylesheet "${projectDir}/src/xslt/html.xsl" as File
 }
 
+task viewHtml (dependsOn: createHtml, description: 'Open HTML docbook outout in default browser') << {
+    Class.forName("java.awt.Desktop").newInstance().browse(
+        new File("${buildDir}/docbook/html", 'book.html').toURI())
+}
+
+task viewPdf (dependsOn: createPdf , description: 'Open PDF docbook outout in default viewer') << {
+    Class.forName("java.awt.Desktop").newInstance().browse(
+        new File("${buildDir}/docbook/pdf", this.project.rootProject.name + '.pdf').toURI())
+}
+
 task wrapper( type: Wrapper ) {
-    gradleVersion = '1.2'
+    gradleVersion = '1.3'
 }

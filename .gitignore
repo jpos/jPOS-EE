@@ -11,9 +11,7 @@ out/
 .metadata
 .project
 .settings/
-target/
 Servers
-target
 # Gradle Ignores
 .gradle
 build/

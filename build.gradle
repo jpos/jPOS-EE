@@ -1,4 +1,4 @@
-apply from: './libraries.gradle'
+apply from: 'libraries.gradle'
 
 allprojects {
     apply plugin: 'maven'

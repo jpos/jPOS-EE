@@ -326,7 +326,7 @@ public class GLTransaction {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getDetail());
+            Element tags = new Element ("tags").setText (getTags());
             elem.addContent (tags);
         }
         elem.setAttribute ("journal", getJournal().getName());

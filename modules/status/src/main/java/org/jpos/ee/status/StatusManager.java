@@ -148,19 +148,14 @@ public class StatusManager {
             name = id.substring (sp + 1);
             id = id.substring (0, sp);
         }
-        Status s = null;
-        try {
-            s = (Status) db.session().load (Status.class, id);
-            s.getName(); // force real load
-        } catch (ObjectNotFoundException e) {
-            if (create) {
-                s = new Status ();
-                s.setId (id);
-                s.setName (name.length() > 0 ? name : id);
-                s.setTimeoutState (Status.OFF);
-                s.setGroupName ("Unfiled");
-                db.save (s);
-            }
+        Status s = (Status) db.session().get(Status.class, id);
+        if (s == null && create) {
+            s = new Status ();
+            s.setId (id);
+            s.setName (name.length() > 0 ? name : id);
+            s.setTimeoutState (Status.OFF);
+            s.setGroupName ("Unfiled");
+            db.save (s);
         }
         return s;
     }

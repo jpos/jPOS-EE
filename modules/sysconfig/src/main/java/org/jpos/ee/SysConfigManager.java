@@ -54,14 +54,19 @@ public class SysConfigManager {
         }
         return false;
     }
+
+    /**
+     * @param name property name
+     * @param defaultValue default value
+     * @return if property exists, return its value, otherwise defaultValue.
+     */
     public String get (String name, String defaultValue) {
         try {
             if (prefix != null)
                 name = prefix + name;
-            SysConfig cfg = (SysConfig) db.session().load (SysConfig.class, name);
-            return cfg.getValue();
-        } catch (ObjectNotFoundException e) {
-            // okay to happen
+            SysConfig cfg = (SysConfig) db.session().get (SysConfig.class, name);
+            if (cfg != null)
+                return cfg.getValue();
         } catch (HibernateException e) {
             db.getLog().warn (e);
         }

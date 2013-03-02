@@ -107,33 +107,46 @@ public class SysConfigManager {
         put (name, value, null, null);
     }
     public void put (String name, String value, String readPerm, String writePerm) {
-        SysConfig cfg;
-        if (prefix != null)
+        SysConfig cfg = null;
+        if (prefix != null) {
             name = prefix + name;
-        try {
+        }
+
             boolean autoCommit = false;
             Transaction tx = db.session().getTransaction();
             if (tx == null || !tx.isActive()) {
                 tx = db.session().beginTransaction();
                 autoCommit = true;
             }
-            cfg = (SysConfig) db.session().get (SysConfig.class, name);
             boolean saveIt = false;
+            try {
+
+                cfg = (SysConfig) db.session().get (SysConfig.class, name);
+            }
+            catch (ObjectNotFoundException ex) {
+
+                if (cfg == null) {
+                    cfg = new SysConfig ();
+                    cfg.setId (name);
+                    saveIt = true;
+                }
+            }
             if (cfg == null) {
                 cfg = new SysConfig ();
                 cfg.setId (name);
                 saveIt = true;
             }
+
             cfg.setReadPerm (readPerm);
             cfg.setWritePerm (writePerm);
             cfg.setValue (value);
-            if (saveIt)
+            if (saveIt) {
                 db.session().save (cfg);
-            if (autoCommit)
+            }
+            if (autoCommit) {
                 tx.commit();
-        } catch (HibernateException e) {
-            db.getLog().warn (e);
-        }
+            }
+
     }
     public String get (String name) {
         return get (name, "");

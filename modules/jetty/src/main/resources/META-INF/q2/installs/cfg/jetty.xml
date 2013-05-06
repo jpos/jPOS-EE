@@ -55,7 +55,7 @@
     <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
      <!--
      SSL Keystore generated with the following command:
-     $ keytool -keystore keystore.ks -alias jetty -genkey -keyalg RSA -validity 5000 -keysize 1024
+     $ keytool -keystore keystore.jks -alias jetty -genkey -keyalg RSA -validity 5000 -keysize 1024
          -->
 
      
@@ -64,7 +64,7 @@
             <New class="org.eclipse.jetty.server.ssl.SslSocketConnector">
                 <Set name="Port">8443</Set>
                 <Set name="maxIdleTime">30000</Set>
-                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/cfg/keystore.ks</Set>
+                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/cfg/keystore.jks</Set>
                 <Set name="password">jposjposjposjpos</Set>
                 <Set name="keyPassword">jposjposjposjpos</Set>
 		<Set name="ExcludeCipherSuites">

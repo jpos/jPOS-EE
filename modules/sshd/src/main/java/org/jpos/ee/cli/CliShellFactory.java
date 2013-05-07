@@ -165,7 +165,7 @@ public class CliShellFactory implements Factory<Command>
 
         protected String getPrompt()
         {
-            return "q2-ssh> ";
+            return "q2> ";
         }
 
         protected void handleExit()

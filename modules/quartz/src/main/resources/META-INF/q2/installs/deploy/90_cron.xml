@@ -1,0 +1,7 @@
+<cron class="org.jpos.q2.QuartzAdaptor" logger="Q2">
+  <job id="1" class="org.jpos.q2.TestJob" when="0 0,5,10,15,20,25,30,35,40,45,50,55 * * * ?"
+       logger="Q2" realm="test-quartz-job">
+    <property name="message" value="The quick brown fox jumped over the lazy dog" />
+  </job>
+</cron>
+

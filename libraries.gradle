@@ -61,6 +61,9 @@ ext {
             jetty_util: "org.eclipse.jetty:jetty-util:${jettyVersion}",
             jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
             jetty_ajp: "org.eclipse.jetty:jetty-ajp:${jettyVersion}",
+
+            // Quartz Scheduler
+            quartz: 'org.quartz-scheduler:quartz:2.1.7',
     ]
 
     jettyLibs = [

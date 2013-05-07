@@ -18,5 +18,6 @@ include ':modules:core',\
         ':modules:sshd',\
         ':modules:things',\
         ':modules:server-simulator',\
-        ':modules:client-simulator'
+        ':modules:client-simulator',\
+        ':modules:quartz'
 

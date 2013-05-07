@@ -27,6 +27,7 @@ import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
 import org.jpos.q2.CLI;
 import org.jpos.q2.Q2;
+import org.jpos.util.Log;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -178,6 +179,7 @@ public class CliShellFactory implements Factory<Command>
                 }
                 catch (IOException e)
                 {
+                    Log.getLog(Q2.LOGGER_NAME, "sshd").error(e);
                 }
             }
         }

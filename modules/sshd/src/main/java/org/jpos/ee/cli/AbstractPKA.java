@@ -20,6 +20,8 @@ package org.jpos.ee.cli;
 
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.jpos.q2.Q2;
+import org.jpos.util.Log;
 
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
@@ -38,6 +40,7 @@ public abstract class AbstractPKA  implements PublickeyAuthenticator
         }
         catch (Exception e)
         {
+            Log.getLog(Q2.LOGGER_NAME, "sshd").error(e);
         }
 
         if(authorizedKeys!=null)

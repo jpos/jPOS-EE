@@ -23,7 +23,6 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.status.ErrorStatus;
 import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.status.StatusManager;
 import ch.qos.logback.core.status.StatusUtil;
 import ch.qos.logback.core.util.StatusPrinter;
@@ -85,8 +84,8 @@ public class LogbackConfigurator extends QBeanSupport
 
     private void printStatusIfWarningOrError(LoggerContext context)
     {
-        StatusChecker sc = new StatusChecker(context);
-        if (sc.getHighestLevel(0) >= ErrorStatus.WARN)
+        StatusUtil su = new StatusUtil(context);
+        if (su.getHighestLevel(0) >= ErrorStatus.WARN)
         {
             printStatus(context);
         }

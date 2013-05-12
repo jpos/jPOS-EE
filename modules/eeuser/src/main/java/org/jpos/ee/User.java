@@ -94,7 +94,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setRoles (Set<Role> roles) {
         this.roles = roles;
     }
-    public Set getRoles () {
+    public Set<Role> getRoles () {
         return roles;
     }
     public void setPasswordhistory (List<PasswordHistory> passwordhistory) {

@@ -34,6 +34,10 @@ public class Role extends Cloneable {
         super();
         permissions    = new LinkedHashSet<Permission>();
     }
+    public Role(String name) {
+        this();
+        setName(name);
+    }
 
     public long getId() {
         return id;

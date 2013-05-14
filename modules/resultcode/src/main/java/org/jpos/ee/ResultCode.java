@@ -30,9 +30,9 @@ public class ResultCode implements Serializable {
     private Long id;
     private String mnemonic;
     private String description;
-    private Map locales;
+    private Map<String,ResultCodeInfo> locales;
 
-    public ResultCode(Long id, String mnemonic, String description, Map locales) {
+    public ResultCode(Long id, String mnemonic, String description, Map<String,ResultCodeInfo> locales) {
         this.id = id;
         this.mnemonic = mnemonic;
         this.description = description;
@@ -42,7 +42,7 @@ public class ResultCode implements Serializable {
     public ResultCode() {
     }
 
-    public ResultCode(Long id, Map locales) {
+    public ResultCode(Long id, Map<String,ResultCodeInfo> locales) {
         this.id = id;
         this.locales = locales;
     }
@@ -71,11 +71,11 @@ public class ResultCode implements Serializable {
         this.description = description;
     }
 
-    public Map getLocales() {
+    public Map<String,ResultCodeInfo> getLocales() {
         return this.locales;
     }
 
-    public void setLocales(Map locales) {
+    public void setLocales(Map<String,ResultCodeInfo> locales) {
         this.locales = locales;
     }
 

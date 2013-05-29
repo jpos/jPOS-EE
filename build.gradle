@@ -70,6 +70,15 @@ subprojects {
 		}
 	}
 
+    task sourceJar(type: Jar) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
+
+    artifacts {
+        archives sourceJar
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -82,6 +91,13 @@ subprojects {
 
     dependencies {
         testCompile libraries.junit
+    }
+}
+
+task allSources(type: Jar,dependsOn: subprojects.assemble) {
+    baseName = 'jposee-sources'
+    from subprojects.collect { project ->
+        project.sourceSets.main.allSource
     }
 }
 

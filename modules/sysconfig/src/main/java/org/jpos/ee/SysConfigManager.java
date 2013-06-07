@@ -34,6 +34,11 @@ public class SysConfigManager {
         super();
         this.db = db;
     }
+    public SysConfigManager (DB db, String prefix) {
+        super();
+        this.db = db;
+        this.prefix = prefix;
+    }
     public void setPrefix (String prefix) {
         this.prefix = prefix;
     }
@@ -72,27 +77,51 @@ public class SysConfigManager {
         }
         return defaultValue;
     }
-    public String[] getAll  (String name) {
-        String[] values;
+    public SysConfig[] getAll  (String queryString) {
+        SysConfig[] values;
         try {
             if (prefix != null)
-                name = prefix + name;
+                queryString = prefix + queryString;
             Query query = db.session().createQuery (
-                "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
+                "from sysconfig in class org.jpos.ee.SysConfig where id like :queryString order by id"
             );
-            query.setParameter ("name", name);
+            query.setParameter ("queryString", queryString);
             List l = query.list();
-            values = new String[l.size()];
+            values = new SysConfig[l.size()];
             Iterator iter = l.iterator();
             for (int i=0; iter.hasNext(); i++) {
-                values[i] = (String) iter.next();
+                values[i] = (SysConfig) iter.next();
             }
         } catch (HibernateException e) {
             db.getLog().warn (e);
-            values = new String[0];
+            values = new SysConfig[0];
         }
         return values;
     }
+    public SysConfig[] getAll () {
+        SysConfig[] values;
+        try {
+            String queryAsString = "from sysconfig in class org.jpos.ee.SysConfig";
+            if (prefix != null)
+                queryAsString += " where id like :query";
+            Query query = db.session().createQuery (queryAsString + " order by id");
+            if (prefix != null)
+                query.setParameter ("query", prefix + "%");
+            List l = query.list();
+            values = new SysConfig[l.size()];
+            Iterator iter = l.iterator();
+            for (int i=0; iter.hasNext(); i++) {
+                values[i] = (SysConfig) iter.next();
+            }
+        } catch (HibernateException e) {
+            db.getLog().warn (e);
+            values = new SysConfig[0];
+        }
+        return values;
+    }
+
+
+
     @SuppressWarnings("unchecked")
     public Iterator<SysConfig> iterator() {
         Query query;

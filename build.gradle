@@ -19,7 +19,7 @@ subprojects {
         options.warnings = false
     }
 
-    jar.baseName="jposee-${project.name}"
+    project.archivesBaseName="jposee-${project.name}"
 
     def pomConfig = {
         name 'jPOS-EE Project'

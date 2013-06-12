@@ -7,6 +7,20 @@ allprojects {
 
     group = 'org.jpos.ee'
     version = '2.0.1-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+    [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
+
+    tasks.withType(Compile) {
+        options.warnings = false
+    }
+
+    jar.baseName="jposee-${project.name}"
+
     def pomConfig = {
         name 'jPOS-EE Project'
         description """
@@ -43,6 +57,7 @@ allprojects {
             }
         }
     }
+
     uploadArchives {
         repositories {
             mavenDeployer {
@@ -51,25 +66,6 @@ allprojects {
             }
         }
     }
-}
-
-subprojects {
-    apply plugin: 'java'
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
-    [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
-
-    tasks.withType(Compile) {
-        options.warnings = false
-    }
-
-    jar.baseName="jposee-${project.name}"
-	uploadArchives {
-		repositories.mavenDeployer {
-			pom.artifactId="jposee-${project.name}"
-		}
-	}
-
     task sourceJar(type: Jar) {
         from sourceSets.main.allSource
         classifier = 'sources'
@@ -93,7 +89,6 @@ subprojects {
         testCompile libraries.junit
     }
 }
-
 task allSources(type: Jar,dependsOn: subprojects.assemble) {
     baseName = 'jposee-sources'
     from subprojects.collect { project ->
@@ -102,7 +97,7 @@ task allSources(type: Jar,dependsOn: subprojects.assemble) {
 }
 
 task wrapper( type: Wrapper ) {
-    gradleVersion = '1.5'
+    gradleVersion = '1.6'
 }
 
 // Configure IDEA to use Git

@@ -26,7 +26,7 @@
             <generator class="native" />
         </id>
         <property name="date" type="timestamp" />
-        <property name="info" type="string" length="1024" />
+        <property name="info" type="string" length="8192" />
         <property name="ref"  type="string" length="64" index="ref" />
         <many-to-one name="author" class="org.jpos.ee.User" column="author" />
     </class>

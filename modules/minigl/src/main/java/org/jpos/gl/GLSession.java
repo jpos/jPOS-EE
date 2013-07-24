@@ -26,6 +26,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.type.LongType;
 
 
@@ -311,7 +312,7 @@ public class GLSession {
      * @param acct account to add
      * @param fast true if we want a fast add that do not eagerly load all childrens
      * @throws HibernateException on error
-     * @throws GLException if user doesn't have permissions, or type mismatch
+     * @throws GLException if user doesn't have permissions, type mismatch or Duplicate Code
      */
     @SuppressWarnings("unchecked")
     public void addAccount (CompositeAccount parent, Account acct, boolean fast) 
@@ -336,7 +337,13 @@ public class GLSession {
             throw new GLException (sb.toString());
         }
         acct.setRoot (parent.getRoot());
-        session.save (acct);
+        try {
+            session.save (acct);
+            session.flush();
+        } catch (ConstraintViolationException e) {
+            e.fillInStackTrace();
+            throw new GLException("Duplicate code", e);
+        }
         acct.setParent (parent);
         if (!fast)
             parent.getChildren().add (acct);

@@ -28,11 +28,13 @@
     </id>
 
     <discriminator column="subclass" type="string" length="1" />
-
-    <property name="code">
-     <column name="code" sql-type="varchar(255)" 
-        not-null="true" index="acctCode" />
-    </property>
+    <properties name="uniqueCode" unique="true">
+      <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" />
+      <property name="code">
+        <column name="code" sql-type="varchar(255)"
+                not-null="true" index="acctCode" />
+      </property>
+    </properties>
     <property name="description" />
     <property name="created"    type="date" />
     <property name="expiration" type="date" />
@@ -42,7 +44,6 @@
     <property name="currencyCode">
      <column name="currency" sql-type="char(3)" />
     </property>
-    <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" />
     <subclass name="org.jpos.gl.CompositeAccount" discriminator-value="C">
       <set name="children" cascade="all-delete-orphan,evict" sort="natural" lazy="true" inverse="true">
         <key column="parent" />
@@ -57,4 +58,3 @@
     </subclass>
   </class>
 </hibernate-mapping>
-

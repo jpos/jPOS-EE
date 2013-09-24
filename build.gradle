@@ -97,7 +97,7 @@ task allSources(type: Jar,dependsOn: subprojects.assemble) {
 }
 
 task wrapper( type: Wrapper ) {
-    gradleVersion = '1.6'
+    gradleVersion = '1.8'
 }
 
 // Configure IDEA to use Git

@@ -93,36 +93,37 @@ public class TestRunner
         for (int i=1; iter.hasNext(); i++) {
             evt_error = getLog().createLogEvent("error");
             TestCase tc = (TestCase) iter.next();
+			for (long repetition = 0; repetition < tc.getCount(); repetition++) {
+				getLog().trace (
+					"---------------------------[ " 
+				  + tc.getName() 
+				  + " ]---------------------------" );
 
-            getLog().trace (
-                "---------------------------[ " 
-              + tc.getName() 
-              + " ]---------------------------" );
+				ISOMsg m = (ISOMsg) tc.getRequest().clone();
+				if (tc.getPreEvaluationScript() != null) {
+					bsh.set ("testcase", tc);
+					bsh.set ("request", m);
+					bsh.eval (tc.getPreEvaluationScript());
+				}
+				tc.setExpandedRequest (applyRequestProps (m, bsh));
+				tc.start();
+			tc.setResponse (mux.request (m, tc.getTimeout()));
+				tc.end ();
+				assertResponse(tc, bsh, evt_error);
+				evt.addMessage (i + ": " + tc.toString());
+				if (evt_error.getPayLoad().size()!=0) {
+					evt_error.addMessage("filename", tc.getFilename());
+				evt.addMessage("\r\n" + evt_error);
+				}
 
-            ISOMsg m = (ISOMsg) tc.getRequest().clone();
-            if (tc.getPreEvaluationScript() != null) {
-                bsh.set ("testcase", tc);
-                bsh.set ("request", m);
-                bsh.eval (tc.getPreEvaluationScript());
-            }
-            tc.setExpandedRequest (applyRequestProps (m, bsh));
-            tc.start();
-	    tc.setResponse (mux.request (m, tc.getTimeout()));
-            tc.end ();
-            assertResponse(tc, bsh, evt_error);
-            evt.addMessage (i + ": " + tc.toString());
-            if (evt_error.getPayLoad().size()!=0) {
-                evt_error.addMessage("filename", tc.getFilename());
-            evt.addMessage("\r\n" + evt_error);
-            }
-
-            serverTime += tc.elapsed();
-            if (!tc.ok()) {
-                getLog().error (tc);
-                if (!tc.isContinueOnErrors())
-                    break;
-            }
-        }
+				serverTime += tc.elapsed();
+				if (!tc.ok()) {
+					getLog().error (tc);
+					if (!tc.isContinueOnErrors())
+						break;
+				}
+			}
+		}
         long end = System.currentTimeMillis();
 
         long simulatorTime = end - start - serverTime;
@@ -158,22 +159,22 @@ public class TestRunner
             if (name == null)
                 name = path;
 
-            for (int i=0; i<count; i++) {
-                TestCase tc = new TestCase (name);
-                tc.setContinueOnErrors (cont);
-                tc.setRequest (getMessage (prefix + path + "_s"));
-                tc.setExpectedResponse (getMessage (prefix + path + "_r"));
-                tc.setPreEvaluationScript (e.getChildTextTrim ("init"));
-                tc.setPostEvaluationScript (e.getChildTextTrim ("post"));
-                tc.setFilename(prefix + path);
+			TestCase tc = new TestCase (name);
+			tc.setCount(count);
+			tc.setContinueOnErrors (cont);
+			tc.setRequest (getMessage (prefix + path + "_s"));
+			tc.setExpectedResponse (getMessage (prefix + path + "_r"));
+			tc.setPreEvaluationScript (e.getChildTextTrim ("init"));
+			tc.setPostEvaluationScript (e.getChildTextTrim ("post"));
+			tc.setFilename(prefix + path);
 
-                String to  = e.getAttributeValue ("timeout");
-                if (to != null)
-                    tc.setTimeout (Long.parseLong (to));
-                else
-                    tc.setTimeout (cfg.getLong ("timeout", TIMEOUT));
-                l.add (tc);
-            }
+			String to  = e.getAttributeValue ("timeout");
+			if (to != null)
+				tc.setTimeout (Long.parseLong (to));
+			else
+				tc.setTimeout (cfg.getLong ("timeout", TIMEOUT));
+			l.add (tc);
+            
         }
         return l;
     }

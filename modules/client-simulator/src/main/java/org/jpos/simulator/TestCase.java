@@ -41,6 +41,8 @@ public class TestCase implements Loggeable {
     int resultCode;
     boolean continueOnErrors;
     private String testcasePath;
+    private long count;
+
 
     public TestCase (String name) {
         super();
@@ -169,5 +171,12 @@ public class TestCase implements Loggeable {
     public String getFilename() {
         return testcasePath;
     }
+	public void setCount(long count) {
+		this.count = count;
+	}
+    public long getCount() {
+        return count;
+    }
+	
 }
 

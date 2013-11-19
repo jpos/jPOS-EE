@@ -78,11 +78,11 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        mavenRepo url: "http://jpos.org/maven"
-        mavenRepo url: "http://download.oracle.com/maven"
-        mavenRepo url: "http://jline.sourceforge.net/m2repo"
-        mavenRepo url: "https://repository.jboss.org/nexus/content/repositories/releases"
-        mavenRepo url: "http://repository.atlassian.com/maven2"
+        maven { url 'http://jpos.org/maven' }
+        maven { url 'http://download.oracle.com/maven' }
+        maven { url 'http://jline.sourceforge.net/m2repo' }
+        maven { url 'https://repository.jboss.org/nexus/content/repositories/releases' }
+        maven { url 'http://repository.atlassian.com/maven2' }
     }
 
     dependencies {
@@ -97,7 +97,7 @@ task allSources(type: Jar,dependsOn: subprojects.assemble) {
 }
 
 task wrapper( type: Wrapper ) {
-    gradleVersion = '1.8'
+    gradleVersion = '1.9'
 }
 
 // Configure IDEA to use Git

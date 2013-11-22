@@ -19,7 +19,6 @@
 package org.jpos.saf;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.io.Serializable;
 
@@ -47,7 +46,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     long waitForResponse;
     int maxRetransmissions;
     long expiration;
-    long preMessageDelay;
+    long preMessageDelay = 0L;
     String flagRetransmissions;
     String validResponseCodes;
     String retryResponseCodes;
@@ -65,8 +64,6 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     public void startService() {
         // we re-register just in case the component was soft-stopped
         NameRegistrar.register(getName(), this);
-        if (preMessageDelay > 0L)
-            new Thread(new DelayTask()).start();
         new Thread(this).start();
     }
 
@@ -81,6 +78,17 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
             if (!mux.isConnected()) {
                 ISOUtil.sleep(1000);
                 continue;
+            }
+            for (Object e; (e = psp.rdp(delayQueue)) != null;) {
+                if (e instanceof Entry) {
+                    if (((Entry)e).activateTime <= System.currentTimeMillis()) {
+                        // Entry is now activated so put it to the saf queue and take it off delayQueue
+                        psp.out(queue, e);
+                        psp.inp(delayQueue);
+                    } else
+                        break; // First delayed entry not activated yet so no point looking further
+                } else
+                    psp.inp(delayQueue); // ignore objects that are not an Entry
             }
             try {
                 if (latchMsg()) {
@@ -207,11 +215,6 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     }
 
     private Entry send(Entry entry) {
-        // although this is not really required if delayed messages are kept in separate queue
-        // nonetheless having this check makes the implementation independent of use of delay queue
-        if (entry.activateTime > System.currentTimeMillis()) {
-            return entry;
-        }
         if (shouldIgnore(entry)) {
             LogEvent evt = getLog().createLogEvent("saf-warning");
             if (isMaxRetransmission(entry))
@@ -344,30 +347,6 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
             this.responseTimeout = responseTimeout;
             this.wipePreviousResponse = wipePreviousResponse;
             this.activateTime = this.time + preMsgDelay;
-        }
-    }
-
-    public class DelayTask implements Runnable {
-        public void run() {
-            Thread.currentThread().setName(getName() + "-delay-task");
-            while (running()) {
-                ArrayList<Entry> delayedEntries = new ArrayList<Entry>();
-                for (Object entry; (entry = psp.inp(delayQueue)) != null; ) {
-                    if (entry instanceof Entry) {
-                        if (((Entry) entry).activateTime <= System.currentTimeMillis())
-                            psp.out(queue, entry);
-                        else
-                            delayedEntries.add((Entry) entry);
-                    }
-                }
-                for (Entry e : delayedEntries)
-                    psp.out(delayQueue, e);
-
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException ignored) {
-                }
-            }
         }
     }
 }

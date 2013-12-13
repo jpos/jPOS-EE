@@ -81,7 +81,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
             }
             for (Object e; (e = psp.rdp(delayQueue)) != null;) {
                 if (e instanceof Entry) {
-                    if (((Entry)e).activateTime <= System.currentTimeMillis()) {
+                    if (((Entry)e).time + preMessageDelay <= System.currentTimeMillis()) {
                         // Entry is now activated so put it to the saf queue and take it off delayQueue
                         psp.out(queue, e);
                         psp.inp(delayQueue);
@@ -163,7 +163,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
         // if pre-message-delay is not configured (default is 0) then the message can be put
         // main queue itself. Otherwise it will be placed in delayQueue till the DelayTask moves it back.
         String q = (preMessageDelay > 0L) ? delayQueue : queue;
-        psp.out(q, new Entry(msg, responseKey, responseTimeout, wipe, preMessageDelay));
+        psp.out(q, new Entry(msg, responseKey, responseTimeout, wipe));
     }
 
     public void dump(PrintStream p, String indent) {
@@ -325,7 +325,6 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
         public String responseKey;
         public long responseTimeout;
         public boolean wipePreviousResponse;
-        public long activateTime;
 
         public Entry() {
             super();
@@ -333,20 +332,15 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
         }
 
         public Entry(ISOMsg msg) {
-            this(msg, null, 0L, false, 0L);
+            this(msg, null, 0L, false);
         }
 
         public Entry(ISOMsg msg, String responseKey, long responseTimeout, boolean wipePreviousResponse) {
-            this(msg, responseKey, responseTimeout, wipePreviousResponse, 0L);
-        }
-
-        public Entry(ISOMsg msg, String responseKey, long responseTimeout, boolean wipePreviousResponse, long preMsgDelay) {
             this();
             this.msg = msg;
             this.responseKey = responseKey;
             this.responseTimeout = responseTimeout;
             this.wipePreviousResponse = wipePreviousResponse;
-            this.activateTime = this.time + preMsgDelay;
         }
     }
 }

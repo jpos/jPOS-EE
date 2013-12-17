@@ -42,7 +42,7 @@ ext {
             freemarker: 'org.freemarker:freemarker:[2.3.19,2.4)',
 
             //Mail
-            javax_mail: 'javax.mail:mail:1.4.5',
+            javax_mail: 'javax.mail:mail:1.4.7',
 
             //SSHD
             sshd: 'org.apache.sshd:sshd-core:0.6.0',

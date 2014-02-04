@@ -19,9 +19,9 @@
 package org.jpos.ee;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 
 import java.io.File;
 import java.util.Map;
@@ -65,7 +65,7 @@ class DefaultHibernateAccessService implements HibernateAccessService
             }
         }
 
-        this.serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+        this.serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
         this.sessionFactory = configuration.buildSessionFactory(serviceRegistry);
         this.readOnly = _readOnly;
     }

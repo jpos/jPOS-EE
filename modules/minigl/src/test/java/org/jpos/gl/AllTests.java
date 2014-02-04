@@ -28,6 +28,7 @@ public class AllTests {
         suite.addTest (new TestSuite (ImportTest.class));
         suite.addTest (new TestSuite (CurrencyTest.class));
         suite.addTest (new TestSuite (PermissionTest.class));
+        suite.addTest (new TestSuite (ExportTest.class));
         suite.addTest (new TestSuite (BalanceTest.class));
         suite.addTest (new TestSuite (RulesTest.class));
         suite.addTest (new TestSuite (AccountLockTest.class));

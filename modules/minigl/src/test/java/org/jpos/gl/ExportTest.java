@@ -19,10 +19,10 @@
 package org.jpos.gl;
 
 import junit.framework.TestCase;
-import org.jpos.gl.tools.Import;
+import org.jpos.gl.tools.Export;
 
-public class ImportTest extends TestCase {
-    public void testImport() throws Exception {
-        new Import().parse("../test-classes/testdata.xml");
+public class ExportTest extends TestCase {
+    public void testExport() throws Exception {
+        new Export().export(System.out);
     }
 }

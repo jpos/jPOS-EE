@@ -37,7 +37,7 @@ public class FindTransactionsTest extends TestBase {
     }
     public void testFindTransactions () throws Exception {
         List l = gls.findTransactions (tj, null, null, null, true);
-        assertEquals ("List size should be 8", 8, l.size());
+        assertEquals ("List size should be 10", 10, l.size());
     }
     public void testFindTransactionsByPostDate_Day01 () throws Exception {
         Date d = Util.parseDate ("20050101");
@@ -65,4 +65,3 @@ public class FindTransactionsTest extends TestBase {
     }
     */
 }
-

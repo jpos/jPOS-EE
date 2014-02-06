@@ -38,8 +38,6 @@ public class CreateAccounts extends TestBase {
         end ("testCreateComposites");
         tx.commit();
         gls.session().evict (cards);
-    }
-    public void testCreateFinals () throws Exception {
         for (int i=0; i<10; i++) {
             createFinals (i);
         }
@@ -65,4 +63,3 @@ public class CreateAccounts extends TestBase {
         gls.session().evict (parent);
     }
 }
-

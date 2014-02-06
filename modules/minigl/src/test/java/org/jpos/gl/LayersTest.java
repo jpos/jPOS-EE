@@ -117,6 +117,20 @@ public class LayersTest extends TestBase {
             new BigDecimal ("-47000.00"), 
             gls.getBalance (tj, tripFund, new short[] { 1, 2 })
         );
+
+        // reverse effect of this transaction to avoid breaking other tests
+        tx = gls.beginTransaction();
+        gls.post(tj, txn.createReverse());
+        tx.commit();
+
+        assertEquals (
+            new BigDecimal ("-50000.00"),
+            gls.getBalance (tj, tripFund, new short[] { 2 })
+        );
+        assertEquals (
+            new BigDecimal ("-48000.00"),
+            gls.getBalance (tj, tripFund, new short[] { 1, 2 })
+        );
     }
     public void testDoublePostInLayerOne() throws Exception {
         Transaction tx = gls.beginTransaction();
@@ -145,9 +159,25 @@ public class LayersTest extends TestBase {
             gls.getBalance (tj, tripFund, new short[] { 1 })
         );
         assertEquals (
-            new BigDecimal ("-47000.00"), 
+            new BigDecimal ("-48000.00"),
             gls.getBalance (tj, tripFund, new short[] { 1, 2 })
         );
+
+        // and reverse it
+        tx = gls.beginTransaction();
+        gls.post (tj, txn.createReverse());
+        tx.commit();
+
+        // balance should remain the same
+        assertEquals (
+            new BigDecimal ("2000.00"),
+            gls.getBalance (tj, tripFund, new short[] { 1 })
+        );
+        assertEquals (
+            new BigDecimal ("-48000.00"),
+            gls.getBalance (tj, tripFund, new short[] { 1, 2 })
+        );
+
+
     }
 }
-

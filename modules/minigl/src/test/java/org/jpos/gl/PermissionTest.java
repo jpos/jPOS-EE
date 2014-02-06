@@ -18,9 +18,6 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.hibernate.Transaction;
 
 public class PermissionTest extends TestBase {
@@ -37,11 +34,11 @@ public class PermissionTest extends TestBase {
         assertTrue (gls.hasPermission (GLPermission.READ, journal));
         assertFalse(gls.hasPermission ("InvalidGLPermission", journal));
     }
-    public void testNoPerm() throws Exception {
+    public void testNoPermAndGrant() throws Exception {
         // 'eve',  our no-permissions user
         GLSession sess = new GLSession ("eve"); 
         assertFalse (sess.hasPermission (GLPermission.READ));
-        assertFalse (sess.hasPermission (GLPermission.POST, journal));
+        assertFalse(sess.hasPermission(GLPermission.POST, journal));
         sess.close();
     }
     public void testGrant() throws Exception {
@@ -51,6 +48,13 @@ public class PermissionTest extends TestBase {
         tx.commit();
         GLSession sess = new GLSession ("eve"); 
         assertTrue (sess.hasPermission (GLPermission.READ));
+        sess.close();
+         // OK, now take it away
+        tx = gls.beginTransaction();
+        gls.revoke("eve", GLPermission.READ);
+        tx.commit();
+        sess = new GLSession ("eve");
+        assertFalse(sess.hasPermission(GLPermission.READ));
         sess.close();
     }
     // ##FIXME - not working if placed after testGrant
@@ -67,7 +71,7 @@ public class PermissionTest extends TestBase {
     public void testAnon() throws Exception {
         // 'anonymous', a non-existent user
         try {
-            GLSession sess = new GLSession ("anonymous"); 
+            new GLSession ("anonymous");
         } catch (GLException e) {
             assertEquals (e.getMessage(), "Invalid user 'anonymous'");
             return;
@@ -75,4 +79,3 @@ public class PermissionTest extends TestBase {
         fail ("Anonymous user should have raised a GLException");
     }
 }
-

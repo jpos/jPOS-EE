@@ -23,7 +23,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.hibernate.HibernateException;
-import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.SettingsFactory;
 import org.jpos.core.ConfigurationException;
@@ -120,7 +119,7 @@ public class JPosHibernateConfiguration extends Configuration
         {
             try
             {
-                cfg.addAnnotatedClass(ReflectHelper.classForName(clazz));
+                cfg.addAnnotatedClass(ClassloaderUtil.classForName(clazz));
             }
             catch (ClassNotFoundException e)
             {

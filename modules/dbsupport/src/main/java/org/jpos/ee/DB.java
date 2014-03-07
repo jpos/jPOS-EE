@@ -22,8 +22,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.engine.spi.CollectionKey;
-import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.jpos.ee.support.JPosHibernateConfiguration;
@@ -230,21 +228,35 @@ public class DB
 
             if (session != null)
             {
-                info.addMessage("====  STATISTICS ====");
-                SessionStatistics statistics = session().getStatistics();
-                info.addMessage("====   ENTITIES  ====");
-                Set<EntityKey> entityKeys = statistics.getEntityKeys();
-                for (EntityKey ek : entityKeys)
+                try
                 {
-                    info.addMessage(String.format("[%s] %s", ek.getIdentifier(), ek.getEntityName()));
+                    info.addMessage("====  STATISTICS ====");
+                    SessionStatistics statistics = session().getStatistics();
+                    info.addMessage("====   ENTITIES  ====");
+                    Set entityKeys = statistics.getEntityKeys();
+                    for (Object o : entityKeys)
+                    {
+                        String identifier= (String) o.getClass().getMethod("getIdentifier").invoke(o);
+                        String entityName= (String) o.getClass().getMethod("getEntityName").invoke(o);
+                        info.addMessage(String.format("[%s] %s", identifier, entityName));
+                    }
+                    info.addMessage("==== COLLECTIONS ====");
+                    Set collectionKeys = statistics.getCollectionKeys();
+                    for (Object o : collectionKeys)
+                    {
+                        String key= (String) o.getClass().getMethod("getKey").invoke(o);
+                        String role= (String) o.getClass().getMethod("getRole").invoke(o);
+                        info.addMessage(String.format("[%s] %s", key, role));
+                    }
+                    info.addMessage("=====================");
                 }
-                info.addMessage("==== COLLECTIONS ====");
-                Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
-                for (CollectionKey ck : collectionKeys)
+                catch (Exception e)
                 {
-                    info.addMessage(String.format("[%s] %s", ck.getKey(), ck.getRole()));
+                    LogEvent error = getLog().createError();
+                    error.addMessage("Could not print stats");
+                    error.addMessage(e);
+                    Logger.log(error);
                 }
-                info.addMessage("=====================");
             }
             else
             {

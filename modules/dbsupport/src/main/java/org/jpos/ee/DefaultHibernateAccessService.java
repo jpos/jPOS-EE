@@ -19,9 +19,8 @@
 package org.jpos.ee;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
+import org.jpos.ee.support.ClassloaderUtil;
 
 import java.io.File;
 import java.util.Map;
@@ -30,7 +29,6 @@ import java.util.Map.Entry;
 class DefaultHibernateAccessService implements HibernateAccessService
 {
     private SessionFactory sessionFactory;
-    private ServiceRegistry serviceRegistry;
     private Configuration configuration;
     private boolean readOnly = false;
 
@@ -65,19 +63,56 @@ class DefaultHibernateAccessService implements HibernateAccessService
             }
         }
 
-        this.serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
-        this.sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        this.sessionFactory = createSessionFactory(configuration);
         this.readOnly = _readOnly;
+    }
+
+    @SuppressWarnings("unchecked")
+    private SessionFactory createSessionFactory(Configuration configuration)
+    {
+        try
+        {
+            Class ssrbCls=null;
+            try
+            {
+                //4.3.x
+                ssrbCls= ClassloaderUtil.classForName("org.hibernate.boot.registry.StandardServiceRegistryBuilder");
+            }
+            catch (ClassNotFoundException e)
+            {
+                try
+                {
+                    //4.2.x
+                    ssrbCls=ClassloaderUtil.classForName("org.hibernate.boot.registry.ServiceRegistryBuilder");
+                }
+                catch (ClassNotFoundException e1)
+                {
+                }
+            }
+            if(ssrbCls!=null)
+            {
+                Object ssrb=ssrbCls.newInstance();
+                Class srCls=ClassloaderUtil.classForName("org.hibernate.service.ServiceRegistry");
+                ssrb=ssrbCls.getMethod("applySettings",Map.class).invoke(ssrb,configuration.getProperties());
+                Object ssr=ssrbCls.getMethod("build").invoke(ssrb);
+                return (SessionFactory) configuration.getClass()
+                        .getMethod("buildSessionFactory", srCls)
+                        .invoke(configuration, ssr);
+            }
+            else
+            {
+                throw new RuntimeException("Could not create session factory (Unsupported hibernate version)");
+            }
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Could not create session factory",e);
+        }
     }
 
     public SessionFactory getSessionFactory()
     {
         return sessionFactory;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
     }
 
     public Configuration getConfiguration()

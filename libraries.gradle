@@ -2,7 +2,7 @@ ext {
     slf4jVersion = '1.7.5'
     logbackVersion = '1.1.0'
     hibernateVersion = '4.3.1.Final'
-    jposVersion = '1.9.6'
+    jposVersion = '1.9.7-SNAPSHOT'
     jettyVersion = '8.1.13.v20130916'
 
     libraries = [

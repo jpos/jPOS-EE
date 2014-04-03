@@ -240,6 +240,17 @@ public class TestRunner
                             //return false;
                         }
                     }
+                    else if (value.startsWith("*A")) {
+                        if (m.hasField(i)) {
+                        // To make sure value is not returned for this field
+                        evt.addMessage("field", "[" + i + "] Received:[" + m.getString(i) + "]"
+                                + " Expected: Not to be set");
+                        }
+                        else {
+                            m.unset(i);
+                            expected.unset(i);
+                        }
+                    }                    
                     else if (m.hasField(i) && !m.getString(i).equals(value)) {
                         evt.addMessage("field", "[" + i+ "] Received:[" + m.getString(i) + "]" + " Expected:[" + value + "]");
                        // return false;

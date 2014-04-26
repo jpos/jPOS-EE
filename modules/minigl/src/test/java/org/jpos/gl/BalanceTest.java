@@ -24,7 +24,7 @@ import org.hibernate.Transaction;
 public class BalanceTest extends TestBase {
     Journal tj;
     Account root;
-    Account cashUS;
+    FinalAccount cashUS;
     Account cashPesos;
     Account bobEquity;
     Account aliceEquity;
@@ -34,7 +34,7 @@ public class BalanceTest extends TestBase {
     public void setUp () throws Exception {
         super.setUp();
         tj = gls.getJournal ("TestJournal");
-        cashUS      = gls.getAccount ("TestChart", "111");
+        cashUS      = gls.getFinalAccount ("TestChart", "111");
         cashPesos   = gls.getAccount ("TestChart", "112");
         bobEquity   = gls.getAccount ("TestChart", "31");
         aliceEquity = gls.getAccount ("TestChart", "32");
@@ -122,6 +122,15 @@ public class BalanceTest extends TestBase {
             new BigDecimal("5000.00"),
             detail.getFinalBalance()
         );
+    }
+
+    public void testGLTransactionImpact() {
+        GLTransaction t = new GLTransaction("Test transaction");
+        t.createDebit (cashUS, new BigDecimal("1000.00") , null, (short) 840);
+        t.createCredit(cashUS, new BigDecimal("100.00"), null, (short) 1840);
+        assertEquals(new BigDecimal("900.00"), t.getImpact(cashUS, new short[] { 840, 1840 }));
+        assertEquals(new BigDecimal("1000.00"), t.getImpact(cashUS, new short[] { 840 }));
+        assertEquals(new BigDecimal("-100.00"), t.getImpact(cashUS, new short[] { 1840 }));
     }
 
     // -----------------------------------------------------------------

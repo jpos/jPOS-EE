@@ -381,8 +381,17 @@ public class GLTransaction {
         }
         return credits;
     }
+    @SuppressWarnings("unchecked")
+    public BigDecimal getImpact(Account acct, short[] layers) {
+        BigDecimal impact = GLSession.ZERO;
+        for (GLEntry e : (List<GLEntry>) getEntries()) {
+            if (e.getAccount().equals(acct) && e.hasLayers (layers)) {
+                impact = impact.add (e.getImpact());
+            }
+        }
+        return impact;
+    }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
     }
 }
-

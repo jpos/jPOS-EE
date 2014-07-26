@@ -51,7 +51,7 @@ public class DBManager
      * This replica will usually point to another database on another server.
      *
      * @param name The alias name
-     * @param fileName The name of a file containing connection information.
+     * @param propertiesFilename  The name of a file containing connection information.
      * @throws IOException
      */
     public static void registerReplica(String name,String propertiesFilename) throws IOException

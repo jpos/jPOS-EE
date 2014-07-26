@@ -15,10 +15,6 @@ subprojects {
     targetCompatibility = 1.6
     [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
 
-    tasks.withType(Compile) {
-        options.warnings = false
-    }
-
     project.archivesBaseName="jposee-${project.name}"
 
     def pomConfig = {

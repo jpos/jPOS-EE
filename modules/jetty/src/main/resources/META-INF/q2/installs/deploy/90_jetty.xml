@@ -16,7 +16,7 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<jetty class="org.jpos.q2.jetty.Jetty7">
+<jetty class="org.jpos.q2.jetty.Jetty">
   <attr name="config">cfg/jetty.xml</attr>
 </jetty>
 

@@ -19,26 +19,25 @@
 package org.jpos.q2.jetty;
 
 import java.io.FileInputStream;
+import java.util.StringTokenizer;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.jpos.q2.QBeanSupport;
 
-/**
- * @author Alejandro Revilla
- * @version $Revision$ $Date$
- * @jmx:mbean description="Jetty QBean" extends="org.jpos.q2.QBeanSupportMBean"
- */
-public class Jetty7 extends QBeanSupport implements Jetty7MBean {
-
+public class Jetty extends QBeanSupport implements JettyMBean {
     private String config;
     private Server server;
 
     @Override
     public void initService() throws Exception {
         server = new Server();
-        FileInputStream fis = new FileInputStream(config);
-        XmlConfiguration xml = new XmlConfiguration(fis);
-        xml.configure(server);
+        StringTokenizer st = new StringTokenizer(config, ", ");
+        while (st.hasMoreElements()) {
+            FileInputStream fis = new FileInputStream(st.nextToken());
+            XmlConfiguration xml = new XmlConfiguration(fis);
+            xml.configure(server);
+        }
     }
 
     @Override
@@ -51,17 +50,11 @@ public class Jetty7 extends QBeanSupport implements Jetty7MBean {
         server.stop();
     }
 
-    /**
-     * @jmx:managed-attribute description="Configuration File"
-     */
     @Override
     public void setConfig(String config) {
         this.config = config;
     }
 
-    /**
-     * @jmx:managed-attribute description="Configuration File"
-     */
     @Override
     public String getConfig() {
         return config;

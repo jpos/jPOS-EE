@@ -30,6 +30,7 @@ import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.q2.QBeanSupport;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.File;
 import java.net.URL;
@@ -73,6 +74,8 @@ public class LogbackConfigurator extends QBeanSupport
                 log.info("Reading logback configuration from classpath resource: "+r.toString());
                 configurator.doConfigure(r);
             }
+            SLF4JBridgeHandler.removeHandlersForRootLogger();
+            SLF4JBridgeHandler.install();
         }
         catch (JoranException je)
         {

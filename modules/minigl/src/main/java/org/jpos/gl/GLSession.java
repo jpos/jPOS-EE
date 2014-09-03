@@ -1419,7 +1419,7 @@ public class GLSession {
         else if (acct instanceof FinalAccount) {
             Date sod = Util.floor (date);   // sod = start of day
             invalidateCheckpoints (journal, new Account[] { acct }, sod, sod, layers);
-            BigDecimal b[] = getBalances (journal, acct, date, true, layers, 0L);
+            BigDecimal b[] = getBalances (journal, acct, sod, false, layers, 0L);
             if (b[1].intValue() >= threshold) {
                 Checkpoint c = new Checkpoint ();
                 c.setDate (date);

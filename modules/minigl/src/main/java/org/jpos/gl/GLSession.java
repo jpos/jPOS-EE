@@ -1422,7 +1422,7 @@ public class GLSession {
             BigDecimal b[] = getBalances (journal, acct, sod, false, layers, 0L);
             if (b[1].intValue() >= threshold) {
                 Checkpoint c = new Checkpoint ();
-                c.setDate (date);
+                c.setDate (sod);
                 c.setBalance (b[0]);
                 c.setJournal (journal);
                 c.setAccount (acct);

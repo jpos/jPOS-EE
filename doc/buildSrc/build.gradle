@@ -4,6 +4,7 @@ apply plugin: 'idea'
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url 'http://repository.sonatype.org/content/groups/public' }
 }
 
 sourceCompatibility = 1.6

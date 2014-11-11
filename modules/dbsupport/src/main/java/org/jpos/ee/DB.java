@@ -37,7 +37,7 @@ import java.util.Set;
  * @author Alejandro P. Revilla
  * @version $Revision: 1.5 $ $Date: 2004/12/09 00:50:14 $
  *          <p/>
- *          DB encapsulate some housekepping specific
+ *          DB encapsulate some housekeeping specific
  *          to Hibernate O/R mapping engine
  */
 @SuppressWarnings({"UnusedDeclaration"})

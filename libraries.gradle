@@ -1,9 +1,10 @@
 ext {
-    jposVersion = '1.9.8'
+    jposVersion = '1.9.9-SNAPSHOT'
     slf4jVersion = '1.7.7'
     logbackVersion = '1.1.0'
     hibernateVersion = '4.3.6.Final'
-    jettyVersion = '9.2.2.v20140723'
+    jettyVersion = '9.2.5.v20141112'
+    servletApiVersion = '3.0.1'
 
     libraries = [
             //jUnit (Tests)
@@ -47,6 +48,9 @@ ext {
 
             //SSHD
             sshd: 'org.apache.sshd:sshd-core:0.12.0',
+
+            //Servlet API
+            servlet_api: "javax.servlet:javax.servlet-api:${servletApiVersion}",
 
             //Jetty
             jetty_server: "org.eclipse.jetty:jetty-server:${jettyVersion}",

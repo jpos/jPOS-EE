@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping 
+  SYSTEM "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.ee.Visitor" table="visitor">
+    <cache usage="read-write" />
+    <id name="id" column="id" type="string" length="36">
+      <generator class="assigned" />
+    </id>
+    <property name="lastUpdate" type="timestamp" />
+    <many-to-one name="user" 
+                class="org.jpos.ee.User" 
+               column="eeuser" />
+    <map name="props" lazy="true" table="visitor_props">
+        <cache usage="read-write" />
+        <key />
+        <index column="propName" type="string" length="32"/>
+        <element column="propValue" type="string"/>
+    </map>
+  </class>
+</hibernate-mapping>
+

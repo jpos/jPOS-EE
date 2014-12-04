@@ -19,6 +19,7 @@ include ':modules:core',\
         ':modules:things',\
         ':modules:server-simulator',\
         ':modules:client-simulator',\
-        ':modules:quartz'
+        ':modules:quartz', \
+        ':modules:visitor'
 
 rootProject.name = 'jposee'

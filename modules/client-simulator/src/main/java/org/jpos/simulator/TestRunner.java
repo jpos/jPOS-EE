@@ -107,15 +107,14 @@ public class TestRunner
                 }
                 tc.setExpandedRequest (applyRequestProps (m, bsh));
                 tc.start();
-            tc.setResponse (mux.request (m, tc.getTimeout()));
+                tc.setResponse (mux.request (m, tc.getTimeout()));
                 tc.end ();
                 assertResponse(tc, bsh, evt_error);
                 evt.addMessage (i + ": " + tc.toString());
                 if (evt_error.getPayLoad().size()!=0) {
                     evt_error.addMessage("filename", tc.getFilename());
-                evt.addMessage("\r\n" + evt_error);
+                    evt.addMessage("\r\n" + evt_error.toString("    "));
                 }
-
                 serverTime += tc.elapsed();
                 if (!tc.ok()) {
                     getLog().error (tc);

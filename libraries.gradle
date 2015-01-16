@@ -38,7 +38,7 @@ ext {
             //Supported Databases
             jdbcH2: 'com.h2database:h2:1.4.181',
             jdbcMysql: 'mysql:mysql-connector-java:5.1.31',
-            jdbcPostgresql: 'postgresql:postgresql:9.3-1102-jdbc41',
+            jdbcPostgresql: 'org.postgresql:postgresql:9.3-1102-jdbc41',
 
             //Freemarker
             freemarker: 'org.freemarker:freemarker:[2.3.20,2.4)',

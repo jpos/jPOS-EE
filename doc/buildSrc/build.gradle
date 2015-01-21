@@ -1,5 +1,4 @@
 apply plugin: 'groovy'
-apply plugin: 'idea'
 
 repositories {
     mavenLocal()
@@ -9,6 +8,7 @@ repositories {
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
+
 
 dependencies {
     //noinspection GroovyAssignabilityCheck
@@ -24,7 +24,7 @@ dependencies {
             'org.apache.xmlgraphics:batik-svg-dom:1.7@jar',
             'org.apache.avalon.framework:avalon-framework-api:4.3.1']
 
-    groovy localGroovy()
+    compile localGroovy()
     compile 'xerces:xercesImpl:2.10.0',
             'xml-resolver:xml-resolver:1.2',
             'saxon:saxon:6.5.3',
@@ -34,8 +34,6 @@ dependencies {
             'net.sf.docbook:docbook-xsl:1.76.1:ns-resources@zip',
             'net.sf.docbook:docbook-xsl-saxon:1.0.0',
             gradleApi()
+
 }
 
-idea.module {
-	jdkName = '1.6'
-}

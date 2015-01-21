@@ -8,40 +8,40 @@ jPOS Extended Edition
 Introduction
 ============
 
-include::overview.asc[]
+include::overview.adoc[]
 
-include::contributing.asc[]
+include::contributing.adoc[]
 
-include::getting_started.asc[]
+include::getting_started.adoc[]
 
-include::tutorial.asc[]
+include::tutorial.adoc[]
 
 Modules
 =======
 
 == Introduction to modules
 
-include::introduction_module.asc[]
+include::introduction_module.adoc[]
 
 == Essensial Modules
 
-include::module_core.asc[]
+include::module_core.adoc[]
 
-include::module_txn.asc[]
+include::module_txn.adoc[]
 
 == Database Support
 
-include::module_database_support.asc[]
+include::module_database_support.adoc[]
 
 == Tools
 
-include::module_freemarker_decorator.asc[]
+include::module_freemarker_decorator.adoc[]
 
 == Simulators
 
-include::module_server_simulator.asc[]
+include::module_server_simulator.adoc[]
 
-include::module_client_simulator.asc[]
+include::module_client_simulator.adoc[]
 
 == Application components
 
@@ -57,7 +57,7 @@ include::module_client_simulator.asc[]
 
 == Operation services
 
-include::module_sshd.asc[]
+include::module_sshd.adoc[]
 
 //------------------------------------------------------------
 // ** UNIMPLEMENTED **
@@ -74,10 +74,10 @@ include::module_sshd.asc[]
 Appendices
 ==========
 
-include::appendix_copyright.asc[]
+include::appendix_copyright.adoc[]
 
-include::appendix_license.asc[]
+include::appendix_license.adoc[]
 
-include::appendix_CLA.asc[]
+include::appendix_CLA.adoc[]
 
-include::appendix_CCLA.asc[]
+include::appendix_CCLA.adoc[]

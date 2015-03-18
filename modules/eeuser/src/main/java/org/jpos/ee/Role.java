@@ -26,7 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Role extends Cloneable {
-    private long id;
+    private Long id;
     private String name;
     private Set<Permission> permissions;
 
@@ -39,11 +39,11 @@ public class Role extends Cloneable {
         setName(name);
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

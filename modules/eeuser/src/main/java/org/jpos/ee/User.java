@@ -26,7 +26,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 
 @SuppressWarnings("unused")
 public class User extends Cloneable implements Serializable, SoftDelete {
-    private long id;
+    private Long id;
     private String nick;
     private String password;
     private String name;
@@ -67,10 +67,10 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setVerified(boolean verified) {
         this.verified = verified;
     }
-    public long getId() {
+    public Long getId() {
         return id;
     }
-    public void setId (long id) {
+    public void setId (Long id) {
         this.id = id;
     }
     public void setPassword (String password) {
@@ -210,7 +210,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
      * @return nick(id)
      */
     public String getNickAndId() {
-        StringBuffer sb = new StringBuffer (getNick());
+        StringBuilder sb = new StringBuilder (getNick());
         sb.append ('(');
         sb.append (Long.toString(getId()));
         sb.append (')');

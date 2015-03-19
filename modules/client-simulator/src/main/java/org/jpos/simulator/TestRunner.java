@@ -21,22 +21,17 @@ package org.jpos.simulator;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
-import java.util.Map;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOComponent;
 import org.jpos.iso.ISOUtil;
-import org.jpos.iso.ISODate;
 import org.jpos.iso.ISOField;
 import org.jpos.iso.ISOHeader;
 import org.jpos.iso.ISOPackager;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.packager.XMLPackager;
-import org.jpos.q2.QBeanSupport;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 import org.jdom.Element;
@@ -116,11 +111,13 @@ public class TestRunner
                     evt.addMessage("\r\n" + evt_error.toString("    "));
                 }
                 serverTime += tc.elapsed();
-                if (!tc.ok()) {
-                    getLog().error (tc);
-                    if (!tc.isContinueOnErrors())
-                        break;
-                }
+                if (!tc.ok() && !tc.isContinueOnErrors())
+                    break;
+            }
+            if (!tc.ok()) {
+                getLog().error (tc);
+                if (!tc.isContinueOnErrors())
+                    break;
             }
         }
         long end = System.currentTimeMillis();

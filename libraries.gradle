@@ -3,8 +3,9 @@ ext {
     slf4jVersion = '1.7.10'
     logbackVersion = '1.1.2'
     hibernateVersion = '4.3.8.Final'
-    jettyVersion = '9.2.5.v20141112'
+    jettyVersion = '9.2.10.v20150310'
     servletApiVersion = '3.0.1'
+    websocketApiVersion = '1.0'
 
     libraries = [
             //jUnit (Tests)
@@ -63,7 +64,7 @@ ext {
             jetty_annotations: "org.eclipse.jetty:jetty-annotations:${jettyVersion}",
             jetty_security: "org.eclipse.jetty:jetty-security:${jettyVersion}",
             jetty_policy: "org.eclipse.jetty:jetty-policy:${jettyVersion}",
-            jetty_websocket: "org.eclipse.jetty:jetty-websocket:${jettyVersion}",
+            jetty_websocket: "org.eclipse.jetty.websocket:websocket-server:${jettyVersion}",
             jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
             jetty_util: "org.eclipse.jetty:jetty-util:${jettyVersion}",
             jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
@@ -79,7 +80,8 @@ ext {
             libraries.jetty_webapp,
             libraries.jetty_deploy,
             libraries.jetty_jmx,
-            libraries.jetty_annotations
+            libraries.jetty_annotations,
+            libraries.jetty_websocket,
     ]
 
     /*
@@ -88,7 +90,6 @@ ext {
             libraries.jetty_annotations,
             libraries.jetty_security,
             libraries.jetty_policy,
-            libraries.jetty_websocket,
             libraries.jetty_rewrite,
             libraries.jetty_servlets,
             libraries.jetty_ajp

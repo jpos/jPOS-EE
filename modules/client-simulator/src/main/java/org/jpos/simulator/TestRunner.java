@@ -49,6 +49,7 @@ public class TestRunner
     MUX mux;
     ISOPackager packager;
     Interpreter bsh;
+    private static final String NL = System.getProperty("line.separator");
     public static final long TIMEOUT = 60000;
     public TestRunner () {
         super();
@@ -108,7 +109,7 @@ public class TestRunner
                 evt.addMessage (i + ": " + tc.toString());
                 if (evt_error.getPayLoad().size()!=0) {
                     evt_error.addMessage("filename", tc.getFilename());
-                    evt.addMessage("\r\n" + evt_error.toString("    "));
+                    evt.addMessage(NL + evt_error.toString("    "));
                 }
                 serverTime += tc.elapsed();
                 if (!tc.ok() && !tc.isContinueOnErrors())

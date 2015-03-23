@@ -26,10 +26,8 @@
       <generator class="native" />
     </id>
 
-    <property name="nick" type="string">
-     <column name="nick" sql-type="varchar(32)" unique="true" not-null="true" />
-    </property>
-    <property name="password" length="40" type="string" />
+    <property name="nick" type="string" length="64" not-null="true" unique="true" index="eeuser_nick"  />
+    <property name="password" length="256" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="email" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />
@@ -45,16 +43,14 @@
       <key column="eeuser" not-null="true"/>
       <list-index column="id"/>
       <composite-element class="org.jpos.ee.PasswordHistory">
-       <property name="value" type="string">
-       <column name="value" sql-type="varchar(40)" not-null="true" />
-       </property>
+       <property name="value" type="string" length="256" not-null="true" />
       </composite-element>
     </list>
 
     <map name="props" lazy="true" table="eeuser_props" 
         cascade="all-delete-orphan">
-        <key />
-        <index column="propName" type="string" length="32"/>
+        <key foreign-key="FKUserProps" />
+        <index column="propName" type="string" length="64"/>
         <element column="propValue" type="string"/>
     </map>
   </class>

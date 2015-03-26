@@ -197,9 +197,10 @@ write code like this:
    </isomsg>
 -------------------------------
 
-NOTE: The special string **M* can be used to check for mandatory field
+NOTE: The special string \**M* can be used to check for mandatory field
 presence, regardless its content. Likewise, **E* can be used to check
-for mandatory echo and **O* can be used to check for optional echo.
+for mandatory echo, and \**O* can be used to check for optional echo. You
+can also use **A* to check for mandatory _absence_ of a field.
 
 Test cases supports a count attribute that can be used to fire the same
 test n times.

@@ -18,9 +18,7 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public abstract class TestBase extends TestCase {
     protected GLSession gls;

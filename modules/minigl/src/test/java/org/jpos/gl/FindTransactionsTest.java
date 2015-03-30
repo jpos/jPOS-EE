@@ -20,13 +20,6 @@ package org.jpos.gl;
 
 import java.util.List;
 import java.util.Date;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import java.math.BigDecimal;
-import java.util.Date;
-import org.hibernate.Transaction;
-import org.hibernate.HibernateException;
 
 public class FindTransactionsTest extends TestBase {
     Journal tj;

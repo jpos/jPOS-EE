@@ -27,7 +27,7 @@ public class Permission implements Serializable {
         super ();
         setName ("");
     }
-    public Permission (String name) {
+    private Permission (String name) {
         super ();
         setName (name);
     }
@@ -45,6 +45,9 @@ public class Permission implements Serializable {
     }
     public int hashCode() {
         return name.hashCode ();
+    }
+    public static Permission valueOf (String name) {
+        return new Permission(name);
     }
 }
 

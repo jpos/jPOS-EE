@@ -136,7 +136,7 @@ public class UserManager {
         String newHash = getHash(u.getId(), clearpass);
         if (newHash.equals(u.getPassword()))
             return false;
-        for (PasswordHistory p : (List<PasswordHistory>)u.getPasswordhistory()) {
+        for (PasswordHistory p : u.getPasswordhistory()) {
             if (p.getValue().equals(newHash))
                 return false;
         }

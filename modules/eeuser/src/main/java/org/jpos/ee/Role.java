@@ -64,15 +64,15 @@ public class Role extends Cloneable {
     }
 
     public boolean hasPermission (String permName) {
-        return permName != null && permissions.contains(new Permission(permName));
+        return permName != null && (permissions.contains(Permission.valueOf(permName)) || permName.equals("role." + name));
     }
 
     public void addPermission (String permName) {
-        permissions.add (new Permission (permName));
+        permissions.add (Permission.valueOf(permName));
     }
 
     public void removePermission (String permName) {
-        permissions.remove (new Permission (permName));
+        permissions.remove (Permission.valueOf(permName));
     }
 
     public void removeAllPermissions () {

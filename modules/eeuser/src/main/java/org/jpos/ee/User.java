@@ -100,7 +100,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setPasswordhistory (List<PasswordHistory> passwordhistory) {
         this.passwordhistory = passwordhistory;
     }
-    public List getPasswordhistory () {
+    public List<PasswordHistory> getPasswordhistory () {
         return passwordhistory;
     }        
     public boolean hasPermission (String permName) {

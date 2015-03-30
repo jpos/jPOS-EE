@@ -9,7 +9,7 @@ ext {
 
     libraries = [
             //jUnit (Tests)
-            junit: 'junit:junit:4.11',
+            junit: 'junit:junit:4.12',
 
             //jPOS
             jpos: "org.jpos:jpos:${jposVersion}",
@@ -37,7 +37,7 @@ ext {
             hibernate_ehcache: "org.hibernate:hibernate-ehcache:${hibernateVersion}",
 
             //Supported Databases
-            jdbcH2: 'com.h2database:h2:1.4.185',
+            jdbcH2: 'com.h2database:h2:1.4.186',
             jdbcMysql: 'mysql:mysql-connector-java:5.1.34',
             jdbcPostgresql: 'org.postgresql:postgresql:9.4-1201-jdbc41',
 

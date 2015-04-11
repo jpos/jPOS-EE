@@ -27,7 +27,7 @@
     </id>
 
     <property name="nick" type="string" length="64" not-null="true" unique="true" index="eeuser_nick"  />
-    <property name="password" length="256" type="string" />
+    <property name="password" length="8192" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="email" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />

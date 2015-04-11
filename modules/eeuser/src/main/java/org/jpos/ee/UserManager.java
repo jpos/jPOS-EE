@@ -190,11 +190,11 @@ public class UserManager {
         }
         return hash;
     }
-    private void assertNotNull (Object obj, String error) throws BLException {
+    protected void assertNotNull (Object obj, String error) throws BLException {
         if (obj == null)
             throw new BLException (error);
     }
-    private void assertTrue (boolean condition, String error) 
+    protected void assertTrue (boolean condition, String error) 
         throws BLException 
     {
         if (!condition)

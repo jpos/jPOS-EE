@@ -121,30 +121,6 @@ public class UserManager {
         return false;
     }
 
-    public boolean upgradePassword (User u, String clearpass)
-            throws HibernateException, BLException
-    {
-        assertNotNull(clearpass, "Invalid pass");
-        String passwordHash = u.getPassword();
-        assertNotNull(passwordHash, "Password is null");
-        VERSION v = VERSION.getVersion(passwordHash);
-        if (v == VERSION.ZERO && passwordHash.equals(getV0Hash(u.getId(), clearpass))) {
-            setV1Password(u, clearpass);
-            return true;
-        }
-        return false;
-    }
-
-    private void setV0Password (User u, String clearpass) {
-        u.setPassword (getV0Hash (u.getId(), clearpass));
-    }
-    private void setV1Password (User u, String clearpass) throws BLException {
-        assertNotNull(clearpass, "Invalid password");
-        byte[] clientSalt = genSalt(VERSION.ONE.getSalt().length);
-        byte[] serverSalt = genSalt(VERSION.ONE.getSalt().length);
-        clearpass = clearpass.startsWith("v1:") ? clearpass : upgradeClearPassword(clearpass, clientSalt);
-        u.setPassword(genV1Hash(clearpass, serverSalt, clientSalt));
-    }
 
     /**
      * @param u the user
@@ -172,12 +148,11 @@ public class UserManager {
             u.addPasswordHistoryValue(u.getPassword());
         switch (version) {
             case ZERO:
-                setV0Password (u, clearpass);
+                setV0Password(u, clearpass);
                 break;
             case ONE:
                 setV1Password (u, clearpass);
                 break;
-
         }
         RevisionManager revmgr = new RevisionManager(db);
         if (author == null)
@@ -186,6 +161,7 @@ public class UserManager {
         db.session().saveOrUpdate(u);
     }
 
+    // VERSION ZERO IMPLEMENTATION
     private static String getV0Hash (long id, String pass) {
         String hash = null;
         try {
@@ -199,17 +175,11 @@ public class UserManager {
         }
         return hash;
     }
-    protected void assertNotNull (Object obj, String error) throws BLException {
-        if (obj == null)
-            throw new BLException (error);
-    }
-    protected void assertTrue (boolean condition, String error) 
-        throws BLException 
-    {
-        if (!condition)
-            throw new BLException (error);
+    private void setV0Password (User u, String clearpass) {
+        u.setPassword(getV0Hash(u.getId(), clearpass));
     }
 
+    // VERSION ONE IMPLEMENTATION
     private String upgradeClearPassword (String clearpass, byte[] salt) {
         return ISOUtil.hexString(genV1ClientHash(salt, clearpass));
     }
@@ -225,6 +195,36 @@ public class UserManager {
             // Should never happen, SHA1PRNG is a supported algorithm
         }
         return null;
+    }
+
+    public boolean upgradePassword (User u, String clearpass)
+            throws HibernateException, BLException
+    {
+        assertNotNull(clearpass, "Invalid pass");
+        String passwordHash = u.getPassword();
+        assertNotNull(passwordHash, "Password is null");
+        VERSION v = VERSION.getVersion(passwordHash);
+        if (v == VERSION.ZERO && passwordHash.equals(getV0Hash(u.getId(), clearpass))) {
+            setV1Password(u, clearpass);
+            return true;
+        }
+        return false;
+    }
+
+    private void setV1Password (User u, String pass) throws BLException {
+        assertNotNull(pass, "Invalid password");
+        byte[] clientSalt;
+        byte[] serverSalt = genSalt(VERSION.ONE.getSalt().length);
+        if (pass.startsWith("v1:")) {
+            byte[] b = Base64.decode(u.getPassword());
+            clientSalt = new byte[VERSION.ONE.getSalt().length];
+            System.arraycopy (b, 1+clientSalt.length, clientSalt, 0, clientSalt.length);
+            pass = pass.substring(3);
+        } else {
+            clientSalt = genSalt(VERSION.ONE.getSalt().length);
+            pass = upgradeClearPassword(pass, clientSalt);
+        }
+        u.setPassword(genV1Hash(pass, serverSalt, clientSalt));
     }
 
     private String genV1Hash(String password, byte[] salt, byte[] clientSalt) throws BLException {
@@ -259,6 +259,18 @@ public class UserManager {
             // should never happen, SHA-256 is a supported algorithm
         }
         return null;
+    }
+
+    // HELPER METHODS
+    protected void assertNotNull (Object obj, String error) throws BLException {
+        if (obj == null)
+            throw new BLException (error);
+    }
+    protected void assertTrue (boolean condition, String error)
+            throws BLException
+    {
+        if (!condition)
+            throw new BLException (error);
     }
 
     public enum VERSION {
@@ -313,4 +325,8 @@ public class UserManager {
             return UNKNOWN;
         }
     }
+
+
+
+
 }

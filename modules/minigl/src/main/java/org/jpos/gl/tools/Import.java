@@ -215,10 +215,10 @@ public class Import implements EntityResolver {
         Account chart = glt.getJournal().getChart ();
         while (iter.hasNext()) {
             Element elem = (Element) iter.next ();
-            GLEntry entry = 
+            GLEntry entry =
                 "credit".equals (elem.getAttributeValue ("type")) ?
-                ((GLEntry) new GLCredit ()) :
-                ((GLEntry) new GLDebit ());
+                (new GLCredit ()) :
+                (new GLDebit ());
             entry.fromXML (elem);
             entry.setAccount (getFinalAccount (sess, chart, elem));
             entry.setTransaction (glt);

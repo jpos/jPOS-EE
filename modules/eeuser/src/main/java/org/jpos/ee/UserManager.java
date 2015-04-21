@@ -181,7 +181,7 @@ public class UserManager {
 
     // VERSION ONE IMPLEMENTATION
     private String upgradeClearPassword (String clearpass, byte[] salt) {
-        return ISOUtil.hexString(genV1ClientHash(salt, clearpass));
+        return ISOUtil.hexString(genV1ClientHash(clearpass, salt));
     }
 
     private byte[] genSalt(int l) {
@@ -244,7 +244,7 @@ public class UserManager {
         }
     }
 
-    private byte[] genV1ClientHash (byte[] seed, String clearpass) {
+    private byte[] genV1ClientHash (String clearpass, byte[] seed) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             int iterations = VERSION.ONE.getIterations();

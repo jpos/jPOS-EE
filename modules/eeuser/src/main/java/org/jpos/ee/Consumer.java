@@ -27,7 +27,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 @SuppressWarnings("unused")
 public class Consumer extends Cloneable implements Serializable, SoftDelete {
     private String id;
-    private String secret;
+    private String kid;
+    private byte[] secureData;
     private User user;
     private boolean deleted;
     private boolean active;
@@ -65,12 +66,20 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
         return roles;
     }
 
-    public String getSecret() {
-        return secret;
+    public String getKid() {
+        return kid;
     }
 
-    public void setSecret(String secret) {
-        this.secret = secret;
+    public void setKid(String kid) {
+        this.kid = kid;
+    }
+
+    public byte[] getSecureData() {
+        return secureData;
+    }
+
+    public void setSecureData(byte[] secureData) {
+        this.secureData = secureData;
     }
 
     public User getUser() {

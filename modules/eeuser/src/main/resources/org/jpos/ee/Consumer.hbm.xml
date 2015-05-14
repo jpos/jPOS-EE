@@ -25,7 +25,8 @@
     <id name="id" column="id" type="string">
       <generator class="assigned" />
     </id>
-    <property name="secret" length="8192" type="string" />
+    <property name="kid"           type="string" length="8" />
+    <property name="secureData"    type="binary" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />
 

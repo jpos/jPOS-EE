@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 import java.util.Iterator;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
 /** @author Hibernate CodeGenerator */

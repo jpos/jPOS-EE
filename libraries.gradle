@@ -15,7 +15,7 @@ ext {
             jpos: "org.jpos:jpos:${jposVersion}",
 
             //Apache Commons
-            commons_lang: 'commons-lang:commons-lang:2.6',
+            commons_lang: 'org.apache.commons:commons-lang3:3.4',
             commons_beanutils: 'commons-beanutils:commons-beanutils:1.9.2',
             commons_logging: 'commons-logging:commons-logging:1.2',
 

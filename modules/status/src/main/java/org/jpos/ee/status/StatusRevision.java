@@ -18,7 +18,7 @@
 
 package org.jpos.ee.status;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jpos.ee.Revision;
 
 import java.io.Serializable;

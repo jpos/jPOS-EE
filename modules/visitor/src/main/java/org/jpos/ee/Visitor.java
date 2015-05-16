@@ -21,7 +21,7 @@ package org.jpos.ee;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @SuppressWarnings("unused")
 public class Visitor implements Serializable {

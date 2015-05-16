@@ -20,9 +20,9 @@ package org.jpos.ee;
 
 import java.util.*;
 import java.io.Serializable;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SuppressWarnings("unused")
 public class User extends Cloneable implements Serializable, SoftDelete {

@@ -121,7 +121,6 @@ public class UserManager {
         return false;
     }
 
-
     /**
      * @param u the user
      * @param clearpass new password in clear

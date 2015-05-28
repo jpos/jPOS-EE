@@ -7,6 +7,13 @@
   <nick>apr</nick>
   <name>Alejandro Revilla</name>
  </user>
+ <user>
+  <nick>travis</nick>
+  <name>Travis build</name>
+  <grant>read</grant>
+  <grant>write</grant>
+  <grant>grant</grant>
+ </user>
 
  <!-- ADD YOUR username here -->
  
@@ -104,6 +111,9 @@
   <grant user="bob">post</grant>
   <grant user="bob">checkpoint</grant>
   <grant user="bob">summarize</grant>
+  <grant user="travis">post</grant>
+  <grant user="travis">checkpoint</grant>
+  <grant user="travis">summarize</grant>
   <rule clazz="org.jpos.gl.rule.CanPost">
    Verify permissions, start/end dates, status, and chart
   </rule>
@@ -140,6 +150,9 @@
   <grant user="bob">post</grant>
   <grant user="bob">checkpoint</grant>
   <grant user="bob">summarize</grant>
+  <grant user="travis">post</grant>
+  <grant user="travis">checkpoint</grant>
+  <grant user="travis">summarize</grant>
   <rule clazz="org.jpos.gl.rule.CanPost">
    Verifies permissions, start/end dates, status, and chart
   </rule>

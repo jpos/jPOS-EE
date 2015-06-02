@@ -28,7 +28,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 public class User extends Cloneable implements Serializable, SoftDelete {
     private Long id;
     private String nick;
-    private String password;
+    private String passwordHash;
     private String name;
     private String email;
     private Set<Role> roles;
@@ -73,11 +73,11 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setId (Long id) {
         this.id = id;
     }
-    public void setPassword (String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
-    public String getPassword () {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
     public void setDeleted (boolean deleted) {
         this.deleted = deleted;

@@ -1,12 +1,10 @@
 package org.jpos.ee;
 
-import org.bouncycastle.util.encoders.Base64;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -33,8 +31,8 @@ public class EEUserTest {
         user.setName("User Administrator");
         user.setActive(true);
         db.session().save(user);
-        UserManager mgr = new UserManager(db);
-        mgr.setPassword(user, "test");
+        UserManager mgr = new UserManager(db, UserManager.VERSION.ZERO);
+        mgr.setPassword(user, "test", null);
         Role role = new Role("admin");
         Set<Permission> perms = role.getPermissions();
         perms.add(Permission.valueOf("login"));
@@ -56,19 +54,23 @@ public class EEUserTest {
         assertTrue("User has any permissions", u.hasAnyPermission(new String[]{"nologin", "admin", "role.admin"}));
         assertFalse("User don't have 'superuser' permission", u.hasPermission("superuser"));
         assertTrue("User password is 'test'", mgr.checkPassword(u, "test"));
-        assertEquals("User hash is correct", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPassword());
-        assertTrue("Upgrade password", mgr.upgradePassword(u, "test"));
-        assertNotEquals("User hash has changed", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPassword());
-        assertTrue("User upgraded password is still 'test'", mgr.checkPassword(u, "test"));
-
-        byte[] b = Base64.decode(u.getPassword());
-        byte[] clientSalt = new byte[UserManager.VERSION.ONE.getSalt().length];
-        System.arraycopy(b, 1 + clientSalt.length, clientSalt, 0, clientSalt.length);
-
-        Method method = UserManager.class.getDeclaredMethod("upgradeClearPassword", String.class, byte[].class);
-        method.setAccessible(true);
-        String upgradedClearPass = "v1:" + method.invoke(mgr, "test", clientSalt);
-        assertTrue("User upgraded password is still 'hash(test)'", mgr.checkPassword(u, upgradedClearPass));
+        assertEquals("User hash is correct", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
+        assertFalse("Password has to be in history", mgr.checkNewPassword(u, "test"));
+        mgr.upgradePassword(u, "test");
+        assertNotEquals("User hash has changed", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
+        assertTrue("User password is still 'test'", mgr.checkPassword(u, "test"));
+        assertNotEquals("User hash has changed", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
+        assertFalse("Password has to be in history", mgr.checkNewPassword(u, "test"));
+        mgr.setPassword(u, "test1");
+        mgr.setPassword(u, "test2");
+        mgr.setPassword(u, "test3");
+        assertFalse("Password 1 has to be in history", mgr.checkNewPassword(u, "test1"));
+        assertFalse("Password 2 has to be in history", mgr.checkNewPassword(u, "test2"));
+        assertFalse("Password 3 has to be in history", mgr.checkNewPassword(u, "test3"));
+        assertTrue("User password is now 'test3'", mgr.checkPassword(u, "test3"));
+        mgr.setPassword(u, "test");
+        assertTrue("User password is back to 'test'", mgr.checkPassword(u, "test"));
+        assertEquals ("History size is ", 5, u.getPasswordhistory().size());
         db.commit();
     }
 

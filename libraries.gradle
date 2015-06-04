@@ -6,6 +6,7 @@ ext {
     jettyVersion = '9.2.10.v20150310'
     servletApiVersion = '3.0.1'
     websocketApiVersion = '1.0'
+    jgroupsVersion = '3.6.3.Final'
 
     libraries = [
             //jUnit (Tests)
@@ -72,6 +73,9 @@ ext {
 
             // Quartz Scheduler
             quartz: 'org.quartz-scheduler:quartz:2.2.1',
+
+            // JGroups
+            jgroups: "org.jgroups:jgroups:${jgroupsVersion}"
     ]
 
     jettyLibs = [

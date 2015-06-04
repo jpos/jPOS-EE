@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: RSpace Module'
+
+dependencies {
+    compile libraries.jpos
+    compile libraries.jgroups
+}
+

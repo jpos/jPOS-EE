@@ -86,13 +86,13 @@ ext {
             libraries.jetty_jmx,
             libraries.jetty_annotations,
             libraries.jetty_websocket,
+            libraries.jetty_security
     ]
 
     /*
             libraries.jetty_plus,
             libraries.jetty_jndi,
             libraries.jetty_annotations,
-            libraries.jetty_security,
             libraries.jetty_policy,
             libraries.jetty_rewrite,
             libraries.jetty_servlets,

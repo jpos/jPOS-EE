@@ -165,7 +165,6 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
-            .append("user", getUser())
             .toString();
     }
     public boolean equals(Object other) {

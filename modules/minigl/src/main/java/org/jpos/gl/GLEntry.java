@@ -233,7 +233,7 @@ public class GLEntry {
         setDetail (elem.getChildTextTrim ("detail"));
         setTags   (elem.getChildTextTrim ("tags"));
         setCredit ("credit".equals (elem.getAttributeValue ("type")));
-        setLayer (elem.getAttributeValue ("layer"));
+        setLayer  (toShort(elem.getAttributeValue("layer")));
         setAmount (new BigDecimal (elem.getChild ("amount").getText()));
     }
     /**
@@ -287,9 +287,8 @@ public class GLEntry {
             .append("account", getAccount())
             .toString();
     }
-    private void setLayer (String s) {
-        if (s != null)
-            setLayer (Short.parseShort (s));
+    private short toShort (String s) {
+        return s != null ? Short.parseShort (s) : 0;
     }
 }
 

@@ -898,7 +898,7 @@ public class GLSession {
      * @param acct the account.
      * @param layer the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short layer) 
         throws HibernateException, GLException
@@ -911,7 +911,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short[] layers) 
         throws HibernateException, GLException
@@ -924,7 +924,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers comma separated list of layers
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, String layers) 
         throws HibernateException, GLException
@@ -937,7 +937,7 @@ public class GLSession {
      * @param acct the account.
      * @param date date (inclusive).
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date) 
         throws HibernateException, GLException
@@ -951,7 +951,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layer layer
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short layer) 
         throws HibernateException, GLException
@@ -965,12 +965,26 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layers layers
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short[] layers) 
         throws HibernateException, GLException
     {
         return getBalances (journal, acct, date, true, layers, 0L) [0];
+    }
+    /**
+     * Balance for account in a given journal in a given date.
+     * @param journal the journal.
+     * @param acct the account.
+     * @param date date (inclusive).
+     * @param layers comma separated list of layers
+     * @return balance at given date.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public BigDecimal getBalance (Journal journal, Account acct, Date date, String layers)
+        throws HibernateException, GLException
+    {
+        return getBalances (journal, acct, date, true, toLayers(layers), 0L) [0];
     }
     /**
      * Get Both Balances at given date
@@ -979,7 +993,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param inclusive either true or false
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances 
         (Journal journal, Account acct, Date date, boolean inclusive) 
@@ -997,7 +1011,7 @@ public class GLSession {
      * @param layers the layers
      * @param maxId maximum GLEntry ID to be considered in the query (if greater than zero)
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances 
         (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId) 
@@ -1062,7 +1076,7 @@ public class GLSession {
      * @param start date (inclusive).
      * @param end date (inclusive).
      * @return Account detail for given period.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public AccountDetail getAccountDetail 
         (Journal journal, Account acct, Date start, Date end, short[] layers) 
@@ -1114,7 +1128,7 @@ public class GLSession {
      * @param date date (null for last checkpoint)
      * @param inclusive either true or false
      * @return Most recent check point for given date.
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public Checkpoint getRecentCheckpoint
         (Journal journal, Account acct, Date date, boolean inclusive, short[] layers) 
@@ -1162,7 +1176,7 @@ public class GLSession {
      * @param acct the account
      * @param date checkpoint date (inclusive)
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint 
         (Journal journal, Account acct, Date date, int threshold)
@@ -1176,7 +1190,7 @@ public class GLSession {
      * @param date checkpoint date (inclusive)
      * @param layers taken into account in this checkpoint
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint 
         (Journal journal, Account acct, Date date, int threshold, short[] layers) 
@@ -1232,7 +1246,7 @@ public class GLSession {
      * Lock a journal.
      * @param journal the journal.
      * @throws HibernateException on database errors.
-     * @throws GLException if user doesn't have POST permission on this jounral.
+     * @throws GLException if user doesn't have POST permission on this journal.
      */
     public void lock (Journal journal) 
         throws HibernateException, GLException
@@ -1244,7 +1258,7 @@ public class GLSession {
      * Lock an account in a given journal.
      * @param journal the journal.
      * @param acct the account.
-     * @throws GLException if user doesn't have POST permission on this jounral.
+     * @throws GLException if user doesn't have POST permission on this journal.
      * @throws HibernateException on database errors.
      */
     public void lock (Journal journal, Account acct) 

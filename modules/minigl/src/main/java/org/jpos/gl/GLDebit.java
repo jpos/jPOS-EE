@@ -22,5 +22,12 @@ public class GLDebit extends GLEntry {
     public GLDebit() {
         super();
     }
+
+    @Override
+    public boolean isCredit() { return false; }
+
+    @Override
+    public boolean isDebit() { return true; }
+
 }
 

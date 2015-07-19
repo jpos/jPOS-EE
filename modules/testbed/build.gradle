@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: Testbed'
+
+dependencies {
+    compile project(':modules:core')
+}
+
+apply from: '../../jpos-app.gradle'
+

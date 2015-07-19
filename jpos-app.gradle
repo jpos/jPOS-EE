@@ -1,0 +1,116 @@
+def archiveJarName="${project.name}-${project.version}.jar"
+def archiveWarName="${project.name}-${project.version}.war"
+project.ext {
+    targetConfiguration = new Properties()
+    def target = project.hasProperty('target') ? target : 'devel'
+    targetConfiguration.put('jarname', archiveJarName.toString())
+    targetConfiguration.put('warname', archiveWarName.toString())
+    targetConfiguration.put('target', target.toString())
+    targetConfiguration.put("buildTimestamp", new Date().format("yyyy-MM-dd HH:mm:ss z"));
+    File cfgFile = file("../../${target}.properties")
+    if (cfgFile.exists()) {
+        cfgFile.withInputStream{
+            targetConfiguration.load(it);   
+        }
+    }
+}
+
+// We build a CopySpec for consistency
+def jposCopySpec = copySpec {
+    from(file("src/dist")) {
+        exclude 'cfg/*.jks'
+        exclude '**/*.jpg'
+        exclude '**/*.gif'
+        exclude '**/*.png'
+        exclude '**/*.pdf'
+        filter(
+            org.apache.tools.ant.filters.ReplaceTokens, 
+            tokens: targetConfiguration
+        )
+    }
+    from(file("src/dist")) {
+        include 'cfg/*.jks'
+        include '**/*.jpg'
+        include '**/*.gif'
+        include '**/*.png'
+        include '**/*.pdf'
+    }
+    from(jar) {
+        rename archiveJarName, "${targetConfiguration.jarname}"
+    }
+    into("lib") {
+        from(configurations.runtime) {
+            exclude "vaadin*.jar"         // vaadin compiler 
+            exclude "servlet-api*.jar"    // dependency hack 
+        }
+    }
+    into("webapps") {
+        from(file("build/libs")) {
+            include '*.war'
+        }
+    }
+}
+
+// Create the jar's manifest
+jar.manifest {
+    attributes \
+        'Implementation-Title': project.name,
+        'Implementation-Version': project.version,
+        'Main-Class': 'org.jpos.q2.Q2',
+        'Class-Path': configurations.runtime.collect { "lib/" + it.getName() }.join(' ')
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.properties'
+        include '**/*.xml'
+        include '**/*.cfg'
+        include '**/*.asc'
+        filter(
+            org.apache.tools.ant.filters.ReplaceTokens, 
+            tokens: targetConfiguration
+        )
+    }
+}
+
+//--------------------------------------------------
+// TASKS
+//--------------------------------------------------
+
+task version (type: JavaExec, dependsOn: classes) {
+    description = "Shows jPOS Version"
+    main = 'org.jpos.q2.Q2'
+    args = ['--version']
+    classpath configurations.runtime 
+}
+
+task dist(type: Tar) {
+    description 'Creates tar distribution'
+    into "$project.name-$version"
+    with jposCopySpec
+    compression = Compression.GZIP
+    extension "tar.gz"
+}
+
+task installApp(type: Sync) {
+    description 'Installs jPOS based application'
+    into { file("${project.buildDir}/install/${project.name}") }
+    with jposCopySpec
+}
+
+task wrapper( type: Wrapper ) {
+    description = "Generate gradlew[.bat]"
+    gradleVersion = '1.5'
+}
+
+task installResources(dependsOn: 'classes', type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'org.jpos.q2.install.Install'
+    args = ["--outputDir=src/dist"]
+}
+
+task viewTests (description: 'Open Test Reports') << {
+    Class.forName("java.awt.Desktop").newInstance().browse(
+        new File("${buildDir}/reports/tests", 'index.html').toURI())
+}
+

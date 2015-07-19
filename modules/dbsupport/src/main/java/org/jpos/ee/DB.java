@@ -54,12 +54,20 @@ public class DB
                                                                                                    false);
     }
 
-    public DB()
-    {
+    /**
+     * Creates DB Object using default Hibernate instance
+     */
+    public DB() {
+        super();
     }
 
+    /**
+     * Creates DB Object using default Hibernate instance
+     * @param log Log object
+     */
     public DB(Log log)
     {
+        super();
         setLog(log);
     }
 

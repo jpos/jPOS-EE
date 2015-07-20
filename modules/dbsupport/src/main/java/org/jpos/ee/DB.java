@@ -31,6 +31,7 @@ import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
+import java.io.Closeable;
 import java.util.Set;
 
 /**
@@ -41,8 +42,7 @@ import java.util.Set;
  *          to Hibernate O/R mapping engine
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class DB
-{
+public class DB implements Closeable {
     Session session;
     Log log;
 
@@ -227,6 +227,22 @@ public class DB
     public synchronized void setLog(Log log)
     {
         this.log = log;
+    }
+
+    public static Object exec (DBAction action) {
+        try (DB db = new DB()) {
+            db.open();
+            return action.exec(db);
+        }
+    }
+    public static Object execWithTransaction (DBAction action) {
+        try (DB db = new DB()) {
+            db.open();
+            db.beginTransaction();
+            Object obj = action.exec(db);
+            db.commit();
+            return obj;
+        }
     }
 
     @SuppressWarnings({"unchecked"})

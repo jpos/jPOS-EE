@@ -1,0 +1,2 @@
+<qbean name='testbed' logger='Q2' class='org.jpos.testbed.Test' />
+

@@ -1,0 +1,6 @@
+description = 'jPOS-EE :: Rest'
+
+dependencies {
+    compile project(':modules:core')
+    compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+}

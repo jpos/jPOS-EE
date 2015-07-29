@@ -22,7 +22,8 @@ include ':modules:core',\
         ':modules:quartz', \
         ':modules:visitor', \
         ':modules:rspace', \
-        ':modules:testbed'
+        ':modules:testbed', \
+        ':modules:eerest'
 
 rootProject.name = 'jposee'
 

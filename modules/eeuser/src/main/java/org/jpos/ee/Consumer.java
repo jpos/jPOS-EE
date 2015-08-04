@@ -32,6 +32,8 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     private User user;
     private boolean deleted;
     private boolean active;
+    private Date startDate;
+    private Date endDate;
     private Set<Role> roles;
     private Map<String,String> props;
 
@@ -176,8 +178,24 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     }
     public int hashCode() {
         return new HashCodeBuilder()
+            .append(getClass().getName())
             .append(getId())
             .toHashCode();
     }
-}
 
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+}

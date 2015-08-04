@@ -36,7 +36,9 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private boolean deleted;
     private boolean active;
     private boolean verified;
-	private List<PasswordHistory> passwordhistory;
+    private Date startDate;
+    private Date endDate;
+    private List<PasswordHistory> passwordhistory;
 
     public User() {
         super();
@@ -203,6 +205,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     }
     public int hashCode() {
         return new HashCodeBuilder()
+            .append(getClass().getName())
             .append(getId())
             .toHashCode();
     }
@@ -215,6 +218,22 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         sb.append (Long.toString(getId()));
         sb.append (')');
         return sb.toString();
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }
 

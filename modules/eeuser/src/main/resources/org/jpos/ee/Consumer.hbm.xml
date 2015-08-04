@@ -29,7 +29,8 @@
     <property name="secureData"    type="binary" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />
-
+    <property name="startDate"     type="date" />
+    <property name="endDate"       type="date" />
     <many-to-one name="user"
                  class="org.jpos.ee.User"
                  column="eeuser"

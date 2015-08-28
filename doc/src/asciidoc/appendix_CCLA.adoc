@@ -3,7 +3,7 @@
 == Corporate Contributor License Agreement
 
 [role='license']
-===================================================================================
+================================================================
 jPOS Project
 Contributor License Agreement V1.0
 based on http://www.apache.org/licenses/
@@ -23,7 +23,7 @@ change your rights to use your own Contributions for any other purpose.
 
 If you have not already done so, please complete this agreement and
 commit it to the jPOS repository at
-https://svn.sourceforge.net/svnroot/jpos at legal/cla-USERNAME.txt using
+https://github.com/jpos/jPOS at legal/cla-USERNAME.txt using
 your authenticated SourceForge login. If you do not have commit
 privilege to the repository, please email the file to license@jpos.org.
 If possible, digitally sign the committed file, otherwise also send a
@@ -32,7 +32,7 @@ signed Agreement to jPOS.org.
 Please read this document carefully before signing and keep a copy for
 your records.
 
-[frame='none',cols="20%,80%"]
+[frame='none',cols="20%,60%"]
 |================================================================
 |  Full Name         |
 |  E-Mail            |
@@ -47,9 +47,9 @@ Contribution.  Except for the license granted herein to jPOS.org
 and recipients of software distributed by jPOS.org, You reserve
 all right, title, and interest in and to Your Contributions.
 
-1. *Definitions.* "You" (or "Your") shall mean the copyright owner or legal entity
-authorized by the copyright owner that is making this Agreement
-with jPOS.org. For legal entities, the entity making a
+1. *Definitions.* "You" (or "Your") shall mean the copyright owner 
+or legal entity authorized by the copyright owner that is making this 
+Agreement with jPOS.org. For legal entities, the entity making a
 Contribution and all other entities that control, are controlled
 by, or are under common control with that entity are considered to
 be a single Contributor. For the purposes of this definition,
@@ -121,7 +121,8 @@ applicable law or agreed to in writing, You provide Your
 Contributions on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
 OF ANY KIND, either express or implied, including, without
 limitation, any warranties or conditions of TITLE, NON-
-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A 
+PARTICULAR PURPOSE.
 
 8. Should You wish to submit work that is not Your original creation,
 You may submit it to jPOS.org separately from any
@@ -135,7 +136,6 @@ are personally aware, and conspicuously marking the work as
 which you become aware that would make these representations
 inaccurate in any respect.
 
-
 Date:
 
 Please sign:
@@ -143,4 +143,5 @@ Please sign:
 Name:
 
 Title:
-===================================================================================
+================================================================
+

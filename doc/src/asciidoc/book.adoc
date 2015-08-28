@@ -12,9 +12,9 @@ include::overview.adoc[]
 
 include::contributing.adoc[]
 
-include::getting_started.adoc[]
+// include::getting_started.adoc[]
 
-include::tutorial.adoc[]
+// include::tutorial.adoc[]
 
 Modules
 =======
@@ -26,7 +26,6 @@ include::introduction_module.adoc[]
 == Essensial Modules
 
 include::module_core.adoc[]
-
 include::module_txn.adoc[]
 
 == Database Support
@@ -40,11 +39,9 @@ include::module_freemarker_decorator.adoc[]
 == Simulators
 
 include::module_server_simulator.adoc[]
-
 include::module_client_simulator.adoc[]
 
-== Application components
-
+// == Application components
 //------------------------------------------------------------
 // ** UNIMPLEMENTED **
 //
@@ -75,9 +72,7 @@ Appendices
 ==========
 
 include::appendix_copyright.adoc[]
-
 include::appendix_license.adoc[]
-
 include::appendix_CLA.adoc[]
-
 include::appendix_CCLA.adoc[]
+

@@ -36,7 +36,7 @@ The `setup` process will create a default deployment descriptor in 'deploy/05_ss
     <auth-username>admin</auth-username>                                 <2>
     <authorized-keys-file>cfg/authorized_keys</authorized-keys-file>     <3>
 </sshd>
------------------------------------------------------------------------------
+----------------------------------------------------------------------------
 <1> The SSHD server will listen on this port.
 <2> The username the ssh client will use to connect to the SSHD server.
 <3> Points to a file containing public keys for every user who will be able to login
@@ -57,7 +57,7 @@ Your identification has been saved in /home/myuser/.ssh/id_rsa.  <3>
 Your public key has been saved in /home/myuser/.ssh/id_rsa.pub.  <4>
 The key fingerprint is:
 f6:61:a8:27:35:cf:4c:6d:13:22:70:cf:4c:c8:a0:23 myuser@nexus
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 <1> The command `ssh-keygen -t rsa` initiated the creation of the key pair.
 <2> No passphrase was entered (Enter key was pressed instead).
 <3> The private key was saved in .ssh/id_rsa.
@@ -84,5 +84,10 @@ ssh -p 2222 admin@localhost
 
 And you should be given access to Q2 Remote CLI.
 
-TIP: Windows Users can use Putty and use this link http://www.ualberta.ca/CNS/RESEARCH/LinuxClusters/pka-putty.html as a guide
-to get the contents for the 'authorized_keys' file.
+
+TIP
+===
+Windows Users can use Putty and use this link:http://www.ualberta.ca/CNS/RESEARCH/LinuxClusters/pka-putty.html[link]
+as a guide to get the contents for the 'authorized_keys' file.
+===
+

@@ -34,19 +34,20 @@ we are currently not using that one.
 
 ==== Step-by-step (the short version)
 
-1. Fork on GitHub (click Fork button)
-2. Clone to computer (`$ git clone git@github.com:~you~/jPOS-EE.git`)
-3. Don't forget to cd into your repo: (`$ cd jPOS-EE/`)
-4. Set up remote upstream (`$ git remote add upstream git://github.com/jpos/jPOS-EE.git`)
-5. Create a branch for new issue (`$ git checkout -b 100-new-feature`, if you don't have a bug report no worries just skip the number)
-6. Develop on issue branch. [Time passes, the main jPOS repository accumulates new commits]
-7. Commit changes to issue branch. (`$ git add . ; git commit`)
-8. Fetch upstream (`$ git fetch upstream`)
-9. Update local master (`$ git checkout master; git pull upstream master`)
-10. Repeat steps 5-8 till dev is complete
-11. Rebase issue branch (`$ git checkout 100-new-feature; git rebase master`)
-12. Push branch to GitHub (`$ git push origin 100-new-feature`)
-13. Issue pull request (Click Pull Request button)
+- Fork on GitHub (click Fork button)
+- Clone to computer (`$ git clone git@github.com:~you~/jPOS-EE.git`)
+- Don't forget to cd into your repo: (`$ cd jPOS-EE/`)
+- Set up remote upstream (`$ git remote add upstream git://github.com/jpos/jPOS-EE.git`)
+- Create a branch for new issue (`$ git checkout -b 100-new-feature`, 
+  if you don't have a bug report no worries just skip the number)
+- Develop on issue branch. [Time passes, the main jPOS repository accumulates new commits]
+- Commit changes to issue branch. (`$ git add . ; git commit`)
+- Fetch upstream (`$ git fetch upstream`)
+- Update local master (`$ git checkout master; git pull upstream master`)
+- Repeat steps 5-8 till dev is complete
+- Rebase issue branch (`$ git checkout 100-new-feature; git rebase master`)
+- Push branch to GitHub (`$ git push origin 100-new-feature`)
+- Issue pull request (Click Pull Request button)
 
 Extra reading material on forking can be found at : http://gun.io/blog/how-to-github-fork-branch-and-pull-request/
 
@@ -54,7 +55,8 @@ Extra reading material on forking can be found at : http://gun.io/blog/how-to-gi
 ========================================================================
 Item 11 (rebase) in the previous list is very often forgotten, but it's
 extremely important. Be kind with the rest of the team and do it.
-Read this http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html[post by Git author Linus Torvalds] to understand why.
+Read this http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html[post by Git author Linus Torvalds] 
+to understand why.
 ========================================================================
 
 ==== Commit messages

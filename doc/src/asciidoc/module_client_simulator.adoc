@@ -215,32 +215,33 @@ timeout using the timeout attribute of the testcase element.
 At the end, you get a ticket with the test results.
 
 [source,xml]
----------------------------------------------------------------------------------
-<log realm="org.jpos.simulator.TestRunner" at="Mon Oct 25 13:46:13 UYT 2004.581">
+--------------------------------------------------------
+<log realm="org.jpos.simulator.TestRunner" at="......">
   <results>
-    Simple Echo Test                                   [OK] 58ms.
-    Simple Echo Test                                   [OK] 38ms.
-    Simple Echo Test                                   [OK] 70ms.
-    Simple Echo Test                                   [OK] 23ms.
-    Simple Echo Test                                   [OK] 56ms.
-    Simple Echo Test                                   [OK] 24ms.
-    Simple Echo Test                                   [OK] 73ms.
-    Simple Echo Test                                   [OK] 107ms.
-    Simple Echo Test                                   [OK] 20ms.
-    Simple Echo Test                                   [OK] 50ms.
-    Simple Echo Test                                   [OK] 23ms.
-    Simple Echo Test                                   [OK] 24ms.
-    Simple Echo Test                                   [OK] 86ms.
-    Simple Echo Test                                   [OK] 24ms.
-    Simple Echo Test                                   [OK] 24ms.
-    Simple Echo Test                                   [OK] 23ms.
-    Simple Echo Test                                   [OK] 26ms.
-    Simple Echo Test                                   [OK] 21ms.
-    Simple Echo Test                                   [OK] 22ms.
-    Simple Echo Test                                   [OK] 79ms.
-    Simple Echo Test 2                                 [OK] 22ms.
-    elapsed server=893ms(62%), simulator=526ms(37%), total=1419ms
+    Simple Echo Test        [OK] 58ms.
+    Simple Echo Test        [OK] 38ms.
+    Simple Echo Test        [OK] 70ms.
+    Simple Echo Test        [OK] 23ms.
+    Simple Echo Test        [OK] 56ms.
+    Simple Echo Test        [OK] 24ms.
+    Simple Echo Test        [OK] 73ms.
+    Simple Echo Test        [OK] 107ms.
+    Simple Echo Test        [OK] 20ms.
+    Simple Echo Test        [OK] 50ms.
+    Simple Echo Test        [OK] 23ms.
+    Simple Echo Test        [OK] 24ms.
+    Simple Echo Test        [OK] 86ms.
+    Simple Echo Test        [OK] 24ms.
+    Simple Echo Test        [OK] 24ms.
+    Simple Echo Test        [OK] 23ms.
+    Simple Echo Test        [OK] 26ms.
+    Simple Echo Test        [OK] 21ms.
+    Simple Echo Test        [OK] 22ms.
+    Simple Echo Test        [OK] 79ms.
+    Simple Echo Test 2      [OK] 22ms.
+    elapsed server=893ms(62%), 
+    simulator=526ms(37%), total=1419ms
   </results>
 </log>
----------------------------------------------------------------------------------
+--------------------------------------------------------
 

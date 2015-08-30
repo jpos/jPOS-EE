@@ -23,7 +23,8 @@ include ':modules:core',\
         ':modules:visitor', \
         ':modules:rspace', \
         ':modules:testbed', \
-        ':modules:eerest'
+        ':modules:eerest', \
+        ':modules:fsdmsgx'
 
 rootProject.name = 'jposee'
 

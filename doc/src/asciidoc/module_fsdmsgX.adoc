@@ -1,0 +1,149 @@
+=== FSDMsgX
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+|*What:*| This field/mesage packager can be used to wire a message parser with java code. Its utility library to enable you to parse grammar usually used by text (can be binary as well) messages
+that are field separator delimited, fixed length, branching based on data
+parsed, looking ahead in the stream for a specific byte and base future
+parsing decisions. Provides out of the box PCI compliance and ability to add java objects to meet you compliance needs.
+|*When:*| Available as of jPOS-EE 2.0.9
+|*Who:*| The jPOS.org team (contributed by @chhil)
+|*How:*| Posted by the jPOS-EE team.
+|*Where:*| Directory modules/fsdpackager available in the jPOS-EE main git repository
+|*Why:*| When schema based FSD does not meet your parsing needs to write more complex parsing rules.
+|*Status:*| Production grade
+|*Dependencies:*| module jpos
+|*License:*| <<appendix_license,GNU Affero General Public License version 3>> 
+|=================================================================
+
+==== Using the packagers
+
+===== FixedFieldPackager
+
+Consider a specification that states field 1 is a fixed field of 6 and field 2 is a fixed stram of 3 bytes.
+Stream of bytes=123456AB
+If the specification is followed:
+Field1 = 123456
+Field2 = AB
+
+.FixedFieldPackager Usage [unpacking raw bytes]
+[source,java]
+-------------
+
+    FSDMsgX msg = new FSDMsgX("Example1");
+    FixedFieldPackager field1 = new FixedFieldPackager(
+        "Field1", 6, AsciiInterpreter.INSTANCE
+    );
+    FixedFieldPackager field2 = new FixedFieldPackager(
+        "Field2", 2, AsciiInterpreter.INSTANCE
+    );
+    msg.add(field1);
+    msg.add(field2);
+
+    String s = "123456ABEXTRA";// there are EXTRA bytes in the stream
+
+    int offset = msg.unpack(s.getBytes());
+    System.out.println("Offset="+offset);
+    System.out.println("Field1="+msg.get("Field1"));
+    System.out.println("Field2="+msg.get("Field2"));
+    System.out.println(msg.dump("dump"));
+    System.out.println(msg.getParserTree("tree>"));
+    System.out.println(msg.hexDump(""));
+
+-------------
+
+*Output*
+
+[source,xml]
+------------
+Offset=8
+Field1=123456
+Field2=AB
+dump<fsdmsgX name="Example1">
+dump	<field id="Field1" value="123456"/>
+dump	<field id="Field2" value="AB"/>
+dump</fsdmsgX>
+tree>[Example1]
+tree>Field [Field1] : Fixed [6] : 123456
+tree>Field [Field2] : Fixed [2] : AB
+0000  31 32 33 34 35 36 41 42             123456AB
+------------
+
+* Create the main container object FSDMsgX.
+* Create the individual field packagers for field1 and field2.
+* Add the individual field packagers to the container.
+* Call the unpack method on the input bytes to parse the stream.
+* The unpac method returns the offset in the stream where the parser has reached,
+  we parsed a total of 8 bytes, the offset is 8 (its 0 based so its at the 9^th^
+  position.
+
+* Notice the fields are accessible via the containers get method.
+* The containers dump method, provides a pretty xml ( the prefix of "dump" to identify it in the output.
+* The container has a getParseTree method that display your composite packager.
+  This will help once you get into complex composite packager. The use of of the
+  prefix "tree" is used to identify its output.
+* The container has a hexdump method that dumps the hex equivalent of the
+  unpacked stream. Notice EXTRA is not there as there was no rule to unpack it.
+* If the input string was s = "123456" then an ISOException would be thrown
+  telling you precisely what was wrong.  org.jpos.iso.ISOException: Field
+  [Field2] at offset [6]:Expecting 2 bytes found 0
+	
+.FixedFieldPackager Usage [packing object into bytes]
+[source,java]
+-------------
+    FSDMsgX msg = new FSDMsgX("Example1");
+    FixedFieldPackager field1 = new FixedFieldPackager(
+        "Field1", 6, AsciiInterpreter.INSTANCE
+    );
+    FixedFieldPackager field2 = new FixedFieldPackager(
+        "Field2", 2, AsciiInterpreter.INSTANCE
+    );
+
+    msg.add(field1);
+    msg.add(field2);
+
+    msg.set("Field1", "ABCDEF");
+    msg.set("Field2", "12");
+            
+    byte[] outStream = msg.pack();
+
+    System.out.println(msg.dump("dump"));
+    System.out.println(msg.getParserTree("tree>"));
+    System.out.println(msg.hexDump(""));
+    System.out.println(ISOUtil.hexdump(outStream));
+-------------
+
+*Output*
+[source,xml]
+------------
+dump<fsdmsgX name="Example1">
+dump	<field id="Field1" value="ABCDEF"/>
+dump	<field id="Field2" value="12"/>
+dump</fsdmsgX>
+tree>[Example1]
+tree>Field [Field1] : Fixed [6] : ABCDEF
+tree>Field [Field2] : Fixed [2] : 12
+0000  41 42 43 44 45 46 31 32                 ABCDEF12
+0000  41 42 43 44 45 46 31 32                 ABCDEF12
+------------
+
+* Set the fields in the container.
+* Call the unpack method on the container to serialize the object into a byte
+  array.
+* You can verify that data looks accurate in dump method.
+* You can verify that the parser parsed it correctly.
+* You can verify the hexdump of the actual packed vyte array outstream is the
+  same as the hexdump of the container.
+
+===== VariableFieldPackager
+Used when the size of the field is variable and needs a delimiter to indicate
+the end of the field.
+
+Consider a specification that indicates a field FirstName can have a maximulm
+of 20 characters and will be terminate/delimited by a semi colon followed by a
+Lastname with a maximum of 10 characters terminated by a period.  The delimiter
+is important because I could have a name Tom, Tommy, Thomas to indicate the end
+of a name a delimiter is needed. If I did bot have a FirstName, a semi colon
+would be needed to indicate there is no first name.
+
+

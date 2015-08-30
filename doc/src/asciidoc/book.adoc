@@ -2,8 +2,9 @@ jPOS Extended Edition
 =====================
 :author: Alejandro Revilla
 :email: apr@jpos.org
-:revnumber: 2.0.1
-:jposee_version: 2.0.1
+:revnumber: 2.0.9
+:jposee_version: 2.0.9
+:toc:
 
 Introduction
 ============
@@ -56,6 +57,10 @@ include::module_client_simulator.adoc[]
 
 include::module_sshd.adoc[]
 
+== Contributed modules
+ 
+include::module_fsdmsgX.adoc[]
+
 //------------------------------------------------------------
 // ** UNIMPLEMENTED **
 //
@@ -74,5 +79,5 @@ Appendices
 include::appendix_copyright.adoc[]
 include::appendix_license.adoc[]
 include::appendix_CLA.adoc[]
-include::appendix_CCLA.adoc[]
+// include::appendix_CCLA.adoc[]
 

@@ -152,7 +152,7 @@ public class FSDMsgX extends AFSDFieldPackager {
 			sb.append(entry.getValue().dump(inner_prefix, getSetfields()));
 
 		}
-		sb.append(String.format("%s</fsdmgX>%n", prefix));
+		sb.append(String.format("%s</fsdmsgX>%n", prefix));
 		return sb.toString();
 	}
 

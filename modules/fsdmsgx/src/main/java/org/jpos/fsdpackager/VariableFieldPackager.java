@@ -173,7 +173,7 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 	@Override
 	public String getParserTree(String prefix) {
 
-		return String.format("%sField [%s] : VAR[0..%d] delimiter[0x%X] or EOM%n  %s", prefix, getName(),maxSize, delimiter.byteValue(), getValue()==null?"":": "+getValue());
+		return String.format("%sField [%s] : VAR[0..%d] delimiter[0x%X] or EOM  %s%n", prefix, getName(),maxSize, delimiter.byteValue(), getValue()==null?"":": "+getValue());
 
 	}
 

@@ -15,9 +15,7 @@ easily simulate a client is usually very useful. We at jPOS.org use it
 as a high level self test for our applications.
 |*Status:*| Stable.
 |*Dependencies:*| module jpos
-|*License:*| <<appendix_license,GNU Affero General Public License version 3>> The Client Simulator can be used to fire a suite of unit
-tests against an ISO-8583 server. The suite is defined by a set of XML
-files representing messages to be sent and their expected responses.
+|*License:*| <<appendix_license,GNU Affero General Public License version 3>>
 |=================================================================
 
 In order to simulate complex ISO-8583 interchanges, the client simulator

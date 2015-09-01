@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">18.299s</div>
+<div class="counter">16.068s</div>
 <p>duration</p>
 </div>
 </td>
@@ -82,7 +82,7 @@
 </thead>
 <tr>
 <td class="success">tests</td>
-<td>18.299s</td>
+<td>16.068s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -256,76 +256,76 @@
 <div id="tab2" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Sep 01, 2015 7:30:42 AM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
+<pre>Sep 01, 2015 11:02:14 AM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
 INFO: HCANN000001: Hibernate Commons Annotations {4.0.5.Final}
-Sep 01, 2015 7:30:42 AM org.hibernate.Version logVersion
+Sep 01, 2015 11:02:14 AM org.hibernate.Version logVersion
 INFO: HHH000412: Hibernate Core {4.3.10.Final}
-Sep 01, 2015 7:30:42 AM org.hibernate.cfg.Environment &lt;clinit&gt;
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Environment &lt;clinit&gt;
 INFO: HHH000206: hibernate.properties not found
-Sep 01, 2015 7:30:42 AM org.hibernate.cfg.Environment buildBytecodeProvider
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Environment buildBytecodeProvider
 INFO: HHH000021: Bytecode provider name : javassist
-Sep 01, 2015 7:30:42 AM org.hibernate.cfg.Configuration configure
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration configure
 INFO: HHH000043: Configuring from resource: /hibernate.cfg.xml
-Sep 01, 2015 7:30:42 AM org.hibernate.cfg.Configuration getConfigurationInputStream
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration getConfigurationInputStream
 INFO: HHH000040: Configuration resource: /hibernate.cfg.xml
-Sep 01, 2015 7:30:43 AM org.hibernate.cfg.Configuration doConfigure
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration doConfigure
 INFO: HHH000041: Configured SessionFactory: null
-Sep 01, 2015 7:30:43 AM org.hibernate.cfg.Configuration addResource
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration addResource
 INFO: HHH000221: Reading mappings from resource: org/jpos/ee/User.hbm.xml
-Sep 01, 2015 7:30:43 AM org.hibernate.cfg.Configuration addResource
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration addResource
 INFO: HHH000221: Reading mappings from resource: org/jpos/ee/Consumer.hbm.xml
-Sep 01, 2015 7:30:43 AM org.hibernate.cfg.Configuration addResource
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration addResource
 INFO: HHH000221: Reading mappings from resource: org/jpos/ee/Revision.hbm.xml
-Sep 01, 2015 7:30:43 AM org.hibernate.cfg.Configuration addResource
+Sep 01, 2015 11:02:14 AM org.hibernate.cfg.Configuration addResource
 INFO: HHH000221: Reading mappings from resource: org/jpos/ee/Role.hbm.xml
-Sep 01, 2015 7:30:43 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:14 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH010002: C3P0 using driver: org.h2.Driver at URL: jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000
-Sep 01, 2015 7:30:43 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:14 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000046: Connection properties: {user=sa, password=****}
-Sep 01, 2015 7:30:43 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:14 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000006: Autocommit mode: false
-Sep 01, 2015 7:30:43 AM com.mchange.v2.log.MLog &lt;clinit&gt;
+Sep 01, 2015 11:02:14 AM com.mchange.v2.log.MLog &lt;clinit&gt;
 INFO: MLog clients using java 1.4+ standard logging.
-Sep 01, 2015 7:30:43 AM com.mchange.v2.c3p0.C3P0Registry banner
+Sep 01, 2015 11:02:14 AM com.mchange.v2.c3p0.C3P0Registry banner
 INFO: Initializing c3p0-0.9.2.1 [built 20-March-2013 10:47:27 +0000; debug? true; trace: 10]
-Sep 01, 2015 7:30:44 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:15 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000149: JDBC isolation level: READ_COMMITTED
-Sep 01, 2015 7:30:44 AM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource getPoolManager
-INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@68c342ed [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@d5eed554 [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, identityToken -&gt; 1bqq2e59b11omar410mpbyu|2caba1ca, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 20, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@a6905385 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2e59b11omar410mpbyu|2545d1ca, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2e59b11omar410mpbyu|475ced90, numHelperThreads -&gt; 3 ]
-Sep 01, 2015 7:30:44 AM org.hibernate.dialect.Dialect &lt;init&gt;
+Sep 01, 2015 11:02:15 AM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource getPoolManager
+INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@d161a078 [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@ebfd8751 [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|4690efd, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 20, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@d06f74e8 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|1ea7aa4e, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|326edefb, numHelperThreads -&gt; 3 ]
+Sep 01, 2015 11:02:15 AM org.hibernate.dialect.Dialect &lt;init&gt;
 INFO: HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-Sep 01, 2015 7:30:44 AM org.hibernate.engine.jdbc.internal.LobCreatorBuilder useContextualLobCreation
+Sep 01, 2015 11:02:15 AM org.hibernate.engine.jdbc.internal.LobCreatorBuilder useContextualLobCreation
 INFO: HHH000424: Disabling contextual LOB creation as createClob() method threw error : java.lang.reflect.InvocationTargetException
-Sep 01, 2015 7:30:45 AM org.hibernate.engine.transaction.internal.TransactionFactoryInitiator initiateService
+Sep 01, 2015 11:02:15 AM org.hibernate.engine.transaction.internal.TransactionFactoryInitiator initiateService
 INFO: HHH000399: Using default transaction strategy (direct JDBC transactions)
-Sep 01, 2015 7:30:45 AM org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory &lt;init&gt;
+Sep 01, 2015 11:02:15 AM org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory &lt;init&gt;
 INFO: HHH000397: Using ASTQueryTranslatorFactory
 SLF4J: Failed to load class &quot;org.slf4j.impl.StaticLoggerBinder&quot;.
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-Sep 01, 2015 7:30:45 AM org.hibernate.cache.spi.UpdateTimestampsCache &lt;init&gt;
+Sep 01, 2015 11:02:15 AM org.hibernate.cache.spi.UpdateTimestampsCache &lt;init&gt;
 INFO: HHH000250: Starting update timestamps cache at region: org.hibernate.cache.spi.UpdateTimestampsCache
-Sep 01, 2015 7:30:45 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
+Sep 01, 2015 11:02:15 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
 WARN: HHH020003: Could not find a specific ehcache configuration for cache named [org.hibernate.cache.spi.UpdateTimestampsCache]; using defaults.
-Sep 01, 2015 7:30:45 AM org.hibernate.cache.internal.StandardQueryCache &lt;init&gt;
+Sep 01, 2015 11:02:15 AM org.hibernate.cache.internal.StandardQueryCache &lt;init&gt;
 INFO: HHH000248: Starting query cache at region: org.hibernate.cache.internal.StandardQueryCache
-Sep 01, 2015 7:30:45 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
+Sep 01, 2015 11:02:15 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
 WARN: HHH020003: Could not find a specific ehcache configuration for cache named [org.hibernate.cache.internal.StandardQueryCache]; using defaults.
-Sep 01, 2015 7:30:46 AM org.hibernate.dialect.Dialect &lt;init&gt;
+Sep 01, 2015 11:02:16 AM org.hibernate.dialect.Dialect &lt;init&gt;
 INFO: HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-Sep 01, 2015 7:30:46 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Sep 01, 2015 11:02:16 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000227: Running hbm2ddl schema export
-Sep 01, 2015 7:30:46 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:16 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH010002: C3P0 using driver: org.h2.Driver at URL: jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000
-Sep 01, 2015 7:30:46 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:16 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000046: Connection properties: {user=sa, password=****}
-Sep 01, 2015 7:30:46 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:16 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000006: Autocommit mode: false
-Sep 01, 2015 7:30:47 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Sep 01, 2015 11:02:16 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH000149: JDBC isolation level: READ_COMMITTED
-Sep 01, 2015 7:30:47 AM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource getPoolManager
-INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@41767d0a [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@bd88a4db [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, identityToken -&gt; 1bqq2e59b11omar410mpbyu|3c41ca4b, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 20, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@ff4def63 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2e59b11omar410mpbyu|2d6c1d9, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2e59b11omar410mpbyu|432e2082, numHelperThreads -&gt; 3 ]
-Sep 01, 2015 7:30:47 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Sep 01, 2015 11:02:16 AM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource getPoolManager
+INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@93ee985f [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@1294e50e [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|6e64a3b8, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 20, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@4639f603 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|220561bb, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq2yz9b11w6b7e1d97zzw|7578ffaf, numHelperThreads -&gt; 3 ]
+Sep 01, 2015 11:02:16 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000230: Schema export complete
 </pre>
 </span>
@@ -338,7 +338,7 @@ INFO: HHH000230: Schema export complete
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 2.3</a> at Sep 1, 2015 7:31:00 AM</p>
+<a href="http://www.gradle.org">Gradle 2.3</a> at Sep 1, 2015 11:02:30 AM</p>
 </div>
 </div>
 </body>

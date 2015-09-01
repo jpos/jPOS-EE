@@ -44,7 +44,7 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 		int lengthTotraverse;
 		if (maxSize <= inStream.length - offset) // length-offset = remaining
 													// bytes
-			lengthTotraverse = maxSize + offset + 1;// to incluse th delimiter
+			lengthTotraverse = maxSize + offset + 1;// to include th delimiter
 		else
 			lengthTotraverse = inStream.length;
 		while (i < lengthTotraverse) { // there is no point traversing to the
@@ -159,11 +159,11 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 
 		int numberOfPackedBytes = interpreter.getPackedLength(getValue().length());
 		String compliant = compliance.makeCompliant(getValue());
-		byte[] temp = new byte[numberOfPackedBytes];
+		byte[] temp = new byte[numberOfPackedBytes+1];// +1 for the delimiter
 		try {
 			interpreter.interpret(compliant, temp, 0);
+			temp[temp.length-1]= delimiter.byteValue();
 		} catch (ISOException e) {
-			// TODO Auto-generated catch block
 			return null;
 		}
 		return temp;

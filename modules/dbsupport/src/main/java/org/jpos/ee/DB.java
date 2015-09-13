@@ -18,51 +18,65 @@
 
 package org.jpos.ee;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.internal.util.ReflectHelper;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.jpos.ee.support.JPosHibernateConfiguration;
+import org.jpos.core.ConfigurationException;
+import org.jpos.ee.support.ModuleUtils;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
  * @author Alejandro P. Revilla
  * @version $Revision: 1.5 $ $Date: 2004/12/09 00:50:14 $
- *          <p/>
+ *          <p>
  *          DB encapsulate some housekeeping specific
  *          to Hibernate O/R mapping engine
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class DB implements Closeable {
+public class DB implements Closeable
+{
     Session session;
     Log log;
 
-    private static class HibernateResourceHolder
-    {
-        public static volatile HibernateAccessService INSTANCE = new DefaultHibernateAccessService(null,
-                                                                                                   new JPosHibernateConfiguration(),
-                                                                                                   null,
-                                                                                                   false);
-    }
+    private static SessionFactory sessionFactory = null;
+    private static String propFile;
 
     /**
      * Creates DB Object using default Hibernate instance
      */
-    public DB() {
+    public DB()
+    {
         super();
     }
 
     /**
      * Creates DB Object using default Hibernate instance
+     *
      * @param log Log object
      */
     public DB(Log log)
@@ -76,12 +90,137 @@ public class DB implements Closeable {
      */
     public SessionFactory getSessionFactory()
     {
-        return getHibernateAccessService().getSessionFactory();
+        if (sessionFactory == null)
+        {
+            synchronized (DB.class)
+            {
+                if (sessionFactory == null)
+                {
+                    try
+                    {
+                        sessionFactory = newSessionFactory();
+                    }
+                    catch (IOException | ConfigurationException e)
+                    {
+                        throw new RuntimeException("Could not configure session factory", e);
+                    }
+                }
+            }
+        }
+        return sessionFactory;
     }
 
-    protected HibernateAccessService getHibernateAccessService()
+    public static synchronized void invalidateSessionFactory()
     {
-        return HibernateResourceHolder.INSTANCE;
+        sessionFactory = null;
+    }
+
+    private SessionFactory newSessionFactory() throws IOException, ConfigurationException
+    {
+        Configuration configuration = getConfiguration();
+
+        ServiceRegistry serviceRegistry =
+            new StandardServiceRegistryBuilder()
+                .applySettings(configuration.getProperties())
+                .build();
+
+        return configuration.buildSessionFactory(serviceRegistry);
+    }
+
+    private Configuration getConfiguration() throws IOException, ConfigurationException
+    {
+        Configuration configuration = new Configuration();
+        configureProperties(configuration);
+        configureMappings(configuration);
+        configuration.configure();
+        return configuration;
+    }
+
+    private void configureProperties(Configuration cfg) throws IOException
+    {
+        String propFile = System.getProperty("DB_PROPERTIES", "cfg/db.properties");
+        Properties dbProps = loadProperties(propFile);
+        if (dbProps != null)
+        {
+            cfg.addProperties(dbProps);
+        }
+    }
+
+    private void configureMappings(Configuration cfg) throws ConfigurationException, IOException
+    {
+        try
+        {
+            List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
+            for (String moduleConfig : moduleConfigs)
+            {
+                addMappings(cfg, moduleConfig);
+            }
+        }
+        catch (DocumentException e)
+        {
+            throw new ConfigurationException("Could not parse mappings document", e);
+        }
+    }
+
+    private Element readMappingElements(String moduleConfig) throws DocumentException
+    {
+        SAXReader reader = new SAXReader();
+
+        final URL url = getClass().getClassLoader().getResource(moduleConfig);
+        assert url != null;
+        final Document doc = reader.read(url);
+        return doc.getRootElement().element("mappings");
+    }
+
+    private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, DocumentException
+    {
+        Element module = readMappingElements(moduleConfig);
+        if (module != null)
+        {
+            for (Iterator l = module.elementIterator("mapping"); l.hasNext(); )
+            {
+                Element mapping = (Element) l.next();
+                parseMapping(cfg, mapping, moduleConfig);
+            }
+        }
+    }
+
+    private void parseMapping(Configuration cfg, Element mapping, String moduleName) throws ConfigurationException
+    {
+        final String resource = mapping.attributeValue("resource");
+        final String clazz = mapping.attributeValue("class");
+
+        if (resource != null)
+        {
+            cfg.addResource(resource);
+        }
+        else if (clazz != null)
+        {
+            try
+            {
+                cfg.addAnnotatedClass(ReflectHelper.classForName(clazz));
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new ConfigurationException("Class " + clazz + " specified in mapping for module " + moduleName + " cannot be found");
+            }
+        }
+        else
+        {
+            throw new ConfigurationException("<mapping> element in configuration specifies no known attributes at module " + moduleName);
+        }
+    }
+
+    private Properties loadProperties(String filename) throws IOException
+    {
+        Properties props = new Properties();
+        final String s = filename.replaceAll("/", "\\" + File.separator);
+        final File f = new File(s);
+        if (f.exists())
+        {
+            props.load(new FileReader(f));
+        }
+        return props;
     }
 
     /**
@@ -92,13 +231,20 @@ public class DB implements Closeable {
      */
     public void createSchema(String outputFile, boolean create) throws HibernateException
     {
-        SchemaExport export = new SchemaExport(getHibernateAccessService().getConfiguration());
-        if (outputFile != null)
+        try
         {
-            export.setOutputFile(outputFile);
-            export.setDelimiter(";");
+            SchemaExport export = new SchemaExport(getConfiguration());
+            if (outputFile != null)
+            {
+                export.setOutputFile(outputFile);
+                export.setDelimiter(";");
+            }
+            export.create(true, create);
         }
-        export.create(true, create);
+        catch (IOException | ConfigurationException e)
+        {
+            throw new HibernateException("Could not create schema", e);
+        }
     }
 
     /**
@@ -112,10 +258,6 @@ public class DB implements Closeable {
         if (session == null)
         {
             session = getSessionFactory().openSession();
-            if(getHibernateAccessService().isReadOnly())
-            {
-                session.setDefaultReadOnly(true);
-            }
         }
         return session;
     }
@@ -229,14 +371,19 @@ public class DB implements Closeable {
         this.log = log;
     }
 
-    public static Object exec (DBAction action) {
-        try (DB db = new DB()) {
+    public static Object exec(DBAction action)
+    {
+        try (DB db = new DB())
+        {
             db.open();
             return action.exec(db);
         }
     }
-    public static Object execWithTransaction (DBAction action) {
-        try (DB db = new DB()) {
+
+    public static Object execWithTransaction(DBAction action)
+    {
+        try (DB db = new DB())
+        {
             db.open();
             db.beginTransaction();
             Object obj = action.exec(db);

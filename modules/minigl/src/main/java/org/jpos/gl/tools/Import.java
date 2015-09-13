@@ -23,16 +23,13 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jpos.core.ConfigurationException;
-import org.jpos.ee.support.JPosHibernateConfiguration;
+import org.jpos.ee.DB;
 import org.jpos.gl.*;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -53,16 +50,11 @@ import java.util.Set;
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
 public class Import implements EntityResolver {
-    SessionFactory sf;
-    Configuration cfg;
     Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {
         super();
-        cfg = new JPosHibernateConfiguration();
-        cfg.configure();
-        sf = cfg.buildSessionFactory();
     }
 
     public static void usage () {
@@ -71,10 +63,7 @@ public class Import implements EntityResolver {
     }
 
     private void createSchema () throws HibernateException {
-        SchemaExport export = new SchemaExport (cfg);
-        // export.setOutputFile ("/tmp/schema.sql");
-        // export.setDelimiter (";");
-        export.create (true, true); // don't create tables
+        new DB().createSchema(null, true);
     }
     
     private void createCharts (Session sess, Iterator iter) 
@@ -357,7 +346,7 @@ public class Import implements EntityResolver {
         if (root.getChild ("create-schema") != null)
             createSchema ();
 
-        Session sess = sf.openSession();
+        Session sess = new DB().open();
         createUsers (sess, root.getChildren ("user").iterator());
         createCurrencies (sess, root.getChildren ("currency").iterator());
         createCharts (sess, root.getChildren ("chart-of-accounts").iterator());

@@ -63,7 +63,7 @@ public class DB implements Closeable
     Session session;
     Log log;
 
-    private static SessionFactory sessionFactory = null;
+    private static volatile SessionFactory sessionFactory = null;
     private static String propFile;
 
     /**

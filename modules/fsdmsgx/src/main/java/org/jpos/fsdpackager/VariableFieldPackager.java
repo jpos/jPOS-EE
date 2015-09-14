@@ -76,7 +76,7 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 					delimiter.byteValue(), maxSize));
 		}
 		setValue(value);
-		return i - offset + 1;
+		return i + 1;
 	}
 
 	@Override

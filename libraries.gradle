@@ -39,9 +39,9 @@ ext {
             hibernate_ehcache: "org.hibernate:hibernate-ehcache:${hibernateVersion}",
 
             //Supported Databases
-            jdbcH2: 'com.h2database:h2:1.4.186',
+            jdbcH2: 'com.h2database:h2:1.4.189',
             jdbcMysql: 'mysql:mysql-connector-java:5.1.36',
-            jdbcPostgresql: 'org.postgresql:postgresql:9.4-1201-jdbc41',
+            jdbcPostgresql: 'org.postgresql:postgresql:9.4-1202-jdbc42',
 
             //Freemarker
             freemarker: 'org.freemarker:freemarker:[2.3.20,2.4)',

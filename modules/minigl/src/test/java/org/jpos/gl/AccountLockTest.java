@@ -71,9 +71,10 @@ public class AccountLockTest extends TestBase {
         {
         }
         long end = System.currentTimeMillis();
-        assertTrue("Elapsed is " + (end - start), end - start > 5000);
-        assertTrue ("Elapsed is "+(end - start),end - start < 6000);
+        assertTrue("Elapsed is " + (end - start), end - start >= 5000);
+        assertTrue ("Elapsed is "+(end - start),end - start < 7000);
         tx2.commit();
         gls2.close();
     }
 }
+

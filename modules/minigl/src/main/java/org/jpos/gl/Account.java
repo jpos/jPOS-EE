@@ -382,8 +382,11 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     }
     public int compareTo (Object o) {
         if (o instanceof Account) {
-            if (getCode() == null) {
-                return ((Account)o).getCode() == null ? 0 : 1;
+            Account other = (Account) o;
+            if (getCode() == null || other.getCode() == null) {
+                return getCode() == other.getCode()  ? 0 : 1;
+            } else if (getCode() == null) {
+                return 1;
             }
             return getCode().compareTo (((Account)o).getCode());
         }

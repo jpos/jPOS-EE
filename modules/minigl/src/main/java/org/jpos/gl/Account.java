@@ -281,7 +281,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
             return null;
     }
     public boolean isAncestor(CompositeAccount ancestor) {
-        for (Account p = getParent(); p != null; p = getParent()) {
+        for (Account p = getParent(); p != null; p = p.getParent()) {
             if (p.equals(ancestor))
                 return true;
         }

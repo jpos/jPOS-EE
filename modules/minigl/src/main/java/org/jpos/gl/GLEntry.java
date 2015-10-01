@@ -18,15 +18,14 @@
 
 package org.jpos.gl;
 
-import java.util.Iterator;
-import java.util.Date;
+import java.util.Arrays;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom.Element;
-import org.jdom.Comment;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.iso.ISOUtil;
 
 
 /**
@@ -279,12 +278,74 @@ public class GLEntry {
         }
         return false;
     }
+    public void addTag (String tag) {
+        if (tag != null) {
+            if (tags == null || tags.length() == 0)
+                tags = tag;
+            else if (!hasTag(tag)) {
+                String[] tt = ISOUtil.commaDecode(tags);
+                String[] ss = new String[tt.length+1];
+                System.arraycopy (tt, 0, ss, 0, tt.length);
+                ss[tt.length] = tag;
+                Arrays.sort(ss);
+                tags = ISOUtil.commaEncode(ss);
+            }
+        }
+    }
+
+    public boolean removeTag (String tag) {
+        int removals = 0;
+        if (tags != null && tag != null) {
+            String[] tt = ISOUtil.commaDecode(tags);
+            for (int i=0; i<tt.length; i++) {
+                if (tt[i].equalsIgnoreCase(tag)) {
+                    tt[i] = null;
+                    removals++;
+                }
+            }
+            if (removals > 0) {
+                String[] ss = new String[tt.length-removals];
+                int i = 0;
+                for (String s : tt) {
+                    if (s != null)
+                        ss[i++] = s;
+                }
+                Arrays.sort(ss);
+                tags = ISOUtil.commaEncode(ss);
+            }
+        }
+        return removals > 0;
+    }
+
+    public void setTags(String[] tt) {
+        if (tt != null) {
+            Arrays.sort(tt);
+            tags = ISOUtil.commaEncode(tt);
+        }
+        else
+            tags = null;
+    }
+
+    public String[] getTagsAsArray() {
+        return (tags != null) ? ISOUtil.commaDecode(tags) : new String[]{};
+    }
+
+    public boolean hasTag (String tag) {
+        if (tags != null && tag != null) {
+            String[] tt = ISOUtil.commaDecode(tags);
+            for (String s : tt)
+                if (tag.equalsIgnoreCase(s))
+                    return true;
+        }
+        return false;
+    }
 
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .append("detail", getDetail())
             .append("account", getAccount())
+            .append("tags", getTags())
             .toString();
     }
     private short toShort (String s) {

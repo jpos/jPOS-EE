@@ -25,20 +25,13 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Andres Alcarraz
  * @author Alejandro Revilla
  */
+@SuppressWarnings("unchecked")
 public class BeanDiff {
     public static String LINESEP = "<br/>";
     
@@ -68,10 +61,10 @@ public class BeanDiff {
      */
     private String[] properties;
     
-    private static Map classInfo = new Hashtable();
+    private static Map<String,ClassInfo> classInfo = Collections.synchronizedMap(new HashMap<>());
     
     private String[] actualProperties;
-    
+
     public BeanDiff () {
         super();
     }
@@ -127,7 +120,7 @@ public class BeanDiff {
     protected static ClassInfo getClassInfo(Class c) 
         throws IntrospectionException
     {
-        ClassInfo ret = (ClassInfo)classInfo.get(c.getName());
+        ClassInfo ret = classInfo.get(c.getName());
         if(ret == null) 
             classInfo.put(c.getName(), ret = new ClassInfo(c));
         return ret;
@@ -136,7 +129,7 @@ public class BeanDiff {
     protected static class ClassInfo {
         protected Class c;
         protected BeanInfo info;
-        protected Map properties = new Hashtable();
+        protected Map<String,PropertyDescriptor> properties = new LinkedHashMap<>();
         public ClassInfo(String className) 
             throws ClassNotFoundException, IntrospectionException
         {
@@ -155,16 +148,16 @@ public class BeanDiff {
         protected final void init() throws IntrospectionException {
             info = Introspector.getBeanInfo(c);
             PropertyDescriptor[] descriptors = info.getPropertyDescriptors();
-            for (int i=0; i<descriptors.length; i++){
-                Method reader = descriptors[i].getReadMethod();
+            for (PropertyDescriptor descriptor : descriptors) {
+                Method reader = descriptor.getReadMethod();
                 // only add readable attributes, to avoid future errors
-                if (reader != null && Modifier.isPublic(reader.getModifiers()) 
-                    && !"class".equals(descriptors[i].getName()))
-                        properties.put (descriptors[i].getName(), descriptors[i]);
+                if (reader != null && Modifier.isPublic(reader.getModifiers())
+                        && !"class".equals(descriptor.getName()))
+                    properties.put(descriptor.getName(), descriptor);
             }
         }
         protected PropertyDescriptor getPropertyDescriptor(String propName){
-            return (PropertyDescriptor) properties.get(propName);
+            return properties.get(propName);
         }
         /** 
          * @return property's info.
@@ -188,9 +181,9 @@ public class BeanDiff {
         public Map getProperties(String[] props){
             if (props == null)
                 return getProperties();
-            Map ret = new LinkedHashMap();
-            for(int i = 0; i < props.length; i++){
-                ret.put(props[i], properties.get(props[i]));
+            Map<String, PropertyDescriptor> ret = new LinkedHashMap();
+            for (String prop : props) {
+                ret.put(prop, properties.get(prop));
             }
             return ret;
         }
@@ -199,8 +192,7 @@ public class BeanDiff {
             try{
                 PropertyDescriptor descriptor = getPropertyDescriptor(prop);
                 return descriptor.getReadMethod().invoke(bean);
-            } catch (InvocationTargetException e){
-            } catch (IllegalAccessException e){
+            } catch (IllegalAccessException | InvocationTargetException ignored){
             }
             return "{error}";
         }

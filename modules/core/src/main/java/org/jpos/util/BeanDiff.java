@@ -200,7 +200,7 @@ public class BeanDiff {
     /**
      * Hook method to let a subclass change the way the values are compared
      * @param i index of the property being compared in de order
-     * given by the <code>properties<code> attribute.
+     * given by the <code>properties</code> attribute.
      */
     protected boolean equals (int i, Object v1, Object v2){
         if (v1 instanceof Comparable && v2 != null)

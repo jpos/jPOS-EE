@@ -1,24 +1,42 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2013 Alejandro P. Revilla
+ * Copyright (C) 2000-2015 Alejandro P. Revilla
  *
- * THIS PROGRAM IS NOT FREE SOFTWARE and access to it should
- * be considered PRIVILEGED and CONFIDENTIAL.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * See license details in the PGP-signed file LICENSE.asc
- * available in the top level directory of this project.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * LICENSE.asc SHA-1 b1f42375545e1eb6351af9219f8949bc8563f1a3
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jpos.rest;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.bouncycastle.util.encoders.Base64;
-import org.jpos.iso.ISODate;
-
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * Holder for a consumer's credential
+ *
+ * contains
+ * <ul>
+ *     <li>version</li>
+ *     <li>consumerId</li>
+ *     <li>timestamp</li>
+ *     <li>hash</li>
+ *     <li>nonce</li>
+ *     <li>optional SecurityContext</li>
+ * </ul>
+ */
+
+@SuppressWarnings("unused")
 public class APICredential {
     private final String version;
     private final String consumerId;
@@ -74,6 +92,9 @@ public class APICredential {
         this.nonce           = builder.nonce;
     }
 
+    /**
+     * API Credential builder
+     */
     public static class Builder {
         // optional parameters
         private String version;

@@ -35,26 +35,24 @@ import java.io.Serializable;
 /**
  *Sample Usage:
  *
- *    <participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug">
+ *    &lt;participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug"&gt;
  *    
- *        <property name="protect-entry" value="REQUEST" />
- *        <property name="protect-entry" value="RESPONSE" />
- *        <property name="protect-entry" value="PAN" />
+ *        &lt;property name="protect-entry" value="REQUEST" /&gt;
+ *        &lt;property name="protect-entry" value="RESPONSE" /&gt;
+ *        &lt;property name="protect-entry" value="PAN" /&gt;
  *
- *        <property name="wipe-entry" value="EXPDATE" />
+ *        &lt;property name="wipe-entry" value="EXPDATE" /&gt;
  *   
- *        <property name="protect-ISOMsg" value="2" />
- *        <property name="protect-ISOMsg" value="35" />
- *        <property name="protect-ISOMsg" value="45" />
- *        <property name="protect-ISOMsg" value="52" />
- *        <property name="protect-ISOMsg" value="55" />
+ *        &lt;property name="protect-ISOMsg" value="2" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="35" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="45" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="52" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="55" /&gt;
  *
- *        <property name="protect-FSDMsg" value="account-number" />
- *        <property name="protect-FSDMsg" value="track2-data" />
+ *        &lt;property name="protect-FSDMsg" value="account-number" /&gt;
+ *        &lt;property name="protect-FSDMsg" value="track2-data" /&gt;
  *   
- *        </participant>
- *
- *        <participant class="org.jpos.transaction.Debug" logger="Q2" realm="debug" />
+ *        &lt;/participant&gt;
  **/
  
  public class ProtectDebugInfo extends TxnSupport implements AbortParticipant {

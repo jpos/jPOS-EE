@@ -2,13 +2,18 @@
  * jPOS Project [http://jpos.org]
  * Copyright (C) 2000-2015 Alejandro P. Revilla
  *
- * THIS PROGRAM IS NOT FREE SOFTWARE and access to it should
- * be considered PRIVILEGED and CONFIDENTIAL.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * See license details in the PGP-signed file LICENSE.asc
- * available in the top level directory of this project.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * LICENSE.asc SHA-1 b1f42375545e1eb6351af9219f8949bc8563f1a3
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jpos.rest;

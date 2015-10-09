@@ -279,7 +279,7 @@ public class TestRunner
         ISOMsg c = (ISOMsg) tc.getResponse().clone();
         ISOMsg expected = (ISOMsg) tc.getExpectedResponse().clone();
         ISOMsg er = (ISOMsg) tc.getExpandedRequest().clone();
-        c.setHeader ((ISOHeader) null);
+        c.setHeader(tc.getResponse().getHeader());
         if (!processResponse(er, c, expected, bsh, evt)) {
             tc.setResultCode (TestCase.FAILURE);
             return false;

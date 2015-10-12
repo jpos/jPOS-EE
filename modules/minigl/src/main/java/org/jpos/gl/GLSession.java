@@ -562,6 +562,17 @@ public class GLSession {
     }
 
     /**
+     * @return list of all currency ids
+     * @see org.jpos.gl.Currency
+     */
+    public List<String> getCurrencyCodes() {
+        return db.session()
+                .createCriteria(Currency.class)
+                .setProjection(Projections.id())
+                .list();
+    }
+
+    /**
      * Post transaction in a given journal.
      *
      * @param journal the journal.

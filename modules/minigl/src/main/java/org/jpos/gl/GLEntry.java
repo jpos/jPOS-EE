@@ -317,7 +317,7 @@ public class GLEntry {
         return removals > 0;
     }
 
-    public void setTags(String[] tt) {
+    public void setTagsArray(String[] tt) {
         if (tt != null) {
             Arrays.sort(tt);
             tags = ISOUtil.commaEncode(tt);

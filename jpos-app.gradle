@@ -23,6 +23,7 @@ def jposCopySpec = copySpec {
         exclude '**/*.gif'
         exclude '**/*.png'
         exclude '**/*.pdf'
+        exclude '**/*.ser'
         filter(
             org.apache.tools.ant.filters.ReplaceTokens, 
             tokens: targetConfiguration
@@ -34,6 +35,7 @@ def jposCopySpec = copySpec {
         include '**/*.gif'
         include '**/*.png'
         include '**/*.pdf'
+        include '**/*.ser'
     }
     from(jar) {
         rename archiveJarName, "${targetConfiguration.jarname}"

@@ -18,8 +18,6 @@
 
 package org.jpos.ee.cli;
 
-import org.apache.mina.util.Base64;
-
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -29,6 +27,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import org.bouncycastle.util.encoders.Base64;
 
 public class AuthorizedKeysFileBasedPKA extends AbstractPKA
 {
@@ -49,7 +48,7 @@ public class AuthorizedKeysFileBasedPKA extends AbstractPKA
 
     protected List<PublicKey> parseAuthorizedKeys() throws Exception
     {
-        List<PublicKey> authorizedKeys = new ArrayList<PublicKey>();
+        List<PublicKey> authorizedKeys = new ArrayList<>();
         AuthorizedKeysDecoder decoder = new AuthorizedKeysDecoder();
         File file = new File(filename);
         Scanner scanner = null;
@@ -87,7 +86,7 @@ public class AuthorizedKeysFileBasedPKA extends AbstractPKA
                 if (part.startsWith("AAAA"))
                 {
                     byte[] bytePart = part.getBytes();
-                    bytes = Base64.decodeBase64(bytePart);
+                    bytes = Base64.decode(bytePart);
                     break;
                 }
             }

@@ -278,7 +278,7 @@ public class GLEntry {
         }
         return false;
     }
-    public void addTag (String tag) {
+    public GLEntry addTag (String tag) {
         if (tag != null) {
             if (tags == null || tags.length() == 0)
                 tags = tag;
@@ -291,6 +291,7 @@ public class GLEntry {
                 tags = ISOUtil.commaEncode(ss);
             }
         }
+        return this;
     }
 
     public boolean removeTag (String tag) {
@@ -317,7 +318,7 @@ public class GLEntry {
         return removals > 0;
     }
 
-    public void setTagsArray(String[] tt) {
+    public void setTagsArray (String[] tt) {
         if (tt != null) {
             Arrays.sort(tt);
             tags = ISOUtil.commaEncode(tt);

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom.Element;
-import org.jdom.Comment;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -48,14 +47,14 @@ public class GLTransaction {
     private String tags;
     private List children;
     private Journal journal;
-    List entries;
+    List<GLEntry> entries;
 
     public GLTransaction () {
         super();
     }
     public GLTransaction (String detail) {
         super ();
-        setDetail (detail);
+        setDetail(detail);
     }
     /**
      * Constructs a GLTransaction out of a JDOM Element as defined in
@@ -64,7 +63,7 @@ public class GLTransaction {
      */
     public GLTransaction (Element elem) throws ParseException {
         super();
-        fromXML (elem);
+        fromXML(elem);
     }
     /**
      * GLTransaction id.
@@ -148,9 +147,9 @@ public class GLTransaction {
      * Entries.
      * @return transaction entries
      */
-    public List getEntries () {
+    public List<GLEntry> getEntries () {
         if (entries == null)
-            entries = new ArrayList ();
+            entries = new ArrayList<GLEntry> ();
         return entries;
     }
     /**
@@ -284,19 +283,62 @@ public class GLTransaction {
     public GLTransaction createReverse() {
         GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
         glt.setJournal (getJournal());
-        Iterator iter = getEntries().iterator();
-        while (iter.hasNext()) {
-            GLEntry e = (GLEntry) iter.next();
-            glt.createGLEntry (
-                e.getAccount(),
-                negate (e.getAmount()),
-                e.getDetail(),
-                e.isCredit(),
-                e.getLayer()
+        for (GLEntry e : getEntries()) {
+            glt.createGLEntry(
+              e.getAccount(),
+              negate(e.getAmount()),
+              e.getDetail(),
+              e.isCredit(),
+              e.getLayer()
             );
         }
         return glt;
     }
+
+    /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param withTags entries with any tag in <code>withTags</code> are selected
+     * @param withoutTags entries with any tag in <code>withoutTags</code> are discarded
+     *
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(String[] withTags, String[] withoutTags) {
+        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        glt.setJournal (getJournal());
+        for (GLEntry e : getEntries()) {
+            boolean validEntry = true;
+            if (withTags != null) {
+                validEntry = false;
+                for (String tag : withTags) {
+                    if (e.hasTag(tag)) {
+                        validEntry = true;
+                        break;
+                    }
+                }
+            }
+            if (withoutTags != null) {
+                for (String tag : withoutTags) {
+                    if (e.hasTag(tag)) {
+                        validEntry = false;
+                        break;
+                    }
+                }
+            }
+            if (validEntry) {
+                glt.createGLEntry(
+                  e.getAccount(),
+                  negate(e.getAmount()),
+                  e.getDetail(),
+                  e.isCredit(),
+                  e.getLayer()
+                );
+            }
+        }
+        return glt;
+    }
+
     /**
      * Parses a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
@@ -331,9 +373,7 @@ public class GLTransaction {
         }
         elem.setAttribute ("journal", getJournal().getName());
 
-        Iterator iter = getEntries().iterator();
-        while (iter.hasNext()) {
-            GLEntry entry = (GLEntry) iter.next();
+        for (GLEntry entry : getEntries()) {
             elem.addContent (entry.toXML (deep));
         }
         return elem;
@@ -395,3 +435,4 @@ public class GLTransaction {
         return bd != null ? bd.negate() : null;
     }
 }
+

@@ -82,9 +82,9 @@ subprojects {
     }
 
     repositories {
-        mavenLocal()
         mavenCentral()
         maven { url 'http://jpos.org/maven' }
+        mavenLocal()
     }
 
     dependencies {

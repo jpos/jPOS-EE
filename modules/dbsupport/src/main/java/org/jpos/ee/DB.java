@@ -129,10 +129,11 @@ public class DB implements Closeable
 
     private Configuration getConfiguration() throws IOException, ConfigurationException
     {
+        String hibCfg = System.getProperty("HIBERNATE_CFG", "/hibernate.cfg.xml");
         Configuration configuration = new Configuration();
+        configuration.configure(hibCfg);
         configureProperties(configuration);
         configureMappings(configuration);
-        configuration.configure();
         return configuration;
     }
 

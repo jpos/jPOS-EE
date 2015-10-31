@@ -20,6 +20,7 @@ package org.jpos.gl.tools;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -62,7 +63,7 @@ public class Import implements EntityResolver {
         System.exit (0);
     }
 
-    private void createSchema () throws HibernateException {
+    private void createSchema () throws HibernateException, DocumentException {
         new DB().createSchema(null, true);
     }
     
@@ -327,10 +328,9 @@ public class Import implements EntityResolver {
         else 
             return null;
     }
-    public void parse (String file) 
-        throws JDOMException, SQLException, HibernateException,
-               ParseException, IOException, GLException
-    {
+    public void parse (String file)
+      throws JDOMException, SQLException, HibernateException,
+      ParseException, IOException, GLException, DocumentException {
         SAXBuilder builder = new SAXBuilder (true);
         builder.setEntityResolver (this);
 

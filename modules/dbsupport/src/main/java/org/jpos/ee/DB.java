@@ -26,12 +26,14 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.internal.util.ReflectHelper;
-import org.hibernate.service.ServiceRegistry;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.jpos.core.ConfigurationException;
@@ -45,10 +47,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Alejandro P. Revilla
@@ -100,7 +99,7 @@ public class DB implements Closeable
                     {
                         sessionFactory = newSessionFactory();
                     }
-                    catch (IOException | ConfigurationException e)
+                    catch (IOException | ConfigurationException | DocumentException e)
                     {
                         throw new RuntimeException("Could not configure session factory", e);
                     }
@@ -115,26 +114,15 @@ public class DB implements Closeable
         sessionFactory = null;
     }
 
-    private SessionFactory newSessionFactory() throws IOException, ConfigurationException
-    {
-        Configuration configuration = getConfiguration();
-
-        ServiceRegistry serviceRegistry =
-            new StandardServiceRegistryBuilder()
-                .applySettings(configuration.getProperties())
-                .build();
-
-        return configuration.buildSessionFactory(serviceRegistry);
-    }
-
-    private Configuration getConfiguration() throws IOException, ConfigurationException
-    {
-        String hibCfg = System.getProperty("HIBERNATE_CFG", "/hibernate.cfg.xml");
-        Configuration configuration = new Configuration();
-        configuration.configure(hibCfg);
-        configureProperties(configuration);
-        configureMappings(configuration);
-        return configuration;
+    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException {
+        String hibCfg = System.getProperty("HIBERNATE_CFG");
+        if (hibCfg != null) {
+            Configuration configuration = new Configuration().configure(hibCfg);
+            configureProperties(configuration);
+            configureMappings(configuration);
+            return configuration.buildSessionFactory();
+        }
+        return getMetadata().buildSessionFactory();
     }
 
     private void configureProperties(Configuration cfg) throws IOException
@@ -147,30 +135,15 @@ public class DB implements Closeable
         }
     }
 
-    private void configureMappings(Configuration cfg) throws ConfigurationException, IOException
-    {
-        try
-        {
+    private void configureMappings(Configuration cfg) throws ConfigurationException, IOException {
+        try {
             List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
-            for (String moduleConfig : moduleConfigs)
-            {
+            for (String moduleConfig : moduleConfigs) {
                 addMappings(cfg, moduleConfig);
             }
-        }
-        catch (DocumentException e)
-        {
+        } catch (DocumentException e) {
             throw new ConfigurationException("Could not parse mappings document", e);
         }
-    }
-
-    private Element readMappingElements(String moduleConfig) throws DocumentException
-    {
-        SAXReader reader = new SAXReader();
-
-        final URL url = getClass().getClassLoader().getResource(moduleConfig);
-        assert url != null;
-        final Document doc = reader.read(url);
-        return doc.getRootElement().element("mappings");
     }
 
     private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, DocumentException
@@ -212,6 +185,16 @@ public class DB implements Closeable
         }
     }
 
+    private Element readMappingElements(String moduleConfig) throws DocumentException
+    {
+        SAXReader reader = new SAXReader();
+
+        final URL url = getClass().getClassLoader().getResource(moduleConfig);
+        assert url != null;
+        final Document doc = reader.read(url);
+        return doc.getRootElement().element("mappings");
+    }
+
     private Properties loadProperties(String filename) throws IOException
     {
         Properties props = new Properties();
@@ -230,11 +213,10 @@ public class DB implements Closeable
      * @param outputFile optional output file (may be null)
      * @param create     true to actually issue the create statements
      */
-    public void createSchema(String outputFile, boolean create) throws HibernateException
-    {
+    public void createSchema(String outputFile, boolean create) throws HibernateException, DocumentException {
         try
         {
-            SchemaExport export = new SchemaExport(getConfiguration());
+            SchemaExport export = new SchemaExport(getMetadata());
             if (outputFile != null)
             {
                 export.setOutputFile(outputFile);
@@ -324,7 +306,7 @@ public class DB implements Closeable
         if (session() != null)
         {
             Transaction tx = session().getTransaction();
-            if (tx != null && tx.isActive())
+            if (tx != null && tx.getStatus().isOneOf(TransactionStatus.ACTIVE))
             {
                 tx.commit();
             }
@@ -336,7 +318,7 @@ public class DB implements Closeable
         if (session() != null)
         {
             Transaction tx = session().getTransaction();
-            if (tx != null && tx.isActive())
+            if (tx != null && tx.getStatus().canRollback())
             {
                 tx.rollback();
             }
@@ -424,5 +406,47 @@ public class DB implements Closeable
             }
             Logger.log(info);
         }
+    }
+
+    private MetadataImplementor getMetadata() throws IOException, ConfigurationException, DocumentException {
+        StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
+        String propFile = System.getProperty("DB_PROPERTIES", "cfg/db.properties");
+        Properties dbProps = loadProperties(propFile);
+        if (dbProps != null) {
+            for (Map.Entry entry : dbProps.entrySet()) {
+                ssrb.applySetting((String) entry.getKey(), entry.getValue());
+            }
+        }
+        MetadataSources mds = new MetadataSources(ssrb.build());
+        List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
+        for (String moduleConfig : moduleConfigs) {
+            addMappings(mds, moduleConfig);
+        }
+        return (MetadataImplementor) mds.buildMetadata();
+    }
+
+    private void addMappings(MetadataSources mds, String moduleConfig) throws ConfigurationException, DocumentException
+    {
+        Element module = readMappingElements(moduleConfig);
+        if (module != null)
+        {
+            for (Iterator l = module.elementIterator("mapping"); l.hasNext(); )
+            {
+                Element mapping = (Element) l.next();
+                parseMapping(mds, mapping, moduleConfig);
+            }
+        }
+    }
+
+    private void parseMapping (MetadataSources mds, Element mapping, String moduleName) throws ConfigurationException
+    {
+        final String resource = mapping.attributeValue("resource");
+        final String clazz = mapping.attributeValue("class");
+        if (resource != null)
+            mds.addResource(resource);
+        else if (clazz != null)
+            mds.addAnnotatedClassName(clazz);
+        else
+            throw new ConfigurationException("<mapping> element in configuration specifies no known attributes at module " + moduleName);
     }
 }

@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public class EEUserTest {
     DB db;
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         db = new DB();
         db.createSchema("schema.sql", true);
         db.open();

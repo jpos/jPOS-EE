@@ -24,6 +24,7 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 @SuppressWarnings("unused")
 public class SysConfigManager {
@@ -147,7 +148,7 @@ public class SysConfigManager {
         try {
             boolean autoCommit = false;
             Transaction tx = db.session().getTransaction();
-            if (tx == null || !tx.isActive()) {
+            if (tx == null || tx.getStatus().isNotOneOf(TransactionStatus.ACTIVE)) {
                 tx = db.session().beginTransaction();
                 autoCommit = true;
             }

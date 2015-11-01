@@ -36,7 +36,7 @@
                  column="eeuser"
                  foreign-key="FKConsumerUser" />
 
-    <set name="roles" lazy="false">
+    <set name="roles" lazy="false" table="consumer_roles">
      <key column="consumer" foreign-key="FKConsumerRolesConsumer"/>
      <many-to-many column="role" class="org.jpos.ee.Role" foreign-key="FKConsumerRolesRole"/>
     </set>

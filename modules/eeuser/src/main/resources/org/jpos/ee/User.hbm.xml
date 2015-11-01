@@ -35,7 +35,7 @@
     <property name="verified" type="yes_no" />
     <property name="startDate"     type="date" />
     <property name="endDate"       type="date" />
-    <set name="roles" lazy="false">
+    <set name="roles" lazy="false" table="eeuser_roles">
      <key column="eeuser" foreign-key="FKUserRolesUser"/>
      <many-to-many column="role" class="org.jpos.ee.Role" foreign-key="FKUserRolesRole"/>
     </set>

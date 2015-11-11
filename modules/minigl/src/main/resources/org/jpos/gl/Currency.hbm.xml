@@ -23,7 +23,7 @@
 
 <hibernate-mapping>
   <class name="org.jpos.gl.Currency" table="currency">
-    <id name="id" column="id" type="string" length="3">
+    <id name="id" column="id" type="string" length="5">
       <generator class="assigned" />
     </id>
     <property name="name" />
@@ -32,4 +32,3 @@
     </property>
   </class>
 </hibernate-mapping>
-

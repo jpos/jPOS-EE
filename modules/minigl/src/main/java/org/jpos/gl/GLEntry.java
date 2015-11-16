@@ -18,14 +18,13 @@
 
 package org.jpos.gl;
 
-import java.util.Arrays;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.jpos.iso.ISOUtil;
+import org.jpos.util.Tags;
 
 
 /**
@@ -41,7 +40,8 @@ import org.jpos.iso.ISOUtil;
 public class GLEntry {
     private long id;
     private String detail;
-    private String tags;
+
+    private Tags tags;
     private boolean credit;
     private short layer;
     private BigDecimal amount;
@@ -132,14 +132,14 @@ public class GLEntry {
      * Tags.
      * @param tags transaction tags
      */
-    public void setTags (String tags) {
+    public void setTags (Tags tags) {
         this.tags = tags;
     }
     /**
      * Tags.
      * @return transaction tags
      */
-    public String getTags () {
+    public Tags getTags () {
         return tags;
     }
     /**
@@ -230,10 +230,10 @@ public class GLEntry {
      */
     public void fromXML (Element elem) throws ParseException {
         setDetail (elem.getChildTextTrim ("detail"));
-        setTags   (elem.getChildTextTrim ("tags"));
-        setCredit ("credit".equals (elem.getAttributeValue ("type")));
-        setLayer  (toShort(elem.getAttributeValue("layer")));
-        setAmount (new BigDecimal (elem.getChild ("amount").getText()));
+        setTags   (new Tags(elem.getChildTextTrim ("tags")));
+        setCredit ("credit".equals (elem.getAttributeValue("type")));
+        setLayer(toShort(elem.getAttributeValue("layer")));
+        setAmount(new BigDecimal (elem.getChild ("amount").getText()));
     }
     /**
      * Creates a JDOM Element as defined in
@@ -246,7 +246,7 @@ public class GLEntry {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getTags());
+            Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
         elem.setAttribute ("account", getAccount().getCode());
@@ -262,7 +262,7 @@ public class GLEntry {
         if ( !(other instanceof GLEntry) ) return false;
         GLEntry castOther = (GLEntry) other;
         return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
+          .append(this.getId(), castOther.getId())
             .isEquals();
     }
 
@@ -278,69 +278,6 @@ public class GLEntry {
         }
         return false;
     }
-    public GLEntry addTag (String tag) {
-        if (tag != null) {
-            if (tags == null || tags.length() == 0)
-                tags = tag;
-            else if (!hasTag(tag)) {
-                String[] tt = ISOUtil.commaDecode(tags);
-                String[] ss = new String[tt.length+1];
-                System.arraycopy (tt, 0, ss, 0, tt.length);
-                ss[tt.length] = tag;
-                Arrays.sort(ss);
-                tags = ISOUtil.commaEncode(ss);
-            }
-        }
-        return this;
-    }
-
-    public boolean removeTag (String tag) {
-        int removals = 0;
-        if (tags != null && tag != null) {
-            String[] tt = ISOUtil.commaDecode(tags);
-            for (int i=0; i<tt.length; i++) {
-                if (tt[i].equalsIgnoreCase(tag)) {
-                    tt[i] = null;
-                    removals++;
-                }
-            }
-            if (removals > 0) {
-                String[] ss = new String[tt.length-removals];
-                int i = 0;
-                for (String s : tt) {
-                    if (s != null)
-                        ss[i++] = s;
-                }
-                Arrays.sort(ss);
-                tags = ISOUtil.commaEncode(ss);
-            }
-        }
-        return removals > 0;
-    }
-
-    public void setTagsArray (String[] tt) {
-        if (tt != null) {
-            Arrays.sort(tt);
-            tags = ISOUtil.commaEncode(tt);
-        }
-        else
-            tags = null;
-    }
-
-    public String[] getTagsAsArray() {
-        return (tags != null) ? ISOUtil.commaDecode(tags) : new String[]{};
-    }
-
-    public boolean hasTag (String tag) {
-        if (tags != null && tag != null) {
-            String[] tt = ISOUtil.commaDecode(tags);
-            for (String s : tt)
-                if (tag.equalsIgnoreCase(s))
-                    return true;
-        }
-        return false;
-    }
-
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())

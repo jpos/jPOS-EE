@@ -29,7 +29,9 @@
     <discriminator column="subclass" type="string" length="1" />
 
     <property name="detail" type="string" />
-    <property name="tags"   type="string" />
+    <property name="tags"  type="org.jpos.ee.usertype.TagsType">
+      <column name="tags" sql-type="varchar(255)" not-null="false" />
+    </property>
     <property name="credit" type="yes_no" />
     <property name="layer"  type="short">
      <column name="layer" sql-type="int" not-null="true" />
@@ -44,4 +46,3 @@
     <subclass name="org.jpos.gl.GLDebit" discriminator-value="D" />
   </class>
 </hibernate-mapping>
-

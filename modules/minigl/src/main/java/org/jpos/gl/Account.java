@@ -26,6 +26,7 @@ import org.jdom.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jpos.util.Tags;
 
 /**
  * Base class for Composite and Final accounts.
@@ -59,6 +60,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     Date expiration;
     String currencyCode;
     int type;
+    Tags tags;
 
     CompositeAccount parent, root;
 
@@ -144,6 +146,15 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     public String getDescription () {
         return description;
     }
+
+    public Tags getTags() {
+        return tags;
+    }
+
+    public void setTags(Tags tags) {
+        this.tags = tags;
+    }
+
     /**
      * Parent Account.
      * 
@@ -298,8 +309,14 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         elem.setAttribute ("code", getCode ());
         elem.addContent (new Element("description").setText (getDescription()));
 
-        if (currencyCode != null)
-            elem.setAttribute ("currency", currencyCode);
+        if (getCurrencyCode() != null)
+            elem.setAttribute ("currency", getCurrencyCode());
+
+        if (getTags () != null) {
+            Element tags = new Element ("tags").setText (getTags().toString());
+            elem.addContent (tags);
+        }
+
 
         if (isDebit ())
             elem.setAttribute ("type", "debit");
@@ -340,6 +357,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         } else {
             setType (0);
         }
+        setTags (new Tags(elem.getChildTextTrim ("tags")));
         Account p = getParent();
         if (p != null) {
             int parentType = p.getType();

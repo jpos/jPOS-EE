@@ -20,7 +20,6 @@ package org.jpos.gl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -28,6 +27,7 @@ import org.jdom.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.util.Tags;
 
 /**
  * GLTransaction.
@@ -44,8 +44,7 @@ public class GLTransaction {
     private Date timestamp;
     private Date postDate;
     private String detail;
-    private String tags;
-    private List children;
+    private Tags tags;
     private Journal journal;
     List<GLEntry> entries;
 
@@ -59,7 +58,7 @@ public class GLTransaction {
     /**
      * Constructs a GLTransaction out of a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
-     * @param elem 
+     * @param elem '<entry>...</entry>' element.
      */
     public GLTransaction (Element elem) throws ParseException {
         super();
@@ -126,21 +125,21 @@ public class GLTransaction {
      * Tags.
      * @param tags transaction tags
      */
-    public void setTags (String tags) {
+    public void setTags (Tags tags) {
         this.tags = tags;
     }
     /**
      * Tags.
      * @return transaction tags
      */
-    public String getTags () {
+    public Tags getTags () {
         return tags;
     }
     /**
      * Entries.
      * @param entries transaction entries
      */
-    public void setEntries (List entries) {
+    public void setEntries (List<GLEntry> entries) {
         this.entries = entries;
     }
     /**
@@ -149,7 +148,7 @@ public class GLTransaction {
      */
     public List<GLEntry> getEntries () {
         if (entries == null)
-            entries = new ArrayList<GLEntry> ();
+            entries = new ArrayList<>();
         return entries;
     }
     /**
@@ -182,7 +181,7 @@ public class GLTransaction {
      */
     public GLEntry createGLEntry (FinalAccount acct, BigDecimal amount, String detail, boolean isCredit, short layer) 
     {
-        GLEntry entry = isCredit ? (GLEntry) new GLCredit() : (GLEntry) new GLDebit();
+        GLEntry entry = isCredit ? new GLCredit() : new GLDebit();
         entry.setAccount (acct);
         entry.setAmount (amount);
         entry.setDetail (detail);
@@ -299,34 +298,19 @@ public class GLTransaction {
      *
      * Create a reverse transaction based on this one
      *
-     * @param withTags entries with any tag in <code>withTags</code> are selected
-     * @param withoutTags entries with any tag in <code>withoutTags</code> are discarded
+     * @param withTags entries with any tag in <code>withTags</code> are selected (can be null)
+     * @param withoutTags entries with any tag in <code>withoutTags</code> are discarded (can be null)
      *
      * @return a reversal transaction
      */
-    public GLTransaction createReverse(String[] withTags, String[] withoutTags) {
+    public GLTransaction createReverse(Tags withTags, Tags withoutTags) {
         GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
         glt.setJournal (getJournal());
         for (GLEntry e : getEntries()) {
-            boolean validEntry = true;
-            if (withTags != null) {
-                validEntry = false;
-                for (String tag : withTags) {
-                    if (e.hasTag(tag)) {
-                        validEntry = true;
-                        break;
-                    }
-                }
-            }
-            if (withoutTags != null) {
-                for (String tag : withoutTags) {
-                    if (e.hasTag(tag)) {
-                        validEntry = false;
-                        break;
-                    }
-                }
-            }
-            if (validEntry) {
+            Tags tags = e.getTags() != null ? e.getTags() : new Tags();
+            if ((withTags == null || tags.containsAll(withTags)) &&
+              (withoutTags == null || !tags.containsAny(withoutTags)))
+            {
                 glt.createGLEntry(
                   e.getAccount(),
                   negate(e.getAmount()),
@@ -345,7 +329,7 @@ public class GLTransaction {
      */
     public void fromXML (Element elem) throws ParseException {
         setDetail (elem.getChildTextTrim ("detail"));
-        setTags   (elem.getChildTextTrim ("tags"));
+        setTags   (new Tags(elem.getChildTextTrim ("tags")));
         setPostDate (
             Util.parseDate (elem.getAttributeValue ("post-date"))
         );
@@ -368,7 +352,7 @@ public class GLTransaction {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getTags());
+            Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
         elem.setAttribute ("journal", getJournal().getName());
@@ -405,7 +389,7 @@ public class GLTransaction {
     }
     public BigDecimal getDebits (short[] layers) {
         BigDecimal debits = GLSession.ZERO;
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.isDebit() && e.hasLayers (layers)) {
                 debits = debits.add (e.getAmount());
             }
@@ -414,7 +398,7 @@ public class GLTransaction {
     }
     public BigDecimal getCredits (short[] layers) {
         BigDecimal credits = GLSession.ZERO;
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.isCredit() && e.hasLayers (layers)) {
                 credits = credits.add (e.getAmount());
             }
@@ -424,7 +408,7 @@ public class GLTransaction {
     @SuppressWarnings("unchecked")
     public BigDecimal getImpact(Account acct, short[] layers) {
         BigDecimal impact = GLSession.ZERO;
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.getAccount().equals(acct) && e.hasLayers (layers)) {
                 impact = impact.add (e.getImpact());
             }

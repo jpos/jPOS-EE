@@ -1,0 +1,5 @@
+Usage: createschema [filename] [export]
+
+* 'filename' to store the SQL script (useful in a dry run)
+* if 'export' is 'yes', the script will be exported to the database
+

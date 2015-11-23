@@ -1170,7 +1170,7 @@ public class GLSession {
         crit = crit.createCriteria ("transaction")
                 .add (Restrictions.eq ("journal", journal));
 
-        crit.addOrder (Order.asc ("id"));
+        crit.addOrder (Order.desc ("id"));
         crit.setMaxResults(maxResults);
         List<GLEntry> entries = crit.list();
         BigDecimal balance = ZERO;

@@ -124,6 +124,22 @@ public class BalanceTest extends TestBase {
         );
     }
 
+    public void testMiniStatementCashPesos() throws Exception {
+        AccountDetail detail = gls.getMiniStatement (
+                tj, cashPesos,
+                new short[] { 858 }, 1
+        );
+        assertEquals (1, detail.size());
+        assertEquals (
+                new BigDecimal("0.00"),
+                detail.getInitialBalance()
+        );
+        assertEquals (
+                new BigDecimal("12500.00"),
+                detail.getFinalBalance()
+        );
+    }
+
     public void testGLTransactionImpact() {
         GLTransaction t = new GLTransaction("Test transaction");
         t.createDebit (cashUS, new BigDecimal("1000.00") , null, (short) 840);

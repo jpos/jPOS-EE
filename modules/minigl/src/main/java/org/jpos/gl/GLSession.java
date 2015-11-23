@@ -1133,6 +1133,53 @@ public class GLSession {
                 initialBalance[0],
                 start, end, entries, layers );
     }
+
+    /**
+     * AccountDetail for date range
+     * @param journal the journal.
+     * @param acct the account.
+     * @param layers layer set
+     * @param maxResults number of entries in mini statement
+     * @return Account detail for given period.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public AccountDetail getMiniStatement
+    (Journal journal, Account acct, short[] layers, int maxResults)
+            throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ);
+        Criteria crit = session.createCriteria (GLEntry.class);
+
+        boolean hasChildren = false;
+        if (acct instanceof CompositeAccount) {
+            Disjunction dis = Restrictions.disjunction();
+            for (Long l : getChildren (acct)) {
+                hasChildren = true;
+                dis.add (Restrictions.idEq(l));
+            }
+            if (hasChildren) {
+                Criteria subCrit = crit.createCriteria(("account"));
+                subCrit.add (dis);
+            }
+        }
+        if (!hasChildren) {
+            crit.add (Restrictions.eq ("account", acct));
+        }
+
+        crit.add (Restrictions.in ("layer", toShortArray (layers)));
+        crit = crit.createCriteria ("transaction")
+                .add (Restrictions.eq ("journal", journal));
+
+        crit.addOrder (Order.asc ("id"));
+        crit.setMaxResults(maxResults);
+        List<GLEntry> entries = crit.list();
+        BigDecimal balance = ZERO;
+        if (entries.size() > 0)
+            balance = getBalances(journal, acct, (Date) null, true, layers, entries.get(0).getId())[0];
+
+        return new AccountDetail(journal, acct, balance, entries, layers);
+    }
+
     /**
      * @param journal the journal.
      * @param acct the account.

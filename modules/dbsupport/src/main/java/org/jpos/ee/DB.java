@@ -22,10 +22,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
@@ -33,6 +30,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.internal.util.ReflectHelper;
+import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
@@ -373,6 +371,14 @@ public class DB implements Closeable
             db.commit();
             return obj;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T unwrap (T proxy) {
+        Hibernate.getClass(proxy);
+        Hibernate.initialize(proxy);
+        return (proxy instanceof HibernateProxy) ?
+          (T) ((HibernateProxy) proxy).getHibernateLazyInitializer().getImplementation() : proxy;
     }
 
     @SuppressWarnings({"unchecked"})

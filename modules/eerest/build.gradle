@@ -6,3 +6,6 @@ dependencies {
     compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
     compile "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
 }
+
+apply from: '../../jpos-app.gradle'
+

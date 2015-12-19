@@ -40,8 +40,7 @@ public class APIAuthenticationTest {
             new APIAuthentication(
                     secretKey,
                     System.currentTimeMillis() - 10*60*1000L,
-                    UUID.randomUUID().toString().getBytes(),
-                    "invalidHash".getBytes()).validate();
+                    UUID.randomUUID().toString().getBytes()).hash("invalidHash".getBytes()).validate();
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.timestamp'", "invalid.timestamp".equals(e.getMessage()));
             return;
@@ -60,8 +59,7 @@ public class APIAuthenticationTest {
             new APIAuthentication(
                     badSecretKey,
                     timestamp,
-                    payLoad,
-                    APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
+                    payLoad).hash(APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
             return;
@@ -77,8 +75,21 @@ public class APIAuthenticationTest {
             new APIAuthentication(
                     secretKey,
                     timestamp,
-                    payLoad,
-                    APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
+                    payLoad).hash(APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
+        } catch (IllegalArgumentException e) {
+            assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
+        }
+    }
+
+    @Test
+    public void testAutoComputedHash () throws AssertionError, NoSuchAlgorithmException, InvalidKeyException {
+        try {
+            byte[] payLoad =  UUID.randomUUID().toString().getBytes();
+            long timestamp = System.currentTimeMillis();
+            new APIAuthentication(
+              secretKey,
+              timestamp,
+              payLoad).computeHash().validate();
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
         }

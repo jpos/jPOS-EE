@@ -33,7 +33,7 @@ import java.util.Arrays;
 public class APIAuthentication {
     long receivedTimestamp;
     long systemTimeStamp;
-    byte[] payLoad;
+    byte[][] payLoad;
     byte[] hash;
     SecretKey secretKey;
     public static final String VERSION = "1.0";
@@ -41,14 +41,27 @@ public class APIAuthentication {
 
     private static final long FIVE_MINUTES = 5*60*1000L;
 
-    public APIAuthentication(SecretKey secretKey, long receivedTimestamp, byte[] payLoad, byte[] hash)
+    public APIAuthentication(SecretKey secretKey, long receivedTimestamp, byte[]... payLoad)
             throws InvalidKeyException, NoSuchAlgorithmException
     {
         this.secretKey = secretKey;
         this.receivedTimestamp = receivedTimestamp;
         this.payLoad = payLoad;
-        this.hash = hash;
         this.systemTimeStamp = System.currentTimeMillis();
+    }
+
+    public APIAuthentication hash(byte[] hash) {
+        this.hash = hash;
+        return this;
+    }
+
+    public byte[] getHash() {
+        return hash;
+    }
+
+    public APIAuthentication computeHash() throws NoSuchAlgorithmException, InvalidKeyException {
+        this.hash = computeHash(secretKey, receivedTimestamp, payLoad);
+        return this;
     }
 
     @SuppressWarnings("unused")

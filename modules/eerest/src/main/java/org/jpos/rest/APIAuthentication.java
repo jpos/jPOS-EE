@@ -27,85 +27,59 @@ import java.util.Arrays;
 /**
  * Validate REST API requests
  *
- * jPOS use a combination of a consumer's secret key, received timestamp and payLoad hash
+ * jPOS uses a combination of a consumer's secret key, received timestamp, optional nonce and payLoad hash
  * to validate requests.
  */
 public class APIAuthentication {
-    long receivedTimestamp;
-    long systemTimeStamp;
-    byte[][] payLoad;
-    byte[] hash;
-    SecretKey secretKey;
     public static final String VERSION = "1.0";
     public static final String HASH_ALGORITHM = "HmacSHA256";
 
     private static final long FIVE_MINUTES = 5*60*1000L;
 
-    public APIAuthentication(SecretKey secretKey, long receivedTimestamp, byte[]... payLoad)
-            throws InvalidKeyException, NoSuchAlgorithmException
-    {
-        this.secretKey = secretKey;
-        this.receivedTimestamp = receivedTimestamp;
-        this.payLoad = payLoad;
-        this.systemTimeStamp = System.currentTimeMillis();
+    private APIAuthentication() { }
+
+    public static byte[] computeHash(APICredential cred, SecretKey secretKey, byte[]... payLoad) throws NoSuchAlgorithmException, InvalidKeyException {
+        return computeHash(secretKey, cred.getTimestamp(), cred.getNonce(), payLoad);
     }
 
-    public APIAuthentication hash(byte[] hash) {
-        this.hash = hash;
-        return this;
-    }
-
-    public byte[] getHash() {
-        return hash;
-    }
-
-    public APIAuthentication computeHash() throws NoSuchAlgorithmException, InvalidKeyException {
-        this.hash = computeHash(secretKey, receivedTimestamp, payLoad);
-        return this;
-    }
-
-    @SuppressWarnings("unused")
-    public APIAuthentication forceSystemTimestamp (long systemTimeStamp) {
-        this.systemTimeStamp = systemTimeStamp;
-        return this;
-    }
-
-    public void validate() throws NoSuchAlgorithmException, InvalidKeyException {
+    public static void validate (APICredential cred, SecretKey secretKey, byte[]... payLoad) throws NoSuchAlgorithmException, InvalidKeyException {
+        if (!VERSION.equals(cred.getVersion()))
+            throw new IllegalArgumentException ("unsupported.version");
         assertNotNull(payLoad, "invalid.payLoad");
         assertNotNull(secretKey, "invalid.secret");
-        assertNotNull(hash, "invalid.null.hash");
-        assertTimestamp();
-        assertEquals(hash, computeHash(secretKey, receivedTimestamp, payLoad), "invalid.hash");
+        assertNotNull(cred.getHash(), "invalid.null.hash");
+        assertTimestamp(cred.getTimestamp());
+        assertEquals(computeHash(secretKey, cred.getTimestamp(), cred.getNonce(), payLoad), cred.getHash(), "invalid.hash");
     }
 
-    private void assertTimestamp() {
-        long offset = Math.abs(systemTimeStamp - receivedTimestamp);
+    private static void assertTimestamp(long ts) {
+        long offset = Math.abs(System.currentTimeMillis() - ts);
         if (offset > FIVE_MINUTES) {
             throw new IllegalArgumentException ("invalid.timestamp");
         }
     }
 
-    private void assertNotNull(Object obj, String message)
+    private static void assertNotNull(Object obj, String message)
             throws IllegalArgumentException {
         if (obj == null) {
             throw new IllegalArgumentException(message);
         }
     }
 
-    private void assertEquals (byte[] a, byte[] b, String message) {
+    private static void assertEquals (byte[] a, byte[] b, String message) {
         if (!Arrays.equals(a, b))
             throw new IllegalArgumentException(message);
     }
 
-    public static byte[] computeHash (SecretKey secretKey, long timestamp, byte[]... payLoad)
+    private static byte[] computeHash (SecretKey secretKey, long timestamp, String nonce, byte[]... payLoad)
             throws InvalidKeyException, NoSuchAlgorithmException
     {
         Mac mac = Mac.getInstance(secretKey.getAlgorithm());
         mac.init(secretKey);
         mac.update(Long.toString(timestamp).getBytes());
-        for (int i=0; i<payLoad.length; i++)
-            mac.update(payLoad[i]);
+        if (nonce != null)
+            mac.update (nonce.getBytes());
+        for (byte[] p : payLoad) mac.update(p);
         return mac.doFinal();
     }
 }
-

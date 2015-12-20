@@ -37,10 +37,14 @@ public class APIAuthenticationTest {
     @Test
     public void testInvalidTimestamp () throws AssertionError, NoSuchAlgorithmException, InvalidKeyException {
         try {
-            new APIAuthentication(
-                    secretKey,
-                    System.currentTimeMillis() - 10*60*1000L,
-                    UUID.randomUUID().toString().getBytes()).hash("invalidHash".getBytes()).validate();
+            APIAuthentication.validate(
+              APICredential.builder()
+                .version(APIAuthentication.VERSION)
+                .timestamp(System.currentTimeMillis() - 10*60*1000L)
+                .nonce(UUID.randomUUID().toString())
+                .hash("invalidHash".getBytes()).build(),
+              secretKey, "".getBytes()
+            );
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.timestamp'", "invalid.timestamp".equals(e.getMessage()));
             return;
@@ -54,12 +58,15 @@ public class APIAuthenticationTest {
             byte[] payLoad =  UUID.randomUUID().toString().getBytes();
             KeyGenerator gen = KeyGenerator.getInstance("HmacSHA256");
             SecretKey badSecretKey = gen.generateKey();
-            long timestamp = System.currentTimeMillis();
 
-            new APIAuthentication(
-                    badSecretKey,
-                    timestamp,
-                    payLoad).hash(APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
+            APIAuthentication.validate(
+              APICredential.builder()
+                .version(APIAuthentication.VERSION)
+                .timestamp(System.currentTimeMillis())
+                .nonce(UUID.randomUUID().toString())
+                .hash("invalidHash".getBytes()).build(),
+              badSecretKey, payLoad
+            );
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
             return;
@@ -72,24 +79,17 @@ public class APIAuthenticationTest {
         try {
             byte[] payLoad =  UUID.randomUUID().toString().getBytes();
             long timestamp = System.currentTimeMillis();
-            new APIAuthentication(
-                    secretKey,
-                    timestamp,
-                    payLoad).hash(APIAuthentication.computeHash(secretKey, timestamp, payLoad)).validate();
-        } catch (IllegalArgumentException e) {
-            assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
-        }
-    }
+            APICredential cred = APICredential.builder()
+              .version(APIAuthentication.VERSION)
+              .timestamp(System.currentTimeMillis())
+              .nonce(UUID.randomUUID().toString()).build();
 
-    @Test
-    public void testAutoComputedHash () throws AssertionError, NoSuchAlgorithmException, InvalidKeyException {
-        try {
-            byte[] payLoad =  UUID.randomUUID().toString().getBytes();
-            long timestamp = System.currentTimeMillis();
-            new APIAuthentication(
-              secretKey,
-              timestamp,
-              payLoad).computeHash().validate();
+            APIAuthentication.validate(
+              APICredential.builder()
+                .version(APIAuthentication.VERSION)
+                .timestamp(cred.getTimestamp())
+                .nonce(cred.getNonce())
+                .hash(APIAuthentication.computeHash(cred, secretKey, payLoad)).build(), secretKey, payLoad);
         } catch (IllegalArgumentException e) {
             assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
         }

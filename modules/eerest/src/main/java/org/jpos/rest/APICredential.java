@@ -18,9 +18,13 @@
 
 package org.jpos.rest;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.bouncycastle.util.encoders.Base64;
+
 import javax.ws.rs.core.SecurityContext;
+import java.util.Arrays;
 
 /**
  * Holder for a consumer's credential
@@ -41,9 +45,9 @@ public class APICredential {
     private final String version;
     private final String consumerId;
     private final long timestamp;
-    private final byte[] hash;
-    private final SecurityContext securityContext;
+    private byte[] hash;
     private final String nonce;
+    private final SecurityContext securityContext;
 
     public String getVersion() {
         return version;
@@ -58,7 +62,13 @@ public class APICredential {
     }
 
     public byte[] getHash() {
-        return hash;
+        return hash != null ? Arrays.copyOf(hash, hash.length) : null;
+    }
+
+    public APICredential withHash(byte[] hash) {
+        if (this.hash == null && hash != null)
+            this.hash = Arrays.copyOf(hash, hash.length);
+        return this;
     }
 
     public String getHashAsBase64String() {
@@ -71,12 +81,43 @@ public class APICredential {
         return securityContext;
     }
 
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
             .append("version", getVersion())
             .append("consumerId", getConsumerId())
             .append("timestamp", timestamp)
+            .append("hash", getHashAsBase64String())
             .toString();
+    }
+
+    @Override
+    public boolean equals (Object obj) {
+        if (obj == null) { return false; }
+        if (obj == this) { return true; }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        APICredential a = (APICredential) obj;
+        return new EqualsBuilder()
+          .appendSuper(super.equals(obj))
+          .append(version, a.version)
+          .append(consumerId, a.consumerId)
+          .append(timestamp, a.timestamp)
+          .append(hash, a.hash)
+          .append(nonce, a.nonce)
+          .append(securityContext, a.securityContext).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+          .append(version)
+          .append(consumerId)
+          .append(timestamp)
+          .append(hash)
+          .append(nonce)
+          .append(securityContext).hashCode();
     }
 
     public static Builder builder() {
@@ -88,8 +129,8 @@ public class APICredential {
         this.consumerId      = builder.consumerId;
         this.timestamp       = builder.timestamp;
         this.hash            = builder.hash;
-        this.securityContext = builder.securityContext;
         this.nonce           = builder.nonce;
+        this.securityContext = builder.securityContext;
     }
 
     /**

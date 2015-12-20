@@ -19,6 +19,6 @@
 package org.jpos.ee;
 
 public interface SoftDelete {
-    public void setDeleted (boolean deleted);
-    public boolean isDeleted();
+    void setDeleted (boolean deleted);
+    boolean isDeleted();
 }

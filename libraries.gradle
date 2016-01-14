@@ -9,6 +9,7 @@ ext {
     jgroupsVersion = '3.6.3.Final'
     jaxrsVersion = '2.0.1'
     jsonSchemaVersion = '2.2.6'
+    jacksonVersion = '2.4.5'
 
     libraries = [
             //jUnit (Tests)

@@ -46,7 +46,7 @@ public class JsonType implements UserType {
         try {
             return mapper.readTree(json);
         } catch (IOException e) {
-            return null;
+            return new HibernateException("unable to read object",e);
         }
     }
 
@@ -84,10 +84,6 @@ public class JsonType implements UserType {
 
     @Override
     public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        try {
-            return new ObjectMapper().readTree(original.toString());
-        } catch (IOException e) {
-            return null;
-        }
+        return this.deepCopy(original);
     }
 }

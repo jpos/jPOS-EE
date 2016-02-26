@@ -39,6 +39,10 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private Date startDate;
     private Date endDate;
     private List<PasswordHistory> passwordhistory;
+    private boolean forcePasswordChange;
+    private Date lastLogin;
+    private Date passwordChanged;
+    private int loginAttempts;
 
     public User() {
         super();
@@ -104,7 +108,42 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     }
     public List<PasswordHistory> getPasswordhistory () {
         return passwordhistory;
-    }        
+    }
+    public boolean isForcePasswordChange() {
+        return forcePasswordChange;
+    }
+
+    public void setForcePasswordChange(boolean forcePasswordChange) {
+        this.forcePasswordChange = forcePasswordChange;
+    }
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public Date getPasswordChanged() {
+        return passwordChanged;
+    }
+
+    public void setPasswordChanged(Date passwordChanged) {
+        this.passwordChanged = passwordChanged;
+    }
+
+    public int getLoginAttempts() {
+        return loginAttempts;
+    }
+
+    public void setLoginAttempts(int loginAttempts) {
+        this.loginAttempts = loginAttempts;
+    }
+
+    public void incLoginAttempts () {
+        this.loginAttempts++;
+    }
     public boolean hasPermission (String permName) {
         if (permName != null) {
             for (Role r : roles) {

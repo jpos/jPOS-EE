@@ -48,6 +48,11 @@
       </composite-element>
     </list>
 
+    <property name="forcePasswordChange" type="yes_no" />
+    <property name="lastLogin"           type="timestamp" />
+    <property name="passwordChanged"     type="timestamp" />
+    <property name="loginAttempts"       type="int" />
+
     <map name="props" lazy="true" table="eeuser_props" 
         cascade="all-delete-orphan">
         <key foreign-key="FKUserProps" />

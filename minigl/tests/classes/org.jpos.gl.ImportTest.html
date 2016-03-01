@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">23.812s</div>
+<div class="counter">8.643s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">testImport</td>
-<td>19.885s</td>
+<td>7.436s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testImport</td>
-<td>3.927s</td>
+<td>1.207s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -132,21 +132,22 @@ alter table checkpoint add constraint FKCheckpointJournal foreign key (journal) 
 alter table checkpoint add constraint FKCheckpointAccount  foreign key (account) references acct
 create index perm_name on glperm (name)
 alter table glperm add constraint FKPermissionUser foreign key (gluser) references gluser
-alter table glperm add constraint FKPermissionJournal foreign key (journal) references journal
+alter table glperm add constraint FKJournalPermissions foreign key (journal) references journal
 alter table gluser add constraint UK_rwexaa2l5mvwhkgbgn81m92ng unique (nick)
 alter table journal add constraint UK_i6hym19m5wl8ihwbal4xvuaqf unique (name)
 alter table journal add constraint FKJournalChart foreign key (chart) references acct
-alter table layer add constraint FKilv8xiq6iyd4qr8b6q10x3qqk foreign key (journal) references journal
+alter table layer add constraint FKJournalLayers foreign key (journal) references journal
 alter table ruleinfo add constraint FKRuleInfoJournal foreign key (journal) references journal
 alter table ruleinfo add constraint FKRuleInfoAccount foreign key (account) references acct
-create index postDate on transacc (postDate)
 create index timestamp on transacc (timestamp)
+create index postDate on transacc (postDate)
 alter table transacc add constraint FKTransactionJournal foreign key (journal) references journal
 alter table transentry add constraint FKGLEntryAccount foreign key (account) references acct
 alter table transentry add constraint FKGLEntryTransaction foreign key (transaction) references transacc
+create index transgroupname on transgroup (name)
 alter table transgroup add constraint UK_9mvyt6dt792vwcmb9ua3gwb09 unique (name)
-alter table transgroup_transactions add constraint FKcl7bvqytddhiu07ultbtfdvat foreign key (transaction) references transacc
-alter table transgroup_transactions add constraint FKgruhjf7so4ektiktwh6waq943 foreign key (transactiongroup) references transgroup
+alter table transgroup_transactions add constraint FKTransactionGroupTransaction foreign key (transaction) references transacc
+alter table transgroup_transactions add constraint FKTransactionTransactionGroup foreign key (transactiongroup) references transgroup
 drop table acct if exists
 drop table acctlock if exists
 drop table balance_cache if exists
@@ -187,21 +188,22 @@ alter table checkpoint add constraint FKCheckpointJournal foreign key (journal) 
 alter table checkpoint add constraint FKCheckpointAccount  foreign key (account) references acct
 create index perm_name on glperm (name)
 alter table glperm add constraint FKPermissionUser foreign key (gluser) references gluser
-alter table glperm add constraint FKPermissionJournal foreign key (journal) references journal
+alter table glperm add constraint FKJournalPermissions foreign key (journal) references journal
 alter table gluser add constraint UK_rwexaa2l5mvwhkgbgn81m92ng unique (nick)
 alter table journal add constraint UK_i6hym19m5wl8ihwbal4xvuaqf unique (name)
 alter table journal add constraint FKJournalChart foreign key (chart) references acct
-alter table layer add constraint FKilv8xiq6iyd4qr8b6q10x3qqk foreign key (journal) references journal
+alter table layer add constraint FKJournalLayers foreign key (journal) references journal
 alter table ruleinfo add constraint FKRuleInfoJournal foreign key (journal) references journal
 alter table ruleinfo add constraint FKRuleInfoAccount foreign key (account) references acct
-create index postDate on transacc (postDate)
 create index timestamp on transacc (timestamp)
+create index postDate on transacc (postDate)
 alter table transacc add constraint FKTransactionJournal foreign key (journal) references journal
 alter table transentry add constraint FKGLEntryAccount foreign key (account) references acct
 alter table transentry add constraint FKGLEntryTransaction foreign key (transaction) references transacc
+create index transgroupname on transgroup (name)
 alter table transgroup add constraint UK_9mvyt6dt792vwcmb9ua3gwb09 unique (name)
-alter table transgroup_transactions add constraint FKcl7bvqytddhiu07ultbtfdvat foreign key (transaction) references transacc
-alter table transgroup_transactions add constraint FKgruhjf7so4ektiktwh6waq943 foreign key (transactiongroup) references transgroup
+alter table transgroup_transactions add constraint FKTransactionGroupTransaction foreign key (transaction) references transacc
+alter table transgroup_transactions add constraint FKTransactionTransactionGroup foreign key (transactiongroup) references transgroup
 </pre>
 </span>
 </div>
@@ -213,7 +215,7 @@ alter table transgroup_transactions add constraint FKgruhjf7so4ektiktwh6waq943 f
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 2.8</a> at Feb 26, 2016 8:21:08 PM</p>
+<a href="http://www.gradle.org">Gradle 2.8</a> at Mar 1, 2016 7:59:22 PM</p>
 </div>
 </div>
 </body>

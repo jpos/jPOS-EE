@@ -21,11 +21,10 @@ package org.jpos.gl;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
-import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * Assorted helper methods

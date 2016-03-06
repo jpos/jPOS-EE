@@ -21,7 +21,7 @@ package org.jpos.space;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.core.ConfigurationException;
 import org.jpos.util.NameRegistrar;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * RemoteSpaceAdaptor

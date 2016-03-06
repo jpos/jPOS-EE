@@ -20,7 +20,7 @@ package org.jpos.gl;
 
 import java.util.Set;
 import java.text.ParseException;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * Final (leaf) Account.

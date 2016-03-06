@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.Set;
 import java.io.Serializable;
 import java.text.ParseException;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

@@ -18,39 +18,27 @@
 
 package org.jpos.gl.tools;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.List;
 import java.util.Iterator;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.DocType;
-import org.jdom.Comment;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.DocType;
+import org.jdom2.Comment;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import java.sql.SQLException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.Hibernate;
-import org.hibernate.Transaction;
-import org.hibernate.SessionFactory;
 import org.hibernate.HibernateException;
 
 import org.jpos.gl.GLUser;
 import org.jpos.gl.Journal;
 import org.jpos.gl.RuleInfo;
-import org.jpos.gl.GLPermission;
-import org.jpos.gl.CompositeAccount;
-import org.jpos.gl.FinalAccount;
 import org.jpos.gl.Account;
-import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLException;
 import org.jpos.gl.GLSession;
 import org.jpos.gl.GLTransaction;

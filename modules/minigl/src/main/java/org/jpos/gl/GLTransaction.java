@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;

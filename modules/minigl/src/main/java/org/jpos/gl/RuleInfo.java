@@ -18,11 +18,9 @@
 
 package org.jpos.gl;
 
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.StringTokenizer;
-import org.jdom.Element;
-import org.jdom.Comment;
+import org.jdom2.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;

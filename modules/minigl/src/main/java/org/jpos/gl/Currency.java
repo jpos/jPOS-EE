@@ -19,8 +19,7 @@
 package org.jpos.gl;
 
 import java.text.ParseException;
-import org.jdom.Element;
-import org.jdom.Comment;
+import org.jdom2.Element;
 
 /**
  * Represents a currency.

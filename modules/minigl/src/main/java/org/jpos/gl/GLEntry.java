@@ -20,7 +20,7 @@ package org.jpos.gl;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;

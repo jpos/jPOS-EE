@@ -26,11 +26,9 @@ import java.util.ArrayList;
 import org.jpos.ee.DB;
 import org.jpos.q2.QFactory;
 import org.jpos.q2.QBeanSupport;
-import org.jpos.iso.ISOUtil;
-import org.jpos.util.DateUtil;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.ConfigurationException;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.hibernate.HibernateException;
 
 public class Monitor extends QBeanSupport implements XmlConfigurable {

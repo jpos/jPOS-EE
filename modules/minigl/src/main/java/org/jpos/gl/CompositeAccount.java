@@ -20,10 +20,9 @@ package org.jpos.gl;
 
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.text.ParseException;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * Composite Account 

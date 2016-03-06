@@ -23,14 +23,7 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.jdom.JDOMException;
 import org.jpos.fsdpackager.FSDMsgX;
-import org.jpos.iso.ISOException;
-import org.jpos.iso.ISOMsg;
-import org.jpos.util.FSDMsg;
 
 public class FSDISOMsgX extends ISOMsg   {
     FSDMsgX fsd;

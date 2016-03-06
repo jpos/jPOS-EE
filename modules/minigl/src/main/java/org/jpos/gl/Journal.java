@@ -20,11 +20,9 @@ package org.jpos.gl;
 
 import java.util.Set;
 import java.util.Date;
-import java.util.List;
 import java.util.Iterator;
-import java.util.ArrayList;
-import org.jdom.Element;
-import org.jdom.Comment;
+import org.jdom2.Element;
+import org.jdom2.Comment;
 import java.text.ParseException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;

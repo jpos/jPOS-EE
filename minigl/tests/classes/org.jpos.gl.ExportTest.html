@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.142s</div>
+<div class="counter">0.163s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">testExport</td>
-<td>0.142s</td>
+<td>0.163s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -89,7 +89,6 @@
 <span class="code">
 <pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;!DOCTYPE minigl SYSTEM &quot;http://jpos.org/dtd/minigl.dtd&quot;&gt;
-
 &lt;minigl&gt;
   &lt;!--jPOS MiniGL export $--&gt;
   &lt;create-schema /&gt;
@@ -102,16 +101,16 @@
     &lt;!--id 2--&gt;
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
-    &lt;grant&gt;write&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;write&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
-    &lt;grant&gt;read&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
+    &lt;grant&gt;read&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
@@ -134,59 +133,59 @@
   &lt;chart-of-accounts code=&quot;TestChart&quot; created=&quot;20050101&quot;&gt;
     &lt;description&gt;Test Chart&lt;/description&gt;
     &lt;tags /&gt;
-    &lt;composite-account code=&quot;1&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+    &lt;composite-account code=&quot;1&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
       &lt;description&gt;Assets&lt;/description&gt;
       &lt;tags /&gt;
-      &lt;composite-account code=&quot;11&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+      &lt;composite-account code=&quot;11&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
         &lt;description&gt;Cash&lt;/description&gt;
         &lt;tags /&gt;
-        &lt;account code=&quot;111&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+        &lt;account code=&quot;111&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
           &lt;description&gt;Cash Dollars&lt;/description&gt;
           &lt;tags /&gt;
         &lt;/account&gt;
-        &lt;account code=&quot;112&quot; currency=&quot;858&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+        &lt;account code=&quot;112&quot; currency=&quot;858&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
           &lt;description&gt;Cash Pesos&lt;/description&gt;
           &lt;tags /&gt;
         &lt;/account&gt;
-        &lt;account code=&quot;113&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+        &lt;account code=&quot;113&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
           &lt;description&gt;Bank Account&lt;/description&gt;
           &lt;tags /&gt;
         &lt;/account&gt;
-        &lt;account code=&quot;120&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+        &lt;account code=&quot;120&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
           &lt;description&gt;Trip Fund&lt;/description&gt;
           &lt;tags /&gt;
         &lt;/account&gt;
       &lt;/composite-account&gt;
     &lt;/composite-account&gt;
-    &lt;composite-account code=&quot;2&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+    &lt;composite-account code=&quot;2&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
       &lt;description&gt;Liabilities&lt;/description&gt;
       &lt;tags /&gt;
-      &lt;account code=&quot;21&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+      &lt;account code=&quot;21&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
         &lt;description&gt;Loan&lt;/description&gt;
         &lt;tags /&gt;
       &lt;/account&gt;
-      &lt;composite-account code=&quot;23&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+      &lt;composite-account code=&quot;23&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
         &lt;description&gt;Cards&lt;/description&gt;
         &lt;tags /&gt;
       &lt;/composite-account&gt;
     &lt;/composite-account&gt;
-    &lt;composite-account code=&quot;3&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+    &lt;composite-account code=&quot;3&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
       &lt;description&gt;Equity&lt;/description&gt;
       &lt;tags /&gt;
-      &lt;account code=&quot;31&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+      &lt;account code=&quot;31&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
         &lt;description&gt;Bob's equity&lt;/description&gt;
         &lt;tags /&gt;
       &lt;/account&gt;
-      &lt;account code=&quot;32&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+      &lt;account code=&quot;32&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
         &lt;description&gt;Alice's equity&lt;/description&gt;
         &lt;tags /&gt;
       &lt;/account&gt;
     &lt;/composite-account&gt;
-    &lt;composite-account code=&quot;4&quot; type=&quot;credit&quot; created=&quot;20160301&quot;&gt;
+    &lt;composite-account code=&quot;4&quot; type=&quot;credit&quot; created=&quot;20160306&quot;&gt;
       &lt;description&gt;Earnings&lt;/description&gt;
       &lt;tags /&gt;
     &lt;/composite-account&gt;
-    &lt;composite-account code=&quot;5&quot; type=&quot;debit&quot; created=&quot;20160301&quot;&gt;
+    &lt;composite-account code=&quot;5&quot; type=&quot;debit&quot; created=&quot;20160306&quot;&gt;
       &lt;description&gt;Losses&lt;/description&gt;
       &lt;tags /&gt;
     &lt;/composite-account&gt;
@@ -197,12 +196,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -234,12 +233,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -323,7 +322,6 @@
     &lt;/entry&gt;
   &lt;/transaction&gt;
 &lt;/minigl&gt;
-
 </pre>
 </span>
 </div>
@@ -335,7 +333,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 2.8</a> at Mar 1, 2016 7:59:22 PM</p>
+<a href="http://www.gradle.org">Gradle 2.8</a> at Mar 6, 2016 10:23:56 PM</p>
 </div>
 </div>
 </body>

@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">17.749s</div>
+<div class="counter">21.361s</div>
 <p>duration</p>
 </div>
 </td>
@@ -82,7 +82,7 @@
 </thead>
 <tr>
 <td class="success">tests</td>
-<td>17.749s</td>
+<td>21.361s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -130,46 +130,63 @@ alter table role_perms add constraint FKRolePermissions foreign key (role) refer
 <div id="tab2" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Mar 06, 2016 10:23:03 PM org.hibernate.Version logVersion
+<pre>Mar 07, 2016 4:30:29 AM org.hibernate.Version logVersion
 INFO: HHH000412: Hibernate Core {5.0.5.Final}
-Mar 06, 2016 10:23:03 PM org.hibernate.cfg.Environment &lt;clinit&gt;
+Mar 07, 2016 4:30:29 AM org.hibernate.cfg.Environment &lt;clinit&gt;
 INFO: HHH000206: hibernate.properties not found
-Mar 06, 2016 10:23:03 PM org.hibernate.cfg.Environment buildBytecodeProvider
+Mar 07, 2016 4:30:29 AM org.hibernate.cfg.Environment buildBytecodeProvider
 INFO: HHH000021: Bytecode provider name : javassist
-Mar 06, 2016 10:23:05 PM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
+Mar 07, 2016 4:30:31 AM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
 INFO: HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
-Mar 06, 2016 10:23:05 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
+Mar 07, 2016 4:30:31 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
 WARN: HHH10001002: Using Hibernate built-in connection pool (not for production use!)
-Mar 06, 2016 10:23:05 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+Mar 07, 2016 4:30:31 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
 INFO: HHH10001005: using driver [org.h2.Driver] at URL [jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000]
-Mar 06, 2016 10:23:05 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+Mar 07, 2016 4:30:31 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
 INFO: HHH10001001: Connection properties: {user=sa, password=****}
-Mar 06, 2016 10:23:05 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+Mar 07, 2016 4:30:31 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
 INFO: HHH10001003: Autocommit mode: false
-Mar 06, 2016 10:23:05 PM org.hibernate.engine.jdbc.connections.internal.PooledConnections &lt;init&gt;
+Mar 07, 2016 4:30:31 AM org.hibernate.engine.jdbc.connections.internal.PooledConnections &lt;init&gt;
 INFO: HHH000115: Hibernate connection pool size: 20 (min=1)
-Mar 06, 2016 10:23:05 PM org.hibernate.dialect.Dialect &lt;init&gt;
+Mar 07, 2016 4:30:33 AM org.hibernate.dialect.Dialect &lt;init&gt;
 INFO: HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-Mar 06, 2016 10:23:06 PM org.hibernate.envers.boot.internal.EnversServiceImpl configure
+Mar 07, 2016 4:30:33 AM org.hibernate.envers.boot.internal.EnversServiceImpl configure
 INFO: Envers integration enabled? : true
-Mar 06, 2016 10:23:06 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Mar 07, 2016 4:30:33 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000227: Running hbm2ddl schema export
-Mar 06, 2016 10:23:06 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Mar 07, 2016 4:30:33 AM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000230: Schema export complete
-Mar 06, 2016 10:23:06 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
-WARN: HHH10001002: Using Hibernate built-in connection pool (not for production use!)
-Mar 06, 2016 10:23:06 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
-INFO: HHH10001005: using driver [org.h2.Driver] at URL [jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000]
-Mar 06, 2016 10:23:06 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+Mar 07, 2016 4:30:34 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+INFO: HHH010002: C3P0 using driver: org.h2.Driver at URL: jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000
+Mar 07, 2016 4:30:34 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH10001001: Connection properties: {user=sa, password=****}
-Mar 06, 2016 10:23:06 PM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+Mar 07, 2016 4:30:34 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH10001003: Autocommit mode: false
-Mar 06, 2016 10:23:06 PM org.hibernate.engine.jdbc.connections.internal.PooledConnections &lt;init&gt;
-INFO: HHH000115: Hibernate connection pool size: 20 (min=1)
-Mar 06, 2016 10:23:07 PM org.hibernate.dialect.Dialect &lt;init&gt;
+Mar 07, 2016 4:30:34 AM com.mchange.v2.log.MLog &lt;clinit&gt;
+INFO: MLog clients using java 1.4+ standard logging.
+Mar 07, 2016 4:30:35 AM com.mchange.v2.c3p0.C3P0Registry banner
+INFO: Initializing c3p0-0.9.2.1 [built 20-March-2013 10:47:27 +0000; debug? true; trace: 10]
+Mar 07, 2016 4:30:35 AM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+INFO: HHH10001007: JDBC isolation level: READ_COMMITTED
+Mar 07, 2016 4:30:35 AM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource getPoolManager
+INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@16dd69ac [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@d6926eee [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, identityToken -&gt; 1bqq1mh9fm0ik7ohtofzs|5241c36b, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 20, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@e6a21c97 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq1mh9fm0ik7ohtofzs|7c43d1c8, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, factoryClassLocation -&gt; null, identityToken -&gt; 1bqq1mh9fm0ik7ohtofzs|5f3af79a, numHelperThreads -&gt; 3 ]
+Mar 07, 2016 4:30:35 AM org.hibernate.dialect.Dialect &lt;init&gt;
 INFO: HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-Mar 06, 2016 10:23:07 PM org.hibernate.envers.boot.internal.EnversServiceImpl configure
+Mar 07, 2016 4:30:35 AM org.hibernate.engine.jdbc.env.internal.LobCreatorBuilderImpl useContextualLobCreation
+INFO: HHH000424: Disabling contextual LOB creation as createClob() method threw error : java.lang.reflect.InvocationTargetException
+Mar 07, 2016 4:30:35 AM org.hibernate.envers.boot.internal.EnversServiceImpl configure
 INFO: Envers integration enabled? : true
+SLF4J: Failed to load class &quot;org.slf4j.impl.StaticLoggerBinder&quot;.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Mar 07, 2016 4:30:35 AM org.hibernate.cache.spi.UpdateTimestampsCache &lt;init&gt;
+INFO: HHH000250: Starting update timestamps cache at region: org.hibernate.cache.spi.UpdateTimestampsCache
+Mar 07, 2016 4:30:35 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
+WARN: HHH020003: Could not find a specific ehcache configuration for cache named [org.hibernate.cache.spi.UpdateTimestampsCache]; using defaults.
+Mar 07, 2016 4:30:35 AM org.hibernate.cache.internal.StandardQueryCache &lt;init&gt;
+INFO: HHH000248: Starting query cache at region: org.hibernate.cache.internal.StandardQueryCache
+Mar 07, 2016 4:30:35 AM org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory getCache
+WARN: HHH020003: Could not find a specific ehcache configuration for cache named [org.hibernate.cache.internal.StandardQueryCache]; using defaults.
 </pre>
 </span>
 </div>
@@ -181,7 +198,7 @@ INFO: Envers integration enabled? : true
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 2.8</a> at Mar 6, 2016 10:23:21 PM</p>
+<a href="http://www.gradle.org">Gradle 2.8</a> at Mar 7, 2016 4:30:50 AM</p>
 </div>
 </div>
 </body>

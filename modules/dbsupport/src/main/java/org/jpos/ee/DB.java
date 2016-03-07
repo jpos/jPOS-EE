@@ -113,7 +113,7 @@ public class DB implements Closeable
     }
 
     private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException {
-        String hibCfg = System.getProperty("HIBERNATE_CFG");
+        String hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
         if (hibCfg != null) {
             Configuration configuration = new Configuration().configure(hibCfg);
             configureProperties(configuration);

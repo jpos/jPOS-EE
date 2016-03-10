@@ -59,9 +59,11 @@ public class DB implements Closeable
 {
     Session session;
     Log log;
+    String configModifier;
 
     private static volatile SessionFactory sessionFactory = null;
     private static String propFile;
+    private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
 
     /**
      * Creates DB Object using default Hibernate instance
@@ -72,6 +74,27 @@ public class DB implements Closeable
     }
 
     /**
+     * Creates DB Object using a config <i>modifier</i>.
+     *
+     * The <i>modifier</i> can be either a prefix used to locate the <code>cfg/db.properties</code> file.
+     * i.e.: "mysql" used as modifier would pick the configuration from <code>cfg/mysql-db.properties</code>
+     * instead of the default <code>cfg/db.properties</code>
+     *
+     * If a colon and a second modifier is present ("mysql:v1") the metadata is picket from
+     * <code>META-INF/org/jpos/ee/modules/v1-*</code> instead of just
+     * <code>META-INF/org/jpos/ee/modules/</code>.
+     *
+     * Finally, if the modifier ends with <code>.hbm.xml</code> (case insensitive), then all configuration
+     * is picked from that config file.
+     *
+     * @param configModifier modifier
+     */
+    public DB (String configModifier) {
+        super();
+        this.configModifier = configModifier;
+    }
+
+    /**
      * Creates DB Object using default Hibernate instance
      *
      * @param log Log object
@@ -79,6 +102,16 @@ public class DB implements Closeable
     public DB(Log log)
     {
         super();
+        setLog(log);
+    }
+
+    /**
+     * Creates DB Object using default Hibernate instance
+     *
+     * @param log Log object
+     */
+    public DB(Log log, String configModifier) {
+        this(configModifier);
         setLog(log);
     }
 
@@ -113,13 +146,6 @@ public class DB implements Closeable
     }
 
     private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException {
-        String hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
-        if (hibCfg != null) {
-            Configuration configuration = new Configuration().configure(hibCfg);
-            configureProperties(configuration);
-            configureMappings(configuration);
-            return configuration.buildSessionFactory();
-        }
         return getMetadata().buildSessionFactory();
     }
 
@@ -416,7 +442,26 @@ public class DB implements Closeable
 
     private MetadataImplementor getMetadata() throws IOException, ConfigurationException, DocumentException {
         StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
-        String propFile = System.getProperty("DB_PROPERTIES", "cfg/db.properties");
+        String propFile;
+        String dbPropertiesPrefix = "";
+        String metadataPrefix = "";
+        if (configModifier != null) {
+            String[] ss = configModifier.split(":");
+            if (ss.length > 0)
+                dbPropertiesPrefix = ss[0] + "-";
+            if (ss.length > 1)
+                metadataPrefix = ss[1] + "-";
+        }
+
+        String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
+        if (getClass().getClassLoader().getResource(hibCfg) == null)
+            hibCfg = null;
+
+        if (hibCfg == null)
+            hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
+        ssrb.configure(hibCfg);
+
+        propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
         Properties dbProps = loadProperties(propFile);
         if (dbProps != null) {
             for (Map.Entry entry : dbProps.entrySet()) {
@@ -424,9 +469,11 @@ public class DB implements Closeable
             }
         }
         MetadataSources mds = new MetadataSources(ssrb.build());
-        List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
+        List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
         for (String moduleConfig : moduleConfigs) {
-            addMappings(mds, moduleConfig);
+            if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
+                addMappings(mds, moduleConfig);
+            }
         }
         return (MetadataImplementor) mds.buildMetadata();
     }

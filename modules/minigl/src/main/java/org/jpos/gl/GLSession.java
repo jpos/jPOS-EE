@@ -1025,20 +1025,21 @@ public class GLSession {
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances 
-        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId) 
+        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
         BigDecimal balance[] = { ZERO, Z };
+        short[] layersCopy = Arrays.copyOf(layers,layers.length);
         if (acct.getChildren() != null) {
             if (acct.isChart()) {
                 return getChartBalances 
-                    (journal, (CompositeAccount) acct, date, inclusive, layers, maxId);
+                    (journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
             }
             Iterator iter = acct.getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
-                BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
+                BigDecimal[] b = getBalances (journal, a, date, inclusive, layersCopy, maxId);
                 balance[0] = balance[0].add (b[0]);
                 // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
             }
@@ -1046,7 +1047,7 @@ public class GLSession {
         else if (acct.isFinalAccount()) {
             Criteria entryCrit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
-                .add (Restrictions.in ("layer", toShortArray (layers)));
+                .add (Restrictions.in ("layer", toShortArray (layersCopy)));
             if (maxId > 0L)
                 entryCrit.add (Restrictions.le ("id", maxId));
 
@@ -1060,14 +1061,14 @@ public class GLSession {
                     date = Util.floor (date);
                     txnCrit.add (Restrictions.lt ("postDate", date));
                 }
-                Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layers);
+                Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layersCopy);
                 if (chkp != null) {
                     balance[0] = chkp.getBalance();
                     txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
                 }
 
             } else {
-                BalanceCache bcache = getBalanceCache (journal, acct, layers);
+                BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
                 if (bcache != null) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));

@@ -25,7 +25,7 @@
     <id name="id" column="id" type="long">
       <generator class="native" />
     </id>
-    <property name="tag"  type="string" length="32" index="status_tag" />
+    <property name="tag"  type="string" length="32" index="ntx_status_tag" />
     <many-to-one name="status" class="org.jpos.ee.status.Status" column="status" />
   </class>
 </hibernate-mapping>

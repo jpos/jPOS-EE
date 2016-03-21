@@ -133,9 +133,9 @@ public class Journal {
     }
     /**
      * Transactions should not be posted to this journal using
-     * a postDate <= the lockDate.
+     * a postDate &lt;= the lockDate.
      *
-     * @lockDate lockDate the lock date.
+     * @param lockDate the lock date.
      */
     public void setLockDate (Date lockDate) {
         this.lockDate = lockDate;

@@ -58,7 +58,7 @@ public class GLTransaction {
     /**
      * Constructs a GLTransaction out of a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
-     * @param elem '<entry>...</entry>' element.
+     * @param elem {@code '<entry>...</entry>}' element.
      */
     public GLTransaction (Element elem) throws ParseException {
         super();

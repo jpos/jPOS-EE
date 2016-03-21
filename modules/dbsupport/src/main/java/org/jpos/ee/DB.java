@@ -76,16 +76,20 @@ public class DB implements Closeable
     /**
      * Creates DB Object using a config <i>modifier</i>.
      *
-     * The <i>modifier</i> can be either a prefix used to locate the <code>cfg/db.properties</code> file.
-     * i.e.: "mysql" used as modifier would pick the configuration from <code>cfg/mysql-db.properties</code>
-     * instead of the default <code>cfg/db.properties</code>
+     * The <i>configModifier</i> can take a number of different forms used to locate the <code>cfg/db.properties</code> file.
      *
-     * If a colon and a second modifier is present ("mysql:v1") the metadata is picket from
-     * <code>META-INF/org/jpos/ee/modules/v1-*</code> instead of just
-     * <code>META-INF/org/jpos/ee/modules/</code>.
+     * <ul>
      *
-     * Finally, if the modifier ends with <code>.hbm.xml</code> (case insensitive), then all configuration
-     * is picked from that config file.
+     *  <li>a filename prefix, i.e.: "mysql" used as modifier would pick the configuration from
+     *      <code>cfg/mysql-db.properties</code> instead of the default <code>cfg/db.properties</code> </li>
+     *
+     *  <li>if a colon and a second modifier is present (e.g.: "mysql:v1"), the metadata is picked from
+     *      <code>META-INF/org/jpos/ee/modules/v1-*</code> instead of just
+     *      <code>META-INF/org/jpos/ee/modules/</code> </li>
+     *
+     *  <li>finally, if the modifier ends with <code>.hbm.xml</code> (case insensitive), then all configuration
+     *      is picked from that config file.</li>
+     * </ul>
      *
      * @param configModifier modifier
      */
@@ -109,6 +113,7 @@ public class DB implements Closeable
      * Creates DB Object using default Hibernate instance
      *
      * @param log Log object
+     * @param configModifier modifier
      */
     public DB(Log log, String configModifier) {
         this(configModifier);

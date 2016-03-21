@@ -401,12 +401,11 @@ public class ReplicatedSpace
      * Called <em>after</em> the FLUSH protocol has unblocked previously blocked senders, and
      * messages can be sent again. This callback only needs to be implemented if we require a
      * notification of that.
-     * <p/>
-     * <p/>
+     * <p>
      * Note that during new view installation we provide guarantee that unblock invocation strictly
      * follows view installation at some node A belonging to that view . However, some other message
      * M may squeeze in between view and unblock callbacks.
-     * <p/>
+     * <p>
      * For more details see https://jira.jboss.org/jira/browse/JGRP-986
      */
     @Override

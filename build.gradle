@@ -18,6 +18,7 @@ subprojects {
     def isSnapshot = true; // version.contains("SNAPSHOT")
 
     project.archivesBaseName="jposee-${project.name}"
+    javadoc.failOnError = false
 
     def pomConfig = {
         name 'jPOS-EE Project'

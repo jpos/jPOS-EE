@@ -34,6 +34,7 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.tool.schema.TargetType;
 import org.jpos.core.ConfigurationException;
 import org.jpos.ee.support.ModuleUtils;
 import org.jpos.util.Log;
@@ -243,15 +244,18 @@ public class DB implements Closeable
      * @param create     true to actually issue the create statements
      */
     public void createSchema(String outputFile, boolean create) throws HibernateException, DocumentException {
-        try
-        {
-            SchemaExport export = new SchemaExport(getMetadata());
-            if (outputFile != null)
-            {
+        try {
+            // SchemaExport export = new SchemaExport(getMetadata());
+            SchemaExport export = new SchemaExport();
+            EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.STDOUT);
+            if (outputFile != null) {
                 export.setOutputFile(outputFile);
                 export.setDelimiter(";");
+                targetTypes.add(TargetType.SCRIPT);
             }
-            export.create(true, create);
+            if (create)
+                targetTypes.add(TargetType.DATABASE);
+            export.create(targetTypes, getMetadata());
         }
         catch (IOException | ConfigurationException e)
         {

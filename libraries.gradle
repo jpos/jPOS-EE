@@ -21,7 +21,6 @@ ext {
 
             //Apache Commons
             commons_lang: 'org.apache.commons:commons-lang3:3.4',
-            commons_beanutils: 'commons-beanutils:commons-beanutils:1.9.2',
             commons_logging: 'commons-logging:commons-logging:1.2',
 
             //SLF4J and logback Stuff

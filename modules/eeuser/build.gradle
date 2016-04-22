@@ -3,6 +3,7 @@ description = 'jPOS-EE :: User Module'
 dependencies {
     compile project(':modules:dbsupport')
     testCompile project(':modules:db-h2')
+    compile libraries.commons_lang
 }
 
 ext {

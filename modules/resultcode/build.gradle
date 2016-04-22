@@ -2,4 +2,5 @@ description = 'jPOS-EE :: Resultcode Module'
 
 dependencies {
     compile project(':modules:dbsupport')
+    compile libraries.commons_lang
 }

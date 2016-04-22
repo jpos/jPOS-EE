@@ -4,6 +4,7 @@ dependencies {
     compile project(':modules:logback')
     compile project(':modules:dbsupport')
     testCompile project(':modules:db-h2')
+    compile libraries.commons_lang
 }
 
 ext {

@@ -95,7 +95,9 @@ public class TagsType implements UserType {
 
     @Override
     public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        return new Tags(original.toString());
+        if (original != null)
+            return new Tags(original.toString());
+        return null;
     }
 }
 

@@ -27,6 +27,7 @@ import org.jdom2.Element;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.ee.Cloneable;
 import org.jpos.util.Tags;
 
 /**
@@ -39,7 +40,7 @@ import org.jpos.util.Tags;
  *
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
-public class GLTransaction {
+public class GLTransaction extends Cloneable {
     private long id;
     private Date timestamp;
     private Date postDate;

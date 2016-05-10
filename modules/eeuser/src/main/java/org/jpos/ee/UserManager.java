@@ -21,6 +21,7 @@ package org.jpos.ee;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.List;
 
 import org.bouncycastle.util.Arrays;
@@ -70,6 +71,8 @@ public class UserManager {
                 setV1Password (u, clearpass);
                 break;
         }
+        u.setPasswordChanged(new Date());
+        u.setForcePasswordChange(false);
         RevisionManager revmgr = new RevisionManager(db);
         if (author == null)
             author = u;

@@ -19,7 +19,7 @@ parsing decisions. Provides out of the box PCI compliance and ability to add jav
 
 ==== Introduction to using the packagers
 
-====== FixedFieldPackager
+===== FixedFieldPackager
 
 Consider a specification that states field 1 is a fixed field of 6 and field 2 is a fixed stream of 2 bytes.
 Stream of bytes=123456AB
@@ -128,7 +128,7 @@ tree>Field [Field2] : Fixed [2] : 12
 * You can verify the hexdump of the actual packed vyte array outstream is the same as the hexdump of the container.
 
 
-====== VariableFieldPackager
+===== VariableFieldPackager
 Used when the size of the field is variable and needs a delimiter to indicate the end of the field.
 
 Consider a specification that indicates a field FirstName can have a maximum of 20 characters and will be terminate/delimited by a semi colon followed by a Lastname with a maximum of 10 characters terminated by a period.
@@ -188,7 +188,7 @@ Msg2Field [F2] : VAR[0..5] delimiter[0x1D] or EOM  : ABC
 * See the hexdumps are identical for both the containers,operations show equivalence.
 
 
-====== BranchFieldPackager
+===== BranchFieldPackager
 
 Consider a specification where you need to parse fields differently based on a particular field. Typically you will see a pattern where, if the value of the field is X the fields following it are Y1,Y2..Yn.
 

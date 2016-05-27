@@ -46,8 +46,8 @@ Field2 = AB
     System.out.println("Offset="+offset);
     System.out.println("Field1="+msg.get("Field1"));
     System.out.println("Field2="+msg.get("Field2"));
-    System.out.println(msg.dump("dump"));
-    System.out.println(msg.getParserTree("tree>"));
+    System.out.println(msg.dump("dump> "));
+    System.out.println(msg.getParserTree("tree> "));
     System.out.println(msg.hexDump(""));
 ====
 
@@ -57,19 +57,14 @@ Field2 = AB
 Offset=8
 Field1=123456
 Field2=AB
-dump<fsdmsgX name="Example1">
-dump  <field id="Field1" value="123456"/>
-dump  <field id="Field2" value="AB"/>
-dump</fsdmsgX>
-tree>[Example1]
-tree>Field [Field1] : Fixed [6] : 123456
-tree>Field [Field2] : Fixed [2] : AB
+dump> <fsdmsgX name="Example1">
+dump>   <field id="Field1" value="123456"/>
+dump>   <field id="Field2" value="AB"/>
+dump> </fsdmsgX>
+tree> [Example1]
+tree> Field [Field1] : Fixed [6] : 123456
+tree> Field [Field2] : Fixed [2] : AB
 0000  31 32 33 34 35 36 41 42                           123456AB
-
-
-
-
-
 
 * Create the main container object FSDMsgX.
 * Create the individual field packagers for field1 and field2.
@@ -127,13 +122,11 @@ tree>Field [Field2] : Fixed [2] : 12
 * You can verify that the parser parsed it correctly.
 * You can verify the hexdump of the actual packed vyte array outstream is the same as the hexdump of the container.
 
-
 ===== VariableFieldPackager
 Used when the size of the field is variable and needs a delimiter to indicate the end of the field.
 
 Consider a specification that indicates a field FirstName can have a maximum of 20 characters and will be terminate/delimited by a semi colon followed by a Lastname with a maximum of 10 characters terminated by a period.
 The delimiter is important because one could have a name Tom, Tommy, Thomas to indicate the end of a name a delimiter is needed. If I did bot have a FirstName, a semi colon would be needed to indicate there is no first name.
-
 
 
 .VariableFieldPackager Usage
@@ -144,7 +137,10 @@ The delimiter is important because one could have a name Tom, Tommy, Thomas to i
 
     VariableFieldPackager f1 = new VariableFieldPackager("F1", 20, new Byte((byte) 0x1c),
         AsciiInterpreter.INSTANCE);
-    VariableFieldPackager f2 = new VariableFieldPackager("F2", 5, new Byte((byte) 0x1d), AsciiInterpreter.INSTANCE);
+    VariableFieldPackager f2 = new VariableFieldPackager(
+      "F2", 5, new Byte((byte) 0x1d), 
+      AsciiInterpreter.INSTANCE
+    );
 
     FSDMsgX msg = new FSDMsgX("Test1");
     msg.add("F1", f1);
@@ -168,6 +164,7 @@ The delimiter is important because one could have a name Tom, Tommy, Thomas to i
   }
 
 ====
+
 
 *Output*
 

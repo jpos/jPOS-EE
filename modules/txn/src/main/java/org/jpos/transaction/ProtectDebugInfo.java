@@ -108,12 +108,8 @@ import java.io.Serializable;
          }
      }
      private void protectField (ISOMsg m, int f) {
-         try {
-             if (m != null) {
-                 m.set (f, protect (m.getString (f)));
-             }
-         } catch (ISOException e) {
-             warn (e);
+         if (m != null) {
+             m.set (f, protect (m.getString (f)));
          }
      }
      private void protectField (FSDMsg m, String f) {

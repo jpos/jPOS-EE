@@ -131,7 +131,7 @@ public class GroovyParticipant extends Log
             if (src != null) {
                 File f = new File(src);
                 if (f.canRead())
-                    throw new ConfigurationException ("Can't ready '" + src + "'");
+                    throw new ConfigurationException ("Can't read '" + src + "'");
                 return f;
             }
             return e.getText();

@@ -31,9 +31,9 @@ public class Groovy extends QBeanSupport implements Runnable {
             binding.setVariable("log", getLog());
             binding.setVariable("cfg", getConfiguration());
             GroovyShell shell = new GroovyShell(binding);
-            String script = e.getAttributeValue("script");
-            if (script != null)
-                shell.evaluate(new File(script));
+            String scr = e.getAttributeValue("src");
+            if (scr != null)
+                shell.evaluate(new File(scr));
             else
                 shell.evaluate(e.getText());
         } catch (Exception e) {

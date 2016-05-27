@@ -26,7 +26,7 @@ In jPOS 2.0.7 (and later), `QFactory.properties` maps the `groovy` keyword to
 
 [source,xml]
 ----------------------------------------------------------------------------------------
-<groovy logger='Q2' script='deploy/test.groovy' />
+<groovy logger='Q2' scr='deploy/test.groovy' />
 ----------------------------------------------------------------------------------------
 
 or
@@ -49,4 +49,3 @@ The following variables are automatically exposed:
 Although not strictly required by this particular QBean Groovy adaptor, the `jposee-groovy`
 module also includes the handy `groovy-sql` dependency.
 ======
-

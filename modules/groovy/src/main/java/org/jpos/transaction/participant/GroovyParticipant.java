@@ -51,11 +51,11 @@ import java.io.Serializable;
  *
  * <pre>
  *     Add a transaction participant like this:
- *     &lt;participant class="org.jpos.transaction.participant.GroovyParticipant" logger="Q2" realm="groovy-test"/&gt;
- *
- *     &lt;prepare src="deploy/prepare.groovy" /&gt;
- *     &lt;commit src="deploy/commit.groovy" /&gt;
- *     &lt;abort src="deploy/abort.groovy" /&gt;
+ *     &lt;participant class="org.jpos.transaction.participant.GroovyParticipant" logger="Q2" realm="groovy-test"&gt;
+ *       &lt;prepare src="deploy/prepare.groovy" /&gt;
+ *       &lt;commit src="deploy/commit.groovy" /&gt;
+ *       &lt;abort src="deploy/abort.groovy" /&gt;
+ *     &lt;/participant&gt;
  * </pre>
  */
 

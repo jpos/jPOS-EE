@@ -7,6 +7,6 @@ dependencies {
     compile libraries.hibernate_c3p0
     compile libraries.hibernate_ehcache
     compile libraries.jta
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile libraries.jacksonDatabind
 }
 

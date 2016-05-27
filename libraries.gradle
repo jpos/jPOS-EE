@@ -84,7 +84,10 @@ ext {
 
             // Groovy
             groovy: "org.codehaus.groovy:groovy:${groovyVersion}",
-            groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}"
+            groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}",
+
+            // Jackson
+            jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     ]
 
     jettyLibs = [

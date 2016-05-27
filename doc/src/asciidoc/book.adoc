@@ -36,6 +36,7 @@ include::module_database_support.adoc[]
 == Tools
 
 include::module_freemarker_decorator.adoc[]
+include::module_groovy.adoc[]
 
 == Simulators
 

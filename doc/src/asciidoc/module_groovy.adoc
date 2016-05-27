@@ -1,0 +1,52 @@
+=== Groovy Support
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | Add Groovy support.
+| *When*         | Since 2.2.1.
+| *Who*          | The jPOS.org team.
+| *Where*        | Directory modules/groovy.
+| *Why*          | Allows seamless integration with Groovy from Q2 applications.
+| *Status*       | Experimental.
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-groovy</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+In jPOS 2.0.7 (and later), `QFactory.properties` maps the `groovy` keyword to
+`org.jpos.q2.qbean.Groovy` so one can use a simple configuration like this:
+
+[source,xml]
+----------------------------------------------------------------------------------------
+<groovy logger='Q2' script='deploy/test.groovy' />
+----------------------------------------------------------------------------------------
+
+or
+
+[source,xml]
+----------------------------------------------------------------------------------------
+<groovy logger='Q2'><![CDATA[
+  // ... your groovy code here
+]]></groovy>
+----------------------------------------------------------------------------------------
+
+The following variables are automatically exposed:
+
+* `log` has a refererence to the QBean's `Log` object
+* `qbean` has a reference to the running QBean
+* `cfg` has a reference to the QBean's configuration
+
+[NOTE]
+======
+Although not strictly required by this particular QBean Groovy adaptor, the `jposee-groovy`
+module also includes the handy `groovy-sql` dependency.
+======
+

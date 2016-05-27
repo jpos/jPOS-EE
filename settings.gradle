@@ -24,7 +24,8 @@ include ':modules:core',\
         ':modules:rspace', \
         ':modules:testbed', \
         ':modules:eerest', \
-        ':modules:fsdmsgx'
+        ':modules:fsdmsgx',
+        ':modules:groovy'
 
 rootProject.name = 'jposee'
 

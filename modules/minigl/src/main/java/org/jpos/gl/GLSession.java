@@ -45,6 +45,7 @@ public class GLSession {
     public static final short[] LAYER_ZERO = new short[] { 0 };
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
+    private long SAFE_WINDOW = 1000L;
 
     /**
      * Construct a GLSession for a given user.
@@ -1066,10 +1067,9 @@ public class GLSession {
                     balance[0] = chkp.getBalance();
                     txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
                 }
-
             } else {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
-                if (bcache != null) {
+                if (bcache != null && bcache.getRef() <= maxId) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }
@@ -1267,9 +1267,9 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        return createBalanceCache (journal, acct, layers, getMaxGLEntryId());
+        return createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
     }
-    public BigDecimal createBalanceCache
+    private BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers, long maxId)
         throws HibernateException, GLException
     {
@@ -1767,6 +1767,12 @@ public class GLSession {
         crit.setMaxResults (1);
         GLEntry entry = (GLEntry) crit.uniqueResult();
         return entry != null ? entry.getId() : 0L;
+    }
+    private long getSafeMaxGLEntryId() {
+        return Math.max (getMaxGLEntryId()-SAFE_WINDOW, 0L);
+    }
+    public void overrideSafeWindow (long l) {
+        this.SAFE_WINDOW = l;
     }
     private void recurseChildren (Account acct, List<Long> list) {
         for (Account a : acct.getChildren()) {

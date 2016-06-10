@@ -33,6 +33,7 @@ public class BalanceTest extends TestBase {
 
     public void setUp () throws Exception {
         super.setUp();
+        gls.overrideSafeWindow(0L);
         tj = gls.getJournal ("TestJournal");
         cashUS      = gls.getFinalAccount ("TestChart", "111");
         cashPesos   = gls.getAccount ("TestChart", "112");
@@ -58,8 +59,8 @@ public class BalanceTest extends TestBase {
     }
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
-        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO, 10);
-        gls.createBalanceCache (tj, root, new short[] { 858 }, 10);
+        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
+        gls.createBalanceCache (tj, root, new short[] { 858 });
         tx1.commit ();
     }
     public void testBalanceCache2() throws Exception {

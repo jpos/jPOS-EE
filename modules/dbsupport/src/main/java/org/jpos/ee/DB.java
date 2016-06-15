@@ -387,7 +387,7 @@ public class DB implements Closeable
         this.log = log;
     }
 
-    public static Object exec(DBAction action)
+    public static Object exec(DBAction action) throws Exception
     {
         try (DB db = new DB())
         {
@@ -396,7 +396,7 @@ public class DB implements Closeable
         }
     }
 
-    public static Object execWithTransaction(DBAction action)
+    public static Object execWithTransaction(DBAction action) throws Exception
     {
         try (DB db = new DB())
         {

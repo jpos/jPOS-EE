@@ -95,12 +95,6 @@ public class GLUser {
         this.id = id;
     }
     /**
-     * @param perms Set of permissions
-     */
-    public void setermissions (Set perms) {
-        this.perms = perms;
-    }
-    /**
      * @return Set of permissions
      */
     public Set getPermissions () {

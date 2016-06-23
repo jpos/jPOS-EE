@@ -1298,7 +1298,7 @@ public class GLSession {
                 session.saveOrUpdate (c);
             }
         }
-        return balance;
+        return getBalance(journal, acct, layers);
     }
 
     /**

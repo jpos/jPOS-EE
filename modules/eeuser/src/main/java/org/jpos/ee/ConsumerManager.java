@@ -19,10 +19,13 @@
 package org.jpos.ee;
 
 import org.hibernate.HibernateException;
+import org.hibernate.criterion.Restrictions;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class ConsumerManager {
     DB db;
+
     public ConsumerManager (DB db) {
         super ();
         this.db = db;
@@ -31,6 +34,14 @@ public class ConsumerManager {
     public Consumer getById (String id)
             throws HibernateException
     {
-        return (Consumer) db.session().get(Consumer.class, id);
+        return db.session().get(Consumer.class, id);
+    }
+
+    public List<Consumer> getUserConsumers (User user) {
+        List<Consumer> userConsumers = db.session
+                .createCriteria(Consumer.class)
+                .add(Restrictions.eq("user", user))
+                .list();
+        return userConsumers;
     }
 }

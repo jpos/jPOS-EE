@@ -47,5 +47,8 @@
         <index column="propName" type="string" length="64"/>
         <element column="propValue" type="string"/>
     </map>
+    <fetch-profile name="eager">
+        <fetch association="user" style="join"/>
+    </fetch-profile>
   </class>
 </hibernate-mapping>

@@ -170,8 +170,8 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
             .toString();
     }
     public boolean equals(Object other) {
-        if ( !(other instanceof User) ) return false;
-        User castOther = (User) other;
+        if ( !(other instanceof Consumer) ) return false;
+        Consumer castOther = (Consumer) other;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();

@@ -37,7 +37,7 @@ public class ConsumerManager {
         return db.session().get(Consumer.class, id);
     }
 
-    public List<Consumer> getUserConsumers (User user) {
+    public List<Consumer> getConsumers (User user) {
         List<Consumer> userConsumers = db.session
                 .createCriteria(Consumer.class)
                 .add(Restrictions.eq("user", user))

@@ -1559,7 +1559,6 @@ public class GLSession {
             Checkpoint cp = (Checkpoint) iter.next();
             session.delete (cp);
         }
-        session.flush();
     }
     private BigDecimal applyEntries (BigDecimal balance, List entries) 
         throws GLException

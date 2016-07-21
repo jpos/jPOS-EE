@@ -20,6 +20,7 @@ package org.jpos.ee.usertype;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
 import java.io.Serializable;
@@ -53,16 +54,39 @@ public class TagsType implements UserType {
         return o.hashCode();
     }
 
+    /**
+     * Retrieve an instance of the mapped class from a JDBC resultset. Implementors
+     * should handle possibility of null values.
+     *
+     * @param rs      a JDBC result set
+     * @param names   the column names
+     * @param session
+     * @param owner   the containing entity  @return Object
+     * @throws HibernateException
+     * @throws SQLException
+     */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
         String tags = rs.getString(names[0]);
         if (rs.wasNull())
             return null;
         return new Tags(tags);
     }
 
+    /**
+     * Write an instance of the mapped class to a prepared statement. Implementors
+     * should handle possibility of null values. A multi-column type should be written
+     * to parameters starting from <tt>index</tt>.
+     *
+     * @param st      a JDBC prepared statement
+     * @param value   the object to write
+     * @param index   statement parameter index
+     * @param session
+     * @throws HibernateException
+     * @throws SQLException
+     */
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session) throws HibernateException, SQLException {
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
         if (value==null) {
             st.setNull(index, Types.VARCHAR);
         } else {

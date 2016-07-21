@@ -64,7 +64,12 @@ public class Import implements EntityResolver {
     }
 
     private void createSchema () throws HibernateException, DocumentException {
-        new DB().createSchema(null, true);
+        DB db = new DB();
+        db.open();
+        db.beginTransaction();
+        db.createSchema(null, true);
+        db.commit();
+        db.close();
     }
     
     private void createCharts (Session sess, Iterator iter) 
@@ -82,7 +87,6 @@ public class Import implements EntityResolver {
             sess.flush ();
         }
         txn.commit();
-        sess.flush ();
     }
     private void createCurrencies (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -94,7 +98,6 @@ public class Import implements EntityResolver {
             sess.save (currency);
         }
         txn.commit();
-        sess.flush ();
     }
     private void createUsers (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -114,7 +117,6 @@ public class Import implements EntityResolver {
             sess.save (user);
         }
         txn.commit();
-        sess.flush ();
     }
     private void createJournals (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -140,7 +142,6 @@ public class Import implements EntityResolver {
             );
         }
         txn.commit();
-        sess.flush ();
     }
     private void processChartChildren 
         (Session sess, CompositeAccount parent, Iterator iter) 
@@ -196,7 +197,6 @@ public class Import implements EntityResolver {
             );
             txn.commit ();
         }
-        sess.flush ();
     }
     private void createEntries (
         Session sess, GLTransaction glt, Iterator iter) 

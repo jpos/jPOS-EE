@@ -119,5 +119,9 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
         public Logger getLogger() {
             return logger;
         }
+
+        public boolean running() {
+            return QuartzAdaptor.this.running();
+        }
     }
 }

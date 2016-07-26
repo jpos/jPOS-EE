@@ -34,9 +34,9 @@
         <property name="use_streams_for_binary">true</property>
         <property name="connection.isolation">2</property>
         <property name="hibernate.transaction.flush_before_completion">true</property>
-
+        <property name="current_session_context_class">managed</property>
         <property name="hibernate.c3p0.min_size">2</property>
-        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.max_size">100</property>
         <property name="hibernate.c3p0.timeout">300</property>
         <property name="hibernate.c3p0.max_statements">300</property>
         <property name="hibernate.c3p0.idle_test_period">3000</property>

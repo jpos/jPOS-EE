@@ -28,12 +28,10 @@
     </id>
 
     <discriminator column="subclass" type="string" length="1" />
-    <!-- properties name="uniqueCode" unique="true"  see HHH-10982 -->
-      <property name="code">
-        <column name="code" sql-type="varchar(255)" not-null="true" />
-      </property>
-      <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" lazy="false" />
-    <!-- /properties -->
+    <property name="code" unique-key="AccountRootCode">
+      <column name="code" sql-type="varchar(255)" not-null="true" />
+    </property>
+    <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" lazy="false" unique-key="AccountRootCode" />
 
     <property name="description" />
     <property name="tags"  type="org.jpos.ee.usertype.TagsType">

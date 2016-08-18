@@ -258,6 +258,15 @@ public class GLEntry {
         elem.addContent (amount);
         return elem;
     }
+
+    /**
+     * @param tag to add
+     * @return this
+     */
+    public GLEntry addTag (String tag) {
+        getTags().add(tag);
+        return this;
+    }
     public boolean equals(Object other) {
         if ( !(other instanceof GLEntry) ) return false;
         GLEntry castOther = (GLEntry) other;

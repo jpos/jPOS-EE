@@ -136,6 +136,16 @@ public class GLTransaction extends Cloneable {
     public Tags getTags () {
         return tags;
     }
+
+    /**
+     * @param tag to add
+     * @return this
+     */
+    public GLTransaction addTag (String tag) {
+        getTags().add(tag);
+        return this;
+    }
+
     /**
      * Entries.
      * @param entries transaction entries

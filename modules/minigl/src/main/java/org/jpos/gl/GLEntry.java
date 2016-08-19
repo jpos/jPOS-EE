@@ -264,8 +264,13 @@ public class GLEntry {
      * @return this
      */
     public GLEntry addTag (String tag) {
-        getTags().add(tag);
+        if (tags == null)
+            tags = new Tags();
+        tags.add(tag);
         return this;
+    }
+    public boolean hasTag (String tag) {
+        return tags != null && tags.contains(tag);
     }
     public boolean equals(Object other) {
         if ( !(other instanceof GLEntry) ) return false;

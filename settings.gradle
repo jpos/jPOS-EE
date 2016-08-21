@@ -1,31 +1,32 @@
-include ':modules:core',\
-        ':modules:freemarker-decorator',\
-        ':modules:syslog',\
-        ':modules:sysconfig',\
-        ':modules:resultcode',\
-        ':modules:txn',\
-        ':modules:dbsupport',\
-        ':modules:logback',\
-        ':modules:db-mysql',\
-        ':modules:db-postgresql',\
-        ':modules:db-h2',\
-        ':modules:minigl',\
-        ':modules:eeuser',\
-        ':modules:status',\
-        ':modules:mail',\
-        ':modules:jetty',\
-        ':modules:saf',\
-        ':modules:sshd',\
-        ':modules:things',\
-        ':modules:server-simulator',\
-        ':modules:client-simulator',\
-        ':modules:quartz', \
-        ':modules:visitor', \
-        ':modules:rspace', \
-        ':modules:testbed', \
-        ':modules:eerest', \
+include ':modules:core',
+        ':modules:freemarker-decorator',
+        ':modules:syslog',
+        ':modules:sysconfig',
+        ':modules:resultcode',
+        ':modules:txn',
+        ':modules:dbsupport',
+        ':modules:logback',
+        ':modules:db-mysql',
+        ':modules:db-postgresql',
+        ':modules:db-h2',
+        ':modules:minigl',
+        ':modules:eeuser',
+        ':modules:status',
+        ':modules:mail',
+        ':modules:jetty',
+        ':modules:saf',
+        ':modules:sshd',
+        ':modules:things',
+        ':modules:server-simulator',
+        ':modules:client-simulator',
+        ':modules:quartz',
+        ':modules:visitor',
+        ':modules:rspace',
+        ':modules:testbed',
+        ':modules:eerest',
         ':modules:fsdmsgx',
-        ':modules:groovy'
+        ':modules:groovy',
+        ':modules:qi-core'
 
 rootProject.name = 'jposee'
 

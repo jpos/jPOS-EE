@@ -1,0 +1,24 @@
+@mixin qi-login-view {
+  .login-view {
+    @include radial-gradient(circle at 50% 50%, scale-color($v-app-background-color, $lightness: -2%), scale-color($v-app-background-color, $lightness: -2% - valo-gradient-opacity()), $fallback: $v-app-background-color);
+    padding-top: 0 !important;
+    @include animation(valo-animate-in-fade 300ms 10ms backwards);
+
+    > .v-loading-indicator {
+      display: none !important;
+    }
+
+    background: #EEEEEE url(../img/blue_bg.jpg) repeat-x scroll 0 0;
+  }
+
+  .login-panel {
+    @include valo-panel-style;
+    padding: round($v-unit-size / 1.5) round($v-unit-size / 1.5);
+    min-width: $v-font-size * 13;
+    max-width: 90%;
+
+    > .v-spacing {
+      height: round($v-unit-size / 2);
+    }
+  }
+}

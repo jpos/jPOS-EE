@@ -86,6 +86,7 @@ subprojects {
         mavenCentral()
         maven { url 'http://jpos.org/maven' }
         maven { url 'http://download.oracle.com/maven' }
+        maven { url 'http://maven.vaadin.com/vaadin-addons' }
         mavenLocal()
     }
 

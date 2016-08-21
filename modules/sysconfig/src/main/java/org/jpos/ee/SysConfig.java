@@ -24,12 +24,25 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "sysconfig")
 @SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
+    @Id
+    @Column(length=64)
     private String id;
+
+    @Column(length=2048)
     private String value;
+
+    @Column(length=64)
     private String readPerm;
+
+    @Column(length=64)
     private String writePerm;
+
     public SysConfig(String id, String value, String readPerm, String writePerm) {
         this.id = id;
         this.value = value;

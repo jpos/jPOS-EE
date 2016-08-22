@@ -34,8 +34,8 @@ public class ProfilesView extends UsersView {
 
     @Override
     public void enter (ViewChangeListener.ViewChangeEvent event) {
-        super.enter(event);
         setHelper(createHelper());
+        getHelper().setConfiguration(getConfiguration());
         showSpecificView(getGeneralRoute() + "/" + QI.getQI().getUser().getId());
     }
 

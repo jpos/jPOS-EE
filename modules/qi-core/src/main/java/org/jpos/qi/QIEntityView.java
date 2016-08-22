@@ -676,6 +676,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         this.cfg = cfg;
     }
 
+    public Configuration getConfiguration() {
+        return cfg;
+    }
 
     public ViewConfig getViewConfig() {
         return viewConfig;

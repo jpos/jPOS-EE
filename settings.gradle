@@ -25,10 +25,10 @@ include ':modules:core',
         ':modules:testbed',
         ':modules:eerest',
         ':modules:fsdmsgx',
-        ':modules:groovy'
-//        ':modules:qi-core',
-//        ':modules:qi-eeuser',
-//        ':modules:qi-sysconfig'
+        ':modules:groovy',
+        ':modules:qi-core',
+        ':modules:qi-eeuser',
+        ':modules:qi-sysconfig'
 
 rootProject.name = 'jposee'
 

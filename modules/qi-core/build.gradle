@@ -13,7 +13,7 @@ apply plugin: 'maven-publish'
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact jar
+            from components.java
             artifact (sourceJar) {
                 classifier = 'sources'
             }
@@ -80,5 +80,5 @@ jar {
 
 jar.dependsOn("vaadinCompile")
 install.dependsOn("publishToMavenLocal")
-uploadArchives.dependsOn("publishMavenJavaPublicationToMavenRepository")
+uploadArchives.dependsOn("jar", "publishMavenJavaPublicationToMavenRepository")
 

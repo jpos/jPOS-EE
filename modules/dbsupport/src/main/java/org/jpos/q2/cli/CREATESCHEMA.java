@@ -18,9 +18,11 @@
 
 package org.jpos.q2.cli;
 
+import org.jpos.ee.DB;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 
+@SuppressWarnings("unused")
 public class CREATESCHEMA implements CLICommand {
     @Override
     public void exec(CLIContext cli, String[] args) throws Exception {
@@ -30,6 +32,11 @@ public class CREATESCHEMA implements CLICommand {
             filename = args[1];
         if (args.length > 2)
             create = "yes".equalsIgnoreCase(args[2]) || "true".equalsIgnoreCase(args[2]);
+        try (DB db = new DB()) {
+            db.open();
+            db.beginTransaction();
+            db.createSchema(filename, create);
+        }
         new org.jpos.ee.DB().createSchema(filename, create);
     }
 }

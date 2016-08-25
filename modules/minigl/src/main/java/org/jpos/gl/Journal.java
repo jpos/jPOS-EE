@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,15 +20,13 @@ package org.jpos.gl;
 
 import java.util.Set;
 import java.util.Date;
-import java.util.List;
 import java.util.Iterator;
-import java.util.ArrayList;
-import org.jdom.Element;
-import org.jdom.Comment;
+import org.jdom2.Element;
+import org.jdom2.Comment;
 import java.text.ParseException;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Journal is the place to post GLTransactions.
@@ -135,9 +133,9 @@ public class Journal {
     }
     /**
      * Transactions should not be posted to this journal using
-     * a postDate <= the lockDate.
+     * a postDate &lt;= the lockDate.
      *
-     * @lockDate lockDate the lock date.
+     * @param lockDate the lock date.
      */
     public void setLockDate (Date lockDate) {
         this.lockDate = lockDate;

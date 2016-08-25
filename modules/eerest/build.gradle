@@ -1,0 +1,12 @@
+description = 'jPOS-EE :: Rest'
+
+dependencies {
+    compile project(':modules:core')
+    compile project(':modules:txn')
+    compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+    compile "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
+    compile libraries.commons_lang
+}
+
+apply from: '../../jpos-app.gradle'
+

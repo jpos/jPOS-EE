@@ -26,17 +26,16 @@
       <generator class="native" />
     </id>
 
-    <property name="nick" type="string">
-     <column name="nick" sql-type="varchar(32)" unique="true" not-null="true" />
-    </property>
-    <property name="password" length="40" type="string" />
+    <property name="nick" type="string" length="64" not-null="true" unique="true" index="eeuser_nick"  />
+    <property name="passwordHash" length="8192" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="email" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />  
     <property name="verified" type="yes_no" />
-
-    <set name="roles" lazy="false">
+    <property name="startDate"     type="date" />
+    <property name="endDate"       type="date" />
+    <set name="roles" lazy="false" table="eeuser_roles">
      <key column="eeuser" foreign-key="FKUserRolesUser"/>
      <many-to-many column="role" class="org.jpos.ee.Role" foreign-key="FKUserRolesRole"/>
     </set>
@@ -45,16 +44,19 @@
       <key column="eeuser" not-null="true"/>
       <list-index column="id"/>
       <composite-element class="org.jpos.ee.PasswordHistory">
-       <property name="value" type="string">
-       <column name="value" sql-type="varchar(40)" not-null="true" />
-       </property>
+       <property name="value" type="string" length="8192" not-null="true" />
       </composite-element>
     </list>
 
+    <property name="forcePasswordChange" type="yes_no" />
+    <property name="lastLogin"           type="timestamp" />
+    <property name="passwordChanged"     type="timestamp" />
+    <property name="loginAttempts"       type="int" />
+
     <map name="props" lazy="true" table="eeuser_props" 
         cascade="all-delete-orphan">
-        <key />
-        <index column="propName" type="string" length="32"/>
+        <key foreign-key="FKUserProps" />
+        <index column="propName" type="string" length="64"/>
         <element column="propValue" type="string"/>
     </map>
   </class>

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -44,9 +44,13 @@ public class SshCLI extends QBeanSupport implements SshCLIContextMBean
         sshd = SshServer.setUpDefaultServer();
         sshd.setPort(port);
         sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(hostKeys));
-        sshd.setShellFactory(new CliShellFactory(getServer(), prefixes));
+
+        CliShellFactory csf = new CliShellFactory(getServer(), prefixes);
+        sshd.setShellFactory(csf);
+        sshd.setCommandFactory(csf);
+
         sshd.setUserAuthFactories(Arrays.<NamedFactory<UserAuth>>asList(new UserAuthPublicKey.Factory()));
-        sshd.setPublickeyAuthenticator(new AuthorizedKeysFileBasedPKA(username,authorizedKeysFilename));
+        sshd.setPublickeyAuthenticator(new AuthorizedKeysFileBasedPKA(username, authorizedKeysFilename));
         sshd.start();
         log.info("Started SSHD @ port "+port);
     }

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,16 +20,29 @@ package org.jpos.ee;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "sysconfig")
 @SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
+    @Id
+    @Column(length=64)
     private String id;
+
+    @Column(length=2048)
     private String value;
+
+    @Column(length=64)
     private String readPerm;
+
+    @Column(length=64)
     private String writePerm;
+
     public SysConfig(String id, String value, String readPerm, String writePerm) {
         this.id = id;
         this.value = value;

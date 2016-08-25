@@ -17,11 +17,10 @@
   -->
 
 <module name="eeuser">
-
     <mappings>
         <mapping resource="org/jpos/ee/User.hbm.xml" />
+        <mapping resource="org/jpos/ee/Consumer.hbm.xml" />
         <mapping resource="org/jpos/ee/Revision.hbm.xml" />
         <mapping resource="org/jpos/ee/Role.hbm.xml" />
     </mappings>
-
 </module>

@@ -28,14 +28,15 @@
     </id>
 
     <discriminator column="subclass" type="string" length="1" />
-    <properties name="uniqueCode" unique="true">
-      <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" lazy="false" />
-      <property name="code">
-        <column name="code" sql-type="varchar(255)"
-                not-null="true" index="acctCode" />
-      </property>
-    </properties>
+    <property name="code" unique-key="AccountRootCode">
+      <column name="code" sql-type="varchar(255)" not-null="true" />
+    </property>
+    <many-to-one name="root"  not-null="false" foreign-key="FKAccountChart" lazy="false" unique-key="AccountRootCode" />
+
     <property name="description" />
+    <property name="tags"  type="org.jpos.ee.usertype.TagsType">
+      <column name="tags" sql-type="varchar(255)" not-null="false" />
+    </property>
     <property name="created"    type="date" />
     <property name="expiration" type="date" />
     <property name="type">

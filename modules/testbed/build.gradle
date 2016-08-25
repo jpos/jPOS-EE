@@ -1,0 +1,14 @@
+description = 'jPOS-EE :: Testbed'
+
+dependencies {
+    compile project(':modules:core')
+    compile project(':modules:logback')
+    compile project(':modules:dbsupport')
+    compile project(':modules:db-h2')
+    compile project(':modules:sysconfig')
+    compile project(':modules:eeuser')
+    compile project(':modules:syslog')
+}
+
+apply from: '../../jpos-app.gradle'
+

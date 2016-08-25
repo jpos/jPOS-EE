@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,15 +20,15 @@ package org.jpos.ee;
 
 import java.util.*;
 import java.io.Serializable;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SuppressWarnings("unused")
 public class User extends Cloneable implements Serializable, SoftDelete {
-    private long id;
+    private Long id;
     private String nick;
-    private String password;
+    private String passwordHash;
     private String name;
     private String email;
     private Set<Role> roles;
@@ -36,7 +36,13 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private boolean deleted;
     private boolean active;
     private boolean verified;
-	private List<PasswordHistory> passwordhistory;
+    private Date startDate;
+    private Date endDate;
+    private List<PasswordHistory> passwordhistory;
+    private boolean forcePasswordChange;
+    private Date lastLogin;
+    private Date passwordChanged;
+    private int loginAttempts;
 
     public User() {
         super();
@@ -67,17 +73,17 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setVerified(boolean verified) {
         this.verified = verified;
     }
-    public long getId() {
+    public Long getId() {
         return id;
     }
-    public void setId (long id) {
+    public void setId (Long id) {
         this.id = id;
     }
-    public void setPassword (String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
-    public String getPassword () {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
     public void setDeleted (boolean deleted) {
         this.deleted = deleted;
@@ -100,9 +106,44 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void setPasswordhistory (List<PasswordHistory> passwordhistory) {
         this.passwordhistory = passwordhistory;
     }
-    public List getPasswordhistory () {
+    public List<PasswordHistory> getPasswordhistory () {
         return passwordhistory;
-    }        
+    }
+    public boolean isForcePasswordChange() {
+        return forcePasswordChange;
+    }
+
+    public void setForcePasswordChange(boolean forcePasswordChange) {
+        this.forcePasswordChange = forcePasswordChange;
+    }
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public Date getPasswordChanged() {
+        return passwordChanged;
+    }
+
+    public void setPasswordChanged(Date passwordChanged) {
+        this.passwordChanged = passwordChanged;
+    }
+
+    public int getLoginAttempts() {
+        return loginAttempts;
+    }
+
+    public void setLoginAttempts(int loginAttempts) {
+        this.loginAttempts = loginAttempts;
+    }
+
+    public void incLoginAttempts () {
+        this.loginAttempts++;
+    }
     public boolean hasPermission (String permName) {
         if (permName != null) {
             for (Role r : roles) {
@@ -203,6 +244,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     }
     public int hashCode() {
         return new HashCodeBuilder()
+            .append(getClass().getName())
             .append(getId())
             .toHashCode();
     }
@@ -210,11 +252,27 @@ public class User extends Cloneable implements Serializable, SoftDelete {
      * @return nick(id)
      */
     public String getNickAndId() {
-        StringBuffer sb = new StringBuffer (getNick());
+        StringBuilder sb = new StringBuilder (getNick());
         sb.append ('(');
         sb.append (Long.toString(getId()));
         sb.append (')');
         return sb.toString();
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }
 

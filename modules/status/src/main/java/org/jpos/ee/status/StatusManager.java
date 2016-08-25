@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -128,7 +128,7 @@ public class StatusManager {
     /**
      * @param key status name
      * @param state Status.OK, Status.WARN, Status.ERROR or user defined
-     * @param info optional information
+     * <!-- @param info optional information -->
      */
     public void touch (String key, String state)
         throws HibernateException, SQLException
@@ -217,7 +217,7 @@ public class StatusManager {
 
     /**
      * check if a status is expired, and create appropriate syslog event
-     * @param id status id
+     * @param status Status instance
      */
     public void check (Status status) throws HibernateException, SQLException
     {
@@ -265,7 +265,6 @@ public class StatusManager {
     /**
      * check if unexpired status entries became expired, and create 
      * appropriate syslog event.
-     * @param id status id
      */
     public void check () throws HibernateException, SQLException {
         Iterator iter = findByExpired(false).iterator();

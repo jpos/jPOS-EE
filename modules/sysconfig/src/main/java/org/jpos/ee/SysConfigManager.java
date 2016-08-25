@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,10 +20,10 @@ package org.jpos.ee;
 
 import java.util.List;
 import java.util.Iterator;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
-import org.hibernate.ObjectNotFoundException;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 @SuppressWarnings("unused")
 public class SysConfigManager {
@@ -49,11 +49,7 @@ public class SysConfigManager {
     	try {
             if (prefix != null)
                 name = prefix + name;
-            SysConfig cfg = (SysConfig) 
-                db.session().get (SysConfig.class, name);
-            return cfg != null;
-        } catch (ObjectNotFoundException e) {
-            // okay to happen
+            return db.session().get(SysConfig.class, name) != null;
         } catch (HibernateException e) {
             db.getLog().warn (e);
         }
@@ -69,7 +65,7 @@ public class SysConfigManager {
         try {
             if (prefix != null)
                 name = prefix + name;
-            SysConfig cfg = (SysConfig) db.session().get (SysConfig.class, name);
+            SysConfig cfg = db.session().get (SysConfig.class, name);
             if (cfg != null)
                 return cfg.getValue();
         } catch (HibernateException e) {
@@ -120,8 +116,6 @@ public class SysConfigManager {
         return values;
     }
 
-
-
     @SuppressWarnings("unchecked")
     public Iterator<SysConfig> iterator() {
         Query query;
@@ -147,11 +141,11 @@ public class SysConfigManager {
         try {
             boolean autoCommit = false;
             Transaction tx = db.session().getTransaction();
-            if (tx == null || !tx.isActive()) {
+            if (tx == null || tx.getStatus().isNotOneOf(TransactionStatus.ACTIVE)) {
                 tx = db.session().beginTransaction();
                 autoCommit = true;
             }
-            cfg = (SysConfig) db.session().get (SysConfig.class, name);
+            cfg = db.session().get (SysConfig.class, name);
             boolean saveIt = false;
             if (cfg == null) {
                 cfg = new SysConfig ();

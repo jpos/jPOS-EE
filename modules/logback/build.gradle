@@ -5,5 +5,7 @@ dependencies {
     compile libraries.slf4j_api
     compile libraries.jcl_over_slf4j
     compile libraries.log4j_over_slf4j
+    compile libraries.jul_to_slf4j
     compile libraries.logback
 }
+

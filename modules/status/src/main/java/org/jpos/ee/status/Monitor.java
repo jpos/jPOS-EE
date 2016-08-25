@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,11 +26,9 @@ import java.util.ArrayList;
 import org.jpos.ee.DB;
 import org.jpos.q2.QFactory;
 import org.jpos.q2.QBeanSupport;
-import org.jpos.iso.ISOUtil;
-import org.jpos.util.DateUtil;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.ConfigurationException;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.hibernate.HibernateException;
 
 public class Monitor extends QBeanSupport implements XmlConfigurable {

@@ -1,0 +1,92 @@
+=== SSHD
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | The SSHD let's you establish an ssh connection to a running Q2 instance.
+| *When*         | Available in all versions of jPOS-EE since v2.0.0.
+| *Who*          | The jPOS.org team.
+| *Where*        | Directory modules/sshd available in git repository at github.
+| *Why*          | Remote secure login is an often desired featured in production systems.
+| *Status*       | Stable.
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-sshd</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+The SSHD module provides remote secure logic to a running Q2 instance. It features:
+
+* Simple configuration
+* Authentication by username/public key.
+* Allows for CLI customization through alternate command stores.
+
+The `setup` process will create a default deployment descriptor in 'deploy/05_sshd.xml':
+
+[source,xml]
+----------------------------------------------------------------------------
+<sshd name="sshd" class="org.jpos.ee.cli.SshCLI">
+    <port>2222</port>                                                    <1>
+    <auth-username>admin</auth-username>                                 <2>
+    <authorized-keys-file>cfg/authorized_keys</authorized-keys-file>     <3>
+</sshd>
+----------------------------------------------------------------------------
+<1> The SSHD server will listen on this port.
+<2> The username the ssh client will use to connect to the SSHD server.
+<3> Points to a file containing public keys for every user who will be able to login
+
+If you have not setup a personal public/private key pair, now it's the time to
+do this. The instructions we will provide here are for OpenSSH on a Unix system,
+but we'll provide some links for Windows systems as well.
+
+To generate your key pair:
+
+--------------------------------------------------------------------
+$ ssh-keygen -t rsa                                              <1>
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/myuser/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):                      <2>
+Enter same passphrase again:
+Your identification has been saved in /home/myuser/.ssh/id_rsa.  <3>
+Your public key has been saved in /home/myuser/.ssh/id_rsa.pub.  <4>
+The key fingerprint is:
+f6:61:a8:27:35:cf:4c:6d:13:22:70:cf:4c:c8:a0:23 myuser@nexus
+--------------------------------------------------------------------
+<1> The command `ssh-keygen -t rsa` initiated the creation of the key pair.
+<2> No passphrase was entered (Enter key was pressed instead).
+<3> The private key was saved in .ssh/id_rsa.
+<4> The public key is saved in .ssh/id_rsa.pub.
+
+In this case, the content of file id_rsa.pub is:
+
+----
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEArkwv9X8eTVK4F7pMlSt45pWoiakFkZMw
+G9BjydOJPGH0RFNAy1QqIWBGWv7vS5K2tr+EEO+F8WL2Y/jK4ZkUoQgoi+n7DWQVOHsR
+ijcS3LvtO+50Np4yjXYWJKh29JL6GHcp8o7+YKEyVUMB2CSDOP99eF9g5Q0d+1U2WVdB
+WQM= myuser@nexus
+----
+
+It is one line in length.
+
+Its content is then copied to cfg/authorized_keys of your Q2 instance.
+
+If all is well, you should be able to run your Q2 instance and type:
+
+----
+ssh -p 2222 admin@localhost
+----
+
+And you should be given access to Q2 Remote CLI.
+
+[TIP]
+====
+Windows Users can use Putty and use this link:http://www.ualberta.ca/CNS/RESEARCH/LinuxClusters/pka-putty.html[link]
+as a guide to get the contents for the 'authorized_keys' file.
+====
+

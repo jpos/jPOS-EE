@@ -1,0 +1,8 @@
+<rspace class="org.jpos.space.ReplicatedSpaceAdaptor" logger="Q2">
+ <property name="space"  value="tspace:rs1" />
+ <property name="rspace" value="rspace:rspace" />
+ <property name="group"  value="rspace" />
+ <property name="config" value="cfg/udp.xml" />
+ <property name="trace"  value="true" />
+</rspace>
+

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,13 +20,6 @@ package org.jpos.gl;
 
 import java.util.List;
 import java.util.Date;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import java.math.BigDecimal;
-import java.util.Date;
-import org.hibernate.Transaction;
-import org.hibernate.HibernateException;
 
 public class FindTransactionsTest extends TestBase {
     Journal tj;

@@ -2,12 +2,11 @@ description = 'jPOS-EE :: Core Module'
 
 configurations {
     all*.exclude module: 'commons-logging'
+    all*.exclude module: 'junit'
 }
 
 dependencies {
     compile libraries.jpos
-    compile libraries.commons_lang
-    compile libraries.commons_beanutils
     compile libraries.joda_time
 }
 

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,10 +22,11 @@ import java.util.Date;
 import java.util.Set;
 import java.io.Serializable;
 import java.text.ParseException;
-import org.jdom.Element;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.jdom2.Element;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jpos.util.Tags;
 
 /**
  * Base class for Composite and Final accounts.
@@ -59,6 +60,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     Date expiration;
     String currencyCode;
     int type;
+    Tags tags;
 
     CompositeAccount parent, root;
 
@@ -144,6 +146,15 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     public String getDescription () {
         return description;
     }
+
+    public Tags getTags() {
+        return tags;
+    }
+
+    public void setTags(Tags tags) {
+        this.tags = tags;
+    }
+
     /**
      * Parent Account.
      * 
@@ -281,7 +292,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
             return null;
     }
     public boolean isAncestor(CompositeAccount ancestor) {
-        for (Account p = getParent(); p != null; p = getParent()) {
+        for (Account p = getParent(); p != null; p = p.getParent()) {
             if (p.equals(ancestor))
                 return true;
         }
@@ -298,8 +309,14 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         elem.setAttribute ("code", getCode ());
         elem.addContent (new Element("description").setText (getDescription()));
 
-        if (currencyCode != null)
-            elem.setAttribute ("currency", currencyCode);
+        if (getCurrencyCode() != null)
+            elem.setAttribute ("currency", getCurrencyCode());
+
+        if (getTags () != null) {
+            Element tags = new Element ("tags").setText (getTags().toString());
+            elem.addContent (tags);
+        }
+
 
         if (isDebit ())
             elem.setAttribute ("type", "debit");
@@ -340,6 +357,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         } else {
             setType (0);
         }
+        setTags (new Tags(elem.getChildTextTrim ("tags")));
         Account p = getParent();
         if (p != null) {
             int parentType = p.getType();
@@ -382,6 +400,12 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     }
     public int compareTo (Object o) {
         if (o instanceof Account) {
+            Account other = (Account) o;
+            if (getCode() == null || other.getCode() == null) {
+                return getCode() == other.getCode()  ? 0 : 1;
+            } else if (getCode() == null) {
+                return 1;
+            }
             return getCode().compareTo (((Account)o).getCode());
         }
         return 1;

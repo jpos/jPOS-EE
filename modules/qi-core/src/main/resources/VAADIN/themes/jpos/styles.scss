@@ -1,0 +1,7 @@
+@import "../valo/valo.scss";
+@import "qi.scss";
+
+.jpos {
+	@include valo;
+  @include qi;
+}

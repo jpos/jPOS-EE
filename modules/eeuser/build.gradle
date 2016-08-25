@@ -2,4 +2,23 @@ description = 'jPOS-EE :: User Module'
 
 dependencies {
     compile project(':modules:dbsupport')
+    testCompile project(':modules:db-h2')
+    compile libraries.commons_lang
 }
+
+ext {
+    testRuntimeDir = "$buildDir/runtime" as File
+}
+
+task jposeeSetup(dependsOn: 'classes', type: JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'org.jpos.q2.install.Install'
+    args = ["--quiet", "--force", "--outputDir=" + testRuntimeDir]
+}
+
+test {
+    dependsOn 'jposeeSetup'
+    scanForTestClasses true
+    workingDir testRuntimeDir
+}
+

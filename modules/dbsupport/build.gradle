@@ -6,4 +6,7 @@ dependencies {
     compile libraries.hibernate_envers
     compile libraries.hibernate_c3p0
     compile libraries.hibernate_ehcache
+    compile libraries.jta
+    compile libraries.jacksonDatabind
 }
+

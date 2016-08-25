@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -35,26 +35,24 @@ import java.io.Serializable;
 /**
  *Sample Usage:
  *
- *    <participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug">
+ *    &lt;participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug"&gt;
  *    
- *        <property name="protect-entry" value="REQUEST" />
- *        <property name="protect-entry" value="RESPONSE" />
- *        <property name="protect-entry" value="PAN" />
+ *        &lt;property name="protect-entry" value="REQUEST" /&gt;
+ *        &lt;property name="protect-entry" value="RESPONSE" /&gt;
+ *        &lt;property name="protect-entry" value="PAN" /&gt;
  *
- *        <property name="wipe-entry" value="EXPDATE" />
+ *        &lt;property name="wipe-entry" value="EXPDATE" /&gt;
  *   
- *        <property name="protect-ISOMsg" value="2" />
- *        <property name="protect-ISOMsg" value="35" />
- *        <property name="protect-ISOMsg" value="45" />
- *        <property name="protect-ISOMsg" value="52" />
- *        <property name="protect-ISOMsg" value="55" />
+ *        &lt;property name="protect-ISOMsg" value="2" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="35" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="45" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="52" /&gt;
+ *        &lt;property name="protect-ISOMsg" value="55" /&gt;
  *
- *        <property name="protect-FSDMsg" value="account-number" />
- *        <property name="protect-FSDMsg" value="track2-data" />
+ *        &lt;property name="protect-FSDMsg" value="account-number" /&gt;
+ *        &lt;property name="protect-FSDMsg" value="track2-data" /&gt;
  *   
- *        </participant>
- *
- *        <participant class="org.jpos.transaction.Debug" logger="Q2" realm="debug" />
+ *        &lt;/participant&gt;
  **/
  
  public class ProtectDebugInfo extends TxnSupport implements AbortParticipant {
@@ -110,12 +108,8 @@ import java.io.Serializable;
          }
      }
      private void protectField (ISOMsg m, int f) {
-         try {
-             if (m != null) {
-                 m.set (f, protect (m.getString (f)));
-             }
-         } catch (ISOException e) {
-             warn (e);
+         if (m != null) {
+             m.set (f, protect (m.getString (f)));
          }
      }
      private void protectField (FSDMsg m, String f) {

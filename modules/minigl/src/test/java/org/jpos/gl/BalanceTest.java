@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ import org.hibernate.Transaction;
 public class BalanceTest extends TestBase {
     Journal tj;
     Account root;
-    Account cashUS;
+    FinalAccount cashUS;
     Account cashPesos;
     Account bobEquity;
     Account aliceEquity;
@@ -33,8 +33,9 @@ public class BalanceTest extends TestBase {
 
     public void setUp () throws Exception {
         super.setUp();
+        gls.overrideSafeWindow(0L);
         tj = gls.getJournal ("TestJournal");
-        cashUS      = gls.getAccount ("TestChart", "111");
+        cashUS      = gls.getFinalAccount ("TestChart", "111");
         cashPesos   = gls.getAccount ("TestChart", "112");
         bobEquity   = gls.getAccount ("TestChart", "31");
         aliceEquity = gls.getAccount ("TestChart", "32");
@@ -58,8 +59,8 @@ public class BalanceTest extends TestBase {
     }
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
-        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO, 10);
-        gls.createBalanceCache (tj, root, new short[] { 858 }, 10);
+        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
+        gls.createBalanceCache (tj, root, new short[] { 858 });
         tx1.commit ();
     }
     public void testBalanceCache2() throws Exception {
@@ -122,6 +123,31 @@ public class BalanceTest extends TestBase {
             new BigDecimal("5000.00"),
             detail.getFinalBalance()
         );
+    }
+
+    public void testMiniStatementCashPesos() throws Exception {
+        AccountDetail detail = gls.getMiniStatement (
+                tj, cashPesos,
+                new short[] { 858 }, 1
+        );
+        assertEquals (1, detail.size());
+        assertEquals (
+                new BigDecimal("0.00"),
+                detail.getInitialBalance()
+        );
+        assertEquals (
+                new BigDecimal("12500.00"),
+                detail.getFinalBalance()
+        );
+    }
+
+    public void testGLTransactionImpact() {
+        GLTransaction t = new GLTransaction("Test transaction");
+        t.createDebit (cashUS, new BigDecimal("1000.00") , null, (short) 840);
+        t.createCredit(cashUS, new BigDecimal("100.00"), null, (short) 1840);
+        assertEquals(new BigDecimal("900.00"), t.getImpact(cashUS, new short[] { 840, 1840 }));
+        assertEquals(new BigDecimal("1000.00"), t.getImpact(cashUS, new short[] { 840 }));
+        assertEquals(new BigDecimal("-100.00"), t.getImpact(cashUS, new short[] { 1840 }));
     }
 
     // -----------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,9 +18,9 @@
 
 package org.jpos.ee;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -31,7 +31,7 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Thing implements Serializable {
-    private long id;
+    private Long id;
     private String type;
     private Map<String,String> stringProps;
     private Map<String,String> textProps;
@@ -47,10 +47,10 @@ public class Thing implements Serializable {
         super();
         this.type = type;
     }
-    public long getId () {
+    public Long getId () {
         return this.id;
     }
-    public void setId (long id) {
+    public void setId (Long id) {
         this.id = id;
     }
     public String getType() {

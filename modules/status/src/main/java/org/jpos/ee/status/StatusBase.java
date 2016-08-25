@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -63,7 +63,7 @@ public abstract class StatusBase {
     }
     /**
      * Computes expiration based on last tick + timeout
-     * @return true if lasttick+timeout < current-time
+     * @return true if lasttick+timeout &lt; current-time
      */
     public boolean hasExpired() {
         long now = System.currentTimeMillis();
@@ -85,8 +85,8 @@ public abstract class StatusBase {
     /**
      * factory method used to create a RevisionEntry associated with this user.
      *
-     * @param summary information
-     * @param detail detailed information
+     * @param info information
+     * <!-- @param detail detailed information -->
      * @param author change author
      */
 

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,15 +18,15 @@
 
 package org.jpos.ee;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Role extends Cloneable {
-    private long id;
+    private Long id;
     private String name;
     private Set<Permission> permissions;
 
@@ -39,11 +39,11 @@ public class Role extends Cloneable {
         setName(name);
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -64,15 +64,15 @@ public class Role extends Cloneable {
     }
 
     public boolean hasPermission (String permName) {
-        return permName != null && permissions.contains(new Permission(permName));
+        return permName != null && (permissions.contains(Permission.valueOf(permName)) || permName.equals("role." + name));
     }
 
     public void addPermission (String permName) {
-        permissions.add (new Permission (permName));
+        permissions.add (Permission.valueOf(permName));
     }
 
     public void removePermission (String permName) {
-        permissions.remove (new Permission (permName));
+        permissions.remove (Permission.valueOf(permName));
     }
 
     public void removeAllPermissions () {

@@ -1,0 +1,6 @@
+<module name="visitor">
+    <mappings>
+        <mapping resource="org/jpos/ee/Visitor.hbm.xml"  />
+    </mappings>
+</module>
+

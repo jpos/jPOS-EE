@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,15 +18,13 @@
 
 package org.jpos.gl;
 
-import java.util.Iterator;
-import java.util.Date;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import org.jdom.Element;
-import org.jdom.Comment;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jdom2.Element;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.util.Tags;
 
 
 /**
@@ -42,7 +40,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class GLEntry {
     private long id;
     private String detail;
-    private String tags;
+
+    private Tags tags;
     private boolean credit;
     private short layer;
     private BigDecimal amount;
@@ -133,14 +132,14 @@ public class GLEntry {
      * Tags.
      * @param tags transaction tags
      */
-    public void setTags (String tags) {
+    public void setTags (Tags tags) {
         this.tags = tags;
     }
     /**
      * Tags.
      * @return transaction tags
      */
-    public String getTags () {
+    public Tags getTags () {
         return tags;
     }
     /**
@@ -231,10 +230,10 @@ public class GLEntry {
      */
     public void fromXML (Element elem) throws ParseException {
         setDetail (elem.getChildTextTrim ("detail"));
-        setTags   (elem.getChildTextTrim ("tags"));
-        setCredit ("credit".equals (elem.getAttributeValue ("type")));
-        setLayer (elem.getAttributeValue ("layer"));
-        setAmount (new BigDecimal (elem.getChild ("amount").getText()));
+        setTags   (new Tags(elem.getChildTextTrim ("tags")));
+        setCredit ("credit".equals (elem.getAttributeValue("type")));
+        setLayer(toShort(elem.getAttributeValue("layer")));
+        setAmount(new BigDecimal (elem.getChild ("amount").getText()));
     }
     /**
      * Creates a JDOM Element as defined in
@@ -247,7 +246,7 @@ public class GLEntry {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getTags());
+            Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
         elem.setAttribute ("account", getAccount().getCode());
@@ -259,11 +258,25 @@ public class GLEntry {
         elem.addContent (amount);
         return elem;
     }
+
+    /**
+     * @param tag to add
+     * @return this
+     */
+    public GLEntry addTag (String tag) {
+        if (tags == null)
+            tags = new Tags();
+        tags.add(tag);
+        return this;
+    }
+    public boolean hasTag (String tag) {
+        return tags != null && tags.contains(tag);
+    }
     public boolean equals(Object other) {
         if ( !(other instanceof GLEntry) ) return false;
         GLEntry castOther = (GLEntry) other;
         return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
+          .append(this.getId(), castOther.getId())
             .isEquals();
     }
 
@@ -279,16 +292,16 @@ public class GLEntry {
         }
         return false;
     }
-
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .append("detail", getDetail())
+            .append("account", getAccount())
+            .append("tags", getTags())
             .toString();
     }
-    private void setLayer (String s) {
-        if (s != null)
-            setLayer (Short.parseShort (s));
+    private short toShort (String s) {
+        return s != null ? Short.parseShort (s) : 0;
     }
 }
 

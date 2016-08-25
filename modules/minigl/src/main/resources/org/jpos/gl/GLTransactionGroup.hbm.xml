@@ -27,7 +27,7 @@
       <generator class="native" />
     </id>
     <property name="name" type="string" length="32" index="transgroupname" unique="true" />
-    <set name="transactions" order-by="transaction">
+    <set name="transactions" order-by="transaction" table="transgroup_transactions">
      <key column="transactiongroup" foreign-key="FKTransactionTransactionGroup" />
      <many-to-many column="transaction" unique="false" entity-name="org.jpos.gl.GLTransaction" foreign-key="FKTransactionGroupTransaction" />
     </set>

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -41,7 +41,7 @@ public class AccountDetail {
     short[] layers;
 
     /**
-     * Constructs an AccountDetail bulk accessor.
+     * Constructs an AccountDetail.
      * @param journal the Journal.
      * @param account the account.
      * @param initialBalance initial balance (reporting currency).
@@ -65,6 +65,29 @@ public class AccountDetail {
         this.layers                = layers;
         computeBalances();
     }
+
+    /**
+     * Constructs an AccountDetail (reverse order, mini statement)
+     * @param journal the Journal.
+     * @param account the account.
+     * @param balance final balance (reporting currency).
+     * @param entries list of GLEntries.
+     * @param layers the layers involved in this detail
+     */
+    public AccountDetail(
+            Journal journal, Account account,
+            BigDecimal balance,
+            List<GLEntry> entries, short[] layers)
+    {
+        super();
+        this.journal               = journal;
+        this.account               = account;
+        this.finalBalance          = balance;
+        this.entries               = entries;
+        this.layers                = layers;
+        computeReverseBalances(balance);
+    }
+
     public Journal getJournal() {
         return journal;
     }
@@ -110,6 +133,22 @@ public class AccountDetail {
                 debits = debits.add (entry.getAmount());
         }
         finalBalance = balance;
+    }
+    private void computeReverseBalances(BigDecimal balance) {
+        debits = credits = GLSession.ZERO;
+        for (GLEntry entry : entries) {
+            if (end == null)
+                end = entry.getTransaction().getTimestamp();
+            start = entry.getTransaction().getTimestamp();
+            entry.setBalance(balance);
+            balance = balance.subtract (entry.getImpact());
+            if (entry.isCredit())
+                credits = credits.add (entry.getAmount());
+            else
+                debits = debits.add (entry.getAmount());
+        }
+        this.initialBalance = balance;
+
     }
 }
 

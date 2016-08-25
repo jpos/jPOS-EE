@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,19 +20,17 @@ package org.jpos.gl.tools;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.jpos.core.ConfigurationException;
-import org.jpos.ee.support.JPosHibernateConfiguration;
+import org.jpos.ee.DB;
 import org.jpos.gl.*;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -53,16 +51,11 @@ import java.util.Set;
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
 public class Import implements EntityResolver {
-    SessionFactory sf;
-    Configuration cfg;
     Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {
         super();
-        cfg = new JPosHibernateConfiguration();
-        cfg.configure();
-        sf = cfg.buildSessionFactory();
     }
 
     public static void usage () {
@@ -70,11 +63,13 @@ public class Import implements EntityResolver {
         System.exit (0);
     }
 
-    private void createSchema () throws HibernateException {
-        SchemaExport export = new SchemaExport (cfg);
-        // export.setOutputFile ("/tmp/schema.sql");
-        // export.setDelimiter (";");
-        export.create (true, true); // don't create tables
+    private void createSchema () throws HibernateException, DocumentException {
+        DB db = new DB();
+        db.open();
+        db.beginTransaction();
+        db.createSchema(null, true);
+        db.commit();
+        db.close();
     }
     
     private void createCharts (Session sess, Iterator iter) 
@@ -92,7 +87,6 @@ public class Import implements EntityResolver {
             sess.flush ();
         }
         txn.commit();
-        sess.flush ();
     }
     private void createCurrencies (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -104,7 +98,6 @@ public class Import implements EntityResolver {
             sess.save (currency);
         }
         txn.commit();
-        sess.flush ();
     }
     private void createUsers (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -124,7 +117,6 @@ public class Import implements EntityResolver {
             sess.save (user);
         }
         txn.commit();
-        sess.flush ();
     }
     private void createJournals (Session sess, Iterator iter) 
         throws SQLException, HibernateException, ParseException
@@ -150,7 +142,6 @@ public class Import implements EntityResolver {
             );
         }
         txn.commit();
-        sess.flush ();
     }
     private void processChartChildren 
         (Session sess, CompositeAccount parent, Iterator iter) 
@@ -206,7 +197,6 @@ public class Import implements EntityResolver {
             );
             txn.commit ();
         }
-        sess.flush ();
     }
     private void createEntries (
         Session sess, GLTransaction glt, Iterator iter) 
@@ -215,10 +205,10 @@ public class Import implements EntityResolver {
         Account chart = glt.getJournal().getChart ();
         while (iter.hasNext()) {
             Element elem = (Element) iter.next ();
-            GLEntry entry = 
+            GLEntry entry =
                 "credit".equals (elem.getAttributeValue ("type")) ?
-                ((GLEntry) new GLCredit ()) :
-                ((GLEntry) new GLDebit ());
+                (new GLCredit ()) :
+                (new GLDebit ());
             entry.fromXML (elem);
             entry.setAccount (getFinalAccount (sess, chart, elem));
             entry.setTransaction (glt);
@@ -338,10 +328,9 @@ public class Import implements EntityResolver {
         else 
             return null;
     }
-    public void parse (String file) 
-        throws JDOMException, SQLException, HibernateException,
-               ParseException, IOException, GLException
-    {
+    public void parse (String file)
+      throws JDOMException, SQLException, HibernateException,
+      ParseException, IOException, GLException, DocumentException {
         SAXBuilder builder = new SAXBuilder (true);
         builder.setEntityResolver (this);
 
@@ -357,7 +346,7 @@ public class Import implements EntityResolver {
         if (root.getChild ("create-schema") != null)
             createSchema ();
 
-        Session sess = sf.openSession();
+        Session sess = new DB().open();
         createUsers (sess, root.getChildren ("user").iterator());
         createCurrencies (sess, root.getChildren ("currency").iterator());
         createCharts (sess, root.getChildren ("chart-of-accounts").iterator());

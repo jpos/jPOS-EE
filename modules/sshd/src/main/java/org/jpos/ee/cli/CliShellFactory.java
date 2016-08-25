@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,10 +20,7 @@ package org.jpos.ee.cli;
 
 import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.SshConstants;
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.Environment;
-import org.apache.sshd.server.ExitCallback;
-import org.apache.sshd.server.SessionAware;
+import org.apache.sshd.server.*;
 import org.apache.sshd.server.session.ServerSession;
 import org.jpos.q2.CLI;
 import org.jpos.q2.Q2;
@@ -34,7 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class CliShellFactory implements Factory<Command>
+public class CliShellFactory implements Factory<Command>, CommandFactory
 {
     Q2 q2;
     String[] prefixes;
@@ -47,7 +44,12 @@ public class CliShellFactory implements Factory<Command>
 
     public Command create()
     {
-        return new JPosCLIShell();
+        return new JPosCLIShell(null);
+    }
+
+    @Override
+    public Command createCommand(String command) {
+        return new JPosCLIShell(command);
     }
 
     public class JPosCLIShell implements Command, SessionAware
@@ -57,6 +59,7 @@ public class CliShellFactory implements Factory<Command>
         OutputStream err;
         SshCLI cli = null;
         ServerSession serverSession;
+        String args;
 
         public void setInputStream(InputStream in)
         {
@@ -77,6 +80,10 @@ public class CliShellFactory implements Factory<Command>
         {
         }
 
+        public JPosCLIShell(String args) {
+            this.args = args;
+        }
+
         public void setSession(ServerSession serverSession)
         {
             this.serverSession = serverSession;
@@ -85,7 +92,7 @@ public class CliShellFactory implements Factory<Command>
         public void start(Environment environment) throws IOException
         {
             MyFilterOutputStream fout = new MyFilterOutputStream(out);
-            cli = new SshCLI(q2, in, fout, null, true);
+            cli = new SshCLI(q2, args != null ? null : in, fout, args, args == null);
             try
             {
                 cli.setServerSession(serverSession);
@@ -105,6 +112,8 @@ public class CliShellFactory implements Factory<Command>
             }
         }
     }
+
+
 
     protected class MyFilterOutputStream extends FilterOutputStream
     {
@@ -175,7 +184,7 @@ public class CliShellFactory implements Factory<Command>
             {
                 try
                 {
-                    serverSession.disconnect(SshConstants.SSH2_DISCONNECT_BY_APPLICATION, "User triggered exit");
+                    serverSession.disconnect(SshConstants.SSH2_DISCONNECT_BY_APPLICATION, "");
                 }
                 catch (IOException e)
                 {

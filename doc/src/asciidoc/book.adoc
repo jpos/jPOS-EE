@@ -1,0 +1,84 @@
+jPOS Extended Edition
+=====================
+:author: Alejandro Revilla
+:email: apr@jpos.org
+:revnumber: 2.0.9
+:jposee_version: 2.0.9
+:toc:
+
+Introduction
+============
+
+include::overview.adoc[]
+
+include::contributing.adoc[]
+
+// include::getting_started.adoc[]
+
+// include::tutorial.adoc[]
+
+Modules
+=======
+
+== Introduction to modules
+
+include::introduction_module.adoc[]
+
+== Essensial Modules
+
+include::module_core.adoc[]
+include::module_txn.adoc[]
+
+== Database Support
+
+include::module_database_support.adoc[]
+
+== Tools
+
+include::module_freemarker_decorator.adoc[]
+include::module_groovy.adoc[]
+
+== Simulators
+
+include::module_server_simulator.adoc[]
+include::module_client_simulator.adoc[]
+
+// == Application components
+//------------------------------------------------------------
+// ** UNIMPLEMENTED **
+//
+// - MiniGL
+// - Result Code
+// - Store and Forward (SAF)
+// - Sysconfig
+// - Things
+//------------------------------------------------------------
+
+== Operation services
+
+include::module_sshd.adoc[]
+
+== Contributed modules
+ 
+include::module_fsdmsgX.adoc[]
+
+//------------------------------------------------------------
+// ** UNIMPLEMENTED **
+//
+// - Status
+// - Syslog
+// - Mail
+//------------------------------------------------------------
+
+//-------------------------------------------------------------
+// APPENDICES
+//-------------------------------------------------------------
+
+Appendices
+==========
+
+include::appendix_copyright.adoc[]
+include::appendix_license.adoc[]
+include::appendix_CLA.adoc[]
+// include::appendix_CCLA.adoc[]
+

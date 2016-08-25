@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: Groovy Module'
+
+dependencies {
+    compile libraries.jpos
+    compile libraries.groovy
+    compile libraries.groovySql
+}
+

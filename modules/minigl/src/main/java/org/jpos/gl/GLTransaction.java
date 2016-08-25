@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,15 +20,15 @@ package org.jpos.gl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import org.jdom.Element;
-import org.jdom.Comment;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jdom2.Element;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.ee.Cloneable;
+import org.jpos.util.Tags;
 
 /**
  * GLTransaction.
@@ -40,31 +40,30 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
-public class GLTransaction {
+public class GLTransaction extends Cloneable {
     private long id;
     private Date timestamp;
     private Date postDate;
     private String detail;
-    private String tags;
-    private List children;
+    private Tags tags;
     private Journal journal;
-    List entries;
+    List<GLEntry> entries;
 
     public GLTransaction () {
         super();
     }
     public GLTransaction (String detail) {
         super ();
-        setDetail (detail);
+        setDetail(detail);
     }
     /**
      * Constructs a GLTransaction out of a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
-     * @param elem 
+     * @param elem {@code '<entry>...</entry>}' element.
      */
     public GLTransaction (Element elem) throws ParseException {
         super();
-        fromXML (elem);
+        fromXML(elem);
     }
     /**
      * GLTransaction id.
@@ -127,30 +126,40 @@ public class GLTransaction {
      * Tags.
      * @param tags transaction tags
      */
-    public void setTags (String tags) {
+    public void setTags (Tags tags) {
         this.tags = tags;
     }
     /**
      * Tags.
      * @return transaction tags
      */
-    public String getTags () {
+    public Tags getTags () {
         return tags;
     }
+
+    /**
+     * @param tag to add
+     * @return this
+     */
+    public GLTransaction addTag (String tag) {
+        getTags().add(tag);
+        return this;
+    }
+
     /**
      * Entries.
      * @param entries transaction entries
      */
-    public void setEntries (List entries) {
+    public void setEntries (List<GLEntry> entries) {
         this.entries = entries;
     }
     /**
      * Entries.
      * @return transaction entries
      */
-    public List getEntries () {
+    public List<GLEntry> getEntries () {
         if (entries == null)
-            entries = new ArrayList ();
+            entries = new ArrayList<>();
         return entries;
     }
     /**
@@ -183,7 +192,7 @@ public class GLTransaction {
      */
     public GLEntry createGLEntry (FinalAccount acct, BigDecimal amount, String detail, boolean isCredit, short layer) 
     {
-        GLEntry entry = isCredit ? (GLEntry) new GLCredit() : (GLEntry) new GLDebit();
+        GLEntry entry = isCredit ? new GLCredit() : new GLDebit();
         entry.setAccount (acct);
         entry.setAmount (amount);
         entry.setDetail (detail);
@@ -284,26 +293,54 @@ public class GLTransaction {
     public GLTransaction createReverse() {
         GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
         glt.setJournal (getJournal());
-        Iterator iter = getEntries().iterator();
-        while (iter.hasNext()) {
-            GLEntry e = (GLEntry) iter.next();
-            glt.createGLEntry (
-                e.getAccount(),
-                negate (e.getAmount()),
-                e.getDetail(),
-                e.isCredit(),
-                e.getLayer()
+        for (GLEntry e : getEntries()) {
+            glt.createGLEntry(
+              e.getAccount(),
+              negate(e.getAmount()),
+              e.getDetail(),
+              e.isCredit(),
+              e.getLayer()
             );
         }
         return glt;
     }
+
+    /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param withTags entries with any tag in <code>withTags</code> are selected (can be null)
+     * @param withoutTags entries with any tag in <code>withoutTags</code> are discarded (can be null)
+     *
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(Tags withTags, Tags withoutTags) {
+        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        glt.setJournal (getJournal());
+        for (GLEntry e : getEntries()) {
+            Tags tags = e.getTags() != null ? e.getTags() : new Tags();
+            if ((withTags == null || tags.containsAll(withTags)) &&
+              (withoutTags == null || !tags.containsAny(withoutTags)))
+            {
+                glt.createGLEntry(
+                  e.getAccount(),
+                  negate(e.getAmount()),
+                  e.getDetail(),
+                  e.isCredit(),
+                  e.getLayer()
+                );
+            }
+        }
+        return glt;
+    }
+
     /**
      * Parses a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
      */
     public void fromXML (Element elem) throws ParseException {
         setDetail (elem.getChildTextTrim ("detail"));
-        setTags   (elem.getChildTextTrim ("tags"));
+        setTags   (new Tags(elem.getChildTextTrim ("tags")));
         setPostDate (
             Util.parseDate (elem.getAttributeValue ("post-date"))
         );
@@ -326,14 +363,12 @@ public class GLTransaction {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getTags());
+            Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
         elem.setAttribute ("journal", getJournal().getName());
 
-        Iterator iter = getEntries().iterator();
-        while (iter.hasNext()) {
-            GLEntry entry = (GLEntry) iter.next();
+        for (GLEntry entry : getEntries()) {
             elem.addContent (entry.toXML (deep));
         }
         return elem;
@@ -365,7 +400,7 @@ public class GLTransaction {
     }
     public BigDecimal getDebits (short[] layers) {
         BigDecimal debits = GLSession.ZERO;
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.isDebit() && e.hasLayers (layers)) {
                 debits = debits.add (e.getAmount());
             }
@@ -374,12 +409,22 @@ public class GLTransaction {
     }
     public BigDecimal getCredits (short[] layers) {
         BigDecimal credits = GLSession.ZERO;
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.isCredit() && e.hasLayers (layers)) {
                 credits = credits.add (e.getAmount());
             }
         }
         return credits;
+    }
+    @SuppressWarnings("unchecked")
+    public BigDecimal getImpact(Account acct, short[] layers) {
+        BigDecimal impact = GLSession.ZERO;
+        for (GLEntry e : getEntries()) {
+            if (e.getAccount().equals(acct) && e.hasLayers (layers)) {
+                impact = impact.add (e.getImpact());
+            }
+        }
+        return impact;
     }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;

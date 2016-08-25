@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2014 Alejandro P. Revilla
+ * Copyright (C) 2000-2016 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -45,6 +45,7 @@ public class GLSession {
     public static final short[] LAYER_ZERO = new short[] { 0 };
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
+    private long SAFE_WINDOW = 1000L;
 
     /**
      * Construct a GLSession for a given user.
@@ -562,6 +563,17 @@ public class GLSession {
     }
 
     /**
+     * @return list of all currency ids
+     * @see org.jpos.gl.Currency
+     */
+    public List<String> getCurrencyCodes() {
+        return db.session()
+                .createCriteria(Currency.class)
+                .setProjection(Projections.id())
+                .list();
+    }
+
+    /**
      * Post transaction in a given journal.
      *
      * @param journal the journal.
@@ -898,7 +910,7 @@ public class GLSession {
      * @param acct the account.
      * @param layer the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short layer) 
         throws HibernateException, GLException
@@ -911,7 +923,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short[] layers) 
         throws HibernateException, GLException
@@ -924,7 +936,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers comma separated list of layers
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, String layers) 
         throws HibernateException, GLException
@@ -937,7 +949,7 @@ public class GLSession {
      * @param acct the account.
      * @param date date (inclusive).
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date) 
         throws HibernateException, GLException
@@ -951,7 +963,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layer layer
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short layer) 
         throws HibernateException, GLException
@@ -965,12 +977,26 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layers layers
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short[] layers) 
         throws HibernateException, GLException
     {
         return getBalances (journal, acct, date, true, layers, 0L) [0];
+    }
+    /**
+     * Balance for account in a given journal in a given date.
+     * @param journal the journal.
+     * @param acct the account.
+     * @param date date (inclusive).
+     * @param layers comma separated list of layers
+     * @return balance at given date.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public BigDecimal getBalance (Journal journal, Account acct, Date date, String layers)
+        throws HibernateException, GLException
+    {
+        return getBalances (journal, acct, date, true, toLayers(layers), 0L) [0];
     }
     /**
      * Get Both Balances at given date
@@ -979,7 +1005,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param inclusive either true or false
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances 
         (Journal journal, Account acct, Date date, boolean inclusive) 
@@ -997,23 +1023,24 @@ public class GLSession {
      * @param layers the layers
      * @param maxId maximum GLEntry ID to be considered in the query (if greater than zero)
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances 
-        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId) 
+        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
         BigDecimal balance[] = { ZERO, Z };
+        short[] layersCopy = Arrays.copyOf(layers,layers.length);
         if (acct.getChildren() != null) {
             if (acct.isChart()) {
                 return getChartBalances 
-                    (journal, (CompositeAccount) acct, date, inclusive, layers, maxId);
+                    (journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
             }
             Iterator iter = acct.getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
-                BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
+                BigDecimal[] b = getBalances (journal, a, date, inclusive, layersCopy, maxId);
                 balance[0] = balance[0].add (b[0]);
                 // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
             }
@@ -1021,7 +1048,7 @@ public class GLSession {
         else if (acct.isFinalAccount()) {
             Criteria entryCrit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
-                .add (Restrictions.in ("layer", toShortArray (layers)));
+                .add (Restrictions.in ("layer", toShortArray (layersCopy)));
             if (maxId > 0L)
                 entryCrit.add (Restrictions.le ("id", maxId));
 
@@ -1035,15 +1062,14 @@ public class GLSession {
                     date = Util.floor (date);
                     txnCrit.add (Restrictions.lt ("postDate", date));
                 }
-                Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layers);
+                Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layersCopy);
                 if (chkp != null) {
                     balance[0] = chkp.getBalance();
                     txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
                 }
-
             } else {
-                BalanceCache bcache = getBalanceCache (journal, acct, layers);
-                if (bcache != null) {
+                BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
+                if (bcache != null && bcache.getRef() <= maxId) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }
@@ -1062,7 +1088,7 @@ public class GLSession {
      * @param start date (inclusive).
      * @param end date (inclusive).
      * @return Account detail for given period.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public AccountDetail getAccountDetail 
         (Journal journal, Account acct, Date start, Date end, short[] layers) 
@@ -1108,13 +1134,60 @@ public class GLSession {
                 initialBalance[0],
                 start, end, entries, layers );
     }
+
+    /**
+     * AccountDetail for date range
+     * @param journal the journal.
+     * @param acct the account.
+     * @param layers layer set
+     * @param maxResults number of entries in mini statement
+     * @return Account detail for given period.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public AccountDetail getMiniStatement
+    (Journal journal, Account acct, short[] layers, int maxResults)
+            throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ);
+        Criteria crit = session.createCriteria (GLEntry.class);
+
+        boolean hasChildren = false;
+        if (acct instanceof CompositeAccount) {
+            Disjunction dis = Restrictions.disjunction();
+            for (Long l : getChildren (acct)) {
+                hasChildren = true;
+                dis.add (Restrictions.idEq(l));
+            }
+            if (hasChildren) {
+                Criteria subCrit = crit.createCriteria(("account"));
+                subCrit.add (dis);
+            }
+        }
+        if (!hasChildren) {
+            crit.add (Restrictions.eq ("account", acct));
+        }
+
+        crit.add (Restrictions.in ("layer", toShortArray (layers)));
+        crit = crit.createCriteria ("transaction")
+                .add (Restrictions.eq ("journal", journal));
+
+        crit.addOrder (Order.desc ("id"));
+        crit.setMaxResults(maxResults);
+        List<GLEntry> entries = crit.list();
+        BigDecimal balance = ZERO;
+        if (entries.size() > 0)
+            balance = getBalances(journal, acct, (Date) null, true, layers, entries.get(0).getId())[0];
+
+        return new AccountDetail(journal, acct, balance, entries, layers);
+    }
+
     /**
      * @param journal the journal.
      * @param acct the account.
      * @param date date (null for last checkpoint)
      * @param inclusive either true or false
      * @return Most recent check point for given date.
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public Checkpoint getRecentCheckpoint
         (Journal journal, Account acct, Date date, boolean inclusive, short[] layers) 
@@ -1162,7 +1235,7 @@ public class GLSession {
      * @param acct the account
      * @param date checkpoint date (inclusive)
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint 
         (Journal journal, Account acct, Date date, int threshold)
@@ -1176,7 +1249,7 @@ public class GLSession {
      * @param date checkpoint date (inclusive)
      * @param layers taken into account in this checkpoint
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this jounral.
+     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint 
         (Journal journal, Account acct, Date date, int threshold, short[] layers) 
@@ -1194,9 +1267,9 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        return createBalanceCache (journal, acct, layers, getMaxGLEntryId());
+        return createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
     }
-    public BigDecimal createBalanceCache
+    private BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers, long maxId)
         throws HibernateException, GLException
     {
@@ -1225,14 +1298,14 @@ public class GLSession {
                 session.saveOrUpdate (c);
             }
         }
-        return balance;
+        return getBalance(journal, acct, layers);
     }
 
     /**
      * Lock a journal.
      * @param journal the journal.
      * @throws HibernateException on database errors.
-     * @throws GLException if user doesn't have POST permission on this jounral.
+     * @throws GLException if user doesn't have POST permission on this journal.
      */
     public void lock (Journal journal) 
         throws HibernateException, GLException
@@ -1244,7 +1317,7 @@ public class GLSession {
      * Lock an account in a given journal.
      * @param journal the journal.
      * @param acct the account.
-     * @throws GLException if user doesn't have POST permission on this jounral.
+     * @throws GLException if user doesn't have POST permission on this journal.
      * @throws HibernateException on database errors.
      */
     public void lock (Journal journal, Account acct) 
@@ -1419,10 +1492,10 @@ public class GLSession {
         else if (acct instanceof FinalAccount) {
             Date sod = Util.floor (date);   // sod = start of day
             invalidateCheckpoints (journal, new Account[] { acct }, sod, sod, layers);
-            BigDecimal b[] = getBalances (journal, acct, date, true, layers, 0L);
+            BigDecimal b[] = getBalances (journal, acct, sod, false, layers, 0L);
             if (b[1].intValue() >= threshold) {
                 Checkpoint c = new Checkpoint ();
-                c.setDate (date);
+                c.setDate (sod);
                 c.setBalance (b[0]);
                 c.setJournal (journal);
                 c.setAccount (acct);
@@ -1486,7 +1559,6 @@ public class GLSession {
             Checkpoint cp = (Checkpoint) iter.next();
             session.delete (cp);
         }
-        session.flush();
     }
     private BigDecimal applyEntries (BigDecimal balance, List entries) 
         throws GLException
@@ -1694,6 +1766,12 @@ public class GLSession {
         crit.setMaxResults (1);
         GLEntry entry = (GLEntry) crit.uniqueResult();
         return entry != null ? entry.getId() : 0L;
+    }
+    private long getSafeMaxGLEntryId() {
+        return Math.max (getMaxGLEntryId()-SAFE_WINDOW, 0L);
+    }
+    public void overrideSafeWindow (long l) {
+        this.SAFE_WINDOW = l;
     }
     private void recurseChildren (Account acct, List<Long> list) {
         for (Account a : acct.getChildren()) {

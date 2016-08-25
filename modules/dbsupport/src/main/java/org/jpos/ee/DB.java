@@ -247,15 +247,19 @@ public class DB implements Closeable
         try {
             // SchemaExport export = new SchemaExport(getMetadata());
             SchemaExport export = new SchemaExport();
-            EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.STDOUT);
+            List<TargetType> targetTypes=new ArrayList<>();
             if (outputFile != null) {
-                export.setOutputFile(outputFile);
-                export.setDelimiter(";");
-                targetTypes.add(TargetType.SCRIPT);
+                if(outputFile.trim().equals("-")) targetTypes.add(TargetType.STDOUT);
+                else {
+                    export.setOutputFile(outputFile);
+                    export.setDelimiter(";");
+                    targetTypes.add(TargetType.SCRIPT);
+                }
             }
             if (create)
                 targetTypes.add(TargetType.DATABASE);
-            export.create(targetTypes, getMetadata());
+            if(targetTypes.size()>0)
+                export.create(EnumSet.copyOf(targetTypes), getMetadata());
         }
         catch (IOException | ConfigurationException e)
         {

@@ -26,7 +26,7 @@ import org.jpos.q2.CLIContext;
 public class CREATESCHEMA implements CLICommand {
     @Override
     public void exec(CLIContext cli, String[] args) throws Exception {
-        String filename = null;
+        String filename = "-";  // defaults to stdout
         boolean create = false;
         if (args.length > 1)
             filename = args[1];

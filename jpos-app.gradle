@@ -42,7 +42,6 @@ def jposCopySpec = copySpec {
     }
     into("lib") {
         from(configurations.runtime) {
-            exclude "vaadin*.jar"         // vaadin compiler 
             exclude "servlet-api*.jar"    // dependency hack 
         }
     }

@@ -103,7 +103,7 @@ public class Header extends HorizontalLayout {
                 }
             }
         }
-        userMenuItem = mb.addItem(app.getUser().getName(), null);
+        userMenuItem = mb.addItem(app.getUser().getNick(), null);
         userMenuItem.setIcon(FontAwesome.USER);
         userMenuItem.addItem("Profile", selectedItem -> app.navigateTo("/profile"));
         userMenuItem.addItem("Log Out", selectedItem -> app.logout());

@@ -73,6 +73,22 @@ public class SysConfigManager {
         }
         return defaultValue;
     }
+
+    public boolean delete (String name) {
+        try {
+            if (prefix != null)
+                name = prefix + name;
+            SysConfig cfg = db.session().get (SysConfig.class, name);
+            if (cfg != null) {
+                db.session().delete(cfg);
+                return true;
+            }
+        } catch (HibernateException e) {
+            db.getLog().warn (e);
+        }
+        return false;
+    }
+
     public SysConfig[] getAll  (String queryString) {
         SysConfig[] values;
         try {

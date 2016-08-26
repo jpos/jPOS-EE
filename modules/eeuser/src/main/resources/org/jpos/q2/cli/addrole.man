@@ -1,0 +1,1 @@
+Usage: addrole <role> <permission 1> <permission 2> ... <permission n>

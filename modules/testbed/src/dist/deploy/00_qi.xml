@@ -1,0 +1,127 @@
+<!DOCTYPE xml-config [
+        <!ENTITY AMOUNT_PATTERN  "[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?">
+        <!ENTITY CURRENCY_PATTERN "^\d{1,4}">
+        <!ENTITY TEXT_PATTERN "^[\w\s.,\-\']*$">
+        <!ENTITY TEXT_EXTENDED_PATTERN "^[\w\s.,\-\'():]*$">
+        <!ENTITY WORD_PATTERN "^[\w.\-]*$">
+        <!ENTITY ACCT_CODE_PATTERN "^[\w.]*$">
+        ]>
+
+<xml-config name="QI" logger="Q2">
+  <title>jPOS QI</title>
+  <locale>en-US</locale>
+
+  <menubar>
+    <menu name="System" icon="COG" style="icon-cog" action="system" />
+    <menu name="Accounting"  action="accounting" />
+  </menubar>
+
+  <sidebar id="info">
+    <section name="Info"/>
+    <option name="Info" action="info"/>
+  </sidebar>
+
+  <sidebar id="system">
+    <section name="System"/>
+    <option name="Info" action="info"/>
+    <option name="Log" action="log"/>
+    <option name="Exception log" action="exceptions"/>
+    <option name="Users" action="users"/>
+    <option name="Roles" action="roles"/>
+    <option name="Permissions" action="permissions"/>
+    <option name="SysConfig" action="sysconfig"/>
+    <option name="Audit Log" action="syslog"/>
+    <option name="Revision History" action="revision_history"/>
+  </sidebar>
+
+  <!-- sidebar view definition -->
+
+  <!--VIEWS-->
+  <view route="home" class="org.jpos.qi.views.DefaultView" perm="*" sidebar = "system"/>
+  <view route="system" class="org.jpos.qi.views.DefaultView" perm="*"  sidebar="system"/>
+
+  <view route="about" class="org.jpos.qi.system.AboutView" perm="login" sidebar="system"/>
+  <view route="log" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system" >
+    <property name="name" value="logger.Q2.buffered"/>
+    <property name="entityName" value="log"/>
+  </view>
+  <view route="exceptions" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system">
+    <property name="name" value="logger.Q2.exceptions"/>
+    <property name="entityName" value="exception"/>
+  </view>
+  <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
+    <property name="entityName" value="sysconfig"/>
+    <attribute name="id" read-only="true" regex="&WORD_PATTERN;" length="64"/>
+    <attribute name="value" regex="&TEXT_PATTERN;" />
+  </view>
+  <view route="permissions" class="org.jpos.qi.sysconfig.PermissionView" perm="sysadmin" sidebar="system">
+    <property name="entityName" value="permission"/>
+    <attribute name="id" read-only="true"/>
+    <attribute name="value" regex="&TEXT_PATTERN;"/>
+  </view>
+  <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
+    <property name="entityName" value="user"/>
+    <attribute name="id" field="false"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;"/>
+    <attribute name="email" length="128" />
+    <attribute name="active"/>
+    <attribute name="roles" column="false" perm="sysadmin"/>
+  </view>
+  <view route="profile" class="org.jpos.qi.eeuser.ProfilesView" perm="login" sidebar="system">
+    <property name="entityName" value="user"/>
+    <attribute name="id" field="false"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;"/>
+    <attribute name="email" length="128" />
+    <attribute name="active"/>
+    <attribute name="roles" column="false" perm="sysadmin"/>
+  </view>
+  <view route="roles" class="org.jpos.qi.eeuser.RolesView" perm="sysadmin" sidebar="system">
+    <property name="entityName" value="role"/>
+    <attribute name="id" field="false"/>
+    <attribute name="name" regex="&WORD_PATTERN;" length="64"/>
+    <attribute name="permissions" column="false"/>
+  </view>
+  <view route="exceptions" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system">
+    <property name="entityName" value="exception"/>
+    <property name="name" value="logger.Q2.exceptions"/>
+  </view>
+  <view route="info" class="org.jpos.qi.views.TabView" perm="login" sidebar="system">
+    <view caption="About" class="org.jpos.qi.system.AboutView" perm="login"/>
+    <view caption="Memory" route="memory" class="org.jpos.qi.system.MemoryUsageView" perm="login"/>
+    <view caption="Sysmon" route="sysmon" class="org.jpos.qi.system.ObjectView" perm="sysadmin" repeat="1000"
+          clearScreen="true">
+      <object class="org.jpos.util.SystemMonitor"/>
+    </view>
+    <view caption="Uptime" route="uptime" class="org.jpos.qi.system.ProcessView" perm="sysadmin" repeat="1000"
+          clearScreen="true">
+      <script>uptime</script>
+    </view>
+    <view caption="Date" route="date" class="org.jpos.qi.system.ObjectView" perm="login" repeat="1000"
+          clearScreen="true">
+      <object class="java.util.Date"/>
+    </view>
+  </view>
+  <view route="revision_history" class="org.jpos.qi.system.RevisionsView" perm="login" sidebar="system">
+    <property name="entityName" value="revision"/>
+    <attribute name="id" field="false"/>
+    <attribute name="date" read-only="true"/>
+    <attribute name="info" read-only="true"/>
+    <attribute name="ref" read-only="true"/>
+    <attribute name="author" read-only="true"/>
+  </view>
+  <view route="syslog" class="org.jpos.qi.system.AuditLogView" perm="sysconfig" sidebar="system">
+    <property name="entityName" value="syslog"/>
+    <attribute name="id" field="false"/>
+    <attribute name="date" />
+    <attribute name="deleted" />
+    <attribute name="source" />
+    <attribute name="type" />
+    <attribute name="severity" />
+    <attribute name="summary" />
+    <attribute name="detail" column="false"/>
+    <attribute name="trace" column="false"/>
+  </view>
+</xml-config>
+

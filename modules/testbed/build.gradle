@@ -1,14 +1,46 @@
 description = 'jPOS-EE :: Testbed'
 
+apply plugin: 'war'
+
+configurations {
+   all*.exclude group: "com.vaadin", module: "vaadin-client-compiler"
+   all*.exclude group: "com.vaadin", module: "vaadin-client-compiled"
+}
+
 dependencies {
-    compile project(':modules:core')
-    compile project(':modules:logback')
-    compile project(':modules:dbsupport')
-    compile project(':modules:db-h2')
-    compile project(':modules:sysconfig')
-    compile project(':modules:eeuser')
-    compile project(':modules:syslog')
+    compile project (':modules:qi-core')
+    compile project (':modules:qi-sysconfig')
+    compile project (':modules:qi-eeuser')
+
+    providedCompile project(':modules:core')
+    providedCompile project(':modules:logback')
+    providedCompile project(':modules:dbsupport')
+    providedCompile project(':modules:db-mysql')
+    providedCompile project(':modules:sysconfig')
+    providedCompile project(':modules:eeuser')
+    providedCompile project(':modules:syslog')
+    providedCompile project(':modules:visitor')
+    providedCompile project(':modules:jetty')
+    providedCompile 'com.vaadin.external.slf4j:vaadin-slf4j-jdk14:1.6.1'
+    providedCompile 'org.slf4j:jul-to-slf4j:1.7.7'
 }
 
 apply from: '../../jpos-app.gradle'
+
+war {
+    exclude 'VAADIN/gwt-unitCache*'
+    exclude 'VAADIN/gwt-unitCache'
+    exclude '**/*.ico'
+    exclude '**/*.png'
+    exclude '**/*.jpg'
+    exclude '**/*.gif'
+    exclude '**/*.pdf'
+    filter(
+        org.apache.tools.ant.filters.ReplaceTokens,
+        tokens: targetConfiguration
+    )
+}
+
+installApp.dependsOn('war')
+dist.dependsOn('war')
 

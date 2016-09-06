@@ -38,6 +38,9 @@ import org.jpos.util.Log;
 import org.jpos.util.NameRegistrar;
 
 import javax.servlet.http.Cookie;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -45,7 +48,8 @@ import java.util.*;
 @Title("jPOS")
 public class QI extends UI {
     private Locale locale;
-    private ResourceBundle messages;
+//    private ResourceBundle messages;
+    private HashMap<Locale,SortedMap<String,Object>> messagesMap;
     private Log log;
     private Q2 q2;
 
@@ -63,7 +67,26 @@ public class QI extends UI {
 
     public QI() {
         locale = Locale.getDefault();
-        messages = ResourceBundle.getBundle("messages", locale);
+        messagesMap = new HashMap<>();
+
+        //TODO: iterate over different locales probably read from 00_Qi.
+        Properties master = new Properties();
+        try {
+            //TODO: change route to be relative
+            master.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/messages.properties"));
+            //TODO: iterate over extra property files and add them to master.
+            Properties temp = new Properties();
+            temp.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/messages2.properties"));
+            master.putAll(temp);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
+        messagesMap.put(locale,treeMap);
+
+//        messages = ResourceBundle.getBundle("messages", locale);
+
         log = Log.getLog(Q2.LOGGER_NAME, "QI");
         qiLayout = new QILayout();
         views = new HashMap<>();
@@ -103,20 +126,27 @@ public class QI extends UI {
         }
     }
     public String getMessage (String id, Object... obj) {
-        MessageFormat mf = new MessageFormat (messages.getString (id));
+
+//        MessageFormat mf = new MessageFormat (messages.getString (id));
+        SortedMap map = messagesMap.get(locale);
+        MessageFormat mf = new MessageFormat ((String) map.get(id));
         mf.setLocale(locale);
         return mf.format (obj);
     }
     public String getMessage (ErrorMessage em) {
-        return messages.containsKey(em.getPropertyName()) ?
-                messages.getString(em.getPropertyName()) :
-                em.getDefaultMessage();
+        SortedMap map = messagesMap.get(locale);
+        return (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
+//        return messages.containsKey(em.getPropertyName()) ?
+//                messages.getString(em.getPropertyName()) :
+//                em.getDefaultMessage();
     }
     public String getMessage (ErrorMessage em, Object... obj) {
-        String format = messages.containsKey(em.getPropertyName()) ?
-                messages.getString(em.getPropertyName()) :
-                em.getDefaultMessage();
+//        String format = messages.containsKey(em.getPropertyName()) ?
+//                messages.getString(em.getPropertyName()) :
+//                em.getDefaultMessage();
 
+        SortedMap map = messagesMap.get(locale);
+        String format = (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
         MessageFormat mf = new MessageFormat (format, locale);
         return mf.format (obj);
     }
@@ -144,7 +174,8 @@ public class QI extends UI {
                     Notification.Type.ERROR_MESSAGE);
             } else {
                 locale = l;
-                messages = ResourceBundle.getBundle("messages", locale);
+                //TODO: check this
+//                messages = ResourceBundle.getBundle("messages", locale);
             }
         }
     }

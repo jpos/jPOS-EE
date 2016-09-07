@@ -40,7 +40,6 @@ import org.jpos.util.NameRegistrar;
 import javax.servlet.http.Cookie;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -50,6 +49,7 @@ public class QI extends UI {
     private Locale locale;
 //    private ResourceBundle messages;
     private HashMap<Locale,SortedMap<String,Object>> messagesMap;
+    private List<Element> messageFiles;
     private Log log;
     private Q2 q2;
 
@@ -67,26 +67,6 @@ public class QI extends UI {
 
     public QI() {
         locale = Locale.getDefault();
-        messagesMap = new HashMap<>();
-
-        //TODO: iterate over different locales probably read from 00_Qi.
-        Properties master = new Properties();
-        try {
-            //TODO: change route to be relative
-            master.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/messages.properties"));
-            //TODO: iterate over extra property files and add them to master.
-            Properties temp = new Properties();
-            temp.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/messages2.properties"));
-            master.putAll(temp);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
-        messagesMap.put(locale,treeMap);
-
-//        messages = ResourceBundle.getBundle("messages", locale);
-
         log = Log.getLog(Q2.LOGGER_NAME, "QI");
         qiLayout = new QILayout();
         views = new HashMap<>();
@@ -94,6 +74,31 @@ public class QI extends UI {
             q2 = (Q2) NameRegistrar.get("Q2");
         } catch (NameRegistrar.NotFoundException e) {
             throw new IllegalStateException ("Q2 not available");
+        }
+    }
+
+    private void parseMessages() {
+        messagesMap = new HashMap<>();
+
+        //TODO: iterate over different locales probably read from 00_Qi.
+        Properties master = new Properties();
+        Iterator<Element> iterator = messageFiles.iterator();
+        if (iterator.hasNext()) {
+            String masterName = iterator.next().getValue();
+            try {
+                //TODO: change route to be relative
+                master.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/" + masterName + ".properties"));
+                while (iterator.hasNext()) {
+                    Properties additionalProp = new Properties();
+                    String additionalName = iterator.next().getValue();
+                    additionalProp.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/" + additionalName + ".properties"));
+                    master.putAll(additionalProp);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
+            messagesMap.put(locale, treeMap);
         }
     }
 
@@ -127,7 +132,6 @@ public class QI extends UI {
     }
     public String getMessage (String id, Object... obj) {
 
-//        MessageFormat mf = new MessageFormat (messages.getString (id));
         SortedMap map = messagesMap.get(locale);
         MessageFormat mf = new MessageFormat ((String) map.get(id));
         mf.setLocale(locale);
@@ -136,15 +140,9 @@ public class QI extends UI {
     public String getMessage (ErrorMessage em) {
         SortedMap map = messagesMap.get(locale);
         return (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
-//        return messages.containsKey(em.getPropertyName()) ?
-//                messages.getString(em.getPropertyName()) :
-//                em.getDefaultMessage();
     }
-    public String getMessage (ErrorMessage em, Object... obj) {
-//        String format = messages.containsKey(em.getPropertyName()) ?
-//                messages.getString(em.getPropertyName()) :
-//                em.getDefaultMessage();
 
+    public String getMessage (ErrorMessage em, Object... obj) {
         SortedMap map = messagesMap.get(locale);
         String format = (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
         MessageFormat mf = new MessageFormat (format, locale);
@@ -157,6 +155,7 @@ public class QI extends UI {
         String theme = cfg.getChildText("theme");
         String localeName = cfg.getChildText("locale");
         String logger = cfg.getAttributeValue("logger");
+        messageFiles = cfg.getChildren("messages");
         if (logger != null) {
             String realm = cfg.getAttributeValue("realm");
             log = Log.getLog(logger, realm != null ? realm : "QI");
@@ -178,6 +177,7 @@ public class QI extends UI {
 //                messages = ResourceBundle.getBundle("messages", locale);
             }
         }
+        parseMessages();
     }
 
     public Log getLog() {

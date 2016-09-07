@@ -38,6 +38,7 @@ import org.jpos.util.Log;
 import org.jpos.util.NameRegistrar;
 
 import javax.servlet.http.Cookie;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -79,21 +80,21 @@ public class QI extends UI {
 
     private void parseMessages() {
         messagesMap = new HashMap<>();
-
         //TODO: iterate over different locales probably read from 00_Qi.
         Properties master = new Properties();
         Iterator<Element> iterator = messageFiles.iterator();
         if (iterator.hasNext()) {
             String masterName = iterator.next().getValue();
             try {
-                //TODO: change route to be relative
-                master.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/" + masterName + ".properties"));
+                master.load(getClass().getResourceAsStream("/" + masterName +  ".properties"));
                 while (iterator.hasNext()) {
                     Properties additionalProp = new Properties();
                     String additionalName = iterator.next().getValue();
-                    additionalProp.load(new FileReader("/Users/jr/git/jPOS-EE/modules/qi-core/src/main/resources/" + additionalName + ".properties"));
+                    additionalProp.load(getClass().getResourceAsStream("/" + additionalName +  ".properties"));
                     master.putAll(additionalProp);
                 }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -131,9 +132,8 @@ public class QI extends UI {
         }
     }
     public String getMessage (String id, Object... obj) {
-
         SortedMap map = messagesMap.get(locale);
-        MessageFormat mf = new MessageFormat ((String) map.get(id));
+        MessageFormat mf = new MessageFormat ((String) map.getOrDefault(id,id));
         mf.setLocale(locale);
         return mf.format (obj);
     }

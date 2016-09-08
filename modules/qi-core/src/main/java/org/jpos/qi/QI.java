@@ -38,8 +38,6 @@ import org.jpos.util.Log;
 import org.jpos.util.NameRegistrar;
 
 import javax.servlet.http.Cookie;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -48,7 +46,7 @@ import java.util.*;
 @Title("jPOS")
 public class QI extends UI {
     private Locale locale;
-//    private ResourceBundle messages;
+    private List<Element> availableLocales;
     private HashMap<Locale,SortedMap<String,Object>> messagesMap;
     private List<Element> messageFiles;
     private Log log;
@@ -76,30 +74,36 @@ public class QI extends UI {
         } catch (NameRegistrar.NotFoundException e) {
             throw new IllegalStateException ("Q2 not available");
         }
+
     }
 
     private void parseMessages() {
         messagesMap = new HashMap<>();
-        //TODO: iterate over different locales probably read from 00_Qi.
         Properties master = new Properties();
-        Iterator<Element> iterator = messageFiles.iterator();
-        if (iterator.hasNext()) {
-            String masterName = iterator.next().getValue();
-            try {
-                master.load(getClass().getResourceAsStream("/" + masterName +  ".properties"));
-                while (iterator.hasNext()) {
-                    Properties additionalProp = new Properties();
-                    String additionalName = iterator.next().getValue();
-                    additionalProp.load(getClass().getResourceAsStream("/" + additionalName +  ".properties"));
-                    master.putAll(additionalProp);
+        for (Element element: availableLocales) {
+            String localeCode = element.getValue();
+            Locale l = Locale.forLanguageTag(localeCode);
+            Iterator<Element> iterator = messageFiles.iterator();
+            if (iterator.hasNext()) {
+                String masterName = iterator.next().getValue();
+                try {
+                    master.load(getClass().getResourceAsStream("/" + masterName.concat("_" + localeCode + ".properties")));
+                    while (iterator.hasNext()) {
+                        Properties additionalProp = new Properties();
+                        String additionalName = iterator.next().getValue();
+                        additionalProp.load(getClass().getResourceAsStream("/" + additionalName.concat("_" + localeCode + ".properties")));
+                        master.putAll(additionalProp);
+                    }
+                } catch (NullPointerException n) {
+                    //Log but continue
+                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
+                } catch (IOException e) {
+                    //Log but continue
+                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
+                messagesMap.put(l, treeMap);
             }
-            TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
-            messagesMap.put(locale, treeMap);
         }
     }
 
@@ -153,7 +157,7 @@ public class QI extends UI {
     private void init (VaadinRequest vr, Element cfg) {
         String title = cfg.getChildText("title");
         String theme = cfg.getChildText("theme");
-        String localeName = cfg.getChildText("locale");
+//        String localeName = cfg.getChildText("locale");
         String logger = cfg.getAttributeValue("logger");
         messageFiles = cfg.getChildren("messages");
         if (logger != null) {
@@ -165,16 +169,20 @@ public class QI extends UI {
         if (theme != null) {
             setTheme(theme);
         }
-        if (localeName != null) {
-            Locale l  = Locale.forLanguageTag(localeName);
-            if (l.hashCode() == 0) {
-                Notification.show(
-                    getMessage(ErrorMessage.SYSERR_INVALID_LOCALE, localeName),
-                    Notification.Type.ERROR_MESSAGE);
-            } else {
-                locale = l;
-                //TODO: check this
-//                messages = ResourceBundle.getBundle("messages", locale);
+        //Get all the available locales
+        //The first one will be the default.
+        availableLocales = cfg.getChildren("locale");
+        if (availableLocales.size() > 0) {
+            String localeName = availableLocales.get(0).getValue();
+            if (localeName != null) {
+                Locale l = Locale.forLanguageTag(localeName);
+                if (l.hashCode() == 0) {
+                    Notification.show(
+                            getMessage(ErrorMessage.SYSERR_INVALID_LOCALE, localeName),
+                            Notification.Type.ERROR_MESSAGE);
+                } else {
+                    locale = l;
+                }
             }
         }
         parseMessages();

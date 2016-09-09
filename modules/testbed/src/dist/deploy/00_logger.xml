@@ -24,8 +24,9 @@
     <property name="protect" value="2 14 35 45" />
     <property name="wipe"    value="52 55 120" />
   </log-listener>
-  <log-listener class="org.jpos.util.SimpleLogListener" />
   -->
+  <log-listener class="org.jpos.util.SimpleLogListener" />
+
  <log-listener class="org.jpos.util.BufferedLogListener">
     <property name="size" value="250" />
     <property name="name" value="logger.Q2.buffered" />

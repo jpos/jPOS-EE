@@ -96,9 +96,15 @@ public class QI extends UI {
                     }
                 } catch (NullPointerException n) {
                     //Log but continue
+                    //Show notification only if main locale is faulty
+                    if (locale.toString().equals(localeCode))
+                        displayNotification("Invalid locale '" + localeCode +"' : check configuration");
                     log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
                 } catch (IOException e) {
-                    //Log but continue
+                    //Log but continue.
+                    //Show notification only if main locale is faulty
+                    if (locale.toString().equals(localeCode))
+                        displayNotification("Invalid locale '" + localeCode +"' : check configuration");
                     log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
                 }
                 TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
@@ -136,28 +142,36 @@ public class QI extends UI {
         }
     }
     public String getMessage (String id, Object... obj) {
-        SortedMap map = messagesMap.get(locale);
-        MessageFormat mf = new MessageFormat ((String) map.getOrDefault(id,id));
-        mf.setLocale(locale);
-        return mf.format (obj);
+        if (messagesMap.containsKey(locale)) {
+            SortedMap map = messagesMap.get(locale);
+            MessageFormat mf = new MessageFormat((String) map.getOrDefault(id, id));
+            mf.setLocale(locale);
+            return mf.format(obj);
+        }
+        return id;
     }
     public String getMessage (ErrorMessage em) {
-        SortedMap map = messagesMap.get(locale);
-        return (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
+        if (messagesMap.containsKey(locale)) {
+            SortedMap map = messagesMap.get(locale);
+            return (String) map.getOrDefault(em.getPropertyName(), em.getDefaultMessage());
+        }
+        return em.getPropertyName();
     }
 
     public String getMessage (ErrorMessage em, Object... obj) {
-        SortedMap map = messagesMap.get(locale);
-        String format = (String) map.getOrDefault(em.getPropertyName(),em.getDefaultMessage());
-        MessageFormat mf = new MessageFormat (format, locale);
-        return mf.format (obj);
+        if (messagesMap.containsKey(locale)) {
+            SortedMap map = messagesMap.get(locale);
+            String format = (String) map.getOrDefault(em.getPropertyName(), em.getDefaultMessage());
+            MessageFormat mf = new MessageFormat(format, locale);
+            return mf.format(obj);
+        }
+        return em.getPropertyName();
     }
 
     @SuppressWarnings("unused")
     private void init (VaadinRequest vr, Element cfg) {
         String title = cfg.getChildText("title");
         String theme = cfg.getChildText("theme");
-//        String localeName = cfg.getChildText("locale");
         String logger = cfg.getAttributeValue("logger");
         messageFiles = cfg.getChildren("messages");
         if (logger != null) {

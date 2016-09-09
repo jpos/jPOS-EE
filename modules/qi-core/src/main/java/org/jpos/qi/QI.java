@@ -74,11 +74,10 @@ public class QI extends UI {
         } catch (NameRegistrar.NotFoundException e) {
             throw new IllegalStateException ("Q2 not available");
         }
-
+        messagesMap = new HashMap<>();
     }
 
     private void parseMessages() {
-        messagesMap = new HashMap<>();
         Properties master = new Properties();
         for (Element element: availableLocales) {
             String localeCode = element.getValue();
@@ -159,6 +158,7 @@ public class QI extends UI {
     }
 
     public String getMessage (ErrorMessage em, Object... obj) {
+        System.out.println("messagesMap: " + messagesMap);
         if (messagesMap.containsKey(locale)) {
             SortedMap map = messagesMap.get(locale);
             String format = (String) map.getOrDefault(em.getPropertyName(), em.getDefaultMessage());

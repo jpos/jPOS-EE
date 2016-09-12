@@ -12,9 +12,11 @@
   <!--first one is default locale-->
   <locale>en-US</locale>
   <!--additional locales-->
-  <locale>es-UY</locale>
+  <!--<locale>es-UY</locale>-->
 
-  <messages>messages</messages>
+  <messages>qi-core-messages</messages>
+  <messages>qi-eeuser-messages</messages>
+  <messages>qi-sysconfig-messages</messages>
 
   <menubar>
     <menu name="System" icon="COG" style="icon-cog" action="system" />

@@ -98,13 +98,13 @@ public class QI extends UI {
                     //Show notification only if main locale is faulty
                     if (locale.toString().equals(localeCode))
                         displayNotification("Invalid locale '" + localeCode +"' : check configuration");
-                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
+                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE,localeCode);
                 } catch (IOException e) {
                     //Log but continue.
                     //Show notification only if main locale is faulty
                     if (locale.toString().equals(localeCode))
                         displayNotification("Invalid locale '" + localeCode +"' : check configuration");
-                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE);
+                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE,localeCode);
                 }
                 TreeMap<String, Object> treeMap = new TreeMap<>((Map) master);
                 messagesMap.put(l, treeMap);

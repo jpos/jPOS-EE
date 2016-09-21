@@ -1,7 +1,0 @@
-description = 'jPOS-EE :: SSHD Module'
-
-dependencies {
-    compile project(':modules:core')
-    compile libraries.sshd
-    compile libraries.slf4j_api
-}

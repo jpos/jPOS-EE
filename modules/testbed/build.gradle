@@ -5,6 +5,7 @@ apply plugin: 'war'
 configurations {
    all*.exclude group: "com.vaadin", module: "vaadin-client-compiler"
    all*.exclude group: "com.vaadin", module: "vaadin-client-compiled"
+   all*.exclude group: "org.slf4j", module: "slf4j-nop"
 }
 
 dependencies {

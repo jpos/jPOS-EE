@@ -1,5 +1,5 @@
 plugins {
-   id "fi.jasoft.plugin.vaadin" version "0.11.1"
+   id "fi.jasoft.plugin.vaadin" version "0.11.4"
 }
 vaadin {
     version=vaadinVersion

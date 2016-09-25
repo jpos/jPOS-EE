@@ -109,6 +109,9 @@
           clearScreen="true">
       <object class="java.util.Date"/>
     </view>
+    <view caption="PS" route="date" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000" clearScreen="true">
+      <command>deploy; ps</command>
+    </view>
   </view>
   <view route="revision_history" class="org.jpos.qi.system.RevisionsView" perm="login" sidebar="system">
     <property name="entityName" value="revision"/>

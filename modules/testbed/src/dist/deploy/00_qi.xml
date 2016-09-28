@@ -20,7 +20,6 @@
 
   <menubar>
     <menu name="System" icon="COG" style="icon-cog" action="system" />
-    <menu name="Accounting"  action="accounting" />
   </menubar>
 
   <sidebar id="info">

@@ -227,6 +227,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (grid.getColumn("id") != null && !String.class.equals(grid.getContainerDataSource().getType("id")))
             grid.getColumn("id").setRenderer(new NumberRenderer(nf));
         for (Grid.Column c : grid.getColumns()) {
+            c.setHidable(true);
             if ("id".equals(c.getPropertyId())) {
                 c.setExpandRatio(0);
             } else if (isBooleanColumn(c)) {

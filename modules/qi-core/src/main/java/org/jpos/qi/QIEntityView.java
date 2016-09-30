@@ -26,6 +26,7 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.GeneratedPropertyContainer;
 import com.vaadin.data.util.converter.StringToBooleanConverter;
 import com.vaadin.data.util.converter.StringToDateConverter;
+import com.vaadin.data.util.sqlcontainer.OptimisticLockException;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.navigator.View;
@@ -33,6 +34,7 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.optiongroup.OptionGroupConstants;
 import com.vaadin.ui.*;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.renderers.NumberRenderer;
@@ -48,6 +50,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -441,6 +444,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             if (config != null) {
                 String regex = config.getRegex();
                 int length = config.getLength();
+                String[] options = config.getOptions();
+                if (options != null) {
+                    //Change the field to a OptionGroup loaded with the options
+                    OptionGroup optionGroup = new OptionGroup(field.getCaption(),Arrays.asList(options));
+                    String fieldId = field.getId();
+                    fieldGroup.unbind(field);
+                    fieldGroup.bind(optionGroup,fieldId);
+                }
                 if (regex != null)
                     field.addValidator(new RegexpValidator(regex, getApp().getMessage("errorMessage.invalidField", field.getCaption())));
                 if (field instanceof TextField && length > 0)

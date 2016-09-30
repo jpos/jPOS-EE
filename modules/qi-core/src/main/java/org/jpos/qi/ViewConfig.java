@@ -52,6 +52,11 @@ public class ViewConfig {
             fields.put(field, new FieldConfig(perm, regex, length));
     }
 
+    public void addField(String field, String perm, String[] options, int length) {
+        if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
+            fields.put(field, new FieldConfig(perm, options, length));
+    }
+
     public void addColumn(String column, String perm) {
         if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
             columns.put(column,perm);
@@ -87,12 +92,17 @@ public class ViewConfig {
             String name = f.getAttributeValue("name");
             String perm = f.getAttributeValue("perm");
             String regex = f.getAttributeValue("regex");
+            String optionsStr = f.getAttributeValue("options");
             int length = f.getAttribute("length") != null ? f.getAttribute("length").getIntValue() : 0;
 
             boolean addField = f.getAttribute("field") == null || f.getAttribute("field").getBooleanValue();
             boolean addColumn = f.getAttribute("column") == null || f.getAttribute("column").getBooleanValue();
             boolean isReadOnly = f.getAttribute("read-only") != null && f.getAttribute("read-only").getBooleanValue();
             if (addField) {
+                if (optionsStr != null) {
+                    String[] options = optionsStr.split(",");
+                    addField(name,perm,options,length);
+                }
                 addField(name, perm, regex, length);
             }
             if (addColumn) {
@@ -115,11 +125,18 @@ public class ViewConfig {
     class FieldConfig {
         private String perm;
         private String regex;
+        private String[] options;
         private int length;
 
         FieldConfig(String perm, String regex, int length) {
             this.perm = perm;
             this.regex = regex;
+            this.length = length;
+        }
+
+        FieldConfig(String perm, String[] options, int length) {
+            this.perm = perm;
+            this.options = options;
             this.length = length;
         }
 
@@ -146,5 +163,9 @@ public class ViewConfig {
         public void setLength(int length) {
             this.length = length;
         }
+
+        public String[] getOptions() { return options; }
+
+        public void setOptions(String[] options) { this.options = options; }
     }
 }

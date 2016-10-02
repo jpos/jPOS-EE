@@ -45,7 +45,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MemoryUsageView extends GridLayout implements View, Runnable, ViewChangeListener {
+public class MemoryUsageView extends VerticalLayout implements View, Runnable, ViewChangeListener {
     private Label available;
     private Label allocated;
     private Label used;
@@ -69,37 +69,46 @@ public class MemoryUsageView extends GridLayout implements View, Runnable, ViewC
     }
 
     public MemoryUsageView () {
-        super(3, 7);
+        super();
+
         QI app = (QI) UI.getCurrent();
         setSpacing(false);
         setMargin(true);
+        setSizeFull();
         available  = createLabel();
         allocated  = createLabel();
         used       = createLabel();
         forceGC    = new Button(app.getMessage("memory-usage.force.gc"));
 
-        addComponent(strong (app.getMessage("memory-usage.availableMemory")));
-        addComponent (available); setComponentAlignment(available, Alignment.TOP_RIGHT);
-        addComponent (createMBLabel());
+        GridLayout gl = new GridLayout (3,3);
+        gl.addComponent(strong (app.getMessage("memory-usage.availableMemory")));
+        gl.addComponent (available); gl.setComponentAlignment(available, Alignment.TOP_RIGHT);
+        gl.addComponent (createMBLabel());
 
-        addComponent(strong (app.getMessage("memory-usage.allocatedMemory")));
-        addComponent (allocated); setComponentAlignment(allocated, Alignment.TOP_RIGHT);
-        addComponent (createMBLabel());
+        gl.addComponent(strong (app.getMessage("memory-usage.allocatedMemory")));
+        gl.addComponent (allocated); gl.setComponentAlignment(allocated, Alignment.TOP_RIGHT);
+        gl.addComponent (createMBLabel());
 
-        addComponent(strong (app.getMessage("memory-usage.usedMemory")));
-        addComponent (used); setComponentAlignment(used, Alignment.TOP_RIGHT);
-        addComponent (createMBLabel());
+        gl.addComponent(strong (app.getMessage("memory-usage.usedMemory")));
+        gl.addComponent (used); gl.setComponentAlignment(used, Alignment.TOP_RIGHT);
+        gl.addComponent (createMBLabel());
 
-        Label l = new Label(""); l.setHeight("15px");
-        addComponent (l, 0, 3, 2, 3);
 
-        addComponent (memoryGauge = createGauge("Memory", 0), 0, 4, 2, 4);
-        setComponentAlignment(memoryGauge, Alignment.MIDDLE_CENTER);
-
-        addComponent (forceGC, 0, 5, 2, 5);
-        setComponentAlignment(forceGC, Alignment.MIDDLE_CENTER);
-
+        HorizontalLayout hl = new HorizontalLayout();
+        hl.setWidth("75%");
+        hl.addComponent (gl);
+        hl.setComponentAlignment(gl, Alignment.MIDDLE_CENTER);
+        hl.addComponent (memoryGauge = createGauge("Memory", 0));
+        hl.setComponentAlignment(memoryGauge, Alignment.MIDDLE_CENTER);
+        hl.addComponent (forceGC);
+        hl.setComponentAlignment(forceGC, Alignment.MIDDLE_CENTER);
         forceGC.addClickListener((Button.ClickListener) event -> gc());
+
+        addComponent (hl);
+        setComponentAlignment(hl, Alignment.MIDDLE_CENTER);
+        Label l = new Label(""); l.setHeight("30px");
+        addComponent (l);
+
         chart = new DCharts();
         ds = new DataSeries();
 
@@ -138,10 +147,11 @@ public class MemoryUsageView extends GridLayout implements View, Runnable, ViewC
 
         chart.setDataSeries(ds).show();
         chart.setOptions(options);
-        chart.setHeight("450px");
-        chart.setWidth("450px");
-        addComponent(chart, 0, 6, 2, 6);
-        setComponentAlignment(chart, Alignment.BOTTOM_CENTER);
+        chart.setSizeFull();
+        // chart.setHeight("450px");
+        // chart.setWidth("450px");
+        addComponent(chart);
+        // setComponentAlignment(chart, Alignment.BOTTOM_CENTER);
     }
 
     private Label createLabel () {
@@ -210,10 +220,12 @@ public class MemoryUsageView extends GridLayout implements View, Runnable, ViewC
     private String toMB (long l) {
         return String.format ("%.2f", (float) l / (1024*1000));
     }
+
     private String toPercent (long l, long max){
         float p = ((float) l / (float) max) * 100;
         return String.format ("&nbsp;MB (%.1f%%)", p);
     }
+
     private Gauge createGauge (String name, int initialValue) {
         GaugeConfig config = new GaugeConfig();
         config.setStyle(GaugeStyle.STYLE_DARK.toString());

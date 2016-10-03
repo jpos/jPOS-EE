@@ -274,11 +274,7 @@ public class QI extends UI {
             }
         }
         getUI().getPage().setLocation("/");
-        // Invalidate underlying session instead if login info is stored there
-        // VaadinService.getCurrentRequest().getWrappedSession().invalidate();
-        // Redirect to avoid keeping the removed UI open in the browser
-        //getUI().getPage().setLocation("http://jpos.org");
-        // createLoginView();
+        VaadinService.getCurrentRequest().getWrappedSession().invalidate();
     }
 
     public User getUser() {

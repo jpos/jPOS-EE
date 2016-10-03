@@ -229,6 +229,7 @@ public class UsersHelper extends QIHelper {
                     return false;
                 }
                 user.setForcePasswordChange(true);
+                user.setLoginAttempts(0); // reset login attempts
                 db.session().saveOrUpdate(user);
                 return true;
             });

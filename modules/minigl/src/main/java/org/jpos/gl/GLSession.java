@@ -1101,7 +1101,7 @@ public class GLSession {
         Criteria crit = session.createCriteria (GLEntry.class);
 
         boolean hasChildren = false;
-        if (acct instanceof CompositeAccount) {
+        if (acct.isCompositeAccount()) {
             Disjunction dis = Restrictions.disjunction();
             for (Long l : getChildren (acct)) {
                 hasChildren = true;
@@ -1152,7 +1152,7 @@ public class GLSession {
         Criteria crit = session.createCriteria (GLEntry.class);
 
         boolean hasChildren = false;
-        if (acct instanceof CompositeAccount) {
+        if (acct.isCompositeAccount()) {
             Disjunction dis = Restrictions.disjunction();
             for (Long l : getChildren (acct)) {
                 hasChildren = true;
@@ -1273,8 +1273,8 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers, long maxId)
         throws HibernateException, GLException
     {
-        BigDecimal balance = null;
-        if (acct instanceof CompositeAccount) {
+        BigDecimal balance;
+        if (acct.isCompositeAccount()) {
             balance = ZERO;
             Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
             while (iter.hasNext()) {
@@ -1282,7 +1282,7 @@ public class GLSession {
                 balance = balance.add (createBalanceCache (journal, a, layers, maxId));
             }
         }
-        else if (acct instanceof FinalAccount) {
+        else if (acct.isFinalAccount()) {
             lock (journal, acct);
             balance = getBalances (journal, acct, null, true, layers, maxId) [0];
             BalanceCache c = getBalanceCache (journal, acct, layers);
@@ -1482,14 +1482,14 @@ public class GLSession {
         (Journal journal, Account acct, Date date, int threshold, short[] layers) 
         throws HibernateException, GLException
     {
-        if (acct instanceof CompositeAccount) {
+        if (acct.isCompositeAccount()) {
             Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
                 createCheckpoint0 (journal, a, date, threshold, layers);
             }
         }
-        else if (acct instanceof FinalAccount) {
+        else if (acct.isFinalAccount()) {
             Date sod = Util.floor (date);   // sod = start of day
             invalidateCheckpoints (journal, new Account[] { acct }, sod, sod, layers);
             BigDecimal b[] = getBalances (journal, acct, sod, false, layers, 0L);
@@ -1775,7 +1775,7 @@ public class GLSession {
     }
     private void recurseChildren (Account acct, List<Long> list) {
         for (Account a : acct.getChildren()) {
-            if (a instanceof FinalAccount)
+            if (a.isFinalAccount())
                 list.add (a.getId());
             else recurseChildren (a, list);
         }

@@ -279,6 +279,9 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     public boolean isFinalAccount () {
         return false;
     }
+    public boolean isCompositeAccount () {
+        return !isFinalAccount();
+    }
     /**
      * Account's type
      * @return "debit", "credit" or null.

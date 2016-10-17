@@ -18,6 +18,8 @@
 
 package org.jpos.ee;
 
+import java.util.List;
+
 public class RoleManager {
     private DB db;
     public RoleManager (DB db) {
@@ -27,5 +29,9 @@ public class RoleManager {
     public Role getRoleByName (String name) {
         return (Role) db.session().createQuery("from Role c WHERE c.name=:name").
           setParameter("name", name).uniqueResult();
+    }
+
+    public List<Role> getAll() {
+        return db.session().createQuery("from Role", Role.class).list();
     }
 }

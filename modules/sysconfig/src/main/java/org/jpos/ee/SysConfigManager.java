@@ -20,15 +20,18 @@ package org.jpos.ee;
 
 import java.util.List;
 import java.util.Iterator;
+
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
+import org.hibernate.type.IntegerType;
 
 @SuppressWarnings("unused")
 public class SysConfigManager {
-    DB db;
-    String prefix = "";
+    private DB db;
+    private String prefix = "";
 
     public SysConfigManager (DB db) {
         super();
@@ -154,6 +157,7 @@ public class SysConfigManager {
         SysConfig cfg;
         if (prefix != null)
             name = prefix + name;
+
         try {
             boolean autoCommit = false;
             Transaction tx = db.session().getTransaction();
@@ -212,5 +216,13 @@ public class SysConfigManager {
         return v.length() == 0 ? def :
             (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes"));
     }
+    public int getMaxIdLength() {
+        String queryString = "select max(length(id)) as maxidlen from sysconfig";
+        if (prefix != null)
+            queryString += " where id like :query";
+        NativeQuery query =  db.session().createNativeQuery(queryString);
+        if (prefix != null)
+            query.setParameter ("query", prefix + "%");
+        return (int) query.addScalar("maxidlen",  IntegerType.INSTANCE).getSingleResult();
+    }
 }
-

@@ -124,7 +124,6 @@
     <property name="entityName" value="syslog"/>
     <attribute name="id" field="false"/>
     <attribute name="date" />
-    <attribute name="deleted" />
     <attribute name="source" />
     <attribute name="type" />
     <attribute name="severity" />

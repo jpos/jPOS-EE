@@ -19,6 +19,7 @@
 package org.jpos.qi.system;
 
 import com.vaadin.data.fieldgroup.FieldGroupFieldFactory;
+import com.vaadin.ui.Grid;
 import org.jpos.ee.SysLog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
@@ -61,5 +62,11 @@ public class AuditLogView extends QIEntityView<SysLog> {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void formatGrid (Grid grid) {
+        super.formatGrid(grid);
+        grid.getColumn("summary").setExpandRatio(3);
     }
 }

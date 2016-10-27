@@ -21,6 +21,8 @@ package org.jpos.qi.system;
 import com.vaadin.data.Container;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysLog;
 import org.jpos.qi.EntityContainer;
@@ -51,7 +53,9 @@ public class AuditLogHelper extends QIHelper {
         properties.put("trace", String.class);
 
         List sortable = Arrays.asList("id", "date", "deleted", "source", "type","severity","summary");
-        return new EntityContainer<>(SysLog.class, properties, sortable);
+        EntityContainer container = new EntityContainer<>(SysLog.class, properties, sortable);
+        container.addRestriction(Restrictions.eq("deleted",false));
+        return container;
     }
 
     @Override

@@ -369,11 +369,10 @@ public class DB implements Closeable
      */
     public synchronized Transaction beginTransaction(int timeout) throws HibernateException
     {
-        Transaction tx = session.beginTransaction();
+        Transaction tx = session.getTransaction();
         if (timeout > 0)
-        {
             tx.setTimeout(timeout);
-        }
+        tx.begin();
         return tx;
     }
 

@@ -110,8 +110,10 @@ task installResources(dependsOn: 'classes', type: JavaExec) {
     args = ["--outputDir=src/dist"]
 }
 
-task viewTests (description: 'Open Test Reports') << {
-    Class.forName("java.awt.Desktop").newInstance().browse(
-        new File("${buildDir}/reports/tests", 'index.html').toURI())
+task viewTests (description: 'Open Test Reports') {
+    doLast {
+        Class.forName("java.awt.Desktop").newInstance().browse(
+            new File("${buildDir}/reports/tests", 'index.html').toURI())
+   }
 }
 

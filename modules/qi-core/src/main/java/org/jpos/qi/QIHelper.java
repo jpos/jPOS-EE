@@ -127,7 +127,7 @@ public abstract class QIHelper {
     public Object getEntityByParam(String param)  {
         //most id are longs, if id is of other type this method must be overridden
         try {
-            return  DB.exec(db -> db.session().get(clazz, new Long(param)));
+            return  DB.exec(db -> db.session().get(clazz, Long.parseLong(param)));
         } catch (Exception e) {
             getApp().getLog().error(e);
             return null;

@@ -67,11 +67,11 @@
   </view>
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
     <property name="entityName" value="user"/>
-    <attribute name="id" field="false"/>
-    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
-    <attribute name="name" length="128" regex="&TEXT_PATTERN;"/>
-    <attribute name="email" length="128" />
-    <attribute name="active"/>
+    <attribute name="id" field="false" expand-ratio="0" />
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;" expand-ratio="1" />
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="2" />
+    <attribute name="email" length="128" expand-ratio="2"/>
+    <attribute name="active" expand-ratio="0"/>
     <attribute name="roles" column="false" perm="sysadmin"/>
   </view>
   <view route="profile" class="org.jpos.qi.eeuser.ProfilesView" perm="login" sidebar="system">
@@ -109,7 +109,7 @@
       <object class="java.util.Date"/>
     </view>
     <view caption="PS" route="date" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000" clearScreen="true">
-      <command>deploy; ps</command>
+      <command>deploy:ps</command>
     </view>
   </view>
   <view route="revision_history" class="org.jpos.qi.system.RevisionsView" perm="login" sidebar="system">

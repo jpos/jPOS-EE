@@ -98,6 +98,7 @@ public class ViewConfig {
             boolean addField = f.getAttribute("field") == null || f.getAttribute("field").getBooleanValue();
             boolean addColumn = f.getAttribute("column") == null || f.getAttribute("column").getBooleanValue();
             boolean isReadOnly = f.getAttribute("read-only") != null && f.getAttribute("read-only").getBooleanValue();
+            String expandRatio = f.getAttributeValue("expand-ratio");
             if (addField) {
                 if (optionsStr != null) {
                     String[] options = optionsStr.split(",");
@@ -107,6 +108,8 @@ public class ViewConfig {
             }
             if (addColumn) {
                 addColumn(name, perm);
+                if (expandRatio != null && fields.get(name) != null)
+                    fields.get(name).setExpandRatio(Integer.parseInt(expandRatio));
             }
             if (isReadOnly) {
                 addReadOnly(name);
@@ -127,6 +130,7 @@ public class ViewConfig {
         private String regex;
         private String[] options;
         private int length;
+        private int expandRatio;
 
         FieldConfig(String perm, String regex, int length) {
             this.perm = perm;
@@ -167,5 +171,13 @@ public class ViewConfig {
         public String[] getOptions() { return options; }
 
         public void setOptions(String[] options) { this.options = options; }
+
+        public int getExpandRatio() {
+            return expandRatio;
+        }
+
+        public void setExpandRatio(int expandRatio) {
+            this.expandRatio = expandRatio;
+        }
     }
 }

@@ -228,6 +228,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             grid.getColumn("id").setRenderer(new NumberRenderer(nf));
         for (Grid.Column c : grid.getColumns()) {
             c.setHidable(true);
+            ViewConfig.FieldConfig config = viewConfig.getFields().get(c.getPropertyId());
             if ("id".equals(c.getPropertyId())) {
                 c.setExpandRatio(0);
             } else if (isBooleanColumn(c)) {
@@ -238,10 +239,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             } else {
                 c.setExpandRatio(1);
             }
+            if (config != null) {
+                c.setExpandRatio(config.getExpandRatio());
+            }
         }
     }
-
-
 
     private boolean isBooleanColumn (Grid.Column c) {
         return c.getConverter() != null && StringToBooleanConverter.class.equals(c.getConverter().getClass());

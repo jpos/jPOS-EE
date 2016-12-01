@@ -71,7 +71,7 @@
     <attribute name="nick" length="64" regex="&WORD_PATTERN;" expand-ratio="1" />
     <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="2" />
     <attribute name="email" length="128" expand-ratio="2"/>
-    <attribute name="active" expand-ratio="0"/>
+    <attribute name="active" />
     <attribute name="roles" column="false" perm="sysadmin"/>
   </view>
   <view route="profile" class="org.jpos.qi.eeuser.ProfilesView" perm="login" sidebar="system">

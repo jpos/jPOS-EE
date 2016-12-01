@@ -240,9 +240,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 c.setExpandRatio(1);
             }
             if (config != null) {
-                c.setExpandRatio(config.getExpandRatio());
+                if (config.getExpandRatio() != -1)
+                    c.setExpandRatio(config.getExpandRatio());
             }
         }
+        grid.setSizeFull();
     }
 
     private boolean isBooleanColumn (Grid.Column c) {

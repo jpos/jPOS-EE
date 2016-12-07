@@ -224,11 +224,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         });
         DecimalFormat nf = new DecimalFormat();
         nf.setGroupingUsed(false);
+        //fix for when a manual resize is done, the last column takes the empty space.
+        grid.addColumnResizeListener((Grid.ColumnResizeListener) event -> {
+            int lastColumnIndex = grid.getColumns().size()-1;
+            grid.getColumns().get(lastColumnIndex).setWidth(1500);
+        });
         if (grid.getColumn("id") != null && !String.class.equals(grid.getContainerDataSource().getType("id")))
             grid.getColumn("id").setRenderer(new NumberRenderer(nf));
         for (Grid.Column c : grid.getColumns()) {
             c.setHidable(true);
-            ViewConfig.FieldConfig config = viewConfig.getFields().get(c.getPropertyId());
             if ("id".equals(c.getPropertyId())) {
                 c.setExpandRatio(0);
             } else if (isBooleanColumn(c)) {
@@ -239,6 +243,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             } else {
                 c.setExpandRatio(1);
             }
+            ViewConfig.FieldConfig config = viewConfig.getFields().get(c.getPropertyId());
             if (config != null) {
                 if (config.getExpandRatio() != -1)
                     c.setExpandRatio(config.getExpandRatio());

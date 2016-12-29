@@ -37,6 +37,8 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.jpos.core.ConfigurationException;
 import org.jpos.ee.support.ModuleUtils;
+import org.jpos.space.Space;
+import org.jpos.space.SpaceFactory;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -480,6 +482,16 @@ public class DB implements Closeable
                 ssrb.applySetting((String) entry.getKey(), entry.getValue());
             }
         }
+
+        // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
+        Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+        String user = (String) sp.inp("connection.username");
+        String pass = (String) sp.inp("connection.password");
+        if (user != null)
+            ssrb.applySetting("hibernate.connection.username", user);
+        if (pass != null)
+            ssrb.applySetting("hibernate.connection.password", pass);
+
         MetadataSources mds = new MetadataSources(ssrb.build());
         List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
         for (String moduleConfig : moduleConfigs) {

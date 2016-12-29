@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<qbean name="init-db" class="org.jpos.ee.DBInstantiator" logger="Q2">
+    <property name="dbuser" value="jpos" />
+    <property name="dbpass" value="jpos" />
+</qbean>

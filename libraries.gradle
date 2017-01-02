@@ -1,5 +1,5 @@
 ext {
-    jposVersion = '2.0.9-SNAPSHOT'
+    jposVersion = '2.0.10'
     slf4jVersion = '1.7.21'
     logbackVersion = '1.1.7'
     hibernateVersion = '5.2.1.Final'

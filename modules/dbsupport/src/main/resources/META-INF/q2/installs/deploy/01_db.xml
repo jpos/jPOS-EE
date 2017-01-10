@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<protect>
+<initdb name="init-db" class="org.jpos.ee.DBInstantiator" logger="Q2">
+    <property name="dbuser" value="jpos" />
+    <property name="dbpass" value="jpos" />
+</initdb>
+</protect>
+

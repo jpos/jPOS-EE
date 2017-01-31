@@ -240,7 +240,7 @@ public class EntityContainer<T>
         if (size == null) {
             try {
                 size = (Long) DB.exec((db) -> {
-                    Criteria crit = getCriteria(db);
+                    Criteria crit = getBaseCriteria(db);
                     if (searchRestrictions != null && searchRestrictions.size() > 0) {
                         for (Criterion c : searchRestrictions) {
                             crit.add(c);

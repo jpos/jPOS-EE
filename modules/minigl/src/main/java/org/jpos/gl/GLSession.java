@@ -654,16 +654,16 @@ public class GLSession {
             while (debits.hasNext()) {
                 Object[] obj = (Object[]) debits.next();
                 txn.createDebit (
-                    (FinalAccount) obj[0], 
-                    (BigDecimal) obj[1], 
+                    (FinalAccount) obj[0],
+                    (BigDecimal) obj[1],
                     null, layers[i]
                 );
             }
             while (credits.hasNext()) {
                 Object[] obj = (Object[]) credits.next();
                 txn.createCredit (
-                    (FinalAccount) obj[0], 
-                    (BigDecimal) obj[1], 
+                    (FinalAccount) obj[0],
+                    (BigDecimal) obj[1],
                     null, layers[i]
                 );
             }
@@ -1048,7 +1048,7 @@ public class GLSession {
         else if (acct.isFinalAccount()) {
             Criteria entryCrit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
-                .add (Restrictions.in ("layer", toShortArray (layersCopy)));
+                .add (Restrictions.in ("layer", (Object[])toShortArray (layersCopy)));
             if (maxId > 0L)
                 entryCrit.add (Restrictions.le ("id", maxId));
 
@@ -1116,7 +1116,7 @@ public class GLSession {
             crit.add (Restrictions.eq ("account", acct));
         }
 
-        crit.add (Restrictions.in ("layer", toShortArray (layers)));
+        crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
             .add (Restrictions.eq ("journal", journal))
             .add (Restrictions.ge ("postDate", start))
@@ -1167,7 +1167,7 @@ public class GLSession {
             crit.add (Restrictions.eq ("account", acct));
         }
 
-        crit.add (Restrictions.in ("layer", toShortArray (layers)));
+        crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
                 .add (Restrictions.eq ("journal", journal));
 
@@ -1542,7 +1542,7 @@ public class GLSession {
         Criteria crit = session.createCriteria (Checkpoint.class)
             .add (Restrictions.eq ("journal", journal));
         if (accounts.length > 0)
-            crit = crit.add (Restrictions.in ("account", accounts));
+            crit = crit.add (Restrictions.in ("account", (Object[])accounts));
 
         if (layers != null)
             crit.add (Restrictions.eq ("layers", layersToString(layers)));

@@ -49,7 +49,7 @@ public class BinLogTest implements Runnable {
     @Test
     public void test000_Write() throws IOException {
         try (BinLogWriter w = new BinLogWriter(dir)) { }
-        for (int i=0; i<50; i++) {
+        for (int i=0; i<10; i++) {
             new Thread(this).start();
         }
         try (BinLogReader bl = new BinLogReader(dir)) {
@@ -60,7 +60,7 @@ public class BinLogTest implements Runnable {
                 if ((i % 1000) == 0)
                     System.out.println(i + " " + new String(b));
             }
-            assertEquals("Invalid number of entries", 500000, i);
+            assertEquals("Invalid number of entries", 100000, i);
         }
     }
 
@@ -69,13 +69,11 @@ public class BinLogTest implements Runnable {
         try (BinLogWriter bl = new BinLogWriter(dir)) {
             for (int i = 1; i <= 10000; i++) {
                 long l = cnt.incrementAndGet();
-                if (i % 500 == 0) {
+                if (i % 5000 == 0) {
                     bl.cutover();
                 }
                 bl.add(ISOUtil.zeropad(l, 12).getBytes());
                 tps.tick();
-                if (i % 1000 == 0)
-                    Thread.sleep(100);
             }
             tps.dump(System.out, "");
         } catch (Throwable e) {

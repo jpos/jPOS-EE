@@ -2,8 +2,8 @@ jPOS Extended Edition
 =====================
 :author: Alejandro Revilla
 :email: apr@jpos.org
-:revnumber: 2.0.9
-:jposee_version: 2.2.3
+:revnumber: 2.0.10
+:jposee_version: 2.2.4
 :toc:
 
 Introduction
@@ -24,7 +24,7 @@ Modules
 
 include::introduction_module.adoc[]
 
-== Essensial Modules
+== Core Modules
 
 include::module_core.adoc[]
 include::module_txn.adoc[]
@@ -32,6 +32,9 @@ include::module_txn.adoc[]
 == Database Support
 
 include::module_database_support.adoc[]
+
+== Binary Log
+include::module_binlog.adoc[]
 
 == Tools
 

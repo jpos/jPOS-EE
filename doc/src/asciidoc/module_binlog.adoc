@@ -1,0 +1,176 @@
+=== BinLog
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | General purpose binary log 
+| *When*         | Implemented during 2.2.4
+| *Who*          | The jPOS Software team.
+| *Where*        | Directory modules/binlog
+| *Why*          | Used by local Q2 nodes as audit trail or to SAF its transactions
+| *Status*       | Experimental
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-binlog</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+The jPOS BinLog has the following features:
+
+* multiple readers and writers can be used from the same JVM
+* multiple readers and writers can be used from different JVMs
+
+[TIP]
+=====
+Make sure you read and understand the implementation notes at the end of this
+section before you attempt to use it.
+=====
+
+Here is a sample Writer:
+
+[source,java]
+----------------------------------------------------------------------------------------
+    File dir = new File("/tmp/binlog");
+    try (BinLogWriter bl = new BinLogWriter(dir)) {                                  <1>
+        bl.add( ... ); // byte array
+        bl.add( ... ); // byte array
+        bl.add( ... ); // byte array
+    }
+----------------------------------------------------------------------------------------
+<1> The BinLogWriter implements `AutoCloseable` so `try-with-resources` can be used
+
+A reader would look like this:
+
+[source,java]
+----------------------------------------------------------------------------------------
+    File dir = new File("/tmp/binlog");
+    try (BinLogReader bl = new BinLogReader(dir)) {
+        while (bl.hasNext()) {
+            byte[] b = bl.next().get();
+            // do something with the byte[]
+        }
+    } 
+----------------------------------------------------------------------------------------
+
+The `BinLogReader` implements an `Iterator<BinLog.Entry>`. Each `BinLog.Entry` has two
+main methods:
+
+* `BinLog.Rer ref()`
+* `byte[] get()`
+
+While iterating over a BinLog, it might make sense to persistently store its `BinLog.Ref`
+in order to be able to restart the iterator at a given point if required (this is useful
+if using the BinLog to implement a Store and Forward.
+
+The `BinLogReader` has two constructors:
+
+* `BinLogReader(File dir)`
+* `BinLogReader(File dir, BinLog.Ref ref)`
+
+the latter can be used to restart the iterator at a given reference point obtained from a previous run.
+
+In addition to the standard `hasNext()` method required by the `Iterator` implementation,
+`BinLogReader` also has a `hasNext(long millis)` method that waits a given number of
+milliseconds once it reaches the end of the log, attempting to wait for a new entry
+to be available.
+
+
+==== Implementation notes
+
+The goal behind the BinLog implementation is to have a future proof file format easy to
+read from any language, 10 years down the road. We found that the Mastercard simple IPM 
+file format, that's basically a two-byte message length followed by the message itself
+was suitable for that. The payload on each record can be ISO-8583 (like Mastercard), JSON,
+FSDMsg based, Protocol buffers or whatever format the user choose.
+
+But that format isn't crash proof. If a system crashes while a record is being written to
+disk, the file can get easily corrupted. So we picked some ideas from Square's _tape_ 
+project that implements a highly crash proof on-disk persistent circular queue using
+a very small header. Tape is great and we encourage you to consider it instead of this binlog
+for some use cases, but we didn't want a circular queue, we wanted a place to securely store 
+events for audit or store and forward purposes, and we also wanted to be able to access the
+same binlog from multiple JVMs with access to the same file-system, so we had to write our own.
+
+The on-disk file format looks like this:
+
+```
+Format:
+  256 bytes Header
+  ... Data
+  ... Data
+
+Header format (256 bytes):
+  4 bytes header length
+  2 bytes version
+  2 bytes Status (00=open, 01=closed)
+  8 bytes Last element position
+  4 bytes this log number
+  4 bytes next log number
+232 bytes reserved
+
+Element:
+  4 bytes Data length
+  ...     Data
+
+```
+
+Each record has a length prefix (four bytes in network byte order) followed by
+its data. The header has a fixed length of 256 bytes but we found useful to
+make it look like a regular record too by providing its length at the very
+beginning. An implementation in any language reading a jPOS binlog can just
+be programmed to skip the first record.
+
+At any given time (usually at end of day), a process can request a *cut-over*
+by calling the `BinLogWriter.cutover()` method in that case, all writers and
+readers will close the current file and move to the next one (Readers can
+choose to not-follow to the next file, for example while producing daily
+extracts).
+
+In order to achieve file crash resilience, each write does the following:
+
+* Lock the file
+* Write the record's length and data
+* Sync to disc
+* Write the last element position to the header
+* Sync to disc
+* Unlock the file
+
+[NOTE]
+======
+In an MBP with SDRAM we've managed to achieve approximately 6000 writes per
+second. On an iMac with regular disck the numbers go down to approximately 1500
+writes per second for regular ISO-8583 message lengths (500..1000 bytes per
+record).
+======
+
+Due to the fact that the header is small enough to fit in an operating
+system block, the second write where we place the last element position happens
+to be atomic. While this works OK for readers and writers reading the file from
+different JVMs, that's not the case for readers and writers running on the same
+JVM, even if they use a different file descriptor to open the file, the operating
+system stack has early access to the header that under high concurrency can lead
+to garbage values, that's the reason the code synchronizes on a `mutex` object
+at specific places.
+
+==== Supporting CLI commands
+
+The `binlog` CLI command is a subsystem that currently have two commands:
+
+* monitor (to visually monitor a binlog)
+* cutover (to force a cutover)
+* exit (builtin command)
+
+`binlog` accepts a parameter with the binlog's path, i.e: `binlog /tmp/binlog`
+
+So a cutover can be triggered from cron using the following command:
+
+```
+q2 --command="binlog /tmp/binlog; cutover; exit; shutdown --force"
+```
+

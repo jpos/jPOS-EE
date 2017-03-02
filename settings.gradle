@@ -27,7 +27,8 @@ include ':modules:core',
         ':modules:groovy',
         ':modules:qi-core',
         ':modules:qi-eeuser',
-        ':modules:qi-sysconfig'
+        ':modules:qi-sysconfig',
+        ':modules:binlog'
 
 rootProject.name = 'jposee'
 

@@ -144,7 +144,7 @@ In order to achieve file crash resilience, each write does the following:
 [NOTE]
 ======
 In an MBP with SDRAM we've managed to achieve approximately 6000 writes per
-second. On an iMac with regular disck the numbers go down to approximately 1500
+second. On an iMac with regular disk the numbers go down to approximately 1500
 writes per second for regular ISO-8583 message lengths (500..1000 bytes per
 record).
 ======

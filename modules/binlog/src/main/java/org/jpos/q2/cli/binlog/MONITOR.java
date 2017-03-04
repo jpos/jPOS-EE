@@ -34,7 +34,7 @@ public class MONITOR implements CLICommand {
         try (BinLogReader bl = new BinLogReader(new File((String) cli.getUserData().get("binlog")))) {
             while (bl.hasNext(10000L)) {
                 BinLog.Entry ref = bl.next();
-                cli.print(String.format("%06d@%08d %.70s",
+                cli.println(String.format("%06d@%08d %.60s",
                   ref.ref().getFileNumber(),
                   ref.ref().getOffset(),
                   ISOUtil.hexdump(ref.get())));

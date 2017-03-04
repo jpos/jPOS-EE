@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
  * Abstract base clase used by BinLogReader and BinLogWriter
  */
 public abstract class BinLog implements AutoCloseable {
-    private static final int FILE_MAGIC = 0x100;
+    private static final int FILE_MAGIC = 0xFC;
     private static final int VERSION = 0x0001;
     private static final int RESERVED_LEN = 232;
     private static final int MAX_CREATE_ATTEMPTS = 100;

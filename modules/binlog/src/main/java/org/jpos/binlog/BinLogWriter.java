@@ -48,6 +48,18 @@ public class BinLogWriter extends BinLog {
     }
 
     /**
+     * Instantiates a BinLogWriter. Creates directory if necessary.
+     *
+     * It is the responsibility of the caller to close this writer when done with it.
+     *
+     * @param dir pointer to this Binlog's directory
+     * @throws IOException on error
+     */
+    public BinLogWriter(String dir) throws IOException {
+        this (new File(dir));
+    }
+
+    /**
      * Adds an entry to the BinLog
      * @param record entry's binary image
      * @return reference to this entry

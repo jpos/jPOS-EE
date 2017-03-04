@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: BinLog Quartz Module'
+
+dependencies {
+    compile project(':modules:binlog')
+    compile project(':modules:quartz')
+}
+

@@ -174,3 +174,17 @@ So a cutover can be triggered from cron using the following command:
 q2 --command="binlog /tmp/binlog; cutover; exit; shutdown --force"
 ```
 
+==== BinLog Quartz Support
+
+The `binlog-quartz` provides support for automatic cutover, for example:
+
+[source,xml]
+------------
+<cron class="org.jpos.q2.QuartzAdaptor" logger="Q2">
+  <job id="1" class="org.jpos.binlog.cron.CutoverJob" when="59 59 23 * * ?"
+       logger="Q2" realm="binlog-cutover">
+    <property name="binlog" value="/tmp/binlog" />
+  </job>
+</cron>
+------------
+

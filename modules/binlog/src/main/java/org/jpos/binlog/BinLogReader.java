@@ -62,6 +62,31 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
     }
 
     /**
+     * Instantiates a BinLogReader.
+     *
+     * It is the responsibility of the caller to close this reader when done with it.
+     *
+     * @param dir this Binlog's directory
+     * @throws IOException on error
+     */
+    public BinLogReader(String dir) throws IOException {
+        this (new File(dir));
+    }
+
+    /**
+     * Instantiaates a BinLogReader at a specific reference position.
+     *
+     * It is the responsibility of the caller to close this reader when done with it.
+     *
+     * @param dir this Binlog's directory
+     * @param ref reference to a given entry
+     * @throws IOException on error
+     */
+    public BinLogReader (String dir, BinLog.Ref ref) throws IOException {
+        this (new File(dir), ref);
+    }
+
+    /**
      * BinLog reader automatically follow BinLog's cutovers, unless we
      * <code>setFollow(false)</code>
      * @param follow value

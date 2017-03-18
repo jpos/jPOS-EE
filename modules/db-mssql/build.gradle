@@ -1,4 +1,4 @@
-description = 'jPOS-EE :: PostgreSQL support'
+description = 'jPOS-EE :: Microsoft SQL Server support'
 
 dependencies {
     compile project(':modules:dbsupport')

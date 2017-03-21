@@ -37,6 +37,5 @@ public class CREATESCHEMA implements CLICommand {
             db.beginTransaction();
             db.createSchema(filename, create);
         }
-        new org.jpos.ee.DB().createSchema(filename, create);
     }
 }

@@ -113,6 +113,13 @@ cfg/echo_r:
    </isomsg>
 ---------------------------------
 
+[TIP]
+=====
+If the response template file (i.e. `echo_r` in the previous example) is
+not present, client simulator blindly sends the message to the server,
+ignoring the response. A _response ignored_ note is added to the test log.
+=====
+
 In the previous example, we send a 1800 message with some fixed data,
 and we expect to receive a 1810 message, with a 00 content in field 39.
 

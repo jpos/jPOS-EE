@@ -78,7 +78,7 @@ public class TestRunner
             shutdownQ2();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh) 
-        throws ISOException, EvalError
+        throws ISOException, IOException, EvalError
     {
         LogEvent evt = getLog().createLogEvent ("results");
         LogEvent evt_error = null;
@@ -102,17 +102,25 @@ public class TestRunner
                 }
                 tc.setExpandedRequest (applyRequestProps (m, bsh));
                 tc.start();
-                tc.setResponse (mux.request (m, tc.getTimeout()));
-                tc.end ();
-                assertResponse(tc, bsh, evt_error);
-                evt.addMessage (i + ": " + tc.toString());
-                if (evt_error.getPayLoad().size()!=0) {
-                    evt_error.addMessage("filename", tc.getFilename());
-                    evt.addMessage(NL + evt_error.toString("    "));
+                if (tc.getExpectedResponse() != null) {
+                    tc.setResponse(mux.request(m, tc.getTimeout()));
+                    tc.end();
+                    assertResponse(tc, bsh, evt_error);
+                    evt.addMessage(i + ": " + tc.toString());
+                    if (evt_error.getPayLoad().size() != 0) {
+                        evt_error.addMessage("filename", tc.getFilename());
+                        evt.addMessage(NL + evt_error.toString("    "));
+                    }
+                    serverTime += tc.elapsed();
+                    if (!tc.ok() && !tc.isContinueOnErrors())
+                        break;
+                } else {
+                    // response not expected - fire and forget
+                    mux.send(m);
+                    tc.end();
+                    tc.setResultCode(TestCase.OK);
+                    evt.addMessage(i + ": " + tc.toString() + " (response ignored)");
                 }
-                serverTime += tc.elapsed();
-                if (!tc.ok() && !tc.isContinueOnErrors())
-                    break;
             }
             if (!tc.ok()) {
                 getLog().error (tc);
@@ -139,10 +147,10 @@ public class TestRunner
 
         Logger.log (evt);
     }
-    private List initSuite (Element suite) 
+    private List<TestCase> initSuite (Element suite)
         throws IOException, ISOException
     {
-        List l = new ArrayList();
+        List<TestCase> l = new ArrayList<>();
         String prefix = suite.getChildTextTrim ("path");
         Iterator iter = suite.getChildren ("test").iterator();
         while (iter.hasNext ()) {
@@ -178,17 +186,17 @@ public class TestRunner
         throws IOException, ISOException 
     {
         File f = new File (filename);
-    FileInputStream fis = new FileInputStream (f);
-    try {
-        byte[] b  = new byte[fis.available()];
-        fis.read (b);
-        ISOMsg m = new ISOMsg ();
-        m.setPackager (packager);
-        m.unpack (b);
-            return m;
-        } finally {
-        fis.close();
-    }
+        ISOMsg m = null;
+        if (f.canRead()) {
+            try (FileInputStream fis = new FileInputStream (f)) {
+                byte[] b  = new byte[fis.available()];
+                fis.read (b);
+                m = new ISOMsg ();
+                m.setPackager (packager);
+                m.unpack (b);
+            }
+        }
+        return m;
     }
     private boolean processResponse 
         (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh, LogEvent evt)

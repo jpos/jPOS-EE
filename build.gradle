@@ -94,6 +94,8 @@ subprojects {
     dependencies {
         testCompile libraries.junit
     }
+
+    task allDeps(type: DependencyReportTask) {}
 }
 
 task allSources(type: Jar,dependsOn: subprojects.assemble) {

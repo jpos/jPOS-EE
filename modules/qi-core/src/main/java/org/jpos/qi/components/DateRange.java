@@ -29,6 +29,7 @@ import java.util.Map;
  * Created by spr on 10/22/15.
  */
 public class DateRange {
+    public static String LAST_HOUR  = "daterange.lasthour";
     public static String TODAY      = "daterange.today";
     public static String YESTERDAY  = "daterange.yesterday";
     public static String THIS_WEEK  = "daterange.thisweek";
@@ -38,7 +39,7 @@ public class DateRange {
     public static String THIS_YEAR  = "daterange.thisyear";
     public static String ALL_TIME   = "daterange.alltime";
     public static String[] ranges   = new String[] {
-            TODAY, YESTERDAY, THIS_WEEK, LAST_WEEK, THIS_MONTH, LAST_MONTH, THIS_YEAR, ALL_TIME
+            LAST_HOUR, TODAY, YESTERDAY, THIS_WEEK, LAST_WEEK, THIS_MONTH, LAST_MONTH, THIS_YEAR, ALL_TIME
     };
     private String range;
     private Date start;
@@ -63,6 +64,7 @@ public class DateRange {
         QI app = (QI) UI.getCurrent();
         DateTime dt = DateTime.now().millisOfDay().withMinimumValue();
         Map<String, Date> map = new HashMap<>();
+        map.put(app.getMessage(LAST_HOUR),  DateTime.now().minusHours(1).toDate());
         map.put(app.getMessage(TODAY),      dt.toDate());
         map.put(app.getMessage(YESTERDAY),  dt.minusDays(1).toDate());
         map.put(app.getMessage(THIS_WEEK),  dt.dayOfWeek().withMinimumValue().toDate());
@@ -78,6 +80,7 @@ public class DateRange {
         QI app = (QI) UI.getCurrent();
         DateTime dt = DateTime.now().millisOfDay().withMaximumValue();
         Map<String, Date> map = new HashMap<>();
+        map.put(app.getMessage(LAST_HOUR),  DateTime.now().toDate());
         map.put(app.getMessage(TODAY),      dt.toDate());
         map.put(app.getMessage(YESTERDAY),  dt.minusDays(1).toDate());
         map.put(app.getMessage(THIS_WEEK),  dt.dayOfWeek().withMaximumValue().toDate());

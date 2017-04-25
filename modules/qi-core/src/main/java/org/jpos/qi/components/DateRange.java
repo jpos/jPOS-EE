@@ -121,9 +121,10 @@ public class DateRange {
             return getRange();
         DateTime from = new DateTime(getStart());
         DateTime to = new DateTime(getEnd());
+        String format = ((QI)UI.getCurrent()).getMessage("daterange.format");
         if (from.getDayOfYear() == to.getDayOfYear())
-            return from.toString("MM/dd/YYYY");
-        return from.toString("MM/dd/YYYY") + " - " + to.toString("MM/dd/YYYY");
+            return from.toString(format);
+        return from.toString(format) + " - " + to.toString(format);
 
     }
 }

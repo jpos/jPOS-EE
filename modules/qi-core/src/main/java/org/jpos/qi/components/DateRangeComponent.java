@@ -87,6 +87,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
         field.setStyleName(ValoTheme.DATEFIELD_SMALL);
         field.setResolution(Resolution.DAY);
         field.setImmediate(true);
+        field.setDateFormat(app.getMessage("daterange.format"));
         field.addValueChangeListener(event -> {
             if (event.getProperty().getValue() != null && dateRanges != null)
                 dateRanges.setValue(null);

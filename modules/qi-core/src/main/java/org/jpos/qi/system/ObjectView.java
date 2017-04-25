@@ -75,6 +75,7 @@ public class ObjectView extends CssLayout implements View, XmlConfigurable, Runn
                 Thread.sleep (repeat);
             } catch (UIDetachedException e) {
                 break;
+            } catch (InterruptedException ignored) {
             } catch (Exception e) {
                 qi.getLog().warn (e);
             }
@@ -84,6 +85,7 @@ public class ObjectView extends CssLayout implements View, XmlConfigurable, Runn
     public boolean beforeViewChange(ViewChangeListener.ViewChangeEvent event) {
         if (event.getNewView() != this) {
             active.set(false);
+            runner.interrupt();
             try {
                 runner.join();
             } catch (InterruptedException ignore) { }

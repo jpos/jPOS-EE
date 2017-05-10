@@ -130,7 +130,7 @@ public class GroovyParticipant extends Log
             String src = e.getAttributeValue("src");
             if (src != null) {
                 File f = new File(src);
-                if (f.canRead())
+                if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");
                 return f;
             }

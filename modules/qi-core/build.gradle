@@ -4,9 +4,9 @@ plugins {
 vaadin {
     version=vaadinVersion
     addon.title='QI'
-    manageDependencies = false
+    manageDependencies = true
 }
-vaadinCompile.gwtSdkFirstInClasspath=false
+vaadinCompile.gwtSdkFirstInClasspath=true
 
 apply plugin: 'maven-publish'
 

@@ -19,10 +19,12 @@
 package org.jpos.qi.system;
 
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.UIDetachedException;
+import com.vaadin.ui.themes.ValoTheme;
 import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
-import org.jpos.iso.ISOUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,20 +33,32 @@ import java.io.InputStreamReader;
 public class ProcessView extends ObjectView {
     private String script;
     private Process p = null;
+    private Button refreshBtn = null;
+    private int maxLines = 50;
+    private String shell;
+    private static String OS = System.getProperty("os.name").toLowerCase();
 
     @Override
     public void run() {
+        if (refreshBtn != null)
+            refreshBtn.setEnabled(false);
         while (isActive()) {
             try {
-                p = Runtime.getRuntime().exec(script);
+                label.setValue("");
+                String [] cmd = {shell, OS.contains("windows") ? "/C" : "-c", script};
+                p = Runtime.getRuntime().exec(cmd);
                 BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String line;
-                while (isActive() && (line = in.readLine()) != null) {
-                    label.setValue(line);
+                StringBuilder sb = new StringBuilder("");
+                for (int lines = 0; isActive() && (line = in.readLine()) != null && lines < maxLines; lines++) {
+                    sb.append(' ').append(line).append('\n');
+                    label.setValue(sb.toString());
                     qi.access(() -> qi.push());
                 }
             } catch (IOException e) {
                 qi.getLog().warn(e);
+                label.setValue(e.toString());
+                qi.access(() -> qi.push());
             } catch (UIDetachedException e) {
                 break;
             } finally {
@@ -54,8 +68,14 @@ public class ProcessView extends ObjectView {
             }
             if (repeat == 0)
                 break;
-            ISOUtil.sleep(repeat);
+            try {
+                Thread.sleep(repeat);
+            } catch (InterruptedException e) {
+                break;
+            }
         }
+        if (refreshBtn != null)
+            refreshBtn.setEnabled(true);
     }
     protected String getChildElementName() {
         return "script";
@@ -64,9 +84,20 @@ public class ProcessView extends ObjectView {
     @Override
     public void setConfiguration (Element config) throws ConfigurationException {
         super.setConfiguration(config);
+        maxLines = Integer.parseInt(config.getAttributeValue("maxLines", "50"));
         Element scriptConfig = getXmlConfiguration();
         if (scriptConfig != null) {
             script = scriptConfig.getText();
+            shell = scriptConfig.getAttributeValue("shell",  OS.contains("windows") ? "cmd.exe" : "/bin/sh");
+        }
+        if (repeat == 0) {
+            refreshBtn = new Button("refresh", FontAwesome.REFRESH);
+            refreshBtn.setStyleName(ValoTheme.BUTTON_SMALL);
+            refreshBtn.addClickListener(event -> {
+                Thread runner = new Thread(this, getClass().getName());
+                runner.start();
+            });
+            addComponent(refreshBtn);
         }
     }
 

@@ -75,7 +75,7 @@ public class TestRunner
             getLog().error (t);
         }
         if (cfg.getBoolean ("shutdown"))
-            shutdownQ2();
+            getServer().shutdown();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh) 
         throws ISOException, IOException, EvalError

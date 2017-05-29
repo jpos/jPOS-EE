@@ -18,25 +18,20 @@
 
 package org.jpos.qi.sysconfig;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Item;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroupFieldFactory;
-import com.vaadin.data.util.GeneratedPropertyContainer;
-import com.vaadin.data.util.PropertyValueGenerator;
-import com.vaadin.ui.Field;
-import com.vaadin.ui.Layout;
+import com.vaadin.data.Binder;
+import com.vaadin.data.Validator;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.TextField;
+import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
-import org.jpos.qi.EntityContainer;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.qi.components.QIFieldFactory;
 
-public class SysConfigView extends QIEntityView {
-//    private static String ENTITY_NAME = "sysconfig";
+import java.util.List;
+
+public class SysConfigView extends QIEntityView<SysConfig> {
     private String prefix;
 
     public SysConfigView (String name, String prefix) {
@@ -83,75 +78,44 @@ public class SysConfigView extends QIEntityView {
     }
 
     @Override
-    public void updateEntity(BeanFieldGroup fieldGroup) throws FieldGroup.CommitException, CloneNotSupportedException, BLException {
-        String idValue = (String) fieldGroup.getField("id").getValue();
-        idValue = addPrefix(idValue);
-        TextField idField = (TextField)fieldGroup.getField("id");
-        idField.setReadOnly(false);
-        idField.setValue(idValue);
-        idField.setReadOnly(true);
-        if (getHelper().updateEntity(fieldGroup))
+    public void updateEntity() throws BLException {
+        SysConfig entity = getBean();
+        entity.setId(((SysConfigHelper)getHelper()).addPrefix(entity.getId()));
+        if (getHelper().updateEntity(getBinder()))
             getApp().displayNotification(getApp().getMessage("updated", getEntityName().toUpperCase()));
         else
             getApp().displayNotification(getApp().getMessage("notchanged"));
-        idField.setReadOnly(false);
-        idField.setValue(removePrefix(idValue));
-        idField.setReadOnly(true);
     }
 
     @Override
-    public Container createContainer() {
-        EntityContainer<SysConfig> cont = (EntityContainer<SysConfig>) getHelper().createContainer();
-        GeneratedPropertyContainer gpContainer = new GeneratedPropertyContainer(cont);
-        gpContainer.addGeneratedProperty("id", new PropertyValueGenerator<String>() {
-            @Override
-            public String getValue(Item item, Object itemId, Object propertyId) {
-                String id = (String) item.getItemProperty("id").getValue();
-                return removePrefix(id);
-            }
-
-            @Override
-            public Class<String> getType() {
-                return String.class;
-            }
-        });
-        return gpContainer;
-    }
-
-    @Override
-    public FieldGroupFieldFactory createFieldFactory() {
-        return new QIFieldFactory() {
-            @Override
-            public <T extends Field> T createField(Class<?> dataType, Class<T> fieldType) {
-                Field f = super.createField(dataType, fieldType);
-                return (T) f;
-            }
-        };
-    }
-
-    @Override
-    protected Layout addFields(FieldGroup fieldGroup) {
-        Layout l = super.addFields(fieldGroup);
-        Field id = (Field) fieldGroup.getField("id");
-        id.setRequired(true);
-        id.setRequiredError(getApp().getMessage("errorMessage.req", id.getCaption()));
-        String idValue = (String) fieldGroup.getItemDataSource().getItemProperty("id").getValue();
-        //Hide prefix
-        if (idValue != null) { //Means it is not a new sysconfig entry
-            id.setReadOnly(false);
-            idValue = prefix != null ? idValue.substring(prefix.length()) : idValue;
-            id.setValue(idValue);
-            id.setReadOnly(true);
+    protected Component buildAndBindCustomComponent(String propertyId) {
+        if ("id".equals(propertyId)) {
+            TextField id = new TextField(getCaptionFromId(propertyId));
+            List<Validator> validators = getValidators(propertyId);
+            Binder<SysConfig> binder = getBinder();
+            Binder.BindingBuilder builder = binder.forField(id)
+                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(propertyId))))
+                .withNullRepresentation("")
+                .withConverter(userInputValue -> userInputValue
+                                , toPresentation -> removePrefix(toPresentation));
+            validators.forEach(builder::withValidator);
+            builder.bind(propertyId);
+            return id;
         }
-        return l;
+        return null;
+    }
+
+    @Override
+    public void setGridGetters() {
+        Grid<SysConfig> g = this.getGrid();
+        g.addColumn(sysconfig -> removePrefix(sysconfig.getId())).setId("id");
+        g.addColumn(SysConfig::getValue).setId("value");
     }
 
     private String removePrefix (String value) {
-        return prefix != null ? value.substring(prefix.length()) : value;
-    }
-
-    private String addPrefix (String value) {
-        return value.startsWith(prefix) ? value : prefix + value;
+        if (value != null && !value.isEmpty())
+            return prefix != null ? value.substring(prefix.length()) : value;
+        return value;
     }
     
     @Override

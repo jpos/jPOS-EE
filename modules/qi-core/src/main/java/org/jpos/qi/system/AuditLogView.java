@@ -18,12 +18,10 @@
 
 package org.jpos.qi.system;
 
-import com.vaadin.data.fieldgroup.FieldGroupFieldFactory;
 import com.vaadin.ui.Grid;
 import org.jpos.ee.SysLog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.qi.components.QIFieldFactory;
 
 /**
  * Created by jr on 6/16/16.
@@ -33,12 +31,6 @@ public class AuditLogView extends QIEntityView<SysLog> {
     public AuditLogView() {
         super(SysLog.class,"syslog");
     }
-
-    @Override
-    public FieldGroupFieldFactory createFieldFactory() {
-        return new QIFieldFactory();
-    }
-
     @Override
     public QIHelper createHelper() {
         return new AuditLogHelper();
@@ -65,8 +57,23 @@ public class AuditLogView extends QIEntityView<SysLog> {
     }
 
     @Override
-    public void formatGrid (Grid grid) {
-        super.formatGrid(grid);
-        grid.getColumn("summary").setExpandRatio(3);
+    public void formatGrid() {
+        super.formatGrid();
+        getGrid().getColumn("summary").setExpandRatio(3);
     }
+
+    @Override
+    public void setGridGetters() {
+        Grid<SysLog> g = getGrid();
+        g.addColumn(SysLog::getId).setId("id");
+        g.addColumn(SysLog::getDate).setId("date");
+        g.addColumn(SysLog::isDeleted).setId("deleted");
+        g.addColumn(SysLog::getSource).setId("source");
+        g.addColumn(SysLog::getType).setId("type");
+        g.addColumn(SysLog::getSeverityAsString).setId("severity");
+        g.addColumn(SysLog::getSummary).setId("summary");
+        g.addColumn(SysLog::getDetail).setId("detail");
+        g.addColumn(SysLog::getTrace).setId("trace");
+    }
+
 }

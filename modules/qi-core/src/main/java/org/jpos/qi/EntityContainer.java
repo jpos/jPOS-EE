@@ -18,11 +18,11 @@
 
 package org.jpos.qi;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.MethodProperty;
+import com.vaadin.v7.data.Container;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.Property;
+import com.vaadin.v7.data.util.BeanItem;
+import com.vaadin.v7.data.util.MethodProperty;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
@@ -63,7 +63,7 @@ public class EntityContainer<T>
     /**
      * Map from entity/item identifiers to index. Maps does not contain mapping
      * for all identifiers in container, but only those that are recently
-     * loaded. Map gets cleanded during usage, to free memory.
+     * loaded. Map gets cleaned during usage, to free memory.
      */
     protected final Map<Object, Integer> idToIndex = new LinkedHashMap<>();
 
@@ -528,7 +528,7 @@ public class EntityContainer<T>
 
     /**
      * Returns the ordering to use for the container contents. The default
-     * implementation provides the {@link com.vaadin.data.Container.Sortable} functionality.
+     * implementation provides the {@link com.vaadin.v7.data.Container.Sortable} functionality.
      *
      * Can be overridden to customize item sort order.
      *

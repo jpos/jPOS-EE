@@ -18,8 +18,8 @@
 
 package org.jpos.qi.components;
 
-import com.vaadin.server.FontAwesome;
-import com.vaadin.shared.ui.datefield.Resolution;
+import com.vaadin.icons.VaadinIcons;
+import com.vaadin.shared.ui.datefield.DateResolution;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.joda.time.DateTime;
@@ -49,7 +49,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
             addComponent(dateRanges);
         }
         refreshBtn = new Button(app.getMessage("refresh"));
-        refreshBtn.setIcon(FontAwesome.REFRESH);
+        refreshBtn.setIcon(VaadinIcons.REFRESH);
         refreshBtn.setStyleName(ValoTheme.BUTTON_SMALL);
         refreshBtn.setSizeUndefined();
         refreshBtn.addClickListener(createRefreshListener());
@@ -85,11 +85,10 @@ public abstract class DateRangeComponent extends HorizontalLayout {
         DateField field = new DateField();
         field.setCaption(caption);
         field.setStyleName(ValoTheme.DATEFIELD_SMALL);
-        field.setResolution(Resolution.DAY);
-        field.setImmediate(true);
         field.setDateFormat(app.getMessage("daterange.format"));
+        field.setResolution(DateResolution.DAY);
         field.addValueChangeListener(event -> {
-            if (event.getProperty().getValue() != null && dateRanges != null)
+            if (event.getValue() != null && dateRanges != null)
                 dateRanges.setValue(null);
         });
         return field;
@@ -98,12 +97,11 @@ public abstract class DateRangeComponent extends HorizontalLayout {
     private ComboBox createDateRanges () {
         ComboBox combo = new ComboBox(app.getMessage("or").toUpperCase());
         combo.setStyleName(ValoTheme.COMBOBOX_SMALL);
-        combo.setImmediate(true);
-        combo.setNullSelectionAllowed(false);
-        for (String range : DateRange.ranges)
-            combo.addItem(app.getMessage(range));
+        combo.setEmptySelectionAllowed(false);
+        combo.setItems((Object[])DateRange.ranges);
+        combo.setItemCaptionGenerator(range -> app.getMessage((String)range));
         combo.addValueChangeListener(event -> {
-            if (event.getProperty().getValue() != null) {
+            if (event.getValue() != null) {
                 datePickerFrom.setValue(null);
                 datePickerTo.setValue(null);
             }

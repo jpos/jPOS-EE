@@ -18,7 +18,8 @@
 
 package org.jpos.qi;
 
-import com.vaadin.shared.ui.label.ContentMode;
+
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import org.jpos.ee.DB;
 import org.jpos.ee.Revision;

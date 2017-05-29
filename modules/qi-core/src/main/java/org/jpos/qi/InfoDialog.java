@@ -19,8 +19,11 @@
 package org.jpos.qi;
 
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.*;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Window;
+import com.vaadin.v7.shared.ui.label.ContentMode;
+import com.vaadin.v7.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 
 /**

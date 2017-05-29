@@ -21,19 +21,23 @@ package org.jpos.ee;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Base64;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.criteria.internal.OrderImpl;
 import org.jpos.iso.ISOUtil;
 import org.jpos.security.SystemSeed;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import javax.persistence.criteria.*;
 
 /**
  * @author Alejandro Revilla
@@ -89,6 +93,39 @@ public class UserManager {
                 .add (Restrictions.eq ("deleted", Boolean.FALSE))
                 .list();
     }
+
+    public List getAll(int offset, int limit, Map<String,Boolean> orders) {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<User> query = criteriaBuilder.createQuery(User.class);
+        Root<User> root = query.from(User.class);
+        List<Order> orderList = new ArrayList<>();
+        //ORDERS
+        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
+            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
+            orderList.add(order);
+        }
+        //Get only non-deleted
+        Predicate notDeleted = criteriaBuilder.isFalse(root.get("deleted"));
+
+        query.select(root);
+        query.orderBy(orderList);
+        query.where(notDeleted);
+        return db.session().createQuery(query)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    public int getItemCount() {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<User> root = query.from(User.class);
+        Predicate notDeleted = criteriaBuilder.isFalse(root.get("deleted"));
+        query.where(notDeleted);
+        query.select(criteriaBuilder.count(root));
+        return db.session().createQuery(query).getSingleResult().intValue();
+    }
+
     public User getUserByNick (String nick)
             throws HibernateException
     {
@@ -118,6 +155,19 @@ public class UserManager {
         assertNotNull (u, "User does not exist");
         assertTrue(checkPassword(u, pass), "Invalid password");
         return u;
+    }
+
+    public User getUserById(long id, boolean includeDeleted) throws HibernateException {
+        Criteria crit = db.session().createCriteria(User.class)
+                .add(Restrictions.eq("id", id));
+        if (!includeDeleted)
+            crit = crit.add (Restrictions.eq ("deleted", Boolean.FALSE));
+        return (User) crit.uniqueResult();
+    }
+
+    public User getUserById(long id)
+            throws HibernateException {
+        return getUserById(id,false);
     }
 
     public boolean checkPassword (User u, String clearpass)

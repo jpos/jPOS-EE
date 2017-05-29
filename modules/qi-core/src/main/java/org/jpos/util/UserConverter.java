@@ -18,7 +18,7 @@
 
 package org.jpos.util;
 
-import com.vaadin.data.util.converter.Converter;
+import com.vaadin.v7.data.util.converter.Converter;
 import org.jpos.ee.DB;
 import org.jpos.ee.User;
 import org.jpos.ee.UserManager;

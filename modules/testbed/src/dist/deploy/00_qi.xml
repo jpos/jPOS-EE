@@ -22,6 +22,8 @@
     <menu name="System" icon="COG" style="icon-cog" action="system" />
   </menubar>
 
+  <!-- sidebar view definition -->
+
   <sidebar id="info">
     <section name="Info"/>
     <option name="Info" action="info"/>
@@ -40,7 +42,6 @@
     <option name="Revision History" action="revision_history"/>
   </sidebar>
 
-  <!-- sidebar view definition -->
 
   <!--VIEWS-->
   <view route="home" class="org.jpos.qi.views.DefaultView" perm="*" sidebar = "system"/>
@@ -57,18 +58,18 @@
   </view>
   <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="sysconfig"/>
-    <attribute name="id" read-only="true" regex="&WORD_PATTERN;" length="64"/>
-    <attribute name="value" regex="&TEXT_PATTERN;" />
+    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" />
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
   </view>
   <view route="permissions" class="org.jpos.qi.sysconfig.PermissionView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="permission"/>
-    <attribute name="id" read-only="true"/>
-    <attribute name="value" regex="&TEXT_PATTERN;"/>
+    <attribute name="id" read-only="true" required="true"/>
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
   </view>
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
     <property name="entityName" value="user"/>
-    <attribute name="id" field="false" />
-    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
+    <attribute name="id" field="false" required="true"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true"/>
     <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="1" />
     <attribute name="email" length="128" expand-ratio="1"/>
     <attribute name="active" expand-ratio="1"/>
@@ -76,17 +77,17 @@
   </view>
   <view route="profile" class="org.jpos.qi.eeuser.ProfilesView" perm="login" sidebar="system">
     <property name="entityName" value="user"/>
-    <attribute name="id" field="false"/>
-    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
-    <attribute name="name" length="128" regex="&TEXT_PATTERN;"/>
+    <attribute name="id" field="false" required="true"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;" />
     <attribute name="email" length="128" />
     <attribute name="active"/>
     <attribute name="roles" column="false" perm="sysadmin"/>
   </view>
   <view route="roles" class="org.jpos.qi.eeuser.RolesView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="role"/>
-    <attribute name="id" field="false"/>
-    <attribute name="name" regex="&WORD_PATTERN;" length="64"/>
+    <attribute name="id" field="false" required="true"/>
+    <attribute name="name" regex="&WORD_PATTERN;" length="64" required="true"/>
     <attribute name="permissions" column="false"/>
   </view>
   <view route="exceptions" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system">

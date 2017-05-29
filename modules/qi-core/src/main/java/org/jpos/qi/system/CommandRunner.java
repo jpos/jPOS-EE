@@ -20,7 +20,7 @@ package org.jpos.qi.system;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;

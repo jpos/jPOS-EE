@@ -18,9 +18,9 @@
 
 package org.jpos.qi;
 
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
-import com.vaadin.data.util.MethodProperty;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.Property;
+import com.vaadin.v7.data.util.MethodProperty;
 
 import java.util.Collection;
 import java.util.Map;

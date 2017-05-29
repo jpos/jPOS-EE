@@ -18,23 +18,16 @@
 
 package org.jpos.qi.sysconfig;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.util.BeanItem;
-import org.hibernate.criterion.Restrictions;
+import com.vaadin.data.Binder;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysConfig;
 import org.jpos.ee.SysConfigManager;
-import org.jpos.qi.EntityContainer;
 import org.jpos.qi.QI;
 import org.jpos.qi.QIHelper;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class SysConfigHelper extends QIHelper {
     private String prefix;
@@ -44,16 +37,6 @@ public class SysConfigHelper extends QIHelper {
         this.prefix = prefix;
     }
 
-    public Container createContainer() {
-        Map<String, Class> properties = new LinkedHashMap<String, Class>();
-        properties.put("id", String.class);
-        properties.put("value", String.class);
-        List sortable = Arrays.asList("id", "value");
-        EntityContainer<SysConfig> ec = new EntityContainer<SysConfig>(SysConfig.class, properties, sortable);
-        if(prefix != null)
-            ec.addRestriction(Restrictions.like("id", prefix + "%"));
-        return ec;
-    }
 
     public SysConfig getSysConfig (String param) {
         try {
@@ -65,22 +48,20 @@ public class SysConfigHelper extends QIHelper {
     }
 
     @Override
-    public boolean updateEntity (BeanFieldGroup fieldGroup) throws
-            BLException, FieldGroup.CommitException, CloneNotSupportedException
-    {
-        BeanItem<SysConfig> old = fieldGroup.getItemDataSource();
-        Object oldSysConfig = old.getBean().clone();
-        fieldGroup.commit();
-        BeanItem<SysConfig> item = fieldGroup.getItemDataSource();
-        SysConfig s = item.getBean();
+    public boolean updateEntity (Binder binder) throws BLException {
         try {
             return (boolean) DB.execWithTransaction((db) -> {
+                SysConfig oldSysConfig = (SysConfig) ((SysConfig) getOriginalEntity()).clone();
+                binder.writeBean(getOriginalEntity());
+                SysConfig s = (SysConfig) getOriginalEntity();
+                //need to re-set prefix to id as it gets deleted on write
+                s.setId(addPrefix(s.getId()));
                 db.session().merge(s);
                 return addRevisionUpdated(db, getEntityName(),
                         String.valueOf(s.getId()),
                         oldSysConfig,
                         s,
-                        new String[]{"id", "value"});
+                        new String[]{"value"});
             });
         } catch (Exception e) {
             QI.getQI().getLog().error(e);
@@ -89,36 +70,56 @@ public class SysConfigHelper extends QIHelper {
     }
 
     @Override
-    public boolean saveEntity (BeanFieldGroup fieldGroup) throws FieldGroup.CommitException, BLException {
-        fieldGroup.commit();
-        BeanItem<SysConfig> item = fieldGroup.getItemDataSource();
-        String id = (String) item.getItemProperty("id").getValue();
-        id = prefix != null ? prefix + id : id;
-        if (getSysConfig(id) == null) {
-            final String finalId = id;
-            try {
-                return (boolean) DB.execWithTransaction((db) -> {
-                    SysConfigManager mgr = new SysConfigManager(db,prefix);
-                    mgr.put((String) item.getItemProperty("id").getValue(), (String) item.getItemProperty("value").getValue());
-                    addRevisionCreated(db, "SYSCONFIG", finalId);
-                    return true;
-                });
-            } catch (Exception e) {
-                QI.getQI().getLog().error(e);
-                return false;
+    public boolean saveEntity (Binder binder) throws BLException {
+        SysConfig entity = (SysConfig) getOriginalEntity();
+        if (binder.writeBeanIfValid(getOriginalEntity())) {
+            String id = entity.getId();
+            id = prefix != null ? prefix + id : id;
+            if (getSysConfig(id) == null) {
+                final String finalId = id;
+                try {
+                    return (boolean) DB.execWithTransaction((db) -> {
+                        SysConfigManager mgr = new SysConfigManager(db, prefix);
+                        mgr.put(entity.getId(), entity.getValue());
+                        addRevisionCreated(db, "SYSCONFIG", finalId);
+                        return true;
+                    });
+                } catch (Exception e) {
+                    QI.getQI().getLog().error(e);
+                    return false;
+                }
+            } else {
+                throw new BLException("SysConfig " + id + " already exists.");
             }
         } else {
-            fieldGroup.getField("id").focus();
-            fieldGroup.getItemDataSource().getItemProperty("id").setValue(null);
-            throw new BLException("SysConfig " + id + " already exists.");
+            throw new BLException("Invalid SysConfig");
         }
     }
 
-//    public boolean removeSysConfig (SysConfig sysConfig) {
-//        return (boolean) DB.execWithTransaction((db) -> {
-//            db.session().delete(sysConfig);
-//            addRevisionRemoved(db, "SYSCONFIG", sysConfig.getId().toString());
-//            return true;
-//        });
-//    }
+    @Override
+    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+        SysConfig[] configs = (SysConfig[]) DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db,prefix);
+            return mgr.getAll(offset,limit,orders);
+        });
+        return Arrays.asList(configs).stream();
+    }
+
+    @Override
+    public int getItemCount() throws Exception {
+        return (int) DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db,prefix);
+            return mgr.getItemCount();
+        });
+    }
+
+    @Override
+    public String getItemId(Object item) {
+        return ((SysConfig) item).getId();
+    }
+
+    public String addPrefix (String value) {
+        return value.startsWith(prefix) ? value : prefix + value;
+    }
+
 }

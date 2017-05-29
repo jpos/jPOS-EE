@@ -18,6 +18,7 @@
 
 package org.jpos.qi;
 
+import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.navigator.Navigator;
@@ -48,7 +49,7 @@ public class QINavigator extends Navigator {
     public QINavigator(QI app, Layout layout) {
         super(app, layout);
         this.app = app;
-        validator = new RegexpValidator(URL_PATTERN_STRING, "Invalid URL");
+        validator = new RegexpValidator("Invalid URL",URL_PATTERN_STRING);
         qfactory = app.getQ2().getFactory();
         initNavigator();
     }
@@ -90,23 +91,28 @@ public class QINavigator extends Navigator {
         if (navigationState == null || "".equals(navigationState)) {
             super.navigateTo("/home");
         } else {
-            try {
-                validator.validate(navigationState);
-                Matcher m = ROUTE_PATTERN.matcher(navigationState);
-                boolean allowed = false;
-                if (m.matches()) {
-                    String route = m.group(1);
-                    allowed = hasAccessToRoute(route);
+            ValidationResult result = validator.apply(navigationState, app.getValueContext());
+            if (!result.isError()) {
+                try {
+                    Matcher m = ROUTE_PATTERN.matcher(navigationState);
+                    boolean allowed = false;
+                    if (m.matches()) {
+                        String route = m.group(1);
+                        allowed = hasAccessToRoute(route);
+                    }
+                    if (!allowed) {
+                        navigationState = "/home";
+                    }
+                    super.navigateTo(navigationState);
+                    if (app.sidebar() != null) {
+                        app.sidebar().markAsSelected(navigationState.substring(1).split("/,\\?")[0]);
+                    }
+                } catch( IllegalArgumentException e) {
+                    QI.getQI().displayNotification(e.getMessage());
+                    super.navigateTo("/home");
                 }
-                if (!allowed) {
-                    navigationState = "/home";
-                }
-                super.navigateTo(navigationState);
-                if (app.sidebar() != null) {
-                    app.sidebar().markAsSelected(navigationState.substring(1).split("/,\\?")[0]);
-                }
-            } catch (IllegalArgumentException | Validator.InvalidValueException e) {
-                QI.getQI().displayNotification(e.getMessage());
+            } else {
+                QI.getQI().displayNotification(result.getErrorMessage());
                 super.navigateTo("/home");
             }
         }

@@ -18,8 +18,8 @@
 
 package org.jpos.qi.components;
 
-import com.vaadin.data.Validator;
-import com.vaadin.ui.TextField;
+import com.vaadin.v7.data.Validator;
+import com.vaadin.v7.ui.TextField;
 import org.jpos.qi.QI;
 
 import java.math.BigDecimal;
@@ -54,7 +54,7 @@ public class BigDecimalField extends TextField {
                 }
             }
             @Override
-            public void validate(Object value) throws InvalidValueException {
+            public void validate(Object value) throws com.vaadin.v7.data.Validator.InvalidValueException {
                 if (!isValid(value)) {
                     throw new Validator.InvalidValueException(QI.getQI()
                             .getMessage("errorMessage.NaN",getCaption()));

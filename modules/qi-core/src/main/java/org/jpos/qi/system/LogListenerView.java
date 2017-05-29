@@ -21,7 +21,7 @@ package org.jpos.qi.system;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.core.Configurable;
@@ -36,7 +36,6 @@ import org.jpos.util.*;
 import org.vaadin.sliderpanel.SliderPanel;
 import org.vaadin.sliderpanel.SliderPanelBuilder;
 import org.vaadin.sliderpanel.client.SliderMode;
-import org.vaadin.sliderpanel.client.SliderPanelListener;
 import org.vaadin.sliderpanel.client.SliderTabPosition;
 
 import java.io.ByteArrayOutputStream;
@@ -61,9 +60,12 @@ public class LogListenerView extends CssLayout
     private Map<String, CheckBox> realms;
     private Layout realmsLayout;
     private boolean shouldResume;
+    private QI qi;
 
     @SuppressWarnings("unchecked")
     public LogListenerView () {
+        super();
+        qi = QI.getQI();
         sp = (Space<String,LogEvent>) SpaceFactory.getSpace();
         key = toString();
         pause = new Button();
@@ -77,6 +79,7 @@ public class LogListenerView extends CssLayout
         addStyleName("console");
         label = new XLabel ();
         label.setStyleName ("console");
+        label.setWidth("100%");
         label.setContentMode(ContentMode.PREFORMATTED);
 
         addComponent(createSlider());
@@ -124,7 +127,6 @@ public class LogListenerView extends CssLayout
     @Override
     public void run() {
         ISOUtil.sleep (500L);
-        QI qi = QI.getQI();
         while (active.get() && !paused.get()) {
             boolean needScroll = false;
             sp.rd(key, 1000L);
@@ -204,8 +206,8 @@ public class LogListenerView extends CssLayout
           .mode(SliderMode.TOP)
           .tabPosition(SliderTabPosition.MIDDLE)
           .build();
-        slider.addListener((SliderPanelListener) expand -> {
-            if (expand) {
+        slider.addToggleListener(event -> {
+            if (event.isExpand()) {
                 shouldResume = !paused.get();
                 if (shouldResume) {
                     pause();
@@ -215,7 +217,6 @@ public class LogListenerView extends CssLayout
                 resume();
             }
         });
-        slider.setImmediate(true);
         return slider;
     }
 }

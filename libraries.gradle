@@ -12,7 +12,7 @@ ext {
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.7.4'
     groovyVersion = '2.4.6'
-    vaadinVersion = '7.7.9'
+    vaadinVersion = '8.1.0.beta1'
 
     libraries = [
             //jUnit (Tests)
@@ -73,10 +73,12 @@ ext {
             jetty_security: "org.eclipse.jetty:jetty-security:${jettyVersion}",
             jetty_policy: "org.eclipse.jetty:jetty-policy:${jettyVersion}",
             jetty_websocket: "org.eclipse.jetty.websocket:websocket-server:${jettyVersion}",
+            jetty_websocket_jsr356: "org.eclipse.jetty.websocket:javax-websocket-server-impl:${jettyVersion}",
             jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
             jetty_util: "org.eclipse.jetty:jetty-util:${jettyVersion}",
             jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
             jetty_ajp: "org.eclipse.jetty:jetty-ajp:${jettyVersion}",
+            jetty_continuation: "org.eclipse.jetty:jetty-continuation:${jettyVersion}",
 
             // Quartz Scheduler
             quartz: 'org.quartz-scheduler:quartz:2.2.1',
@@ -100,7 +102,9 @@ ext {
             libraries.jetty_jmx,
             libraries.jetty_annotations,
             libraries.jetty_websocket,
-            libraries.jetty_security
+            libraries.jetty_websocket_jsr356,
+            libraries.jetty_security,
+            libraries.jetty_continuation
     ]
 
     /*

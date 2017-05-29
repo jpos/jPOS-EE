@@ -20,6 +20,7 @@ package org.jpos.qi;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
+import com.vaadin.data.ValueContext;
 import com.vaadin.server.*;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -49,6 +50,7 @@ public class QI extends UI {
     private List<Element> availableLocales;
     private HashMap<Locale,SortedMap<String,Object>> messagesMap;
     private List<Element> messageFiles;
+    private ValueContext valueContext;
     private Log log;
     private Q2 q2;
 
@@ -75,6 +77,7 @@ public class QI extends UI {
             throw new IllegalStateException ("Q2 not available");
         }
         messagesMap = new HashMap<>();
+        valueContext = new ValueContext(locale);
     }
 
     private void parseMessages() {
@@ -402,6 +405,10 @@ public class QI extends UI {
 
     public ViewConfig getView(String route) {
         return views.get(route);
+    }
+
+    public ValueContext getValueContext() {
+        return this.valueContext;
     }
 
     public Q2 getQ2() {

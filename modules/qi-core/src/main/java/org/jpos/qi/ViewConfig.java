@@ -47,14 +47,14 @@ public class ViewConfig {
         readOnlyFields = new ArrayList<>();
     }
 
-    public void addField(String field, String perm, String regex, int length) {
+    public void addField(String field, String perm, String regex, int length, boolean required) {
         if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
-            fields.put(field, new FieldConfig(perm, regex, length));
+            fields.put(field, new FieldConfig(perm, regex, length,required));
     }
 
-    public void addField(String field, String perm, String[] options, int length) {
+    public void addField(String field, String perm, String[] options, int length, boolean required) {
         if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
-            fields.put(field, new FieldConfig(perm, options, length));
+            fields.put(field, new FieldConfig(perm, options, length, required));
     }
 
     public void addColumn(String column, String perm) {
@@ -98,13 +98,14 @@ public class ViewConfig {
             boolean addField = f.getAttribute("field") == null || f.getAttribute("field").getBooleanValue();
             boolean addColumn = f.getAttribute("column") == null || f.getAttribute("column").getBooleanValue();
             boolean isReadOnly = f.getAttribute("read-only") != null && f.getAttribute("read-only").getBooleanValue();
+            boolean isRequired = f.getAttribute("required") != null && f.getAttribute("required").getBooleanValue();
             int expandRatio = f.getAttribute("expand-ratio") != null  ? f.getAttribute("expand-ratio").getIntValue() : -1;
             if (addField) {
                 if (optionsStr != null) {
                     String[] options = optionsStr.split(",");
-                    addField(name,perm,options,length);
+                    addField(name,perm,options,length,isRequired);
                 }
-                addField(name, perm, regex, length);
+                addField(name, perm, regex, length,isRequired);
             }
             if (addColumn) {
                 addColumn(name, perm);
@@ -131,17 +132,21 @@ public class ViewConfig {
         private String[] options;
         private int length;
         private int expandRatio = -1;
+        private boolean required;
 
-        FieldConfig(String perm, String regex, int length) {
+
+        FieldConfig(String perm, String regex, int length, boolean required) {
             this.perm = perm;
             this.regex = regex;
             this.length = length;
+            this.required = required;
         }
 
-        FieldConfig(String perm, String[] options, int length) {
+        FieldConfig(String perm, String[] options, int length, boolean required) {
             this.perm = perm;
             this.options = options;
             this.length = length;
+            this.required = required;
         }
 
         public String getPerm() {
@@ -179,5 +184,9 @@ public class ViewConfig {
         public void setExpandRatio(int expandRatio) {
             this.expandRatio = expandRatio;
         }
+
+        public boolean isRequired() { return required; }
+
+        public void setRequired(boolean required) { this.required = required; }
     }
 }

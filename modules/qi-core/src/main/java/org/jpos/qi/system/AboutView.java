@@ -20,8 +20,9 @@ package org.jpos.qi.system;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.*;
+import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.VerticalLayout;
 import org.jpos.q2.Q2;
 
 @SuppressWarnings("unused")

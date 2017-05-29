@@ -31,11 +31,13 @@ public class QILayout extends VerticalLayout {
 
     public QILayout () {
         setSizeFull();
-
+        setMargin(false);
+        setSpacing(false);
         headerLayout.setWidth("100%");
         headerLayout.setPrimaryStyleName("header");
         HorizontalLayout center = new HorizontalLayout();
         center.setSizeFull();
+        center.setSpacing(false);
 
         menuLayout.setPrimaryStyleName("valo-menu");
 

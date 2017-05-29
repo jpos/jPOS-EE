@@ -18,17 +18,18 @@
 
 package org.jpos.qi;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.Binder;
+import com.vaadin.data.provider.CallbackDataProvider;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.QuerySortOrder;
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
 import org.jpos.core.Configuration;
-import org.jpos.ee.BLException;
-import org.jpos.ee.DB;
-import org.jpos.ee.RevisionManager;
-import org.jpos.ee.User;
+import org.jpos.ee.*;
 import org.jpos.util.BeanDiff;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 public abstract class QIHelper {
 
@@ -37,6 +38,8 @@ public abstract class QIHelper {
     private String entityName;
     protected Class clazz;
     private Configuration cfg;
+    private Object originalEntity;
+
 
     protected QIHelper(Class clazz) {
         app = (QI) UI.getCurrent();
@@ -92,32 +95,28 @@ public abstract class QIHelper {
         this.app = app;
     }
 
-    public boolean removeEntity(BeanFieldGroup fieldGroup) throws BLException {
-        BeanItem item = fieldGroup.getItemDataSource();
-        Object t = item.getBean();
-        if ( t!=null ) {
-            try {
-                DB.execWithTransaction(db -> {
-                    db.session().delete(t);
-                    addRevisionRemoved(db, getEntityName(), String.valueOf(item.getItemProperty("id").getValue()));
-                    return null;
-                });
-            } catch (Exception e) {
-                throw new BLException(e.getMessage());
-            }
-            return true;
-        }
-        return false;
-    }
-
-    public boolean saveEntity(BeanFieldGroup fieldGroup) throws FieldGroup.CommitException, BLException {
-        fieldGroup.commit();
-        BeanItem item = fieldGroup.getItemDataSource();
+    public boolean removeEntity() throws BLException {
+        Object entity = getOriginalEntity();
         try {
             return (boolean) DB.execWithTransaction(db -> {
-                db.save(item.getBean());
-                addRevisionCreated(db, getEntityName(), String.valueOf(item.getItemProperty("id")));
+                db.session().delete(entity);
+                addRevisionRemoved(db, getEntityName(), getItemId(entity));
                 return true;
+            });
+        } catch (Exception e) {
+            throw new BLException(e.getMessage());
+        }
+    }
+
+    public boolean saveEntity(Binder binder) throws BLException {
+        try {
+            return (boolean) DB.execWithTransaction(db -> {
+                if (binder.writeBeanIfValid(getOriginalEntity())) {
+                    db.save(getOriginalEntity());
+                    addRevisionCreated(db, getEntityName(), getItemId(getOriginalEntity()));
+                    return true;
+                }
+                return false;
             });
         } catch (Exception e) {
             throw new BLException(e.getMessage());
@@ -155,14 +154,56 @@ public abstract class QIHelper {
         }
     }
 
-    public abstract boolean updateEntity(BeanFieldGroup fieldGroup) throws FieldGroup.CommitException,
-            BLException, CloneNotSupportedException;
+    public abstract boolean updateEntity(Binder binder) throws
+            BLException;
 
-    public abstract Container createContainer();
+
+    public DataProvider getDataProvider() {
+        Map<String,Boolean> orders = new HashMap<>();
+        DataProvider dataProvider = DataProvider.fromCallbacks(
+                (CallbackDataProvider.FetchCallback) query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+                    Iterator it = query.getSortOrders().iterator();
+                    while (it.hasNext()) {
+                        QuerySortOrder order = (QuerySortOrder) it.next();
+                        orders.put(order.getSorted(),order.getDirection() == SortDirection.DESCENDING);
+                    }
+                    try {
+                        return getAll(offset,limit,orders);
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return null;
+                    }
+                },
+                (CallbackDataProvider.CountCallback<SysConfig, Void>) query -> {
+                    try {
+                        return getItemCount();
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return 0;
+                    }
+                });
+        return dataProvider;
+    }
+
+    public abstract Stream getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception;
+
+    public abstract int getItemCount() throws Exception;
+
+    public abstract String getItemId(Object item);
 
     protected Configuration getConfiguration() { return cfg; }
 
     public void setConfiguration (Configuration cfg) {
         this.cfg = cfg;
+    }
+
+    public Object getOriginalEntity() {
+        return originalEntity;
+    }
+
+    public void setOriginalEntity(Object originalEntity) {
+        this.originalEntity = originalEntity;
     }
 }

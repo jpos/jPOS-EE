@@ -18,9 +18,9 @@
 
 package org.jpos.qi.components;
 
-import com.vaadin.data.fieldgroup.DefaultFieldGroupFieldFactory;
-import com.vaadin.ui.Field;
-import com.vaadin.ui.TextField;
+import com.vaadin.v7.data.fieldgroup.DefaultFieldGroupFieldFactory;
+import com.vaadin.v7.ui.Field;
+import com.vaadin.v7.ui.TextField;
 
 import java.math.BigDecimal;
 
@@ -37,7 +37,7 @@ public class QIFieldFactory extends DefaultFieldGroupFieldFactory {
     public <T extends Field> T createField(Class<?> dataType, Class<T> fieldType) {
         Field f;
         if (BigDecimal.class.equals(dataType)) {
-             f = new BigDecimalField();
+             f = (Field) new BigDecimalField();
         } else {
             f = super.createField(dataType, fieldType);
         }

@@ -18,13 +18,13 @@
 
 package org.jpos.qi.login;
 
-import com.vaadin.data.Validator;
+import com.vaadin.data.Binder;
 import com.vaadin.data.validator.RegexpValidator;
+import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.ui.*;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Page;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.*;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.ee.*;
@@ -44,6 +44,8 @@ public class LoginView extends VerticalLayout {
     private HorizontalLayout buttonsLayout;
     private Label errorLabel;
     private Button loginBtn;
+    private Binder<String> binder;  //just used to add validators to fields
+
 
     public String USERNAME_PATTERN =  "^[\\w|#=@.-]{1,60}$";
     public String PASSWORD_PATTERN = "^[\\w|#=@!\\_.-]{1,64}$";
@@ -74,19 +76,19 @@ public class LoginView extends VerticalLayout {
 
 
         try {
-            username.validate();
-            password.validate();
-            final User user = helper.getUserByNick(u, p);
-            if (user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"))) {
-                helper.clearLoginAttempts(user);
-                clearErrorMessages();
-                buttonsLayout.removeAllComponents();
-                helper.checkPasswordAge(user);
-                loginOk(user, rememberMe.getValue());
-                failed = false;
+            if (binder.isValid()) {
+                final User user = helper.getUserByNick(u, p);
+                if (user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"))) {
+                    helper.clearLoginAttempts(user);
+                    clearErrorMessages();
+                    buttonsLayout.removeAllComponents();
+                    helper.checkPasswordAge(user);
+                    loginOk(user, rememberMe.getValue());
+                    failed = false;
+                }
+            } else {
+                failed = true;
             }
-        } catch (Validator.InvalidValueException e) {
-            failed =true;
         } catch (ParseException e) {
             app.displayNotification(e.getMessage());
         }
@@ -161,7 +163,6 @@ public class LoginView extends VerticalLayout {
                 }
         );
         loginBtn.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        loginBtn.setImmediate(true);
         loginBtn.addShortcutListener(
                 new ShortcutListener("Sign In", ShortcutAction.KeyCode.ENTER, null) {
                     @Override
@@ -176,7 +177,7 @@ public class LoginView extends VerticalLayout {
     }
 
     private Label createErrorLabel() {
-        errorLabel = new Label("",ContentMode.HTML);
+        errorLabel = new Label("", ContentMode.HTML);
         errorLabel.addStyleName("error");
         errorLabel.setSizeUndefined();
         errorLabel.addStyleName("light");
@@ -208,31 +209,31 @@ public class LoginView extends VerticalLayout {
         FormLayout formLayout = new FormLayout();
         formLayout.setMargin(false);
         formLayout.setSizeUndefined();
-        username = new TextField (app.getMessage("login.username"));
-        username.setRequired(true);
-        username.setRequiredError(app.getMessage("errorMessage.req", username.getCaption()));
-        username.setValidationVisible(false);
-        username.setMaxLength(60);
-        username.addValidator(
-                new RegexpValidator(
-                        USERNAME_PATTERN,
-                        app.getMessage("errorMessage.invalidField", username.getCaption())
-                )
-        );
-        username.focus();
 
+        binder = new Binder<>(String.class);
+        username = new TextField (app.getMessage("login.username"));
+        username.setMaxLength(60);
+
+
+        binder.forField(username)
+                .withValidator(new RegexpValidator(
+                        app.getMessage("errorMessage.invalidField", username.getCaption())
+                        ,USERNAME_PATTERN
+                ))
+                .bind(string -> string, null);
+        binder.setBean("");
+        username.focus();
         password = new PasswordField();
         password.setCaption(app.getMessage("login.password"));
         password.setMaxLength(64);
-        password.setRequired(true);
-        password.setRequiredError(app.getMessage("errorMessage.req", password.getCaption()));
-        password.setValidationVisible(false);
-        password.addValidator(
-                new RegexpValidator(
-                        PASSWORD_PATTERN,
-                        app.getMessage("errorMessage.invalidField", password.getCaption())
+
+        binder.forField(password)
+                .asRequired(app.getMessage("errorMessage.req", password.getCaption()))
+                .withValidator(new RegexpValidator(
+                        app.getMessage("errorMessage.invalidField", password.getCaption()),
+                        PASSWORD_PATTERN)
                 )
-        );
+                .bind(string -> string, null);
 
         rememberMe = new CheckBox (app.getMessage("login.remember"));
         rememberMe.setDescription(app.getMessage("login.rememberDesc"));

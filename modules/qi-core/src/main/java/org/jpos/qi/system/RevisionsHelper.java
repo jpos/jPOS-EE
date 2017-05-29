@@ -18,20 +18,14 @@
 
 package org.jpos.qi.system;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.util.converter.Converter;
-import org.jpos.ee.BLException;
-import org.jpos.ee.DB;
-import org.jpos.ee.Revision;
-import org.jpos.ee.User;
-import org.jpos.qi.EntityContainer;
+import com.vaadin.data.Binder;
+import org.apache.commons.lang3.StringUtils;
+import org.jpos.ee.*;
 import org.jpos.qi.QIHelper;
 import org.jpos.qi.QINavigator;
-import org.jpos.util.UserConverter;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by spr on 6/15/16.
@@ -43,18 +37,25 @@ public class RevisionsHelper extends QIHelper {
     }
 
     @Override
-    public Container createContainer() {
-        Map<String, Class> properties = new LinkedHashMap<>();
-        properties.put("id", Integer.class);
-        properties.put("date", Date.class);
-        properties.put("info", String.class);
-        properties.put("ref", String.class);
-        properties.put("author", User.class);
+    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+        List<Revision> list = (List<Revision>) DB.exec(db -> {
+            RevisionManager mgr = new RevisionManager(db);
+            return mgr.getAll(offset,limit,orders);
+        });
+        return list.stream();
+    }
 
-        List sortable = Arrays.asList("id", "date", "info", "ref", "author");
-        EntityContainer container = new EntityContainer<>(Revision.class, properties, sortable);
-        container.setNormalOrder(false);
-        return container;
+    @Override
+    public int getItemCount() throws Exception {
+        return (int) DB.exec(db -> {
+            RevisionManager mgr = new RevisionManager(db);
+            return mgr.getItemCount();
+        });
+    }
+
+    @Override
+    public String getItemId(Object item) {
+        return String.valueOf(((Revision)item).getId());
     }
 
     // Need eager mode to fetch User (author).
@@ -73,16 +74,17 @@ public class RevisionsHelper extends QIHelper {
     }
 
     @Override
-    public boolean updateEntity(BeanFieldGroup fieldGroup) throws FieldGroup.CommitException, BLException, CloneNotSupportedException {
+    public boolean updateEntity(Binder binder) throws BLException {
         return false;
     }
 
     protected String getLink(String ref, String currentRevision) {
         String[] data = ref.split("\\.");
-        if (data.length == 2) {
+        if (data.length >= 2) {
             String backRoute = "revision_history" + (!currentRevision.isEmpty() ? "." + currentRevision : "");
-            String id = data[1];
-            String route = ((QINavigator) getApp().getNavigator()).getRouteForEntity(data[0]);
+            String entity = data[0];
+            String id = StringUtils.remove(ref,entity + ".");
+            String route = ((QINavigator) getApp().getNavigator()).getRouteForEntity(entity);
             if (route != null)
                 return "<a href=\"#!/" + route + "/" + id + "?back=" +  backRoute +"\">" + ref + "</a>";
         }
@@ -96,43 +98,43 @@ public class RevisionsHelper extends QIHelper {
     }
 
 
-    protected Converter getRefConverter(String currentRevision) {
-        return new Converter<String, String>() {
-            @Override
-            public String convertToModel(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-                if (value != null) {
-                    return value.split("<,>")[1];
-                }
-                return "";
-            }
+//    protected Converter getRefConverter(String currentRevision) {
+//        return new Converter<String, String>() {
+//            @Override
+//            public String convertToModel(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+//                if (value != null) {
+//                    return value.split("<,>")[1];
+//                }
+//                return "";
+//            }
+//
+//            @Override
+//            public String convertToPresentation(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+//                return getLink(value,currentRevision);
+//            }
+//
+//            @Override
+//            public Class<String> getModelType() {
+//                return String.class;
+//            }
+//
+//            @Override
+//            public Class<String> getPresentationType() {
+//                return String.class;
+//            }
+//        };
+//    }
 
-            @Override
-            public String convertToPresentation(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-                return getLink(value,currentRevision);
-            }
-
-            @Override
-            public Class<String> getModelType() {
-                return String.class;
-            }
-
-            @Override
-            public Class<String> getPresentationType() {
-                return String.class;
-            }
-        };
-    }
-
-    protected Converter getAuthorConverter(String currentRevision) {
-        return new UserConverter() {
-            @Override
-            public String convertToPresentation(User value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-                if (value == null)
-                    return null;
-                else {
-                    return getAuthorLink(value.getNickAndId(),currentRevision);
-                }
-            }
-        };
-    }
+//    protected Converter getAuthorConverter(String currentRevision) {
+//        return new UserConverter() {
+//            @Override
+//            public String convertToPresentation(User value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+//                if (value == null)
+//                    return null;
+//                else {
+//                    return getAuthorLink(value.getNickAndId(),currentRevision);
+//                }
+//            }
+//        };
+//    }
 }

@@ -18,15 +18,19 @@
 
 package org.jpos.qi.eeuser;
 
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroupFieldFactory;
-import com.vaadin.ui.*;
+import com.vaadin.data.Binder;
+import com.vaadin.data.Validator;
+import com.vaadin.ui.CheckBoxGroup;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.ItemCaptionGenerator;
 import org.jpos.ee.*;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.qi.components.QIFieldFactory;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class RolesView extends QIEntityView {
 
@@ -65,37 +69,33 @@ public class RolesView extends QIEntityView {
     }
 
     @Override
-    public FieldGroupFieldFactory createFieldFactory() {
-        return new QIFieldFactory() {
-            @Override
-            public <T extends Field> T createField(Class<?> dataType, Class<T> fieldType) {
-                if (Set.class.equals(dataType)) {
-                    OptionGroup f = new OptionGroup("Permissions");
-                    f.setMultiSelect(true);
-                    f.setNullSelectionAllowed(false);
-                    for (SysConfig sys : ((RolesHelper)getHelper()).getPermissions()) {
-                        Permission p = Permission.valueOf(sys.getId().substring(5));
-                        f.addItem(p);
-                        f.setItemCaption(p, sys.getValue());
-                    }
-                    f.setImmediate(true);
-                    return (T) f;
-                } else {
-                    Field f = super.createField(dataType, fieldType);
-                    return (T) f;
-                }
+    protected Component buildAndBindCustomComponent(String propertyId) {
+        List<Validator> validators = getValidators(propertyId);
+        if ("permissions".equals(propertyId)) {
+            CheckBoxGroup<Permission> f = new CheckBoxGroup("Permissions");
+            SysConfig[] sysconfigs = ((RolesHelper)getHelper()).getPermissions();
+            List<Permission> allPermissions = new ArrayList<>();
+            //convert SysConfigs to Permissions
+            for (SysConfig sys : sysconfigs) {
+                Permission p = Permission.valueOf(sys.getId().substring(5));
+                allPermissions.add(p);
             }
-        };
+            f.setItems(allPermissions);
+            f.setItemCaptionGenerator((ItemCaptionGenerator<Permission>) item -> sysconfigs[allPermissions.indexOf(item)].getValue());
+            Binder.BindingBuilder builder = getBinder().forField(f);
+            validators.forEach(builder::withValidator);
+            builder.bind(propertyId);
+            return f;
+        }
+        return null;
     }
 
-    //override to add validators
     @Override
-    protected Layout addFields(FieldGroup fieldGroup) {
-        Layout l = super.addFields(fieldGroup);
-        Field name = fieldGroup.getField("name");
-        name.setRequired(true);
-        name.setRequiredError(getApp().getMessage("errorMessage.req", name.getCaption()));
-        return l;
+    public void setGridGetters() {
+        Grid<Role> g = this.getGrid();
+        g.addColumn(Role::getId).setId("id");
+        g.addColumn(Role::getName).setId("name");
+        g.addColumn(Role::getPermissions).setId("permissions");
     }
 
     @Override
@@ -113,8 +113,4 @@ public class RolesView extends QIEntityView {
         return true;
     }
 
-    @Override
-    public String[] getVisibleColumns() {
-        return new String[] { "name" };
-    }
 }

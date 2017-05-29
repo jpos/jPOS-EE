@@ -18,20 +18,30 @@
 
 package org.jpos.ee;
 
-import java.util.List;
-import java.util.Iterator;
+import java.util.*;
 
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
+import org.hibernate.query.criteria.internal.OrderImpl;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.type.IntegerType;
+
+import javax.persistence.criteria.*;
 
 @SuppressWarnings("unused")
 public class SysConfigManager {
     private DB db;
     private String prefix = "";
+
+//    public SysConfigManager() {
+//        super();
+//    }
+//    public SysConfigManager(String prefix) {
+//        super();
+//        this.prefix=prefix;
+//    }
 
     public SysConfigManager (DB db) {
         super();
@@ -77,6 +87,18 @@ public class SysConfigManager {
         return defaultValue;
     }
 
+    public SysConfig getObject(String name) {
+        try {
+            if (prefix != null)
+                name = prefix + name;
+            SysConfig cfg = db.session().get (SysConfig.class, name);
+            return cfg;
+        } catch (HibernateException e) {
+            db.getLog().warn (e);
+        }
+        return null;
+    }
+
     public boolean delete (String name) {
         try {
             if (prefix != null)
@@ -114,6 +136,7 @@ public class SysConfigManager {
         return values;
     }
     public SysConfig[] getAll () {
+
         SysConfig[] values;
         try {
             String queryAsString = "from sysconfig in class org.jpos.ee.SysConfig";
@@ -133,6 +156,40 @@ public class SysConfigManager {
             values = new SysConfig[0];
         }
         return values;
+    }
+
+    public SysConfig[] getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<SysConfig> query = criteriaBuilder.createQuery(SysConfig.class);
+        Root<SysConfig> root = query.from(SysConfig.class);
+        List<Order> orderList = new ArrayList<>();
+        //ORDERS
+        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
+            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
+            orderList.add(order);
+        }
+        //Get only by prefix
+        Predicate prefixLike = criteriaBuilder.like(root.get("id"), prefix + "%");
+
+        query.select(root);
+        query.orderBy(orderList);
+        query.where(prefixLike);
+        List<SysConfig> list = db.session().createQuery(query)
+                .setMaxResults(limit)
+                .setFirstResult(offset)
+                .getResultList();
+        return list.toArray(new SysConfig[] { });
+
+    }
+
+    public int getItemCount() throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<SysConfig> root = query.from(SysConfig.class);
+        Predicate prefixLike = criteriaBuilder.like(root.get("id"), prefix + "%");
+        query.where(prefixLike);
+        query.select(criteriaBuilder.count(root));
+        return db.session().createQuery(query).getSingleResult().intValue();
     }
 
     @SuppressWarnings("unchecked")

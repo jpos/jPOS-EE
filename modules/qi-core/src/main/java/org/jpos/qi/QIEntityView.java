@@ -18,26 +18,29 @@
 
 package org.jpos.qi;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroupFieldFactory;
-import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.GeneratedPropertyContainer;
-import com.vaadin.data.util.converter.StringToBooleanConverter;
-import com.vaadin.data.util.converter.StringToDateConverter;
+import com.vaadin.data.*;
+import com.vaadin.data.converter.StringToBigDecimalConverter;
+import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.data.validator.RegexpValidator;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.renderers.NumberRenderer;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.shared.ui.ContentMode;
+
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.shared.ui.MarginInfo;
+
+import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
@@ -48,8 +51,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable {
@@ -69,11 +71,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private Button removeBtn;
     private Button saveBtn;
     private Button cancelBtn;
-    private BeanFieldGroup<T> fieldGroup;
+    private Binder<T> binder;
     private Label errorLabel;
     private boolean newView;
     private Configuration cfg;
     private ViewConfig viewConfig;
+    private T bean;
 
 
     private static DateFormat dateFormat;
@@ -90,6 +93,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         this.readOnlyFields = viewConfig.getReadOnlyFields();
         setSizeFull();
         setMargin(new MarginInfo(false, false, false, false));
+        setSpacing(false);
         showRevisionHistoryButton=true;
     }
 
@@ -116,8 +120,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         Layout header = createHeader(title);
         addComponent(header);
         grid = createGrid();
-        grid.setContainerDataSource((Container.Indexed) createContainer());
-        formatGrid(grid);
+        grid.setDataProvider(getHelper().getDataProvider());
+        formatGrid();
         addComponent(grid);
         setExpandRatio(grid, 1);
     }
@@ -176,7 +180,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected HorizontalLayout createHeader (String title) {
         HorizontalLayout header = new HorizontalLayout();
         header.setWidth("100%");
-        header.setSpacing(true);
+        header.setSpacing(false);
         header.setMargin(new MarginInfo(false, true, false, true));
         Label lbl = new Label(title);
         lbl.addStyleName("h2");
@@ -187,7 +191,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (isGeneralView() && canAdd()) {
             Button addBtn = new Button(getApp().getMessage("add"));
             addBtn.addStyleName("borderless-colored");
-            addBtn.setIcon(FontAwesome.PLUS);
+            addBtn.setIcon(VaadinIcons.PLUS);
             addBtn.addClickListener(event -> getApp().getNavigator().navigateTo(generalRoute + "/new"));
             header.addComponent(addBtn);
             header.setComponentAlignment(addBtn, Alignment.BOTTOM_RIGHT);
@@ -196,69 +200,74 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     public Grid createGrid() {
-        Grid g = new Grid() {
-            @Override
-            public void setContainerDataSource(Container.Indexed container) {
-                GeneratedPropertyContainer wrapper = new GeneratedPropertyContainer(container);
-                List visibleCols = Arrays.asList(getVisibleColumns());
-                container.getContainerPropertyIds().stream().filter(prop -> !visibleCols.contains(prop)).forEach(wrapper::removeContainerProperty);
-                super.setContainerDataSource(wrapper);
-            }
-        };
+        Grid g = new Grid();
         g.setSizeFull();
         g.setSelectionMode(Grid.SelectionMode.SINGLE);
         g.setColumnReorderingAllowed(true);
         g.addItemClickListener(event -> {
-            String url = generalRoute + "/" + event.getItemId();
+            String url = generalRoute + "/" + getHelper().getItemId(event.getItem());
             getApp().getNavigator().navigateTo(url);
         });
         return g;
     }
 
 
-    public void formatGrid (Grid grid) {
-        grid.setCellStyleGenerator(cellReference -> {
-            if (cellReference.getValue() instanceof BigDecimal)
-                return "align-right";
-            return null;
-        });
+    public void formatGrid() {
+        setGridGetters();
+
+        //Delete not visible columns
+        //Use columnId as caption
+        //Set sorting for every column.
         DecimalFormat nf = new DecimalFormat();
         nf.setGroupingUsed(false);
-        //fix for when a manual resize is done, the last column takes the empty space.
-        grid.addColumnResizeListener((Grid.ColumnResizeListener) event -> {
-            int lastColumnIndex = grid.getColumns().size()-1;
-            grid.getColumns().get(lastColumnIndex).setWidth(1500);
-        });
-        if (grid.getColumn("id") != null && !String.class.equals(grid.getContainerDataSource().getType("id")))
-            grid.getColumn("id").setRenderer(new NumberRenderer(nf));
-        for (Grid.Column c : grid.getColumns()) {
-            c.setHidable(true);
-            if ("id".equals(c.getPropertyId())) {
-                c.setExpandRatio(0);
-            } else if (isBooleanColumn(c)) {
-                c.setExpandRatio(0);
-                c.setConverter(new StringToBooleanConverter("✔", "✘"));
-            } else if (isDateColumn(c)) {
-                c.setRenderer(new DateRenderer(getDateFormat()));
+
+        Iterator<Grid.Column> it = grid.getColumns().iterator();
+        while (it.hasNext()) {
+            Grid.Column c  = it.next();
+            String columnId = c.getId();
+            if (!Arrays.asList(getVisibleColumns()).contains(columnId)) {
+                grid.removeColumn(columnId);
             } else {
-                c.setExpandRatio(1);
+                c.setCaption(getCaptionFromId(columnId))
+                        .setSortProperty(columnId)
+                        .setSortable(true)
+                        .setHidable(true);
+
+                ViewConfig.FieldConfig config = viewConfig.getFields().get(c.getId());
+                if (config != null) {
+                    if (config.getExpandRatio() != -1)
+                        c.setExpandRatio(config.getExpandRatio());
+                }
+                c.setStyleGenerator(obj -> {
+                    Object value = c.getValueProvider().apply(obj);
+                    if (value instanceof BigDecimal) {
+                        return "align-right";
+                    } else if (c.getId().equals("id") && !(value instanceof String)) {
+                        c.setRenderer(new NumberRenderer(nf));
+                    }
+                    return null;
+                });
+                if ("id".equals(c.getId())) {
+                    c.setExpandRatio(0);
+//                } else if (isBooleanColumn(c)) {
+//                    c.setExpandRatio(0);
+//                    c.setConverter(new StringToBooleanConverter("✔", "✘"));
+                } else {
+                    c.setExpandRatio(1);
+                }
             }
-            ViewConfig.FieldConfig config = viewConfig.getFields().get(c.getPropertyId());
-            if (config != null) {
-                if (config.getExpandRatio() != -1)
-                    c.setExpandRatio(config.getExpandRatio());
-            }
+
         }
+        //fix for when a manual resize is done, the last column takes the empty space.
+        grid.addColumnResizeListener(event -> {
+            int lastColumnIndex = grid.getColumns().size()-1;
+            ((Grid.Column)grid.getColumns().get(lastColumnIndex)).setWidth(1500);
+        });
         grid.setSizeFull();
     }
 
-    private boolean isBooleanColumn (Grid.Column c) {
-        return c.getConverter() != null && StringToBooleanConverter.class.equals(c.getConverter().getClass());
-    }
 
-    private boolean isDateColumn (Grid.Column c) {
-        return c.getConverter() != null && StringToDateConverter.class.equals(c.getConverter().getClass());
-    }
+    public abstract void setGridGetters();
 
     public Layout createForm (final Object entity, String[] params, boolean isNew) {
         VerticalLayout profileLayout = new VerticalLayout();
@@ -269,39 +278,37 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (params.length <= 1 || !"profile".equals(params[1])) {
             Button back = new Button(getApp().getMessage("back"));
             back.addStyleName("borderless-colored");
-            back.setIcon(FontAwesome.ARROW_LEFT);
+            back.setIcon(VaadinIcons.ARROW_LEFT);
             back.addClickListener(event -> app.getNavigator().navigateTo(getGeneralRoute()));
             profileLayout.addComponent(back);
             profileLayout.setComponentAlignment(back, Alignment.MIDDLE_LEFT);
         }
 
-        fieldGroup = new BeanFieldGroup<T>(clazz) {
+        binder = new Binder<T>(clazz)
+        {
             @Override
             public void setReadOnly (boolean readOnly) {
                 super.setReadOnly(readOnly);
                 if (readOnlyFields != null) {
                     for (String fieldId : readOnlyFields) {
-                        if (getField(fieldId) != null && getField(fieldId).getValue() != null)
-                            getField(fieldId).setReadOnly(true);
+                        if (binder.getBinding(fieldId).isPresent()) {
+                            HasValue field = binder.getBinding(fieldId).get().getField();
+                            if (field != null && !field.isEmpty()) {
+                                field.setReadOnly(true);
+                                binder.bind(field, fieldId);
+                            }
+                        }
+
                     }
                 }
             }
         };
-        fieldGroup.setItemDataSource((T)entity);
-        fieldGroup.setReadOnly(true);
-        fieldGroup.setFieldFactory(createFieldFactory());
-
-        for (String property : visibleFields) {
-            try{
-                fieldGroup.buildAndBind(property);
-            } catch (Exception e) {
-                app.getLog().error("error binding property", e);
-            }
-        }
-
-        final Layout formLayout = addFields(fieldGroup);
+        bean = (T) entity;
+        final Layout formLayout = createLayout();
+        getHelper().setOriginalEntity(bean);
+        binder.readBean((T)entity);
+        binder.setReadOnly(true);
         profileLayout.addComponent(formLayout);
-        addValidators();
 
         HorizontalLayout footer = new HorizontalLayout();
         footer.addStyleName("footer");
@@ -328,9 +335,10 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                         app.getMessage("removeConfirmationMessage"),
                         confirm -> {
                             if (confirm) {
-                                removeEntity(fieldGroup);
+                                removeEntity();
                             }
-                        })
+                        }
+        )
         ));
         removeBtn.addStyleName("icon-trash");
 
@@ -368,8 +376,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return profileLayout;
     }
     protected void cancelClick(Button.ClickEvent event, Layout formLayout) {
-        fieldGroup.discard();
-        fieldGroup.setReadOnly(true);
+        binder.readBean(bean); //this discards the changes
+        binder.setReadOnly(true);
         event.getButton().setVisible(false);
         saveBtn.setVisible(false);
         editBtn.setVisible(true);
@@ -380,42 +388,47 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected boolean saveClick(Button.ClickEvent event, Layout formLayout) {
-        try {
-            if (getEntity (fieldGroup.getItemDataSource().getBean()) == null)
-                saveEntity(fieldGroup);
-            else
-                updateEntity(fieldGroup);
-        } catch (BLException e) {
-            app.displayNotification(e.getMessage());
-            return false;
-        } catch (FieldGroup.CommitException e) {
-            for (Field f : e.getInvalidFields().keySet()) {
-                errorLabel.setValue(e.getInvalidFields().get(f).getMessage());
-                errorLabel.setVisible(true);
+        if (binder.validate().isOk()) {
+            if (getEntity(bean) == null) {
+                try {
+                    saveEntity();
+                } catch (BLException e) {
+                    e.printStackTrace();
+                    getApp().displayNotification(e.getDetailedMessage());
+                    return false;
+                }
+            } else {
+                try {
+                    updateEntity();
+                } catch (BLException e) {
+                    e.printStackTrace();
+                    getApp().displayNotification(e.getDetailedMessage());
+                    return false;
+                }
             }
-            return false;
-        } catch (CloneNotSupportedException e) {
-            app.displayNotification(e.getMessage());
+            binder.setReadOnly(true);
+            formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            event.getButton().setVisible(false);
+            cancelBtn.setVisible(false);
+            editBtn.setVisible(true);
+            removeBtn.setVisible(true);
+            errorLabel.setValue(null);
+            errorLabel.setVisible(false);
+            if (revisionsPanel != null && revisionsPanel.getParent() != null) {
+                Layout parent = (Layout) revisionsPanel.getParent();
+                parent.removeComponent(revisionsPanel);
+                loadRevisionHistory(parent, revisionsPanel.getRef());
+            }
+            return true;
+        } else {
+            BindingValidationStatus<?> result = binder.validate().getFieldValidationErrors().get(0);
+            getApp().displayNotification(result.getResult().get().getErrorMessage());
             return false;
         }
-        fieldGroup.setReadOnly(true);
-        formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        event.getButton().setVisible(false);
-        cancelBtn.setVisible(false);
-        editBtn.setVisible(true);
-        removeBtn.setVisible(true);
-        errorLabel.setValue(null);
-        errorLabel.setVisible(false);
-        if (revisionsPanel != null && revisionsPanel.getParent() != null) {
-            Layout parent = (Layout) revisionsPanel.getParent();
-            parent.removeComponent(revisionsPanel);
-            loadRevisionHistory(parent, revisionsPanel.getRef());
-        }
-        return true;
     }
 
     protected void editClick(Button.ClickEvent event, Layout formLayout) {
-        fieldGroup.setReadOnly(false);
+        binder.setReadOnly(false);
         event.getButton().setVisible(false);
         removeBtn.setVisible(false);
         saveBtn.setVisible(true);
@@ -423,47 +436,130 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         formLayout.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
     }
 
-    protected Layout addFields (FieldGroup fieldGroup) {
+    protected Layout createLayout() {
         FormLayout layout = new FormLayout();
         layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         layout.addStyleName("qi-form");
         layout.setMargin(new MarginInfo(false));
-        boolean firstField = true;
-        for (Field field : fieldGroup.getFields()) {
-            layout.addComponent(field);
-            if (firstField) {
-                field.focus();
-                firstField = false;
-            }
-        }
+        addFields(layout);
         return layout;
     }
 
-    protected void addValidators () {
-        fieldGroup.getFields().forEach(this::addValidators);
-    }
-
-    protected void addValidators (Field field) {
-        if (field != null) {
-            String propertyId = (String) fieldGroup.getPropertyId(field);
-            ViewConfig.FieldConfig config = viewConfig.getFields().get(propertyId);
-            if (config != null) {
-                String regex = config.getRegex();
-                int length = config.getLength();
-                String[] options = config.getOptions();
-                if (options != null) {
-                    //Change the field to a OptionGroup loaded with the options
-                    OptionGroup optionGroup = new OptionGroup(field.getCaption(),Arrays.asList(options));
-                    String fieldId = field.getId();
-                    fieldGroup.unbind(field);
-                    fieldGroup.bind(optionGroup,fieldId);
+    protected void addFields(Layout l) {
+        Object o = bean;
+        for (String id : getVisibleFields()) {
+            //Check if there's a custom builder
+            Component field = buildAndBindCustomComponent(id);
+            if (field == null) {
+                //if it wasn't built yet, build it now.
+                try {
+                    Class dataType = o.getClass().getDeclaredField(id).getType();
+                    if (dataType.equals(Date.class)) {
+                        l.addComponent(buildAndBindDateField(id));
+                    } else if (dataType.equals(BigDecimal.class)) {
+                        l.addComponent(buildAndBindBigDecimalField(id));
+                    } else if (dataType.equals(Long.class)) {
+                        l.addComponent(buildAndBindLongField(id));
+                    } else if (dataType.equals(boolean.class)) {
+                        l.addComponent(buildAndBindBooleanField(id));
+                    } else {
+                        l.addComponent(buildAndBindTextField(id));
+                    }
+                } catch (NoSuchFieldException e) {
+                    getApp().getLog().error(e);
                 }
-                if (regex != null)
-                    field.addValidator(new RegexpValidator(regex, getApp().getMessage("errorMessage.invalidField", field.getCaption())));
-                if (field instanceof TextField && length > 0)
-                    ((TextField) field).setMaxLength(length);
+            } else {
+                l.addComponent(field);
             }
         }
+    }
+
+    //Override on specific views to create a custom field for a certain property, or to add validators.
+    // Do not forget to getValidators and add them.
+    protected Component buildAndBindCustomComponent(String propertyId) {
+        return null;
+    }
+
+    //Reads regex and length from 00_qi.xml
+    //Override to add more customValidators
+    protected List<Validator> getValidators(String propertyId) {
+        List<Validator> validators = new ArrayList<>();
+        ViewConfig.FieldConfig config = viewConfig.getFields().get(propertyId);
+        if (config != null) {
+            String regex = config.getRegex();
+            int length = config.getLength();
+            String[] options = config.getOptions();
+            if (options != null) {
+                //Change the field to a Combo loaded with the options
+                ComboBox combo = new ComboBox(getCaptionFromId(propertyId),Arrays.asList(options));
+                getBinder().bind(combo,propertyId);
+                return null;
+            }
+            if (regex != null) {
+                validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", propertyId),regex));
+            }
+            if (length > 0) {
+                validators.add(new StringLengthValidator(getApp().getMessage("errorMessage.invalidField", propertyId),0,length));
+            }
+        }
+        return validators;
+    }
+
+    protected boolean isRequired(String propertyId) {
+        return viewConfig.getFields().get(propertyId).isRequired();
+    }
+
+    protected TextField buildAndBindLongField(String id) {
+        TextField field = new TextField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id,field);
+        builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder.bind(id);
+        return field;
+    }
+
+    protected CheckBox buildAndBindBooleanField(String id) {
+        CheckBox box = new CheckBox(StringUtils.capitalize(getCaptionFromId(id)),false);
+        Binder.BindingBuilder builder = formatField(id,box);
+        builder.bind(id);
+        return box;
+    }
+
+    protected TextField buildAndBindTextField(String id) {
+        TextField field = new TextField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id,field);
+        builder.bind(id);
+        return field;
+    }
+
+    protected DateField buildAndBindDateField(String id) {
+        DateField field = new DateField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id, field);
+        builder.bind(id);
+        return field;
+    }
+
+    protected TextField buildAndBindBigDecimalField(String id) {
+        TextField field = new TextField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id,field);
+        builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder.bind(id);
+        return field;
+    }
+
+    protected Binder.BindingBuilder formatField(String id, HasValue field) {
+        List<Validator> v = getValidators(id);
+        Binder.BindingBuilder builder = getBinder().forField(field);
+        for (Validator val : v) {
+            builder.withValidator(val);
+        }
+        if (isRequired(id)) {
+            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId(id))));
+        }
+        return builder;
+    }
+
+    protected String getCaptionFromId(String id) {
+        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(id),' ');
     }
 
     private void loadRevisionHistory (Layout formLayout, String ref) {
@@ -494,33 +590,20 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return new DateRenderer(dateFormat);
     }
 
-    public abstract FieldGroupFieldFactory createFieldFactory();
-
-    public void setRequired(Field... fields) {
-        for (Field f : fields) {
-            f.setRequired(true);
-            f.setRequiredError(getApp().getMessage("errorMessage.req",f.getCaption()));
-        }
-    }
-
-    public Container createContainer() {
-        return getHelper().createContainer();
-    }
-
     public Object createNewEntity (){
         return getHelper().createNewEntity();
     }
     public abstract QIHelper createHelper ();
 
-    public void removeEntity (BeanFieldGroup fieldGroup) throws BLException {
-        if (getHelper().removeEntity(fieldGroup)) {
+    public void removeEntity () throws BLException {
+        if (getHelper().removeEntity()) {
             getApp().getNavigator().navigateTo(getGeneralRoute());
-            getApp().displayNotification(getApp().getMessage("removed", getEntityName()));
+            getApp().displayNotification(getApp().getMessage("removed", getEntityName().toUpperCase()));
         }
     }
 
-    public void saveEntity (BeanFieldGroup fieldGroup) throws FieldGroup.CommitException, BLException {
-        if (getHelper().saveEntity(fieldGroup)) {
+    public void saveEntity () throws BLException {
+        if (getHelper().saveEntity(getBinder())) {
             app.displayNotification(app.getMessage("created", getEntityName().toUpperCase()));
             app.getNavigator().navigateTo(getGeneralRoute());
         }
@@ -534,8 +617,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return getHelper().getEntityName();
     }
 
-    public void updateEntity (BeanFieldGroup fieldGroup) throws BLException, FieldGroup.CommitException, CloneNotSupportedException {
-        if (getHelper().updateEntity(fieldGroup))
+    public void updateEntity () throws BLException {
+        if (getHelper().updateEntity(getBinder()))
             getApp().displayNotification(getApp().getMessage("updated", getEntityName().toUpperCase()));
         else
             getApp().displayNotification(getApp().getMessage("notchanged"));
@@ -678,8 +761,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
 
     public T getInstance() {
-        BeanItem<T> item = fieldGroup.getItemDataSource();
-        return item.getBean();
+        return bean;
+    }
+
+    public Binder<T> getBinder() {
+        return this.binder;
     }
 
     public boolean isNewView() {
@@ -704,5 +790,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setViewConfig(ViewConfig viewConfig) {
         this.viewConfig = viewConfig;
+    }
+
+    public T getBean() {
+        return bean;
+    }
+
+    public void setBean(T bean) {
+        this.bean = bean;
     }
 }

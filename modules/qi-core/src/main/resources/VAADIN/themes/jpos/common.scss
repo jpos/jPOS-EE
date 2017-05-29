@@ -26,6 +26,10 @@
         text-transform: uppercase;
     }
 
+    .v-caption {
+        text-transform: capitalize;
+    }
+
     .amount-header {
         font-weight: normal !important;
         text-align: right !important;
@@ -123,4 +127,5 @@
     .qi-float-right {
        float: right
     }
+
 }

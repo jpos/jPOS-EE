@@ -18,13 +18,20 @@
 
 package org.jpos.ee;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.criteria.internal.OrderImpl;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 @SuppressWarnings("unused")
 public class RevisionManager {
@@ -50,6 +57,36 @@ public class RevisionManager {
             .addOrder (Order.desc("id"));
         return (List<Revision>) crit.list();
     }
+
+    public List<Revision> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Revision> query = criteriaBuilder.createQuery(Revision.class);
+        Root<Revision> root = query.from(Revision.class);
+        // To avoid LazyInitializationExc
+        root.fetch("author");
+        List<javax.persistence.criteria.Order> orderList = new ArrayList<>();
+        //ORDERS
+        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
+            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
+            orderList.add(order);
+        }
+        query.select(root);
+        query.orderBy(orderList);
+        return db.session().createQuery(query)
+                .setMaxResults(limit)
+                .setFirstResult(offset)
+                .getResultList();
+    }
+
+    public int getItemCount() throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        query.select(criteriaBuilder.count(query.from(Revision.class)));
+        return db.session().createQuery(query).getSingleResult().intValue();
+    }
+
+
+
     /**
      * factory method used to create a Revision associated with this user.
      *

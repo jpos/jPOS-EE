@@ -18,51 +18,54 @@
 
 package org.jpos.qi.eeuser;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Validator;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.util.BeanItem;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
+import com.vaadin.data.Binder;
 import org.jpos.ee.*;
-import org.jpos.qi.EntityContainer;
 import org.jpos.qi.QIHelper;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class RolesHelper extends QIHelper {
     protected RolesHelper() {
         super(Role.class);
     }
 
-    public Container createContainer() {
-        Map<String, Class> properties = new LinkedHashMap<String, Class>();
-        properties.put("id", Integer.class);
-        properties.put("name", String.class);
-        List sortable = Arrays.asList("id", "name");
-        return new EntityContainer(Role.class, properties, sortable);
+    @Override
+    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+        List<Role> list = (List<Role>) DB.exec(db -> {
+            RoleManager mgr = new RoleManager(db);
+            return mgr.getAll(offset,limit,orders);
+        });
+        return list.stream();
     }
 
     @Override
-    public boolean updateEntity (BeanFieldGroup fieldGroup) throws
-            BLException, FieldGroup.CommitException, CloneNotSupportedException {
-        BeanItem<Role> old = fieldGroup.getItemDataSource();
-        Object oldRole = old.getBean().clone();
-        fieldGroup.commit();
-        BeanItem<Role> item = fieldGroup.getItemDataSource();
-        Role r = item.getBean();
+    public int getItemCount() throws Exception {
+        return (int) DB.exec(db -> {
+            RoleManager mgr = new RoleManager(db);
+            return mgr.getItemCount();
+        });
+    }
+
+    @Override
+    public String getItemId(Object item) {
+        return String.valueOf(((Role)item).getId());
+    }
+
+    @Override
+    public boolean updateEntity (Binder binder) throws BLException {
         try {
             return (boolean) DB.execWithTransaction( (db) -> {
+                Role oldRole = (Role) ((Role) getOriginalEntity()).clone();
+                binder.writeBean(getOriginalEntity());
+                Role r = (Role) getOriginalEntity();
                 db.session().merge(r);
                 return addRevisionUpdated(db, getEntityName(),
                         String.valueOf(r.getId()),
                         oldRole,
                         r,
-                        new String[]{"id", "name", "permissions"});
+                        new String[]{"name", "permissions"});
             });
         } catch (Exception e) {
             throw new BLException(e.getMessage());
@@ -73,6 +76,7 @@ public class RolesHelper extends QIHelper {
         try {
             return (SysConfig[]) DB.exec( (db) -> {
                 SysConfigManager mgr = new SysConfigManager(db, "perm.");
+
                 return mgr.getAll();
             });
         } catch (Exception e) {
@@ -83,10 +87,9 @@ public class RolesHelper extends QIHelper {
 
     public Role getRoleByName(String name) {
         try {
-            return (Role) DB.exec((db) ->{
-                Criteria crit = db.session().createCriteria(Role.class);
-                crit = crit.add(Restrictions.eq("name", name));
-                return crit.uniqueResult();
+            return (Role) DB.exec((db) -> {
+                RoleManager mgr = new RoleManager(db);
+                return mgr.getRoleByName(name);
             });
         } catch (Exception e) {
             getApp().getLog().error(e);
@@ -94,22 +97,19 @@ public class RolesHelper extends QIHelper {
         }
     }
 
-    public Validator getNameTakenValidator(final Role selectedR) {
-        Validator nameTaken = new Validator() {
-            public boolean isValid(Object value) {
-                String oldName = selectedR.getName();
-                if (oldName!= null)
-                    return getRoleByName((String) value) == null || oldName.trim().equals(((String) value).trim());
-                else
-                    return getRoleByName((String) value) == null;
-            }
-            public void validate(Object value) throws InvalidValueException {
-                if (!isValid(value)) {
-                    throw new Validator.InvalidValueException(getApp().getMessage("errorMessage.fieldTaken",value));
-
-                }
-            }
-        };
-        return nameTaken;
-    }
+//    public Validator getNameTakenValidator(final Role selectedR) {
+//
+//
+////        Validator nameTaken = (Validator) (value, context) -> {
+////            String oldName = selectedR.getName();
+////            Role role = getRoleByName((String)value);
+////            if (role == null || (oldName != null && oldName.trim().equals(((String) value).trim()))) {
+////                return ValidationResult.ok();
+////            }
+////            return ValidationResult.error(getApp().getMessage("errorMessage.fieldTaken",value));
+////        };
+////        return nameTaken;
+//
+//
+//    }
 }

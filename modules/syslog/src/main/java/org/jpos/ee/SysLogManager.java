@@ -18,10 +18,17 @@
 
 package org.jpos.ee;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.hibernate.query.criteria.internal.OrderImpl;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 import org.hibernate.Transaction;
+
+import javax.persistence.criteria.*;
 
 @SuppressWarnings("unused")
 public class SysLogManager {
@@ -161,12 +168,37 @@ public class SysLogManager {
     }
     public SysLog get (long id) {
         try {
-            return (SysLog)
-                db.session().load (SysLog.class, new Long (id));
+            return db.session().load (SysLog.class, new Long (id));
         } catch (Throwable e) {
             db.getLog().error (e);
         } 
         return null;
     }
+
+    public List<SysLog> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<SysLog> query = criteriaBuilder.createQuery(SysLog.class);
+        Root<SysLog> root = query.from(SysLog.class);
+        List<Order> orderList = new ArrayList<>();
+        //ORDERS
+        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
+            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
+            orderList.add(order);
+        }
+        query.select(root);
+        query.orderBy(orderList);
+        return db.session().createQuery(query)
+                .setMaxResults(limit)
+                .setFirstResult(offset)
+                .getResultList();
+    }
+
+    public int getItemCount() throws Exception {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        query.select(criteriaBuilder.count(query.from(SysLog.class)));
+        return db.session().createQuery(query).getSingleResult().intValue();
+    }
+
 }
 

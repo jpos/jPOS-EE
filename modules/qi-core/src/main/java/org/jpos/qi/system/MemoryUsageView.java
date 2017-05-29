@@ -20,7 +20,7 @@ package org.jpos.qi.system;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import org.dussan.vaadin.dcharts.DCharts;
 import org.dussan.vaadin.dcharts.base.elements.XYaxis;
@@ -56,6 +56,7 @@ public class MemoryUsageView extends VerticalLayout implements View, Runnable, V
     private DataSeries ds;
     private static final List<Integer> inUseMemory = new ArrayList<Integer>();
     private static ScheduledExecutorService checkMemory;
+    private QI qi;
 
     static {
         checkMemory = Executors.newScheduledThreadPool(1);
@@ -70,26 +71,25 @@ public class MemoryUsageView extends VerticalLayout implements View, Runnable, V
 
     public MemoryUsageView () {
         super();
-
-        QI app = (QI) UI.getCurrent();
+        qi = (QI) UI.getCurrent();
         setSpacing(false);
         setMargin(true);
         setSizeFull();
         available  = createLabel();
         allocated  = createLabel();
         used       = createLabel();
-        forceGC    = new Button(app.getMessage("memory-usage.force.gc"));
+        forceGC    = new Button(qi.getMessage("memory-usage.force.gc"));
 
         GridLayout gl = new GridLayout (3,3);
-        gl.addComponent(strong (app.getMessage("memory-usage.availableMemory")));
+        gl.addComponent(strong (qi.getMessage("memory-usage.availableMemory")));
         gl.addComponent (available); gl.setComponentAlignment(available, Alignment.TOP_RIGHT);
         gl.addComponent (createMBLabel());
 
-        gl.addComponent(strong (app.getMessage("memory-usage.allocatedMemory")));
+        gl.addComponent(strong (qi.getMessage("memory-usage.allocatedMemory")));
         gl.addComponent (allocated); gl.setComponentAlignment(allocated, Alignment.TOP_RIGHT);
         gl.addComponent (createMBLabel());
 
-        gl.addComponent(strong (app.getMessage("memory-usage.usedMemory")));
+        gl.addComponent(strong (qi.getMessage("memory-usage.usedMemory")));
         gl.addComponent (used); gl.setComponentAlignment(used, Alignment.TOP_RIGHT);
         gl.addComponent (createMBLabel());
 
@@ -206,7 +206,7 @@ public class MemoryUsageView extends VerticalLayout implements View, Runnable, V
     public void run() {
         while (active.get()) {
             try {
-                QI.getQI().access(() -> {
+                qi.access(() -> {
                     refresh();
                     QI.getQI().push();
                 });

@@ -28,10 +28,10 @@ public class StringRegexValidator extends RegexpValidator {
     public static int DEFAULT_LENGTH = 32;
 
     public StringRegexValidator (String errorMessage) {
-        super(STRING_REGEX + DEFAULT_LENGTH + "}$", errorMessage);
+        super(errorMessage,STRING_REGEX + DEFAULT_LENGTH + "}$");
     }
 
     public StringRegexValidator (int maxLength, String errorMessage) {
-        super(STRING_REGEX + maxLength + "}$", errorMessage);
+        super(errorMessage,STRING_REGEX + maxLength + "}$");
     }
 }

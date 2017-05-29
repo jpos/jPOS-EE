@@ -18,13 +18,13 @@
 
 package org.jpos.qi;
 
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
-public class ReadOnlyField extends CustomField {
+public class ReadOnlyField extends CustomField<Object> {
     private Label label;
 
     public ReadOnlyField() {
@@ -35,18 +35,18 @@ public class ReadOnlyField extends CustomField {
     }
 
     @Override
+    protected void doSetValue(Object value) {
+        if (value != null)
+            label.setValue(String.valueOf(value));
+    }
+
+    @Override
     protected Component initContent() {
         return new VerticalLayout(label);
     }
 
     @Override
-    public Class getType() {
-        return String.class;
-    }
-
-    @Override
-    public void setInternalValue (Object newValue) {
-        if (newValue != null)
-            label.setValue(String.valueOf(newValue));
+    public String getValue() {
+        return label.getValue();
     }
 }

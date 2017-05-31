@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: Store and Forward (SAF) Monitor Module'
+
+dependencies {
+    compile project(':modules:saf')
+    compile project(':modules:status')
+}
+

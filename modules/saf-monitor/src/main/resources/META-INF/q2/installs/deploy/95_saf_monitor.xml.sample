@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<saf-monitor class='org.jpos.ee.status.Monitor' logger='Q2'>
+ <monitor id="SAF" delay='10000' period='30000'>
+  <class>org.jpos.saf.SAFMonitor</class>
+  <property name='saf' value='saf' />
+ </monitor>
+</saf-monitor>
+

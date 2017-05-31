@@ -1,5 +1,5 @@
 <saf name='saf' logger='Q2' realm='saf' class='org.jpos.saf.SAF'>
- <property name='space' value='jdbm:saf' />
+ <property name='space' value='je:saf' />
  <property name='mux' value='mux' />
  <property name='flag-retransmissions' value='no'> 
   if MTI is in list, messages would be retransmitted as xxx1

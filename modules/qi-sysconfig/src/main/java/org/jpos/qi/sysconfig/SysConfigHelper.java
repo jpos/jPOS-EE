@@ -105,10 +105,10 @@ public class SysConfigHelper extends QIHelper {
 
     @Override
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
-        return (Stream) DB.exec(db -> {
+        return ((List<SysConfig>) DB.exec(db -> {
             SysConfigManager mgr = new SysConfigManager(db,prefix);
             return mgr.getAll(offset,limit,orders);
-        });
+        })).stream();
 
     }
 

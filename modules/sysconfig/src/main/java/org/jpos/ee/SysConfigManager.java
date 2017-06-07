@@ -32,16 +32,13 @@ import javax.persistence.criteria.*;
 
 @SuppressWarnings("unused")
 public class SysConfigManager extends ManagerSupport<SysConfig> {
-//    private DB db;
     private String prefix = "";
 
     public SysConfigManager (DB db) {
         super(db);
-//        this.db = db;
     }
     public SysConfigManager (DB db, String prefix) {
         super(db);
-//        this.db = db;
         this.prefix = prefix;
     }
     public void setPrefix (String prefix) {
@@ -150,7 +147,7 @@ public class SysConfigManager extends ManagerSupport<SysConfig> {
         return values;
     }
 
-    public Stream getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+    public List<SysConfig> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
         return super.getAll(SysConfig.class,offset,limit,orders);
     }
 

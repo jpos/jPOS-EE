@@ -30,7 +30,7 @@ public class ManagerSupport<T> {
         return db.session().createQuery(query).getSingleResult().intValue();
     }
 
-    public Stream getAll(Class<T> clazz, int offset, int limit, Map<String,Boolean> orders) throws Exception {
+    public List<T> getAll(Class<T> clazz, int offset, int limit, Map<String,Boolean> orders) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(clazz);
         Root<T> root = query.from(clazz);
@@ -49,7 +49,7 @@ public class ManagerSupport<T> {
                 .setMaxResults(limit)
                 .setFirstResult(offset)
                 .getResultList();
-        return list.stream();
+        return list;
     }
 
     public T getItemByParam(Class<T> clazz, String param, Object value, boolean withFilter) {

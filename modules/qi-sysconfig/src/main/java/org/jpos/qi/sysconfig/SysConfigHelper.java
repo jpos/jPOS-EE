@@ -26,6 +26,7 @@ import org.jpos.ee.SysConfigManager;
 import org.jpos.qi.QI;
 import org.jpos.qi.QIHelper;
 
+import javax.persistence.NoResultException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -40,7 +41,13 @@ public class SysConfigHelper extends QIHelper {
 
     public SysConfig getSysConfig (String param) {
         try {
-            return (SysConfig) DB.exec((db) -> db.session().get(SysConfig.class, param));
+            return (SysConfig) DB.exec((db) -> {
+                        SysConfigManager mgr = new SysConfigManager(db, prefix);
+                        return mgr.getItemByParam(SysConfig.class, "id", param, false);
+                    }
+            );
+        } catch (NoResultException nr) {
+            return null;
         } catch (Exception e) {
             QI.getQI().getLog().error(e);
             return null;
@@ -98,11 +105,11 @@ public class SysConfigHelper extends QIHelper {
 
     @Override
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
-        SysConfig[] configs = (SysConfig[]) DB.exec(db -> {
+        return (Stream) DB.exec(db -> {
             SysConfigManager mgr = new SysConfigManager(db,prefix);
             return mgr.getAll(offset,limit,orders);
         });
-        return Arrays.asList(configs).stream();
+
     }
 
     @Override

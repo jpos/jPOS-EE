@@ -157,7 +157,7 @@ public class SysConfigManager extends ManagerSupport<SysConfig> {
 
 
     @Override
-    protected Predicate[] buildGenericPredicates(Root<SysConfig> root) {
+    protected Predicate[] buildPredicates(Root<SysConfig> root) {
         Predicate[] predicates = new Predicate[] {
             db.session().getCriteriaBuilder().like(root.get("id"),prefix + "%")
         };

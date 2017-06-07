@@ -8,7 +8,6 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Created by jr on 6/6/17.
@@ -25,7 +24,7 @@ public class ManagerSupport<T> {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<T> root = query.from(clazz);
-        Predicate[] predicates = buildGenericPredicates(root);
+        Predicate[] predicates = buildPredicates(root);
         if (predicates != null)
             query.where(predicates);
         query.select(criteriaBuilder.count(root));
@@ -44,7 +43,7 @@ public class ManagerSupport<T> {
                 orderList.add(order);
             }
         }
-        Predicate[] predicates = buildGenericPredicates(root);
+        Predicate[] predicates = buildPredicates(root);
         if (predicates != null)
             query.where(predicates);
         query.select(root);
@@ -72,7 +71,7 @@ public class ManagerSupport<T> {
             Predicate equals = criteriaBuilder.equal(root.get(param), value);
             query.where(equals);
             if (withFilter) {
-                Predicate[] predicates = buildGenericPredicates(root);
+                Predicate[] predicates = buildPredicates(root);
                 if (predicates != null) {
                     //overrides previous
                     query.where(criteriaBuilder.and(criteriaBuilder.and(predicates), equals));
@@ -85,7 +84,7 @@ public class ManagerSupport<T> {
         }
     }
 
-    protected Predicate[] buildGenericPredicates(Root<T> root) { return null; }
+    protected Predicate[] buildPredicates(Root<T> root) { return null; }
 
 
 

@@ -42,8 +42,8 @@ import javax.persistence.criteria.*;
 /**
  * @author Alejandro Revilla
  */
-public class UserManager {
-    DB db;
+public class UserManager extends ManagerSupport<User> {
+
     VERSION version;
 
     public UserManager (DB db) {
@@ -51,8 +51,7 @@ public class UserManager {
     }
 
     public UserManager (DB db, VERSION version) {
-        super ();
-        this.db = db;
+        super (db);
         this.version = version;
     }
 
@@ -89,31 +88,18 @@ public class UserManager {
      * @throws HibernateException on low level hibernate related exception
      */
     public List findAll () throws HibernateException {
-        return db.session().createCriteria (User.class)
-                .add (Restrictions.eq ("deleted", Boolean.FALSE))
-                .list();
+        return super.getAll(User.class);
     }
 
     public List getAll(int offset, int limit, Map<String,Boolean> orders) {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<User> query = criteriaBuilder.createQuery(User.class);
-        Root<User> root = query.from(User.class);
-        List<Order> orderList = new ArrayList<>();
-        //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
-        }
-        //Get only non-deleted
-        Predicate notDeleted = criteriaBuilder.isFalse(root.get("deleted"));
+        return super.getAll(User.class,offset,limit,orders);
+    }
 
-        query.select(root);
-        query.orderBy(orderList);
-        query.where(notDeleted);
-        return db.session().createQuery(query)
-                .setFirstResult(offset)
-                .setMaxResults(limit)
-                .getResultList();
+    @Override
+    protected Predicate[] buildPredicates(Root<User> root) {
+        return new Predicate[] {
+                db.session().getCriteriaBuilder().isFalse(root.get("deleted"))
+        };
     }
 
     public int getItemCount() {
@@ -134,11 +120,7 @@ public class UserManager {
     public User getUserByNick (String nick, boolean includeDeleted)
         throws HibernateException
     {
-        Criteria crit = db.session().createCriteria(User.class)
-                .add(Restrictions.eq("nick", nick));
-        if (!includeDeleted)
-            crit = crit.add (Restrictions.eq ("deleted", Boolean.FALSE));
-        return (User) crit.uniqueResult();
+        return getItemByParam(User.class,"nick",nick,!includeDeleted);
     }
 
     /**
@@ -158,11 +140,7 @@ public class UserManager {
     }
 
     public User getUserById(long id, boolean includeDeleted) throws HibernateException {
-        Criteria crit = db.session().createCriteria(User.class)
-                .add(Restrictions.eq("id", id));
-        if (!includeDeleted)
-            crit = crit.add (Restrictions.eq ("deleted", Boolean.FALSE));
-        return (User) crit.uniqueResult();
+        return getItemByParam(User.class,"id",id,!includeDeleted);
     }
 
     public User getUserById(long id)

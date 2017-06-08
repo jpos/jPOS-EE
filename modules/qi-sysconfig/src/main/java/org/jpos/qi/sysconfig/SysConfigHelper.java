@@ -43,7 +43,7 @@ public class SysConfigHelper extends QIHelper {
         try {
             return (SysConfig) DB.exec((db) -> {
                         SysConfigManager mgr = new SysConfigManager(db, prefix);
-                        return mgr.getItemByParam(SysConfig.class, "id", param, false);
+                        return mgr.getItemByParam("id", param, false);
                     }
             );
         } catch (NoResultException nr) {

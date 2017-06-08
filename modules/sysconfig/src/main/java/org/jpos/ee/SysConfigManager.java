@@ -19,7 +19,6 @@
 package org.jpos.ee;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
@@ -124,37 +123,11 @@ public class SysConfigManager extends ManagerSupport<SysConfig> {
         }
         return values;
     }
-    public SysConfig[] getAll () {
-
-        SysConfig[] values;
-        try {
-            String queryAsString = "from sysconfig in class org.jpos.ee.SysConfig";
-            if (prefix != null)
-                queryAsString += " where id like :query";
-            Query query = db.session().createQuery (queryAsString + " order by id");
-            if (prefix != null)
-                query.setParameter ("query", prefix + "%");
-            List l = query.list();
-            values = new SysConfig[l.size()];
-            Iterator iter = l.iterator();
-            for (int i=0; iter.hasNext(); i++) {
-                values[i] = (SysConfig) iter.next();
-            }
-        } catch (HibernateException e) {
-            db.getLog().warn (e);
-            values = new SysConfig[0];
-        }
-        return values;
+    public List<SysConfig> getAll () {
+        HashMap<String,Boolean> orders = new HashMap<>();
+        orders.put("id",true);
+        return getAll(0,-1,orders);
     }
-
-    public List<SysConfig> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
-        return super.getAll(SysConfig.class,offset,limit,orders);
-    }
-
-    public int getItemCount() throws Exception {
-        return getItemCount(SysConfig.class);
-    }
-
 
     @Override
     protected Predicate[] buildPredicates(Root<SysConfig> root) {

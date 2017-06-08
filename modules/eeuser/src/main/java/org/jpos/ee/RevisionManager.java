@@ -34,10 +34,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 @SuppressWarnings("unused")
-public class RevisionManager {
-    DB db;
+public class RevisionManager extends ManagerSupport<Revision> {
+
     public RevisionManager (DB db) {
-        this.db = db;
+        super(db);
     }
     @SuppressWarnings("unchecked")
     public List<Revision> getRevisionsByRef (String ref)
@@ -58,7 +58,9 @@ public class RevisionManager {
         return (List<Revision>) crit.list();
     }
 
-    public List<Revision> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+    //overridden to avoid LazyInitializationExc
+    @Override
+    public List<Revision> getAll(int offset, int limit, Map<String,Boolean> orders) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Revision> query = criteriaBuilder.createQuery(Revision.class);
         Root<Revision> root = query.from(Revision.class);
@@ -76,13 +78,6 @@ public class RevisionManager {
                 .setMaxResults(limit)
                 .setFirstResult(offset)
                 .getResultList();
-    }
-
-    public int getItemCount() throws Exception {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
-        query.select(criteriaBuilder.count(query.from(Revision.class)));
-        return db.session().createQuery(query).getSingleResult().intValue();
     }
 
 

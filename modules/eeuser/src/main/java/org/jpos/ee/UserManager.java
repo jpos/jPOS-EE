@@ -88,11 +88,7 @@ public class UserManager extends ManagerSupport<User> {
      * @throws HibernateException on low level hibernate related exception
      */
     public List findAll () throws HibernateException {
-        return super.getAll(User.class);
-    }
-
-    public List getAll(int offset, int limit, Map<String,Boolean> orders) {
-        return super.getAll(User.class,offset,limit,orders);
+        return super.getAll();
     }
 
     @Override
@@ -100,16 +96,6 @@ public class UserManager extends ManagerSupport<User> {
         return new Predicate[] {
                 db.session().getCriteriaBuilder().isFalse(root.get("deleted"))
         };
-    }
-
-    public int getItemCount() {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
-        Root<User> root = query.from(User.class);
-        Predicate notDeleted = criteriaBuilder.isFalse(root.get("deleted"));
-        query.where(notDeleted);
-        query.select(criteriaBuilder.count(root));
-        return db.session().createQuery(query).getSingleResult().intValue();
     }
 
     public User getUserByNick (String nick)
@@ -120,7 +106,7 @@ public class UserManager extends ManagerSupport<User> {
     public User getUserByNick (String nick, boolean includeDeleted)
         throws HibernateException
     {
-        return getItemByParam(User.class,"nick",nick,!includeDeleted);
+        return getItemByParam("nick",nick,!includeDeleted);
     }
 
     /**
@@ -140,7 +126,7 @@ public class UserManager extends ManagerSupport<User> {
     }
 
     public User getUserById(long id, boolean includeDeleted) throws HibernateException {
-        return getItemByParam(User.class,"id",id,!includeDeleted);
+        return getItemByParam("id",id,!includeDeleted);
     }
 
     public User getUserById(long id)

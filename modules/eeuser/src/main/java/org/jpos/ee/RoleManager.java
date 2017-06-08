@@ -18,56 +18,19 @@
 
 package org.jpos.ee;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
+public class RoleManager extends ManagerSupport<Role> {
 
-import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-public class RoleManager {
-    private DB db;
     public RoleManager (DB db) {
-        this.db = db;
+        super(db);
     }
 
     public Role getRoleByName (String name) {
-        return (Role) db.session().createQuery("from Role c WHERE c.name=:name").
-          setParameter("name", name).uniqueResult();
+        return super.getItemByParam("name",name,true);
     }
 
     public Role getRoleById (long id) {
-        return (Role) db.session().createQuery("from Role c WHERE c.id=:id").
-                setParameter("id", id).uniqueResult();
-    }
+        return super.getItemByParam("id",id,true);
 
-    public List<Role> getAll() {
-        return db.session().createQuery("from Role", Role.class).list();
-    }
-
-    public List<Role> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Role> query = criteriaBuilder.createQuery(Role.class);
-        Root<Role> root = query.from(Role.class);
-        List<Order> orderList = new ArrayList<>();
-        //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
-        }
-        query.select(root);
-        query.orderBy(orderList);
-        return db.session().createQuery(query)
-                .setMaxResults(limit)
-                .setFirstResult(offset)
-                .getResultList();
-    }
-
-    public int getItemCount() throws Exception {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
-        query.select(criteriaBuilder.count(query.from(Role.class)));
-        return db.session().createQuery(query).getSingleResult().intValue();
     }
 
 }

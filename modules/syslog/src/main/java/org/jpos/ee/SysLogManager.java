@@ -18,21 +18,15 @@
 
 package org.jpos.ee;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 import org.hibernate.Transaction;
 
-import javax.persistence.criteria.*;
 
 @SuppressWarnings("unused")
-public class SysLogManager {
-    DB db;
+public class SysLogManager extends ManagerSupport<SysLog> {
     boolean autoCommit;
 
     /**
@@ -40,8 +34,7 @@ public class SysLogManager {
      * (open/begin/commit/close is not required).
      */
     public SysLogManager () {
-        super ();
-        db = new DB();
+        super (new DB());
         autoCommit = true;
     }
 
@@ -52,8 +45,7 @@ public class SysLogManager {
      * @param db the DB instance
      */
     public SysLogManager (DB db) {
-        super();
-        this.db = db;
+        super(db);
         autoCommit = false;
     }
 
@@ -63,8 +55,7 @@ public class SysLogManager {
      * @param autoCommit true if we want this manager to auto-commit log events
      */
     public SysLogManager (DB db, boolean autoCommit) {
-        super();
-        this.db = db;
+        super(db);
         this.autoCommit = autoCommit;
     }
 
@@ -175,30 +166,6 @@ public class SysLogManager {
         return null;
     }
 
-    public List<SysLog> getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<SysLog> query = criteriaBuilder.createQuery(SysLog.class);
-        Root<SysLog> root = query.from(SysLog.class);
-        List<Order> orderList = new ArrayList<>();
-        //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
-        }
-        query.select(root);
-        query.orderBy(orderList);
-        return db.session().createQuery(query)
-                .setMaxResults(limit)
-                .setFirstResult(offset)
-                .getResultList();
-    }
-
-    public int getItemCount() throws Exception {
-        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
-        query.select(criteriaBuilder.count(query.from(SysLog.class)));
-        return db.session().createQuery(query).getSingleResult().intValue();
-    }
 
 }
 

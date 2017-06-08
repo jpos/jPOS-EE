@@ -96,45 +96,4 @@ public class RevisionsHelper extends QIHelper {
         String backRoute = "revision_history" + (!currentRevision.isEmpty() ? "." + currentRevision : "");
         return "<a href=\"#!/users/" + data[1] + "?back="+ backRoute +"\">" + nickAndId + "</a>";
     }
-
-
-//    protected Converter getRefConverter(String currentRevision) {
-//        return new Converter<String, String>() {
-//            @Override
-//            public String convertToModel(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-//                if (value != null) {
-//                    return value.split("<,>")[1];
-//                }
-//                return "";
-//            }
-//
-//            @Override
-//            public String convertToPresentation(String value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-//                return getLink(value,currentRevision);
-//            }
-//
-//            @Override
-//            public Class<String> getModelType() {
-//                return String.class;
-//            }
-//
-//            @Override
-//            public Class<String> getPresentationType() {
-//                return String.class;
-//            }
-//        };
-//    }
-
-//    protected Converter getAuthorConverter(String currentRevision) {
-//        return new UserConverter() {
-//            @Override
-//            public String convertToPresentation(User value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-//                if (value == null)
-//                    return null;
-//                else {
-//                    return getAuthorLink(value.getNickAndId(),currentRevision);
-//                }
-//            }
-//        };
-//    }
 }

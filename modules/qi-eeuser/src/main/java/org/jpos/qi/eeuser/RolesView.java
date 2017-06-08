@@ -73,7 +73,7 @@ public class RolesView extends QIEntityView {
         List<Validator> validators = getValidators(propertyId);
         if ("permissions".equals(propertyId)) {
             CheckBoxGroup<Permission> f = new CheckBoxGroup("Permissions");
-            SysConfig[] sysconfigs = ((RolesHelper)getHelper()).getPermissions();
+            List<SysConfig> sysconfigs = ((RolesHelper)getHelper()).getPermissions();
             List<Permission> allPermissions = new ArrayList<>();
             //convert SysConfigs to Permissions
             for (SysConfig sys : sysconfigs) {
@@ -81,7 +81,7 @@ public class RolesView extends QIEntityView {
                 allPermissions.add(p);
             }
             f.setItems(allPermissions);
-            f.setItemCaptionGenerator((ItemCaptionGenerator<Permission>) item -> sysconfigs[allPermissions.indexOf(item)].getValue());
+            f.setItemCaptionGenerator((ItemCaptionGenerator<Permission>) item -> sysconfigs.get(allPermissions.indexOf(item)).getValue());
             Binder.BindingBuilder builder = getBinder().forField(f);
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);

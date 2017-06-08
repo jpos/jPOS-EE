@@ -72,11 +72,10 @@ public class RolesHelper extends QIHelper {
         }
     }
 
-    public SysConfig[] getPermissions () {
+    public List<SysConfig> getPermissions () {
         try {
-            return (SysConfig[]) DB.exec( (db) -> {
+            return (List<SysConfig>) DB.exec( (db) -> {
                 SysConfigManager mgr = new SysConfigManager(db, "perm.");
-
                 return mgr.getAll();
             });
         } catch (Exception e) {
@@ -96,20 +95,4 @@ public class RolesHelper extends QIHelper {
             return null;
         }
     }
-
-//    public Validator getNameTakenValidator(final Role selectedR) {
-//
-//
-////        Validator nameTaken = (Validator) (value, context) -> {
-////            String oldName = selectedR.getName();
-////            Role role = getRoleByName((String)value);
-////            if (role == null || (oldName != null && oldName.trim().equals(((String) value).trim()))) {
-////                return ValidationResult.ok();
-////            }
-////            return ValidationResult.error(getApp().getMessage("errorMessage.fieldTaken",value));
-////        };
-////        return nameTaken;
-//
-//
-//    }
 }

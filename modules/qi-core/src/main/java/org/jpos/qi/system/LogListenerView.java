@@ -21,6 +21,7 @@ package org.jpos.qi.system;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -152,11 +153,16 @@ public class LogListenerView extends CssLayout
             if (!cb.getValue())
                 return event; // ignore
         } else {
-            cb = new CheckBox(r);
-            cb.setValue(true);
-            realms.put(r, cb);
-            realmsLayout.setSizeUndefined();
-            realmsLayout.addComponent (cb);
+            getSession().getLockInstance().lock();
+            try {
+                cb = new CheckBox(r);
+                cb.setValue(true);
+                realms.put(r, cb);
+                realmsLayout.setSizeUndefined();
+            } finally {
+                getSession().getLockInstance().unlock();
+            }
+            realmsLayout.addComponent(cb);
         }
         sp.out(key, new FrozenLogEvent(event), BUFFER_TIMEOUT);
         return event;

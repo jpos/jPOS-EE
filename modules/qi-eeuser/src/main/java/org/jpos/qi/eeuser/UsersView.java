@@ -102,8 +102,8 @@ public class UsersView extends QIEntityView<User> {
         }
         if (((UsersHelper)getHelper()).updateUser(getBinder(), current, repeat)){
             getApp().displayNotification(getApp().getMessage("updated", getEntityName().toUpperCase()));
-            if (getApp().getUser().equals(getBean())) {
-                getApp().getUser().setName(getBean().getName());
+            if (getApp().getUser().equals(getInstance())) {
+                getApp().getUser().setName(getInstance().getName());
                 getApp().getHeader().refresh();
             }
         }
@@ -313,12 +313,12 @@ public class UsersView extends QIEntityView<User> {
     @Override
     protected void addFields(Layout l) {
         super.addFields(l);
-        selectedU = getBean();
-        if (getBean().getId() != null && getBean().getId().equals(getApp().getUser().getId())) {
+        selectedU = getInstance();
+        if (getInstance().getId() != null && getInstance().getId().equals(getApp().getUser().getId())) {
             changePassBtn = createChangePasswordButton();
             l.addComponents(changePassBtn, createPasswordPanel());
         }
-        if (getBean().hasPermission("sysadmin") && !isNewView()) {
+        if (getInstance().hasPermission("sysadmin") && !isNewView()) {
             resetPassBtn = createResetPasswordButton();
             l.addComponent(resetPassBtn);
         }

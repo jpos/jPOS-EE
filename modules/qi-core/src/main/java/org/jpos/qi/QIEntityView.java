@@ -792,10 +792,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         this.viewConfig = viewConfig;
     }
 
-    public T getBean() {
-        return bean;
-    }
-
     public void setBean(T bean) {
         this.bean = bean;
     }

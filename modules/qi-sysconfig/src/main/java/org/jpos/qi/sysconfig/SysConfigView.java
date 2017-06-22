@@ -79,7 +79,7 @@ public class SysConfigView extends QIEntityView<SysConfig> {
 
     @Override
     public void updateEntity() throws BLException {
-        SysConfig entity = getBean();
+        SysConfig entity = getInstance();
         entity.setId(((SysConfigHelper)getHelper()).addPrefix(entity.getId()));
         if (getHelper().updateEntity(getBinder()))
             getApp().displayNotification(getApp().getMessage("updated", getEntityName().toUpperCase()));

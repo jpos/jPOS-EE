@@ -79,12 +79,12 @@ public class RevisionsView extends QIEntityView<Revision> {
         if ("author".equals(propertyId)) {
              builder = builder.withConverter(userInput -> userInput,
                     (SerializableFunction<User,String>) toPresentation ->
-                            ((RevisionsHelper)getHelper()).getAuthorLink(toPresentation.getNickAndId(), String.valueOf(getBean().getId())));
+                            ((RevisionsHelper)getHelper()).getAuthorLink(toPresentation.getNickAndId(), String.valueOf(getInstance().getId())));
         }
         if ("ref".equals(propertyId)) {
             builder = builder.withConverter(userInput -> userInput,
                     (SerializableFunction<String,String>) toPresentation ->
-                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getBean().getId())));
+                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getInstance().getId())));
         }
         validators.forEach(builder::withValidator);
         builder.bind(propertyId);

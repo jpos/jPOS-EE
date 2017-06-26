@@ -20,6 +20,7 @@ package org.jpos.qi;
 
 import com.vaadin.data.*;
 import com.vaadin.data.converter.StringToBigDecimalConverter;
+import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
@@ -460,6 +461,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                         l.addComponent(buildAndBindBigDecimalField(id));
                     } else if (dataType.equals(Long.class)) {
                         l.addComponent(buildAndBindLongField(id));
+                    } else if (dataType.equals(Integer.class) || dataType.equals(int.class)) {
+                        l.addComponent(buildAndBindIntField(id));
                     } else if (dataType.equals(boolean.class)) {
                         l.addComponent(buildAndBindBooleanField(id));
                     } else {
@@ -513,6 +516,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         TextField field = new TextField(getCaptionFromId(id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder.bind(id);
+        return field;
+    }
+
+    protected TextField buildAndBindIntField(String id) {
+        TextField field = new TextField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id,field);
+        builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }

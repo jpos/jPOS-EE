@@ -609,13 +609,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public void removeEntity () throws BLException {
         if (getHelper().removeEntity()) {
             getApp().getNavigator().navigateTo(getGeneralRoute());
-            getApp().displayNotification(getApp().getMessage("removed", getEntityName().toUpperCase()));
+            getApp().displayNotification(getApp().getMessage("removed", getApp().getMessage(getEntityName()).toUpperCase()));
         }
     }
 
     public void saveEntity () throws BLException {
         if (getHelper().saveEntity(getBinder())) {
-            app.displayNotification(app.getMessage("created", getEntityName().toUpperCase()));
+            app.displayNotification(app.getMessage("created", getApp().getMessage(getEntityName()).toUpperCase()));
             app.getNavigator().navigateTo(getGeneralRoute());
         }
     }
@@ -630,7 +630,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void updateEntity () throws BLException {
         if (getHelper().updateEntity(getBinder()))
-            getApp().displayNotification(getApp().getMessage("updated", getEntityName().toUpperCase()));
+            getApp().displayNotification(getApp().getMessage("updated", getApp().getMessage(getEntityName()).toUpperCase()));
         else
             getApp().displayNotification(getApp().getMessage("notchanged"));
     }

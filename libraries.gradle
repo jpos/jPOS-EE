@@ -12,7 +12,7 @@ ext {
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.7.4'
     groovyVersion = '2.4.6'
-    vaadinVersion = '8.1.0.beta1'
+    vaadinVersion = '8.1.0.beta3'
 
     libraries = [
             //jUnit (Tests)

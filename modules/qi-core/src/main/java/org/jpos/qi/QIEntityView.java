@@ -515,7 +515,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected TextField buildAndBindLongField(String id) {
         TextField field = new TextField(getCaptionFromId(id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }
@@ -523,7 +523,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected TextField buildAndBindIntField(String id) {
         TextField field = new TextField(getCaptionFromId(id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }
@@ -552,7 +552,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected TextField buildAndBindBigDecimalField(String id) {
         TextField field = new TextField(getCaptionFromId(id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }

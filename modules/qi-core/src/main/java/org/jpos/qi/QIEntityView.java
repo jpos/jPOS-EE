@@ -553,7 +553,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         TextField field = new TextField(getCaptionFromId(id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
-        builder.bind(id);
+        builder.withNullRepresentation(BigDecimal.ZERO).bind(id);
         return field;
     }
 
@@ -566,6 +566,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (isRequired(id)) {
             builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId(id))));
         }
+        builder = builder.withNullRepresentation("");
         return builder;
     }
 

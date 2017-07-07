@@ -571,7 +571,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected String getCaptionFromId(String id) {
-        return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(id),' ');
+        //try to get caption from messages file, if not, parse id.
+        String caption = getApp().getMessage(id);
+        if (caption.equals(id))
+            return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(id),' ');
+        return caption;
     }
 
     private void loadRevisionHistory (Layout formLayout, String ref) {

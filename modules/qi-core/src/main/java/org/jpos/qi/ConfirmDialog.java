@@ -29,7 +29,6 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
 
     public ConfirmDialog(String caption, String question, Callback callback) {
         super(caption);
-        setWidth("350px");
         setModal(true);
         setResizable(false);
 

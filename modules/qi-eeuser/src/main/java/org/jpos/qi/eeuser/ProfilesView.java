@@ -41,7 +41,7 @@ public class ProfilesView extends UsersView {
 
     @Override
     public Object getEntityByParam(String param) {
-        return QI.getQI().getUser();
+        return super.getEntityByParam(String.valueOf(QI.getQI().getUser().getId()));
     }
 
     @Override

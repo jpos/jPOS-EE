@@ -24,12 +24,10 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
-import org.hibernate.exception.ConstraintViolationException;
 import org.jpos.core.Configuration;
 import org.jpos.ee.*;
 import org.jpos.util.BeanDiff;
 
-import javax.persistence.PersistenceException;
 import java.util.*;
 import java.util.stream.Stream;
 

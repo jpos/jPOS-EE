@@ -243,9 +243,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                     Object value = c.getValueProvider().apply(obj);
                     if (value instanceof BigDecimal) {
                         return "align-right";
-                    } else if (c.getId().equals("id") && !(value instanceof String)) {
-                        c.setRenderer(new NumberRenderer(nf));
-                    }
+                    } 
                     return null;
                 });
                 if ("id".equals(c.getId())) {

@@ -241,19 +241,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 }
                 c.setStyleGenerator(obj -> {
                     Object value = c.getValueProvider().apply(obj);
-                    if (value instanceof BigDecimal) {
+                    if (value instanceof BigDecimal && !c.getId().equals("id")) {
                         return "align-right";
                     } 
                     return null;
                 });
-                if ("id".equals(c.getId())) {
-                    c.setExpandRatio(0);
-//                } else if (isBooleanColumn(c)) {
-//                    c.setExpandRatio(0);
-//                    c.setConverter(new StringToBooleanConverter("✔", "✘"));
-                } else {
-                    c.setExpandRatio(1);
-                }
             }
 
         }

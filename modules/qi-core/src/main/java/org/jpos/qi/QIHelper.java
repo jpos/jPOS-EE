@@ -178,7 +178,7 @@ public abstract class QIHelper {
                         return null;
                     }
                 },
-                (CallbackDataProvider.CountCallback<SysConfig, Void>) query -> {
+                (CallbackDataProvider.CountCallback) query -> {
                     try {
                         return getItemCount();
                     } catch (Exception e) {

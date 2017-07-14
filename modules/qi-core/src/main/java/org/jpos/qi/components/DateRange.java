@@ -64,15 +64,15 @@ public class DateRange {
         QI app = (QI) UI.getCurrent();
         DateTime dt = DateTime.now().millisOfDay().withMinimumValue();
         Map<String, Date> map = new HashMap<>();
-        map.put(app.getMessage(LAST_HOUR),  DateTime.now().minusHours(1).toDate());
-        map.put(app.getMessage(TODAY),      dt.toDate());
-        map.put(app.getMessage(YESTERDAY),  dt.minusDays(1).toDate());
-        map.put(app.getMessage(THIS_WEEK),  dt.dayOfWeek().withMinimumValue().toDate());
-        map.put(app.getMessage(LAST_WEEK),  dt.dayOfWeek().withMinimumValue().minusWeeks(1).toDate());
-        map.put(app.getMessage(THIS_MONTH), dt.dayOfMonth().withMinimumValue().toDate());
-        map.put(app.getMessage(LAST_MONTH), dt.dayOfMonth().withMinimumValue().minusMonths(1).toDate());
-        map.put(app.getMessage(THIS_YEAR),  dt.dayOfYear().withMinimumValue().toDate());
-        map.put(app.getMessage(ALL_TIME),   null);
+        map.put(LAST_HOUR,  DateTime.now().minusHours(1).toDate());
+        map.put(TODAY,      dt.toDate());
+        map.put(YESTERDAY,  dt.minusDays(1).toDate());
+        map.put(THIS_WEEK,  dt.dayOfWeek().withMinimumValue().toDate());
+        map.put(LAST_WEEK,  dt.dayOfWeek().withMinimumValue().minusWeeks(1).toDate());
+        map.put(THIS_MONTH, dt.dayOfMonth().withMinimumValue().toDate());
+        map.put(LAST_MONTH, dt.dayOfMonth().withMinimumValue().minusMonths(1).toDate());
+        map.put(THIS_YEAR,  dt.dayOfYear().withMinimumValue().toDate());
+        map.put(ALL_TIME,   null);
         return map;
     }
 
@@ -80,15 +80,15 @@ public class DateRange {
         QI app = (QI) UI.getCurrent();
         DateTime dt = DateTime.now().millisOfDay().withMaximumValue();
         Map<String, Date> map = new HashMap<>();
-        map.put(app.getMessage(LAST_HOUR),  DateTime.now().toDate());
-        map.put(app.getMessage(TODAY),      dt.toDate());
-        map.put(app.getMessage(YESTERDAY),  dt.minusDays(1).toDate());
-        map.put(app.getMessage(THIS_WEEK),  dt.dayOfWeek().withMaximumValue().toDate());
-        map.put(app.getMessage(LAST_WEEK),  dt.dayOfWeek().withMaximumValue().minusWeeks(1).toDate());
-        map.put(app.getMessage(THIS_MONTH), dt.dayOfMonth().withMaximumValue().toDate());
-        map.put(app.getMessage(LAST_MONTH), dt.dayOfMonth().withMaximumValue().minusMonths(1).toDate());
-        map.put(app.getMessage(THIS_YEAR),  dt.dayOfYear().withMaximumValue().toDate());
-        map.put(app.getMessage(ALL_TIME),   null);
+        map.put(LAST_HOUR,  DateTime.now().toDate());
+        map.put(TODAY,      dt.toDate());
+        map.put(YESTERDAY,  dt.minusDays(1).toDate());
+        map.put(THIS_WEEK,  dt.dayOfWeek().withMaximumValue().toDate());
+        map.put(LAST_WEEK,  dt.dayOfWeek().withMaximumValue().minusWeeks(1).toDate());
+        map.put(THIS_MONTH, dt.dayOfMonth().withMaximumValue().toDate());
+        map.put(LAST_MONTH, dt.dayOfMonth().withMaximumValue().minusMonths(1).toDate());
+        map.put(THIS_YEAR,  dt.dayOfYear().withMaximumValue().toDate());
+        map.put(ALL_TIME,   null);
         return map;
     }
 

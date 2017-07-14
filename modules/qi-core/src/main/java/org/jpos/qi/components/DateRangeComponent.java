@@ -22,8 +22,10 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.datefield.DateResolution;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import org.joda.time.DateTime;
 import org.jpos.qi.QI;
+
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  * Created by spr on 10/22/15.
@@ -61,17 +63,18 @@ public abstract class DateRangeComponent extends HorizontalLayout {
 
     public DateRange getValue() {
         DateRange dr;
-        if (dateRanges != null && dateRanges.getValue() != null)
-            dr = new DateRange(dateRanges.getValue().toString());
+        if (dateRanges != null && dateRanges.getValue() != null) {
+            dr = new DateRange((String)dateRanges.getValue());
+        }
         else if (datePickerFrom.getValue() != null || datePickerTo.getValue() != null) {
             dr = new DateRange();
             if (datePickerFrom.getValue() != null) {
-                DateTime dt = new DateTime(datePickerFrom.getValue());
-                dr.setStart(dt.millisOfDay().withMinimumValue().toDate());
+                Date startDate = Date.from(datePickerFrom.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+                dr.setStart(startDate);
             }
             if (datePickerTo.getValue() != null) {
-                DateTime dt = new DateTime(datePickerTo.getValue());
-                dr.setEnd(dt.millisOfDay().withMaximumValue().toDate());
+                Date endDate = Date.from(datePickerTo.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+                dr.setEnd(endDate);
             }
         } else {
             dr = new DateRange();

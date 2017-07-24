@@ -47,7 +47,9 @@
      <list-index column="posn" />
      <one-to-many class="org.jpos.gl.GLEntry" />
     </list>
+
+      <fetch-profile name="eager">
+          <fetch association="entries" style="join"/>
+      </fetch-profile>
   </class>
 </hibernate-mapping>
-
-

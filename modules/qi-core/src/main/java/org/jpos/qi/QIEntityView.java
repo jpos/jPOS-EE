@@ -446,7 +446,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 try {
                     Class dataType = o.getClass().getDeclaredField(id).getType();
                     if (dataType.equals(Date.class)) {
-                        l.addComponent(buildAndBindDateField(id));
+                        buildAndBindTimestampField(id);
                     } else if (dataType.equals(BigDecimal.class)) {
                         l.addComponent(buildAndBindBigDecimalField(id));
                     } else if (dataType.equals(Long.class)) {
@@ -532,10 +532,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return field;
     }
 
-    protected DateField buildAndBindDateField(String id) {
-        DateField field = new DateField(getCaptionFromId(id));
-        Binder.BindingBuilder builder = formatField(id, field);
-        builder.bind(id);
+
+    protected TextField buildAndBindTimestampField(String id) {
+        TextField field = new TextField(getCaptionFromId(id));
+        getBinder().forField(field).withConverter(toModel -> null, toPresentation -> {
+            DateFormat dateFormat = new SimpleDateFormat(getApp().getMessage("timestampformat"));
+            return dateFormat.format(toPresentation);
+        }).bind(id);
         return field;
     }
 

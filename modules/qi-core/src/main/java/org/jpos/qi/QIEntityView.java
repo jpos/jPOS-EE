@@ -446,7 +446,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 try {
                     Class dataType = o.getClass().getDeclaredField(id).getType();
                     if (dataType.equals(Date.class)) {
-                        buildAndBindTimestampField(id);
+                        l.addComponent(buildAndBindTimestampField(id));
                     } else if (dataType.equals(BigDecimal.class)) {
                         l.addComponent(buildAndBindBigDecimalField(id));
                     } else if (dataType.equals(Long.class)) {

@@ -591,8 +591,12 @@ public class ReplicatedSpace
                 if (listeners != null) {
                     for (int i=0; i<listeners.length; i++) {
                         Object o = listeners[i];
-                        if (o instanceof SpaceListener)
-                            ((SpaceListener) o).notify (key, value);
+                        if (o instanceof TSpace.Expirable) {
+                            o = ((TSpace.Expirable)o).getValue();
+                        }
+                        if (o instanceof SpaceListener) {
+                            ((SpaceListener) o).notify(key, value);
+                        }
                     }
                 }
             }

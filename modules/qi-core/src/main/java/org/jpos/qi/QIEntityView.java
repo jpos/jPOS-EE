@@ -19,6 +19,7 @@
 package org.jpos.qi;
 
 import com.vaadin.data.*;
+import com.vaadin.data.converter.LocalDateToDateConverter;
 import com.vaadin.data.converter.StringToBigDecimalConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.converter.StringToLongConverter;
@@ -540,6 +541,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             return dateFormat.format(toPresentation);
         }).bind(id);
         return field;
+    }
+
+    protected DateField buildAndBindDateField(String id) {
+        DateField dateField = new DateField(getCaptionFromId(id));
+        Binder.BindingBuilder builder = formatField(id,dateField);
+        builder.withConverter(new LocalDateToDateConverter()).bind(id);
+        return dateField;
     }
 
     protected TextField buildAndBindBigDecimalField(String id) {

@@ -36,7 +36,6 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
         super ();
     }
     public void initService() throws ConfigurationException {
-        Element e = getPersist ();
         Space sp  = SpaceFactory.getSpace (cfg.get ("space", ""));
         rspaceUri = cfg.get ("rspace", "rspace");
         try {
@@ -47,7 +46,7 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
                 getLog().getLogger(),
                 getLog().getRealm(),
                 cfg.getBoolean ("trace"),
-                cfg.getBoolean ("replicate", sp instanceof TSpace)
+                cfg.getBoolean ("replicate", false)
             );
             NameRegistrar.register (rspaceUri, rs);
         } catch (Throwable t) {

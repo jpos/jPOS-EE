@@ -7,7 +7,7 @@ ext {
     jettyVersion = '9.3.19.v20170502'
     servletApiVersion = '3.1.0'
     websocketApiVersion = '1.1'
-    jgroupsVersion = '3.6.9.Final'
+    jgroupsVersion = '4.0.4.Final'
     jaxrsVersion = '2.0.1'
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.7.4'

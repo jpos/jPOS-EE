@@ -27,20 +27,18 @@ import org.jpos.iso.ISOUtil;
 import org.jpos.util.Log;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
-import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.View;
 import org.jgroups.Message;
 import org.jgroups.Address;
 import org.jgroups.Receiver;
-import org.jgroups.conf.XmlConfigurator;
 
 @SuppressWarnings("unchecked")
 public class ReplicatedSpace 
     extends Log
     implements LocalSpace, Receiver 
 {
-    Channel channel;
+    JChannel channel;
     String nodeName;
     String nodePrefix;
     String seqName;
@@ -92,7 +90,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.OUT, key, value, timeout);
-            channel.send (new Message (null, null, r));
+            channel.send (new Message (null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not out " + key);
@@ -104,10 +102,10 @@ public class ReplicatedSpace
         push(key, value, 0L);
     }
     public void push (Object key, Object value, long timeout) { 
-        Address coordinator = getCoordinator();   
+        getCoordinator();
         try {
             Request r = new Request (Request.PUSH, key, value, timeout);
-            channel.send (new Message (null, null, r));
+            channel.send (new Message (null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not push " + key);
@@ -122,7 +120,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.PUT, key, value, timeout);
-            channel.send (new Message (null, null, r));
+            channel.send (new Message (null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not put " + key);
@@ -161,7 +159,7 @@ public class ReplicatedSpace
             Request r = (Request) obj;
             switch (r.type) {
                 case Request.OUT:
-                    if (r.timeout != 0) 
+                    if (r.timeout != 0)
                         sp.out (r.key, r.value, r.timeout + TIMEOUT);
                     else
                         sp.out (r.key, r.value);
@@ -216,11 +214,12 @@ public class ReplicatedSpace
                 case Request.INP:
                     Object v = sp.inp (r.key);
                     if (v != null) {
+                        MD5Template tmpl = new MD5Template(r.key, v);
                         send (null,
                             new Request (
                                 Request.INP_NOTIFICATION, 
                                 r.key, 
-                                new MD5Template (r.key, v)
+                                tmpl
                             )
                         );
                     }
@@ -238,9 +237,7 @@ public class ReplicatedSpace
                     sp.out (r.key, r.value, MAX_WAIT);
                     break;
                 case Request.INP_NOTIFICATION:
-                    // if not self notification
-                    if (!channel.getAddress().equals (msg.getSrc()))
-                        sp.inp (r.value);
+                    sp.inp (r.value);
                     break;
                 case Request.SPACE_COPY:
                     if (replicate && !isCoordinator() && sp instanceof TSpace) {
@@ -427,7 +424,7 @@ public class ReplicatedSpace
                     send (null,
                         new Request (
                             Request.SPACE_COPY, 
-                            null, // value is ref key for response
+                            null,
                             ((TSpace)sp).getEntries()
                         )
                     );
@@ -461,7 +458,7 @@ public class ReplicatedSpace
     private void send (Address destination, Request r) 
     {
         try {
-            channel.send (new Message (destination, null, r));
+            channel.send (new Message (destination, r));
         } catch (Exception e) {
             error (e);
         }
@@ -471,7 +468,7 @@ public class ReplicatedSpace
         while (true) {
             Address coordinator = getCoordinator();
             try {
-                channel.send (new Message (coordinator, null, r));
+                channel.send (new Message (coordinator, r));
                 break;
             } catch (Exception e) {
                 error ("error " + e.getMessage() + ", retrying");
@@ -484,12 +481,7 @@ public class ReplicatedSpace
     private void initChannel (String groupName, String configFile) 
         throws Exception
     {
-        InputStream config = new FileInputStream (configFile);
-        XmlConfigurator conf = XmlConfigurator.getInstance (config);
-        String props = conf.getProtocolStackString();
-        channel = new JChannel (props);
-        // channel.setOpt(Channel.GET_STATE_EVENTS, Boolean.TRUE);
-        // channel.setOpt(Channel.AUTO_RECONNECT, Boolean.TRUE);
+        channel = new JChannel (configFile);
         channel.setReceiver(this);
         channel.connect (groupName);
         info ("member: " + channel.getAddress().toString());

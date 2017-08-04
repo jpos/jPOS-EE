@@ -44,5 +44,8 @@
     </property>
     <subclass name="org.jpos.gl.GLCredit" discriminator-value="C" />
     <subclass name="org.jpos.gl.GLDebit" discriminator-value="D" />
+    <fetch-profile name="eager">
+      <fetch association="account" style="join"/>
+    </fetch-profile>
   </class>
 </hibernate-mapping>

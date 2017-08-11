@@ -11,7 +11,7 @@ ext {
     jaxrsVersion = '2.0.1'
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.7.4'
-    groovyVersion = '2.4.6'
+    groovyVersion = '2.4.12'
     vaadinVersion = '8.1.0.rc1'
 
     libraries = [

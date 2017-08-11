@@ -100,7 +100,7 @@ public class GroovyParticipant extends Log
         }
     }
     public void abort(long id, Serializable ctx) {
-        if (commit != null) {
+        if (abort != null) {
             try {
                 eval(getShell(id, ctx), abort);
             } catch (Exception e) {

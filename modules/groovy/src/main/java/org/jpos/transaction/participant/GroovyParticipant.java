@@ -18,43 +18,57 @@
 
 package org.jpos.transaction.participant;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import org.jdom2.Element;
-import org.jpos.core.Configurable;
-import org.jpos.core.Configuration;
-import org.jpos.core.ConfigurationException;
-import org.jpos.core.XmlConfigurable;
-import org.jpos.transaction.AbortParticipant;
-import org.jpos.transaction.Context;
-import org.jpos.transaction.TransactionManager;
-import org.jpos.transaction.TransactionParticipant;
-import org.jpos.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.jdom2.Element;
+import org.jpos.core.Configurable;
+import org.jpos.core.XmlConfigurable;
+import org.jpos.core.Configuration;
+import org.jpos.core.ConfigurationException;
+import org.jpos.transaction.TransactionParticipant;
+import org.jpos.transaction.AbortParticipant;
+import org.jpos.transaction.Context;
+import org.jpos.transaction.TransactionManager;
+import org.jpos.util.Log;
+
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.Script;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+
 /**
- * A TransactionParticipant whose prepare, commit and abort methods can be
- * specified using Groovy scripts. <BR>
- * To indicate what code to execute for any of the TM life-cycle methods just add
- * an element named 'prepare', 'commit' or 'abort' and optionally 'prepare-for-abort'
- * contained in that of the participant. <BR>
+ * <p>A TransactionParticipant whose prepare, commit and abort methods can be
+ * specified using Groovy scripts.</p>
  *
+ * <p>To indicate what code to execute for any of the TM life-cycle methods just add
+ * an element named 'prepare', 'commit' or 'abort' and optionally 'prepare-for-abort'
+ * contained in that of the participant.
+ * <br>
  * The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
  * with the TM standard result values (PREPARE, ABORT and its modifiers).
+ * <br>
+ * The Groovy script code can be placed as part of the element's content (a CDATA section
+ * is recommended), or in an external file pointed to by the 'src' attribute. We also
+ * recommend adding a "realm" attribute to identify errors in the logs, especially if you
+ * have several instances of GroovyParticipant in your transaction manager.
+ * <br>
+ * By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
+ * to be evaluated each time, then set the "compiled" property to "false".</p>
  *
- * The Groovy script code can be placed as part of the element's content or in an
- * external file pointed by the 'src' attribute.
- *
- * Usage:
+ * Add a transaction participant like this:
  *
  * <pre>
- *     Add a transaction participant like this:
  *     &lt;participant class="org.jpos.transaction.participant.GroovyParticipant" logger="Q2" realm="groovy-test"&gt;
  *       &lt;prepare src="deploy/prepare.groovy" /&gt;
  *       &lt;commit src="deploy/commit.groovy" /&gt;
- *       &lt;abort src="deploy/abort.groovy" /&gt;
+ *       &lt;abort&gt;
+ *         &lt;![CDATA[
+ *             // ... embedded script
+ *         ]]&gt;
+ *       &lt;/abort&gt;
  *     &lt;/participant&gt;
  * </pre>
  */
@@ -63,46 +77,87 @@ import java.io.Serializable;
 public class GroovyParticipant extends Log
     implements TransactionParticipant, AbortParticipant, XmlConfigurable, Configurable
 {
+    private boolean compiled= true;
+    private GroovyClassLoader gcl;
+
+    // prepare, prepareForAbort, commit, and abort
+    // can be instances of String, File, or Class<Script>
     private Object prepare;
     private Object prepareForAbort;
     private Object commit;
     private Object abort;
+
     private TransactionManager tm;
     private Configuration cfg;
     private final String groovyShellKey  = ".groovy-" + Integer.toString(hashCode());
 
+
+    @SuppressWarnings("unchecked")
     public int prepare (long id, Serializable ctx) {
+        if (prepare == null)  {
+            return PREPARED | NO_JOIN | READONLY; // nothing to do
+        }
         try {
-            return (int) eval(getShell(id, ctx), prepare);
+            if (compiled) {
+                Script s= ((Class<Script>)prepare).newInstance();
+                s.setBinding(newBinding(id, ctx));
+                return (int)s.run();
+            }
+            else
+                return (int) eval(getShell(id, ctx), prepare);
         } catch (Exception e) {
             error(e);
         }
         return ABORTED;
     }
+
+    @SuppressWarnings("unchecked")
     public int prepareForAbort (long id, Serializable ctx) {
         if (prepareForAbort == null) {
             return PREPARED | NO_JOIN | READONLY; // nothing to do
         }
         try {
-            return (int) eval(getShell(id, ctx), prepareForAbort);
+            if (compiled) {
+                Script s= ((Class<Script>)prepareForAbort).newInstance();
+                s.setBinding(newBinding(id, ctx));
+                return (int)s.run();
+            }
+            else
+                return (int) eval(getShell(id, ctx), prepareForAbort);
         } catch (Exception e) {
             error(e);
         }
         return ABORTED;
     }
+
+    @SuppressWarnings("unchecked")
     public void commit(long id, Serializable ctx) {
         if (commit != null) {
             try {
-                eval(getShell(id, ctx), commit);
+                if (compiled) {
+                    Script s= ((Class<Script>)commit).newInstance();
+                    s.setBinding(newBinding(id, ctx));
+                    s.run();
+                }
+                else
+                    eval(getShell(id, ctx), commit);
             } catch (Exception e) {
                 error(e);
             }
         }
     }
+
+    @SuppressWarnings("unchecked")
     public void abort(long id, Serializable ctx) {
-        if (commit != null) {
+        if (abort != null) {
             try {
-                eval(getShell(id, ctx), abort);
+                if (compiled) {
+                    Script s= ((Class<Script>)abort).newInstance();
+                    s.setBinding(newBinding(id, ctx));
+                    s.run();
+                }
+                else
+                    eval(getShell(id, ctx), abort);
             } catch (Exception e) {
                 error(e);
             }
@@ -117,26 +172,85 @@ public class GroovyParticipant extends Log
     public void setConfiguration(Configuration cfg) throws ConfigurationException {
         this.cfg = cfg;
     }
+
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
+        compiled= cfg.getBoolean("compiled", true);
+        if (compiled) {
+            gcl= new GroovyClassLoader();
+            // TODO: We can add CompilerConfiguration to set a JDK8 target
+            // Also, using CompilationCustomizer's I think we can mandate a @CompileStatic
+            // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
+            // (start by reading the sections above that link)
+            // This @CompileStatic could be added as a flag in an XML attribute
+            // Other options could include adding some default imports to the script
+        }
+
+        if (e.getChild("prepare") == null)                          // avoid typos, for instance
+            warn("GroovyParticipant without 'prepare' element.");
+
         prepare = getScript(e.getChild("prepare"));
         prepareForAbort = getScript(e.getChild("prepare-for-abort"));
         commit = getScript(e.getChild("commit"));
         abort = getScript(e.getChild("abort"));
     }
 
-    private Object getScript (Element e) throws ConfigurationException {
-        if (e != null) {
-            String src = e.getAttributeValue("src");
-            if (src != null) {
-                File f = new File(src);
+
+    /** Returns a String, a File, or a fully parsed Class<groovy.lang.Script>
+    */
+    private Object getScript (Element e) throws ConfigurationException
+    {
+        if (e != null)
+        {
+            String elName=  e.getName();
+            String src=     e.getAttributeValue("src");
+            String srcText= null;
+            File f=         null;
+
+            if (src != null)
+            {
+                f= new File(src);
                 if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");
-                return f;
+                if (!compiled)
+                    return f;
             }
-            return e.getText();
+            else
+            {
+                srcText= e.getText();   // this returns, at worst, an empty String
+                if (!compiled)
+                    return srcText;
+            }
+
+            // Here we can assume compiled == true
+            // So we pre-compile the script into a Class<Script> object
+            // that will be instantiated for each invocation of the participant's method
+            try
+            {
+                Class clazz;
+                if (f != null)
+                    clazz= gcl.parseClass(f);
+                else
+                    clazz= gcl.parseClass(srcText);
+
+                // We only support Groovy Scripts, not classes
+                if (!Script.class.isAssignableFrom(clazz))
+                {
+                    String srcOrigin= (f != null) ? src : elName;
+                    throw new ConfigurationException(
+                        "Groovy code for '"+srcOrigin+"' in '"+getRealm()+"' "+
+                        "must be a simple script, not a class."
+                    );
+                }
+                return clazz;
+            }
+            catch (IOException ex)
+            {
+                throw new ConfigurationException(ex.getMessage(), ex.getCause());
+            }
         }
-        return null;
+
+        return null;    // nothing to process
     }
 
     private Object eval (GroovyShell shell, Object script) throws IOException {

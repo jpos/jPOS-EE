@@ -230,7 +230,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             if (!Arrays.asList(getVisibleColumns()).contains(columnId)) {
                 grid.removeColumn(columnId);
             } else {
-                c.setCaption(getCaptionFromId(columnId))
+                c.setCaption(getCaptionFromId("column."+columnId))
                         .setSortProperty(columnId)
                         .setSortable(true)
                         .setHidable(true);
@@ -494,7 +494,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             String[] options = config.getOptions();
             if (options != null) {
                 //Change the field to a Combo loaded with the options
-                ComboBox combo = new ComboBox(getCaptionFromId(propertyId),Arrays.asList(options));
+                ComboBox combo = new ComboBox(getCaptionFromId("field."+propertyId),Arrays.asList(options));
                 getBinder().bind(combo,propertyId);
                 return null;
             }
@@ -513,7 +513,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected TextField buildAndBindLongField(String id) {
-        TextField field = new TextField(getCaptionFromId(id));
+        TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
@@ -521,7 +521,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected TextField buildAndBindIntField(String id) {
-        TextField field = new TextField(getCaptionFromId(id));
+        TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
@@ -529,14 +529,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected CheckBox buildAndBindBooleanField(String id) {
-        CheckBox box = new CheckBox(StringUtils.capitalize(getCaptionFromId(id)),false);
+        CheckBox box = new CheckBox(StringUtils.capitalize(getCaptionFromId("field." + id)),false);
         Binder.BindingBuilder builder = formatField(id,box);
         builder.bind(id);
         return box;
     }
 
     protected TextField buildAndBindTextField(String id) {
-        TextField field = new TextField(getCaptionFromId(id));
+        TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder.bind(id);
         return field;
@@ -544,7 +544,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
 
     protected TextField buildAndBindTimestampField(String id) {
-        TextField field = new TextField(getCaptionFromId(id));
+        TextField field = new TextField(getCaptionFromId("field." + id));
         getBinder().forField(field).withConverter(toModel -> null, toPresentation -> {
             if (toPresentation != null) {
                 DateFormat dateFormat = new SimpleDateFormat(getApp().getMessage("timestampformat"));
@@ -556,14 +556,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected DateField buildAndBindDateField(String id) {
-        DateField dateField = new DateField(getCaptionFromId(id));
+        DateField dateField = new DateField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,dateField);
         builder.withConverter(new LocalDateToDateConverter()).bind(id);
         return dateField;
     }
 
     protected TextField buildAndBindBigDecimalField(String id) {
-        TextField field = new TextField(getCaptionFromId(id));
+        TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.withNullRepresentation(BigDecimal.ZERO).bind(id);
@@ -577,17 +577,26 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             builder.withValidator(val);
         }
         if (isRequired(id)) {
-            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId(id))));
+            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
         }
         builder = builder.withNullRepresentation("");
         return builder;
     }
 
     protected String getCaptionFromId(String id) {
-        //try to get caption from messages file, if not, parse id.
+        //try to get caption from messages file
+        String fieldPrefix="field.";
+        String columnPrefix="column.";
         String caption = getApp().getMessage(id);
-        if (caption.equals(id))
-            return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(id),' ');
+        if (caption.equals(id)) {
+            //try to get caption without prefix
+            id = id.startsWith(fieldPrefix) ? id.substring(fieldPrefix.length()) : (id.startsWith(columnPrefix) ? id.substring(columnPrefix.length()) : id);
+            caption = getApp().getMessage(id);
+            if (caption.equals(id)) {
+                //parse existing id to a readable format
+                return StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(id), ' ');
+            }
+        }
         return caption;
     }
 

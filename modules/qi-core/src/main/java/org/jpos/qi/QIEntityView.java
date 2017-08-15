@@ -445,7 +445,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             if (field == null) {
                 //if it wasn't built yet, build it now.
                 try {
-                    Class dataType = o.getClass().getDeclaredField(id).getType();
+                    Class dataType = getDataType(id);
                     if (dataType.equals(Date.class)) {
                         l.addComponent(buildAndBindTimestampField(id));
                     } else if (dataType.equals(BigDecimal.class)) {
@@ -465,6 +465,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             } else {
                 l.addComponent(field);
             }
+        }
+    }
+
+    private Class getDataType(String id) throws NoSuchFieldException {
+        Object o = bean;
+        try {
+            return o.getClass().getDeclaredField(id).getType();
+        } catch(NoSuchFieldException e) {
+            return o.getClass().getSuperclass().getDeclaredField(id).getType();
         }
     }
 

@@ -546,8 +546,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected TextField buildAndBindTimestampField(String id) {
         TextField field = new TextField(getCaptionFromId(id));
         getBinder().forField(field).withConverter(toModel -> null, toPresentation -> {
-            DateFormat dateFormat = new SimpleDateFormat(getApp().getMessage("timestampformat"));
-            return dateFormat.format(toPresentation);
+            if (toPresentation != null) {
+                DateFormat dateFormat = new SimpleDateFormat(getApp().getMessage("timestampformat"));
+                return dateFormat.format(toPresentation);
+            }
+            return "";
         }).bind(id);
         return field;
     }

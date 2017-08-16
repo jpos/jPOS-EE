@@ -3,6 +3,6 @@
  <property name="rspace" value="rspace:rspace" />
  <property name="group"  value="rspace" />
  <property name="config" value="cfg/udp.xml" />
- <property name="trace"  value="true" />
+ <property name="trace"  value="false" />
 </rspace>
 

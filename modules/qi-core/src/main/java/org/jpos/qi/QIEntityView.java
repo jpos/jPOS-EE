@@ -557,7 +557,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     protected DateField buildAndBindDateField(String id) {
         DateField dateField = new DateField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,dateField);
+        List<Validator> v = getValidators(id);
+        Binder.BindingBuilder builder = getBinder().forField(dateField);
+        for (Validator val : v) {
+            builder.withValidator(val);
+        }
+        if (isRequired(id)) {
+            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
+        };
         builder.withConverter(new LocalDateToDateConverter()).bind(id);
         return dateField;
     }

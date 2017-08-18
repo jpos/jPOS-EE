@@ -29,7 +29,7 @@ import org.jdom2.Element;
 /** 
  * Journal level layer information.
 */
-public class Layer implements Serializable {
+public class Layer implements Serializable, Comparable {
     private short id;
     private String name;
     private org.jpos.gl.Journal journal;
@@ -99,6 +99,11 @@ public class Layer implements Serializable {
         Element e = new Element ("layer").setText(getName());
         e.setAttribute ("id", Short.toString(getId()));
         return e;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return Short.compare(getId(), ((Layer)o).getId());
     }
 }
 

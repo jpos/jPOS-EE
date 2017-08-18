@@ -43,6 +43,9 @@
      <key column="journal" foreign-key="FKJournalPermissions" />
      <one-to-many class="org.jpos.gl.GLPermission" />
     </set>
+      <fetch-profile name="eager">
+          <fetch association="layers" style="join"/>
+      </fetch-profile>
   </class>
 </hibernate-mapping>
 

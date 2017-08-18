@@ -429,5 +429,21 @@ public class GLTransaction extends Cloneable {
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
     }
+
+    @Override
+    public GLTransaction clone() throws CloneNotSupportedException {
+        GLTransaction glt = (GLTransaction)super.clone();
+        glt.setEntries(null);
+        for (GLEntry e : getEntries()) {
+            glt.createGLEntry(
+                    e.getAccount(),
+                    e.getAmount(),
+                    e.getDetail(),
+                    e.isCredit(),
+                    e.getLayer()
+            );
+        }
+        return glt;
+    }
 }
 

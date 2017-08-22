@@ -110,10 +110,10 @@ public class EntityContainer<T>
         try {
             o = clazz.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            QI.getQI().getLog().error(e);
             return null;
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            QI.getQI().getLog().error(e);
             return null;
         }
         return o;

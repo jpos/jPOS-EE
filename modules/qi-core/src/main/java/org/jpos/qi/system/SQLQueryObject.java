@@ -24,6 +24,7 @@ import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.ee.DB;
+import org.jpos.qi.QI;
 
 import java.sql.*;
 import java.util.Date;
@@ -165,7 +166,7 @@ public class SQLQueryObject implements XmlConfigurable {
             });
             return res.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            QI.getQI().getLog().error(e);
             return e.toString();
         }
 

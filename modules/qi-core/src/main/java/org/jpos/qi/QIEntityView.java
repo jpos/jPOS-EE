@@ -385,7 +385,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 try {
                     saveEntity();
                 } catch (BLException e) {
-                    e.printStackTrace();
+                    getApp().getLog().error(e);
                     getApp().displayNotification(e.getDetailedMessage());
                     return false;
                 }
@@ -393,7 +393,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 try {
                     updateEntity();
                 } catch (BLException e) {
-                    e.printStackTrace();
+                    getApp().getLog().error(e);
                     getApp().displayNotification(e.getDetailedMessage());
                     return false;
                 }

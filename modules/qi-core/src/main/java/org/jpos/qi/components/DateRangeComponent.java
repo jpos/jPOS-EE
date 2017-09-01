@@ -47,7 +47,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
         addComponents(datePickerFrom, datePickerTo);
         if (dateRangeEnabled) {
             dateRanges = createDateRanges();
-            dateRanges.setValue(app.getMessage(defaultRangeKey));
+            dateRanges.setValue(defaultRangeKey);
             addComponent(dateRanges);
         }
         refreshBtn = new Button(app.getMessage("refresh"));
@@ -65,8 +65,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
         DateRange dr;
         if (dateRanges != null && dateRanges.getValue() != null) {
             dr = new DateRange((String)dateRanges.getValue());
-        }
-        else if (datePickerFrom.getValue() != null || datePickerTo.getValue() != null) {
+        } else if (datePickerFrom.getValue() != null || datePickerTo.getValue() != null) {
             dr = new DateRange();
             if (datePickerFrom.getValue() != null) {
                 Date startDate = Date.from(datePickerFrom.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());

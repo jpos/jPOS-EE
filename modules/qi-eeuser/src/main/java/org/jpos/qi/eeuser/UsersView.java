@@ -32,6 +32,8 @@ import org.jpos.util.PasswordGenerator;
 
 import java.util.List;
 
+import static org.jpos.util.QIUtils.getCaptionFromId;
+
 
 public class UsersView extends QIEntityView<User> {
 

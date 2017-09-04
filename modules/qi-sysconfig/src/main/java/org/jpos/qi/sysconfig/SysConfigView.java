@@ -31,6 +31,8 @@ import org.jpos.qi.QIHelper;
 
 import java.util.List;
 
+import static org.jpos.util.QIUtils.getCaptionFromId;
+
 public class SysConfigView extends QIEntityView<SysConfig> {
     private String prefix;
 

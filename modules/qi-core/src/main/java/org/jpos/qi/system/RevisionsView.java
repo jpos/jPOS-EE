@@ -32,6 +32,8 @@ import org.jpos.qi.ReadOnlyField;
 
 import java.util.List;
 
+import static org.jpos.util.QIUtils.getCaptionFromId;
+
 
 /**
  * Created by spr on 6/15/16.

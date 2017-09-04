@@ -285,7 +285,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                     for (String fieldId : readOnlyFields) {
                         if (binder.getBinding(fieldId).isPresent()) {
                             HasValue field = binder.getBinding(fieldId).get().getField();
-                            if (field != null && !field.isEmpty()) {
+                            if ((field != null && !field.isEmpty()) || !field.isRequiredIndicatorVisible()) {
                                 field.setReadOnly(true);
                                 binder.bind(field, fieldId);
                             }

@@ -192,11 +192,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             Button addBtn = new Button(getApp().getMessage("add"));
             addBtn.addStyleName("borderless-colored");
             addBtn.setIcon(VaadinIcons.PLUS);
-            addBtn.addClickListener(event -> getApp().getNavigator().navigateTo(generalRoute + "/new"));
+            addBtn.addClickListener(event -> navigateToNewRoute());
             header.addComponent(addBtn);
             header.setComponentAlignment(addBtn, Alignment.BOTTOM_RIGHT);
         }
         return header;
+    }
+
+    protected void navigateToNewRoute() {
+        getApp().getNavigator().navigateTo(generalRoute + "/new");
     }
 
     public Grid createGrid() {

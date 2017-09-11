@@ -35,6 +35,7 @@
     <option name="Log" action="log"/>
     <option name="Exception log" action="exceptions"/>
     <option name="Users" action="users"/>
+    <option name="Consumers" action="consumers"/>
     <option name="Roles" action="roles"/>
     <option name="Permissions" action="permissions"/>
     <option name="SysConfig" action="sysconfig"/>
@@ -89,6 +90,16 @@
     <attribute name="id" field="false" required="true"/>
     <attribute name="name" regex="&WORD_PATTERN;" length="64" required="true"/>
     <attribute name="permissions" column="false"/>
+  </view>
+  <view route="consumers" class="org.jpos.qi.eeuser.ConsumersView" perm="sysadmin" sidebar="system">
+    <property name="entityName" value="consumer"/>
+    <attribute name="id" field="false" required="true"/>
+    <attribute name="roles" />
+    <attribute name="startDate" />
+    <attribute name="endDate" />
+    <attribute name="user" column="false"/>
+    <attribute name="active" />
+    <attribute name="deleted" />
   </view>
   <view route="exceptions" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="exception"/>

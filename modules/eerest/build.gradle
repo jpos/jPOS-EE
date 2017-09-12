@@ -1,11 +1,21 @@
-description = 'jPOS-EE :: Rest'
+apply plugin: 'war'
 
 dependencies {
-    compile project(':modules:core')
-    compile project(':modules:txn')
-    compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
-    compile "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
+    providedCompile project(':modules:core')
+    providedCompile project(':modules:txn')
+    providedCompile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+    providedCompile "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
+    providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
+    providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
+    providedCompile "org.jpos.ee:jposee-jetty:2.2.5-SNAPSHOT"
     compile libraries.commons_lang
+    compile 'io.swagger:swagger-jersey2-jaxrs:1.5.3'
+}
+
+jar {
+    from 'src/main/webapp'
+    exclude '**/gwt-unitCache/*'
+    exclude '**/gwt-unitCache'
 }
 
 apply from: '../../jpos-app.gradle'

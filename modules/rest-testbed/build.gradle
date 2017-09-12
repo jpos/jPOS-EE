@@ -1,0 +1,21 @@
+apply plugin: 'war'
+
+
+dependencies {
+//    compile (libraries.jpos)  {
+//        exclude(module: 'junit')
+//        exclude(module: 'hamcrest-core')
+//    }
+    providedCompile project(':modules:eerest')
+//    providedCompile "org.jpos.ee:jposee-eerest:2.2.5-SNAPSHOT"
+//    providedCompile "org.jpos.ee:jposee-jetty:2.2.5-SNAPSHOT"
+//    providedCompile "javax.ws.rs:javax.ws.rs-api:2.0.1"
+//    providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
+//    providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
+//    providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
+//    compile 'io.swagger:swagger-jersey2-jaxrs:1.5.3'
+//    testCompile libraries.junit
+}
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+installApp.dependsOn('war')
+dist.dependsOn('war')

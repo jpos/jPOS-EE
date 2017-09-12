@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cd `dirname $0`/.. || exit 1
+rm -f deploy/shutdown.xml
+java -server \
+    -Dappname=jCard \
+    -Duser.name=admin \
+    -Dcom.sun.management.jmxremote \
+    -Duser.name=admin \
+    -Xloggc:log/gc.log \
+    -Dorg.mortbay.xml.XmlParser.NotValidating=true \
+    -Xmx1G -Xms1G \
+    -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses \
+    -XX:+UseConcMarkSweepGC  \
+    -XX:+AggressiveOpts \
+    -XX:+ParallelRefProcEnabled \
+    -XX:+TieredCompilation \
+    -jar jposee-@jarname@ "$@"
+

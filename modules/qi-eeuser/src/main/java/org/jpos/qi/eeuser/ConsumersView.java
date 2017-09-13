@@ -112,8 +112,17 @@ public class ConsumersView extends QIEntityView<Consumer> {
         if ("user".equalsIgnoreCase(propertyId)) {
             ComboBox<User> box = createUserBox();
             formatField(propertyId,box).bind(propertyId);
+            box.setEnabled(false);
             return box;
         }
         return null;
     }
+
+    @Override
+    public boolean canEdit() {
+        return true;
+    }
+
+    @Override
+    public boolean canAdd() {return true;}
 }

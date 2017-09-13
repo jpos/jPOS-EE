@@ -25,7 +25,22 @@ public class ConsumersHelper extends QIHelper {
 
     @Override
     public boolean updateEntity(Binder binder) throws BLException {
-        return false;
+        try {
+            return (boolean) DB.execWithTransaction((db) -> {
+                Consumer oldConsumer = (Consumer) ((Consumer) getOriginalEntity()).clone();
+                binder.writeBean(getOriginalEntity());
+                Consumer newConsumer = (Consumer) getOriginalEntity();
+                db.session().merge(newConsumer);
+                return addRevisionUpdated(db, getEntityName(),
+                        String.valueOf(newConsumer.getId()),
+                        oldConsumer,
+                        newConsumer,
+                        new String[]{"active","startdate","enddate"});
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return false;
+        }
     }
 
     //not used

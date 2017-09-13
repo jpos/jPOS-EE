@@ -4,12 +4,14 @@ import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.Consumer;
+import org.jpos.ee.Role;
 import org.jpos.ee.User;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.util.QIUtils;
 
-import java.util.List;
 
 /**
  * Created by jr on 9/11/17.
@@ -47,26 +49,17 @@ public class ConsumersView extends QIEntityView<Consumer> {
             ConfigurableFilterDataProvider wrapper = (ConfigurableFilterDataProvider) getGrid().getDataProvider();
             wrapper.setFilter(listener.getValue());
             wrapper.refreshAll();
-//            this.selectedCardProduct = listener.getValue();
         });
         hl.addComponent(box);
         return hl;
     }
 
     private ComboBox<User> createUserBox() {
-        ComboBox<User> box = new ComboBox(getApp().getMessage("user"));
+        ComboBox<User> box = new ComboBox(QIUtils.getCaptionFromId("user"));
         box.setItemCaptionGenerator(User::getNickAndId);
-//        List<User> cpList = ((User)getHelper()).get
-//        box.setItems(cpList);
         UsersHelper usersHelper = new UsersHelper();
         box.setDataProvider(usersHelper.getDataProvider());
         box.setEmptySelectionAllowed(false);
-//        if (this.selectedCardProduct != null) {
-//            box.setValue(selectedCardProduct);
-//        } else {
-//            box.setValue(cpList.get(0));
-//            this.selectedCardProduct = cpList.get(0);
-//        }
         return box;
     }
 
@@ -106,5 +99,21 @@ public class ConsumersView extends QIEntityView<Consumer> {
         } else {
             return null;
         }
+    }
+
+    protected Component buildAndBindCustomComponent(String propertyId) {
+        if ("roles".equalsIgnoreCase(propertyId)) {
+            CheckBoxGroup<Role> checkBoxGroup = new CheckBoxGroup<>(QIUtils.getCaptionFromId(propertyId));
+            checkBoxGroup.setItems(((ConsumersHelper)getHelper()).getRoles());
+            checkBoxGroup.setItemCaptionGenerator(role -> StringUtils.capitalize(role.getName()));
+            formatField(propertyId,checkBoxGroup).bind(propertyId);
+            return checkBoxGroup;
+        }
+        if ("user".equalsIgnoreCase(propertyId)) {
+            ComboBox<User> box = createUserBox();
+            formatField(propertyId,box).bind(propertyId);
+            return box;
+        }
+        return null;
     }
 }

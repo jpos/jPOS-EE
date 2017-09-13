@@ -51,11 +51,12 @@ public class ConsumerManager extends ManagerSupport<Consumer> {
     }
 
     protected Predicate[] buildPredicates(Root<Consumer> root) {
+        Predicate notDeleted = db.session.getCriteriaBuilder().isFalse(root.get("deleted"));
         if (user != null) {
             Predicate p = db.session().getCriteriaBuilder().equal(root.get("user"),user.getId());
-            return new Predicate[]{p};
+            return new Predicate[]{notDeleted,p};
         }
-        return null;
+        return new Predicate[]{notDeleted};
     }
 
 

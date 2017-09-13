@@ -94,12 +94,12 @@
   <view route="consumers" class="org.jpos.qi.eeuser.ConsumersView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="consumer"/>
     <attribute name="id" field="false" required="true"/>
+    <attribute name="user" column="false" />
+    <attribute name="active" />
     <attribute name="roles" />
     <attribute name="startDate" />
     <attribute name="endDate" />
-    <attribute name="user" column="false"/>
-    <attribute name="active" />
-    <attribute name="deleted" />
+    <attribute name="deleted" column="false" field="false"/>
   </view>
   <view route="exceptions" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="exception"/>

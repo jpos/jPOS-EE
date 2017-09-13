@@ -59,6 +59,19 @@ public class ConsumersHelper extends QIHelper {
         return ((Consumer)item).getId();
     }
 
+    @Override
+    public Object getEntityByParam(String param)  {
+        try {
+            return  DB.exec(db -> {
+                db.session().enableFetchProfile("eager");
+                return db.session().get(clazz, param);
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return null;
+        }
+    }
+
     //Overridden to call custom getAll that includes dateRange filter,
     // and to include the ConfigurableFilterDataProvider wrapper
     @Override
@@ -90,6 +103,18 @@ public class ConsumersHelper extends QIHelper {
                     }
                 });
         return (ConfigurableFilterDataProvider<Consumer,Void,User>) dataProvider.withConfigurableFilter();
+    }
+
+    public List<Role> getRoles() {
+        try {
+            return (List<Role>) DB.exec(db-> {
+                RoleManager mgr = new RoleManager(db);
+                return mgr.getAll();
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return null;
+        }
     }
 
 }

@@ -39,8 +39,10 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
 
         this.callback = callback;
 
+        Label questionLabel = new Label(question);
+        questionLabel.setCaptionAsHtml(true);
         if (question != null) {
-            content.addComponent(new Label(question));
+            content.addComponent(questionLabel);
         }
         HorizontalLayout hl = new HorizontalLayout();
         hl.setMargin(new MarginInfo(true, false, false, false));

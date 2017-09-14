@@ -96,7 +96,7 @@
     <attribute name="id" field="false" required="true" read-only="true"/>
     <attribute name="user" column="false" field = "false" read-only="true"/>
     <attribute name="active" />
-    <attribute name="roles" read-only="true"/>
+    <attribute name="roles" read-only="false"/>
     <attribute name="startDate" />
     <attribute name="endDate" />
   </view>

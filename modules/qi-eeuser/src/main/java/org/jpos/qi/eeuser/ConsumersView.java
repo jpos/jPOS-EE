@@ -5,9 +5,11 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
+import org.jpos.ee.BLException;
 import org.jpos.ee.Consumer;
 import org.jpos.ee.Role;
 import org.jpos.ee.User;
+import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.util.QIUtils;
@@ -115,14 +117,29 @@ public class ConsumersView extends QIEntityView<Consumer> {
             box.setEnabled(false);
             return box;
         }
+        if ("startdate".equalsIgnoreCase(propertyId) || "endDate".equalsIgnoreCase(propertyId)) {
+            return buildAndBindDateField(propertyId);
+        }
         return null;
+    }
+
+    public void saveEntity () throws BLException {
+
+        getApp().addWindow(new ConfirmDialog(
+                getApp().getMessage("secretTitle"),
+                getApp().getMessage("secretDescription","el secreto"),
+                confirm -> {
+                    if (confirm) {
+                        super.saveEntity();
+                    }
+                }));
     }
 
     @Override
     public boolean canEdit() {
         return true;
     }
-
     @Override
     public boolean canAdd() {return true;}
+    public boolean canRemove() {return true;}
 }

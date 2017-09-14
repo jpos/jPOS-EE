@@ -19,8 +19,22 @@ import java.util.stream.Stream;
  */
 public class ConsumersHelper extends QIHelper {
 
+    public static final String HASH_ALGORITHM = "HmacSHA256";
+
     protected ConsumersHelper(Class clazz) {
         super(clazz);
+    }
+
+    @Override
+    public Object createNewEntity() {
+        try {
+            Consumer c = (Consumer) clazz.newInstance();
+            c.setId(UUID.randomUUID().toString());
+            return c;
+        } catch (InstantiationException|IllegalAccessException e) {
+            getApp().getLog().error("error instantiating entity", e);
+            return null;
+        }
     }
 
     @Override
@@ -35,7 +49,7 @@ public class ConsumersHelper extends QIHelper {
                         String.valueOf(newConsumer.getId()),
                         oldConsumer,
                         newConsumer,
-                        new String[]{"active","startdate","enddate"});
+                        new String[]{"active","roles","startDate","endDate"});
             });
         } catch (Exception e) {
             getApp().getLog().error(e);

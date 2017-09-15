@@ -124,7 +124,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     }
 
     public void saveEntity () throws BLException {
-
+        //todo: get secret
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
                 getApp().getMessage("secretDescription","el secreto"),

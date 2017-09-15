@@ -8,18 +8,16 @@ import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.shared.data.sort.SortDirection;
 import org.jpos.ee.*;
 import org.jpos.qi.QIHelper;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
  * Created by jr on 9/11/17.
  */
 public class ConsumersHelper extends QIHelper {
-
-    public static final String HASH_ALGORITHM = "HmacSHA256";
 
     protected ConsumersHelper(Class clazz) {
         super(clazz);
@@ -145,5 +143,4 @@ public class ConsumersHelper extends QIHelper {
             return null;
         }
     }
-
 }

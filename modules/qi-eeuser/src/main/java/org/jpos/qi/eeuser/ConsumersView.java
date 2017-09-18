@@ -128,6 +128,8 @@ public class ConsumersView extends QIEntityView<Consumer> {
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
                 getApp().getMessage("secretDescription","el secreto"),
+                getApp().getMessage("secretConfirm"),
+                getApp().getMessage("cancel"),
                 confirm -> {
                     if (confirm) {
                         super.saveEntity();

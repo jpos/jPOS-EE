@@ -9,10 +9,10 @@ configurations {
 }
 
 dependencies {
-    compile project (':modules:qi-core')
-    compile project (':modules:qi-sysconfig')
-    compile project (':modules:qi-eeuser')
-    compile project (':modules:qi-minigl')
+    providedCompile project (':modules:qi-core')
+    providedCompile project (':modules:qi-sysconfig')
+    providedCompile project (':modules:qi-eeuser')
+    providedCompile project (':modules:qi-minigl')
 
     providedCompile project(':modules:core')
     providedCompile project(':modules:logback')

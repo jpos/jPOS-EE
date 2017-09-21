@@ -17,6 +17,7 @@
   <messages>qi-core-messages</messages>
   <messages>qi-eeuser-messages</messages>
   <messages>qi-sysconfig-messages</messages>
+  <messages>qi-minigl-messages</messages>
 
   <menubar>
     <menu name="System" icon="COG" style="icon-cog" action="system" />
@@ -141,6 +142,12 @@
     <attribute name="summary" />
     <attribute name="detail" column="false"/>
     <attribute name="trace" column="false"/>
+  </view>
+  <view route="transactions" class="org.jpos.qi.minigl.TransactionsView" perm="sysconfig">
+    <property name="entityName" value="transaction"/>
+    <attribute name="id" field="false"/>
+    <attribute name="journal" column="false" read-only="true"/>
+    <attribute name="entries" column="false"/>
   </view>
 </xml-config>
 

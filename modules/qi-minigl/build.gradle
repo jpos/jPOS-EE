@@ -1,0 +1,7 @@
+group 'org.jpos.qi.minigl'
+version '1.0-SNAPSHOT'
+
+dependencies {
+    compile project(':modules:qi-core')
+    compile project(':modules:minigl')
+}

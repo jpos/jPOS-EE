@@ -12,6 +12,7 @@ dependencies {
     compile project (':modules:qi-core')
     compile project (':modules:qi-sysconfig')
     compile project (':modules:qi-eeuser')
+    compile project (':modules:qi-minigl')
 
     providedCompile project(':modules:core')
     providedCompile project(':modules:logback')

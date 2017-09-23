@@ -58,7 +58,7 @@ import groovy.lang.GroovyShell;
  * <p>As a convenience, a comma-separated list of ISO-8583 MTI's can be given in the "whitelist" property.
  * If given, the script will be called <em>only</em> for requests having those MTI's. For requests not in the
  * whitelist, the {@link ISORequestListener#process(ISOSource, ISOMsg)} method will return "false", so the
- * request can be handled by another {@code ISORequestListene} down the line.
+ * request can be handled by another {@code ISORequestListener} down the line.
  *
  * <p>The following variables will be bound to the Groovy script's {@code Binding}:
  * <ul>

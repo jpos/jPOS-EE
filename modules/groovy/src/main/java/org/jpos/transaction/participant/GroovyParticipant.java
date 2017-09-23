@@ -48,7 +48,7 @@ import groovy.lang.GroovyShell;
  * contained in that of the participant.
  *
  * <p>The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
- * with the TM standard result values (PREPARE, ABORT and its modifiers).
+ * with the TM standard result values (PREPARED, ABORTED, etc).
  *
  * <p>The Groovy script code can be placed as part of the element's content (a CDATA section
  * is recommended), or in an external file pointed to by the 'src' attribute. We also

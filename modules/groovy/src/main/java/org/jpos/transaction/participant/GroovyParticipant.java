@@ -41,22 +41,32 @@ import groovy.lang.GroovyShell;
 
 /**
  * <p>A TransactionParticipant whose prepare, commit and abort methods can be
- * specified using Groovy scripts.</p>
+ * specified using Groovy scripts.
  *
  * <p>To indicate what code to execute for any of the TM life-cycle methods just add
  * an element named 'prepare', 'commit' or 'abort' and optionally 'prepare-for-abort'
  * contained in that of the participant.
- * <br>
- * The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
- * with the TM standard result values (PREPARE, ABORT and its modifiers).
- * <br>
- * The Groovy script code can be placed as part of the element's content (a CDATA section
+ *
+ * <p>The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
+ * with the TM standard result values (PREPARED, ABORTED, etc).
+ *
+ * <p>The Groovy script code can be placed as part of the element's content (a CDATA section
  * is recommended), or in an external file pointed to by the 'src' attribute. We also
  * recommend adding a "realm" attribute to identify errors in the logs, especially if you
  * have several instances of GroovyParticipant in your transaction manager.
- * <br>
- * By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
- * to be evaluated each time, then set the "compiled" property to "false".</p>
+ *
+ * <p>The following variables will be bound to each Groovy script's {@code Binding}:
+ * <ul>
+ *  <li><b>id</b> - the transaction {@code int id} passed to the participant's method</li>
+ *  <li><b>ctx</b> - the transaction {@code Serializable ctx} passed to the participant's method</li>
+ *  <li><b>log</b> - a reference to {@code this} instance (since this class extends {@code org.jpos.util.Log})</li>
+ *  <li><b>cfg</b> - this {@code TransactionParticipant}'s {@code Configuration} properties</li>
+ *  <li><b>tm</b> - a reference to the {@code TransactionManager}'s executing this transaction</li>
+ *
+ * </ul>
+ *
+ * <p>By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
+ * to be evaluated each time, then set the "compiled" property to "false".
  *
  * Add a transaction participant like this:
  *
@@ -71,6 +81,9 @@ import groovy.lang.GroovyShell;
  *       &lt;/abort&gt;
  *     &lt;/participant&gt;
  * </pre>
+ *
+ * @author <a href="mailto:barspi@transactility.com">Barzilai Spinak</a>
+ * @version $Revision$ $Date$
  */
 
 @SuppressWarnings("unused")
@@ -196,7 +209,7 @@ public class GroovyParticipant extends Log
     }
 
 
-    /** Returns a String, a File, or a fully parsed Class<groovy.lang.Script>
+    /** Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
     */
     private Object getScript (Element e) throws ConfigurationException
     {

@@ -21,6 +21,14 @@
         </dependency>
 ----
 
+[NOTE]
+======
+Although not strictly required by this particular QBean Groovy adaptor, the `jposee-groovy`
+module also includes the handy `groovy-sql` dependency.
+======
+
+==== Groovy QBean
+
 In jPOS 2.0.7 (and later), `QFactory.properties` maps the `groovy` keyword to
 `org.jpos.q2.qbean.Groovy` so one can use a simple configuration like this:
 
@@ -44,8 +52,113 @@ The following variables are automatically exposed:
 * `qbean` has a reference to the running QBean
 * `cfg` has a reference to the QBean's configuration
 
-[NOTE]
-======
-Although not strictly required by this particular QBean Groovy adaptor, the `jposee-groovy`
-module also includes the handy `groovy-sql` dependency.
-======
+==== GroovyParticipant
+
+The module provides a `org.jpos.transaction.participant.GroovyParticipant` class, which allows
+the writing TransactionManager `TransactionParticipant`'s in Groovy.
+
+Separate scripts can be specified for the `prepare`, `prepare-for-abort`, `commit`, and `abort` phases
+of the participant.
+
+The `prepare` and `prepare-for-abort` methods are expected to return an `Integer` object
+with the TransactionManager standard result values (`PREPARED`, `ABORTED`, etc.).
+
+The Groovy script code can be placed as part of the element's content (a CDATA section
+is recommended), or in an external file pointed to by the `src` attribute. We also
+recommend adding a `realm` attribute to identify errors in the logs, especially if you
+have several instances of `GroovyParticipant` in your transaction manager.
+
+The following variables will be bound to each Groovy script's `Binding`:
+
+ - *id* - the transaction `int id` passed to the participant's method
+ - *ctx* - the transaction `Serializable ctx` passed to the participant's method
+ - *log* - a reference to `this` instance (since this class extends `org.jpos.util.Log`)
+ - *cfg* - this `TransactionParticipant`'s `Configuration` properties
+ - *tm*- a reference to the `TransactionManager`'s executing this transaction
+
+
+By default, scripts are pre-compiled by a `GroovyClassLoader`. If you want the script
+to be evaluated each time, then set the `compiled` property to `false`.
+
+Add a transaction participant like this:
+[source,xml]
+----------------------------------------------------------------------------------------
+<participant class="org.jpos.transaction.participant.GroovyParticipant"
+             logger="Q2" realm="groovy-test">
+  <prepare src="deploy/prepare.groovy" />
+  <commit src="deploy/commit.groovy" />
+  <abort>
+    <![CDATA[
+        import static org.jpos.transaction.TransactionConstants.*
+        // ... embedded script
+        return PREPARED
+    ]]>
+  </abort>
+</participant>
+----------------------------------------------------------------------------------------
+
+
+==== GroovyRequestListener
+
+The module provides a `org.jpos.groovy.GroovyRequestListener` class, which allows the writing of
+`org.jpos.iso.ISORequestListener`'s in Groovy.
+
+The script's return value will be used as the return value from the `process` method.
+A non-null return value is interpreted to be _true-ish_. An explicit `null` return is interpreted to be `false`.
+A `boolean/Boolean` value will be returned as such.
+
+The Groovy script code can be given as text within the `<script>` element (a `CDATA` section
+is recommended), or in an external file pointed to by the `src` attribute. The `src` path attribute will
+override the text /`CDATA` script (to avoid confusion, only one of the options should be used).
+
+By default, scripts are pre-compiled by a `GroovyClassLoader`. If you want the script
+to be evaluated each time, then set the `compiled` property to `false`.
+
+As a convenience, a comma-separated list of _ISO-8583_ MTI's can be given in the `whitelist` property.
+If given, the script will be called _only_ for requests having those MTI's. For requests not in the
+whitelist, the `ISORequestListener#process(ISOSource, ISOMsg)` method will return `false`, so the
+request can be handled by another `ISORequestListener` down the line.
+
+The following variables will be bound to the Groovy script's `Binding`:
+
+- *message* - the `ISOMsg` for this request
+- *source* - the `ISOSource` for message
+- *log* - a reference to `this` instance (since this class extends `org.jpos.util.Log`)
+- *cfg* - this `ISORequestListener's` `Configuration` properties
+- *xmlCfg* - this `ISORequestListener's` configuration `Element`
+
+
+We also recommend adding a `realm` attribute to the `<request-listener>` element, to identify errors in the logs.
+
+===== Examples:
+
+A Groovy script given as embedded text in a `CDATA` section. The script will be pre-compiled, and called
+only for requests of the MTI's given in the `whitelist` property.
+
+[source, xml]
+----------------------------------------------------------------------------------------
+<request-listener class="org.jpos.transaction.participant.GroovyRequestListener"
+                  logger="Q2" realm="groovy-test-one">
+  <property name="whitelist" value="0100, 0420" />
+  <script>
+    <![CDATA[
+        // ... embedded script
+    ]]>
+  </script>
+</request-listener>
+----------------------------------------------------------------------------------------
+
+A Groovy script given in an external file. The `compiled` property is set to `false`, so the script
+will be interpreted and evaluated for each request. The script will be called for _all_ MTI's.
+
+[source, xml]
+----------------------------------------------------------------------------------------
+<request-listener class="org.jpos.transaction.participant.GroovyRequestListener"
+                  logger="Q2" realm="groovy-test-two">
+  <property name="compiled" value="false" />
+  <script src="../cfg/reqlistener2.groovy" />
+</request-listener>
+----------------------------------------------------------------------------------------
+
+
+

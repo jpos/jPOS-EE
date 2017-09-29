@@ -19,6 +19,7 @@
   -->
 
 <logger name="Q2" class="org.jpos.q2.qbean.LoggerAdaptor">
+  <property name="redirect" value="stdout, stderr" />
   <!--
   <log-listener class="org.jpos.util.ProtectedLogListener">
     <property name="protect" value="2 14 35 45" />

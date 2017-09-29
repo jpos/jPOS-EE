@@ -244,10 +244,12 @@ public class DB implements Closeable {
             SchemaExport export = new SchemaExport();
             List<TargetType> targetTypes=new ArrayList<>();
             if (outputFile != null) {
-                if(outputFile.trim().equals("-")) targetTypes.add(TargetType.STDOUT);
+                export.setDelimiter(";");
+                if(outputFile.trim().equals("-")) {
+                    targetTypes.add(TargetType.STDOUT);
+                }
                 else {
                     export.setOutputFile(outputFile);
-                    export.setDelimiter(";");
                     targetTypes.add(TargetType.SCRIPT);
                 }
             }
@@ -473,9 +475,9 @@ public class DB implements Closeable {
         if (configModifier != null) {
             String[] ss = configModifier.split(":");
             if (ss.length > 0)
-                dbPropertiesPrefix = ss[0] + "-";
+                dbPropertiesPrefix = ss[0] + ":";
             if (ss.length > 1)
-                metadataPrefix = ss[1] + "-";
+                metadataPrefix = ss[1] + ":";
         }
 
         String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
@@ -507,6 +509,8 @@ public class DB implements Closeable {
         List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
         for (String moduleConfig : moduleConfigs) {
             if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
+                if (!metadataPrefix.contains(":") && moduleConfig.contains(":"))
+                    continue;
                 addMappings(mds, moduleConfig);
             }
         }

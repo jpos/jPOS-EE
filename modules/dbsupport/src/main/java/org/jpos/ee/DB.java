@@ -509,7 +509,8 @@ public class DB implements Closeable {
         List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
         for (String moduleConfig : moduleConfigs) {
             if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
-                if (!metadataPrefix.contains(":") && moduleConfig.contains(":"))
+                if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
+                      (!moduleConfig.contains(":") && metadataPrefix.contains(":")))
                     continue;
                 addMappings(mds, moduleConfig);
             }

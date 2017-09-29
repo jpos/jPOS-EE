@@ -26,13 +26,17 @@ import org.jpos.q2.CLIContext;
 public class CREATESCHEMA implements CLICommand {
     @Override
     public void exec(CLIContext cli, String[] args) throws Exception {
-        String filename = "-";  // defaults to stdout
+        String filename = "-";  // defaults to stdout     '
+        String configModifier = null;
         boolean create = false;
         if (args.length > 1)
             filename = args[1];
         if (args.length > 2)
             create = "yes".equalsIgnoreCase(args[2]) || "true".equalsIgnoreCase(args[2]);
-        try (DB db = new DB()) {
+        if (args.length > 3)
+            configModifier = args[3];
+
+        try (DB db = new DB(configModifier)) {
             db.open();
             db.beginTransaction();
             db.createSchema(filename, create);

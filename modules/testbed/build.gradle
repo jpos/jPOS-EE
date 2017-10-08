@@ -26,7 +26,7 @@ dependencies {
     providedCompile 'org.slf4j:jul-to-slf4j:1.7.7'
 }
 
-apply from: '../../jpos-app.gradle'
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
 
 war {
     exclude 'VAADIN/gwt-unitCache*'

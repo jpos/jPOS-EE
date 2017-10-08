@@ -8,5 +8,5 @@ dependencies {
     compile libraries.commons_lang
 }
 
-apply from: '../../jpos-app.gradle'
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
 

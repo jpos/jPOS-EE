@@ -6,10 +6,7 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
-import org.jpos.ee.BLException;
-import org.jpos.ee.Consumer;
-import org.jpos.ee.Role;
-import org.jpos.ee.User;
+import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
@@ -29,6 +26,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
 
     private static final String HASH_ALGORITHM = "HmacSHA256";
     private ComboBox<User> userComboBox;
+    private User selectedUser;
 
     public ConsumersView() {
         super(Consumer.class, "consumers");
@@ -51,6 +49,33 @@ public class ConsumersView extends QIEntityView<Consumer> {
         return header;
     }
 
+    @Override
+    public void showSpecificView (final String parameter) {
+        String[] params = parameter.split("\\?user=");
+        if (params.length > 1) {
+            String userId = params[1];
+            try {
+                this.selectedUser = (User) DB.exec(db -> {
+                    UserManager mgr = new UserManager(db);
+                    return mgr.getItemByParam("id",userId,false);
+                });
+            } catch (Exception e) {
+                getApp().getLog().error(e);
+            }
+            super.showSpecificView(parameter);
+        } else if (parameter.contains("new")){
+            getApp().displayError("Invalid User","Must select a User");
+            getApp().getNavigator().navigateTo(getGeneralRoute());
+        } else {
+            super.showSpecificView(parameter);
+        }
+    }
+
+    @Override
+    protected void navigateToNewRoute() {
+        getApp().getNavigator().navigateTo(getGeneralRoute() + "/new?user=" + this.selectedUser.getId());
+    }
+
     private HorizontalLayout createUserPanel() {
         HorizontalLayout hl = new HorizontalLayout();
         hl.setMargin(new MarginInfo(false,true,true,true));
@@ -60,6 +85,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
         userComboBox.addValueChangeListener(listener -> {
             ConfigurableFilterDataProvider wrapper = (ConfigurableFilterDataProvider) getGrid().getDataProvider();
             wrapper.setFilter(listener.getValue());
+            this.selectedUser = listener.getValue();
             wrapper.refreshAll();
         });
         hl.addComponent(userComboBox);
@@ -128,6 +154,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
             ComboBox<User> box = createUserBox();
             formatField(propertyId,box).bind(propertyId);
             box.setEnabled(false);
+            box.setValue(this.selectedUser);
             return box;
         }
         if ("startdate".equalsIgnoreCase(propertyId) || "endDate".equalsIgnoreCase(propertyId)) {
@@ -138,6 +165,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
 
     public void saveEntity () throws BLException {
         Consumer c = getInstance();
+        c.setUser(this.selectedUser);
         Map<String,String> smap = new HashMap<>();
 
 //        smap.put("S", Base64.toBase64String(generateKey().getEncoded()));

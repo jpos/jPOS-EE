@@ -1,6 +1,7 @@
 package org.jpos.qi.eeuser;
 
 import com.vaadin.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.data.provider.Query;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -14,11 +15,20 @@ import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.util.QIUtils;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * Created by jr on 9/11/17.
  */
 public class ConsumersView extends QIEntityView<Consumer> {
+
+    private static final String HASH_ALGORITHM = "HmacSHA256";
+    private ComboBox<User> userComboBox;
 
     public ConsumersView() {
         super(Consumer.class, "consumers");
@@ -45,14 +55,14 @@ public class ConsumersView extends QIEntityView<Consumer> {
         HorizontalLayout hl = new HorizontalLayout();
         hl.setMargin(new MarginInfo(false,true,true,true));
         hl.setSpacing(true);
-        ComboBox<User> box = createUserBox();
-        box.setStyleName(ValoTheme.COMBOBOX_SMALL);
-        box.addValueChangeListener(listener -> {
+        userComboBox = createUserBox();
+        userComboBox.setStyleName(ValoTheme.COMBOBOX_SMALL);
+        userComboBox.addValueChangeListener(listener -> {
             ConfigurableFilterDataProvider wrapper = (ConfigurableFilterDataProvider) getGrid().getDataProvider();
             wrapper.setFilter(listener.getValue());
             wrapper.refreshAll();
         });
-        hl.addComponent(box);
+        hl.addComponent(userComboBox);
         return hl;
     }
 
@@ -75,6 +85,9 @@ public class ConsumersView extends QIEntityView<Consumer> {
         g.addColumn(consumer -> consumer.getUser().getNickAndId()).setId("user");
         g.addColumn(Consumer::isActive).setId("active");
         g.addColumn(Consumer::isDeleted).setId("deleted");
+
+        //select first item on user combobox
+        userComboBox.setValue(userComboBox.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
     }
 
     @Override
@@ -124,7 +137,16 @@ public class ConsumersView extends QIEntityView<Consumer> {
     }
 
     public void saveEntity () throws BLException {
-        //todo: get secret
+        Consumer c = getInstance();
+        Map<String,String> smap = new HashMap<>();
+
+//        smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
+//        c.setKid(getCurrentBDKName());
+//        SecureDESKey bdk = getCurrentBDK();
+//        c.setSecureData(getSSM().customEncryptMap(bdk, smap));
+
+//        return c;
+
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
                 getApp().getMessage("secretDescription","el secreto"),
@@ -136,6 +158,45 @@ public class ConsumersView extends QIEntityView<Consumer> {
                     }
                 }));
     }
+
+    private SecretKey generateKey () throws NoSuchAlgorithmException {
+        KeyGenerator gen = KeyGenerator.getInstance(HASH_ALGORITHM);
+        return gen.generateKey();
+    }
+
+
+//    private SSM getSSM() throws NameRegistrar.NotFoundException {
+//        return (SSM) NameRegistrar.get("ssm");
+//    }
+//
+//    private String getCurrentBDKName() {
+//        return "bdk.001";
+//    }
+//    private SecureDESKey getCurrentBDK() throws NameRegistrar.NotFoundException, SecureKeyStore.SecureKeyStoreException {
+//        SecureKeyStore ks = (SecureKeyStore) NameRegistrar.get("ks");
+//        return (SecureDESKey) ks.getKey(getCurrentBDKName());
+//    }
+
+
+//    private SSM getSSM() throws SMException {
+//        return new SSM("cfg/test.lmk", "com.sun.crypto.provider.SunJCE"); //TODO: Pick from config
+//    }
+//    private String getCurrentBDKName() {
+//        return "bdk.001"; //TODO: Pick from config
+//    }
+//    private SecureDESKey getCurrentBDK() throws SecureKeyStore.SecureKeyStoreException, SMException {
+//        return getBDK(getCurrentBDKName());
+//    }
+//    protected SecureDESKey getBDK (String bdkName)
+//            throws SMException, SecureKeyStore.SecureKeyStoreException
+//    {
+//        try {
+//            SecureKeyStore ks = (SecureKeyStore) NameRegistrar.get ("ks");
+//            return (SecureDESKey) ks.getKey (bdkName);
+//        } catch (NameRegistrar.NotFoundException e) {
+//            throw new SMException (e.getMessage());
+//        }
+//    }
 
     @Override
     public boolean canEdit() {

@@ -20,15 +20,23 @@ package org.jpos.ee;
 
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
+
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public class ConsumerManager {
-    DB db;
+public class ConsumerManager extends ManagerSupport<Consumer> {
+
+    private User user;
 
     public ConsumerManager (DB db) {
-        super ();
-        this.db = db;
+        super(db);
+    }
+
+    public ConsumerManager(DB db, User user) {
+        super(db);
+        this.user = user;
     }
 
     public Consumer getById (String id)
@@ -38,10 +46,18 @@ public class ConsumerManager {
     }
 
     public List<Consumer> getConsumers (User user) {
-        List<Consumer> userConsumers = db.session
-                .createCriteria(Consumer.class)
-                .add(Restrictions.eq("user", user))
-                .list();
-        return userConsumers;
+        this.user = user;
+        return getAll();
     }
+
+    protected Predicate[] buildPredicates(Root<Consumer> root) {
+        Predicate notDeleted = db.session.getCriteriaBuilder().isFalse(root.get("deleted"));
+        if (user != null) {
+            Predicate p = db.session().getCriteriaBuilder().equal(root.get("user"),user.getId());
+            return new Predicate[]{notDeleted,p};
+        }
+        return new Predicate[]{notDeleted};
+    }
+
+
 }

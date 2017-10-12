@@ -20,6 +20,7 @@ package org.jpos.qi;
 
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.ee.BLException;
 
 public class ConfirmDialog extends Window implements Button.ClickListener {
@@ -28,6 +29,10 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
     Button no = new Button("No", this);
 
     public ConfirmDialog(String caption, String question, Callback callback) {
+        this(caption,question,"Yes","No",callback);
+    }
+
+    public ConfirmDialog(String caption, String question, String confirm, String cancel, Callback callback) {
         super(caption);
         setModal(true);
         setResizable(false);
@@ -37,10 +42,16 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
         content.setSpacing(true);
         setContent(content);
 
+        this.yes.setCaption(confirm);
+        this.yes.addStyleName(ValoTheme.BUTTON_FRIENDLY);
+        this.no.setCaption(cancel);
+        this.no.addStyleName(ValoTheme.BUTTON_DANGER);
         this.callback = callback;
 
+        Label questionLabel = new Label(question);
+        questionLabel.setCaptionAsHtml(true);
         if (question != null) {
-            content.addComponent(new Label(question));
+            content.addComponent(questionLabel);
         }
         HorizontalLayout hl = new HorizontalLayout();
         hl.setMargin(new MarginInfo(true, false, false, false));

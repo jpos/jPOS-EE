@@ -22,6 +22,7 @@ dependencies {
     providedCompile project(':modules:syslog')
     providedCompile project(':modules:visitor')
     providedCompile project(':modules:jetty')
+    providedCompile project(':modules:cryptoservice')
     providedCompile 'com.vaadin.external.slf4j:vaadin-slf4j-jdk14:1.6.1'
     providedCompile 'org.slf4j:jul-to-slf4j:1.7.7'
 }

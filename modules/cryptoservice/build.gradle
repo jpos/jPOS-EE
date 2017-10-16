@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: SecureData Service'
+
+dependencies { 
+    compile libraries.jpos
+    compile project(':modules:sysconfig')
+}
+
+

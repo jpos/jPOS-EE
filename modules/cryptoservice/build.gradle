@@ -1,4 +1,4 @@
-description = 'jPOS-EE :: SecureData Service'
+description = 'jPOS-EE :: CryptoService'
 
 dependencies { 
     compile libraries.jpos

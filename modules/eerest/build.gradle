@@ -10,6 +10,8 @@ dependencies {
     providedCompile "org.jpos.ee:jposee-jetty:2.2.5-SNAPSHOT"
     compile libraries.commons_lang
     compile 'io.swagger:swagger-jersey2-jaxrs:1.5.3'
+    testCompile "com.jayway.restassured:rest-assured:${restAssuredVersion}"
+    providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
 }
 
 jar {
@@ -20,3 +22,9 @@ jar {
 
 apply from: '../../jpos-app.gradle'
 
+test {
+    dependsOn('installApp')
+    workingDir = 'build/install/eerest'
+}
+installApp.dependsOn('war')
+dist.dependsOn('war')

@@ -13,7 +13,8 @@ ext {
     jacksonVersion = '2.7.4'
     groovyVersion = '2.4.12'
     vaadinVersion = '8.1.1'
-
+    restAssuredVersion = '2.4.1'
+    
     libraries = [
             //jUnit (Tests)
             junit: 'junit:junit:4.12',

@@ -31,46 +31,14 @@ public class TxnId {
     private static final long DMUL = 1000000000000L;
     private static final long SMUL = 10000000L;
     private static final long NMUL = 100000L;
-    private Pattern pattern = Pattern.compile("^([\\d]{4})-([\\d]{3})-([\\d]{5})-([\\d]{2})-([\\d]{5})$");
+    private static final long MAX_VALUE = 2999999999999999999L;
+    private static Pattern pattern = Pattern.compile("^([\\d]{4})-([\\d]{3})-([\\d]{5})-([\\d]{2})-([\\d]{5})$");
 
-    /**
-     *
-     * @param dt Transaction's TIMESTAMP DateTime
-     * @param node node id
-     * @param transactionId TransactionManager's ID
-     */
-    public TxnId(DateTime dt, int node, long transactionId) {
-        if (dt.getZone() != DateTimeZone.UTC)
-            dt = dt.toDateTime(DateTimeZone.UTC);
-
-        init (dt.getYear(), dt.getDayOfYear(), dt.getSecondOfDay(), node, transactionId);
+    private TxnId() {
+        super();
     }
 
-    /**
-     * @param idString TxnId in YYYY-DDD-SSS-NN-TTTTT format
-     *
-     * <ul>
-     *   <li><code>YYYY</code> year</li>
-     *   <li><code>DDD</code> day of year</li>
-     *   <li><code>SSS</code> second of day</li>
-     *   <li><code>NN</code> unique node number (00 to 99)</li>
-     *   <li><code>TTTTT</code> last 5 digits of transaction manager's transaction id</li>
-     * </ul>
-     */
-    public TxnId(String idString) {
-        Matcher matcher = pattern.matcher(idString);
-        if (!matcher.matches() && matcher.groupCount() != 5)
-            throw new IllegalArgumentException("Invalid idString '" + idString + "'");
-        init(
-          Integer.parseInt(matcher.group(1)),
-          Integer.parseInt(matcher.group(2)),
-          Integer.parseInt(matcher.group(3)),
-          Integer.parseInt(matcher.group(4)),
-          Integer.parseInt(matcher.group(5))
-        );
-    }
-
-    public TxnId(long l) {
+    private TxnId(long l) {
         this.id = l;
     }
 
@@ -78,12 +46,13 @@ public class TxnId {
         return id;
     }
 
-    private void init (int year, int dayOfYear, int secondOfDay, int node, long transactionId) {
+    private TxnId init (int year, int dayOfYear, int secondOfDay, int node, long transactionId) {
         id = year * YMUL
            + dayOfYear * DMUL
            + secondOfDay * SMUL
            + (node % 100) * NMUL
            + transactionId % 100000;
+        return this;
     }
 
     @Override
@@ -103,6 +72,10 @@ public class TxnId {
         return String.format("%04d-%03d-%05d-%02d-%05d", yy, dd, ss, node, l);
     }
 
+    public String toRrn() {
+        return Long.toString(id, 36);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -114,5 +87,69 @@ public class TxnId {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    /**
+     * Creates new TxnId object
+     *
+     * @param dt Transaction's TIMESTAMP DateTime
+     * @param node node id
+     * @param transactionId TransactionManager's ID
+     */
+    public static TxnId create (DateTime dt, int node, long transactionId) {
+        TxnId id = new TxnId();
+        if (dt.getZone() != DateTimeZone.UTC)
+            dt = dt.toDateTime(DateTimeZone.UTC);
+
+        return id.init (dt.getYear(), dt.getDayOfYear(), dt.getSecondOfDay(), node, transactionId);
+    }
+
+    /**
+     * @param idString TxnId in YYYY-DDD-SSS-NN-TTTTT format
+     *
+     * <ul>
+     *   <li><code>YYYY</code> year</li>
+     *   <li><code>DDD</code> day of year</li>
+     *   <li><code>SSS</code> second of day</li>
+     *   <li><code>NN</code> unique node number (00 to 99)</li>
+     *   <li><code>TTTTT</code> last 5 digits of transaction manager's transaction id</li>
+     * </ul>
+     */
+    public static TxnId parse (String idString) {
+        Matcher matcher = pattern.matcher(idString);
+        if (!matcher.matches() && matcher.groupCount() != 5)
+            throw new IllegalArgumentException("Invalid idString '" + idString + "'");
+        return new TxnId().init(
+          Integer.parseInt(matcher.group(1)),
+          Integer.parseInt(matcher.group(2)),
+          Integer.parseInt(matcher.group(3)),
+          Integer.parseInt(matcher.group(4)),
+          Integer.parseInt(matcher.group(5))
+        );
+    }
+
+    /**
+     * Parse TxnId from long
+     *
+     * @param id value
+     * @return newly created TxnId
+     */
+    public static TxnId parse (long id) {
+        if (id <0 || id > MAX_VALUE)
+            throw new IllegalArgumentException("Invalid id " + id);
+        return new TxnId(id);
+    }
+
+    /**
+     * Parse TxnId from rrn
+     *
+     * @param rrn value
+     * @return newly created TxnId
+     */
+    public static TxnId fromRrn (String rrn) {
+        long id = Long.parseLong(rrn, 36);
+        if (id <0 || id > MAX_VALUE)
+            throw new IllegalArgumentException("Invalid rrn " + rrn);
+        return new TxnId(id);
     }
 }

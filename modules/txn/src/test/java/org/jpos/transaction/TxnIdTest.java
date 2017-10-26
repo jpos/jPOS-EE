@@ -17,6 +17,7 @@ public class TxnIdTest {
         assertEquals(txnId1.toString(), txnId2.toString());
         assertEquals(txnId2, txnId3);
         assertEquals(txnId2.toString(), txnId3.toString());
+        assertEquals(12, txnId.toRrn().length());
     }
 
     @Test
@@ -43,5 +44,18 @@ public class TxnIdTest {
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid rrn 1y2p0ij32e8e7", e.getMessage());
         }
+    }
+
+    @Test
+    public void testMaxValue() {
+        TxnId txnId = TxnId.parse(4738381338321616895L);
+        TxnId txnId1 = TxnId.parse(txnId.toString());
+        TxnId txnId2 = TxnId.parse(txnId.id());
+        TxnId txnId3 = TxnId.fromRrn(txnId.toRrn());
+        assertEquals(txnId1, txnId2);
+        assertEquals(txnId1.toString(), txnId2.toString());
+        assertEquals(txnId2, txnId3);
+        assertEquals(txnId2.toString(), txnId3.toString());
+        assertEquals(12, txnId.toRrn().length());
     }
 }

@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
 
 public class TxnId {
     private long id;
-    private static final long YMUL = 1000000000000000L;
-    private static final long DMUL = 1000000000000L;
-    private static final long SMUL = 10000000L;
+    private static final long YMUL = 10000000000000000L;
+    private static final long DMUL = 10000000000000L;
+    private static final long SMUL = 100000000L;
     private static final long NMUL = 100000L;
-    private static final long MAX_VALUE = 2999999999999999999L;
-    private static Pattern pattern = Pattern.compile("^([\\d]{4})-([\\d]{3})-([\\d]{5})-([\\d]{2})-([\\d]{5})$");
+    private static final long MAX_VALUE = Long.parseLong("zzzzzzzzzzzz", 36);
+    private static Pattern pattern = Pattern.compile("^([\\d]{3})-([\\d]{3})-([\\d]{5})-([\\d]{3})-([\\d]{5})$");
 
     private TxnId() {
         super();
@@ -50,7 +50,7 @@ public class TxnId {
         id = year * YMUL
            + dayOfYear * DMUL
            + secondOfDay * SMUL
-           + (node % 100) * NMUL
+           + (node % 1000) * NMUL
            + transactionId % 100000;
         return this;
     }
@@ -69,7 +69,7 @@ public class TxnId {
 
         int node = (int) (l / NMUL);
         l -= node * NMUL;
-        return String.format("%04d-%03d-%05d-%02d-%05d", yy, dd, ss, node, l);
+        return String.format("%03d-%03d-%05d-%03d-%05d", yy, dd, ss, node, l);
     }
 
     public String toRrn() {
@@ -101,17 +101,17 @@ public class TxnId {
         if (dt.getZone() != DateTimeZone.UTC)
             dt = dt.toDateTime(DateTimeZone.UTC);
 
-        return id.init (dt.getYear(), dt.getDayOfYear(), dt.getSecondOfDay(), node, transactionId);
+        return id.init (dt.getYear()-2000, dt.getDayOfYear(), dt.getSecondOfDay(), node, transactionId);
     }
 
     /**
      * @param idString TxnId in YYYY-DDD-SSS-NN-TTTTT format
      *
      * <ul>
-     *   <li><code>YYYY</code> year</li>
+     *   <li><code>CYY</code> Century Year Year</li>
      *   <li><code>DDD</code> day of year</li>
      *   <li><code>SSS</code> second of day</li>
-     *   <li><code>NN</code> unique node number (00 to 99)</li>
+     *   <li><code>NNN</code> unique node number (000 to 999)</li>
      *   <li><code>TTTTT</code> last 5 digits of transaction manager's transaction id</li>
      * </ul>
      */

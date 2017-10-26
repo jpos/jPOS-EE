@@ -36,18 +36,16 @@ import static org.hamcrest.Matchers.is;
 public class EchoTest extends APITestSupport {
     @Test
     public void echoGET() throws NoSuchAlgorithmException, InvalidKeyException, IOException {
-//        APICredential cred = createAPICredential(ParseLogin.DUMMY_CONSUMER, ParseLogin.DUMMY_CONSUMER_SECRET, UUID.randomUUID().toString(), new byte[] {});
+        APICredential cred = createAPICredential(
+                RestConstants.DUMMY_CONSUMER.value(),
+                RestConstants.DUMMY_NONCE.value(),
+                UUID.randomUUID().toString(), new byte[] {});
         given()
-                .header("consumer-id", "c400ded2-f9cc-11e4-accc-3c15c2cf79f2")
-                .and().header("version", "1.0")
-                .and().header("timestamp", "1212332211222")
-                .and().header("nonce", "121b1b1b")
-                .and().header("hash", "12b12b12")
-//          .header("consumer-id", cred.getConsumerId())
-//          .and().header("version", cred.getVersion())
-//          .and().header("timestamp", cred.getTimestamp())
-//          .and().header("hash", cred.getHashAsBase64String())
-//          .and().header("nonce", cred.getNonce())
+          .header("consumer-id", cred.getConsumerId())
+          .and().header("version", cred.getVersion())
+          .and().header("timestamp", cred.getTimestamp())
+          .and().header("hash", cred.getHashAsBase64String())
+          .and().header("nonce", cred.getNonce())
           .expect().statusCode(200)
           .then().log().all()
           .body("success", is(true),

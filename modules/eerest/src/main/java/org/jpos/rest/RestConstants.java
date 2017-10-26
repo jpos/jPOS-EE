@@ -55,7 +55,11 @@ public enum RestConstants {
     TXNRESULT("TXNRESULT"),
     URI_INFO("URI_INFO"),
     JPOS_CMF_VERSION(CMFConstants.CMF_VERSION.value()),
-    TIMESTAMP("TIMESTAMP");
+    TIMESTAMP("TIMESTAMP"),
+    DUMMY_CONSUMER("c400ded2-f9cc-11e4-accc-3c15c2cf79f2"),
+    DUMMY_TIMESTAMP("1212332211222"),
+    DUMMY_NONCE("121b1b1b"),
+    DUMMY_HASH("12b12b12");
 
 
     private String value;

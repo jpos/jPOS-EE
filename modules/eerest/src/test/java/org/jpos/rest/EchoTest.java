@@ -52,8 +52,8 @@ public class EchoTest extends APITestSupport {
           .then().log().all()
           .body("success", is(true),
                   "version", any(String.class),
-                  "revision", any(String.class),
-                  "timestamp", any(String.class))
+                  "revision", any(String.class))
+//                  "timestamp", any(String.class))
           .when().get("echo");
     }
 

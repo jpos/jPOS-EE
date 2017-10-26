@@ -3,11 +3,11 @@ apply plugin: 'war'
 dependencies {
     providedCompile project(':modules:core')
     providedCompile project(':modules:txn')
+    providedCompile project(':modules:jetty')
     providedCompile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
     providedCompile "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
     providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
     providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
-    providedCompile "org.jpos.ee:jposee-jetty:2.2.5-SNAPSHOT"
     compile libraries.commons_lang
     compile 'io.swagger:swagger-jersey2-jaxrs:1.5.3'
     testCompile "com.jayway.restassured:rest-assured:${restAssuredVersion}"

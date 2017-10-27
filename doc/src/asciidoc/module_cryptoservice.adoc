@@ -1,0 +1,134 @@
+=== Crypto Service
+
+The `cryptoservice` module uses AES-256 to encrypt sensitive data, such as
+primary account numbers and protects the encryption key using PGP.
+
+At start-up time, and at regular intervals, the crypto service generates a
+new AES-256 key, encrypts it using PGP using one or more recipient ids, and
+stores the resulting encrypted message in the sysconfig table, using the
+"key." prefix, and a unique key UUID, i.e.:
+
+[source]
+--------
+id: key.f55fe6ec-ed9e-47a1-a0fe-c63dcbf128cb
+value:
+-----BEGIN PGP MESSAGE-----
+Version: BCPG v1.56
+
+hQEMA6Nw6GrTY6BpAQgAs1pUIK3n2FkMyNmfxSZgpPMNFKz39TcfExiwDRtuw+Zg
+wRgFw86SJiL1BB+IE+mPAeCz4hrUkzliiu/760NiXHQysIasWEvUZZqFRA+ecNrk
+zARgB8vgGTNgxPHoYPafVD5TrxY9LdRpJcO//Wm2fEVw0xc4Q7vxbH7e9gDQfiuA
+gcNYk96rVCdbZFKxyMC8fpM9ng6M4V9lxp5TXihzJQEKHWavctIrU2rBolE1WCY2
+Oobs1hELW4rfMpVwfGQDtxcFSNDYkd9IO/WnFTtTAxGHs0u1/miRVxNHadLINdke
+wXx6au9vq12tqlYaJY+BAEtJaAInwwT5/irHj5dlwtJ0AW2wO3Mwh+A+pGJvSd2T
+xyep1pNtm7tMbisZyms0TiGz+6BX6F5ZKCG5UuvsIvTHd/VLp2uajE5NVPe92Y1F
+lLbbMyUfxzBwNhwhdfOEWwRAmrt7AbMyAQHUCZAXgwXn7SXsdh8TTzLMsssViD9+
+h7lfP9w=
+=YyZk
+-----END PGP MESSAGE-----
+--------
+
+The key is used to encrypt subsequent data for a given period of time
+(defaults to one day) until a new key is automatically generated.
+
+Here is a sample usage:
+
+[source,java]
+-------------
+   private void encryptCardData (TLCapture tl, Card card)      <1>
+      throws Exception {
+        Map<String,String> m = new HashMap<>();
+        m.put ("P", card.getPan());
+        m.put ("E", card.getExp());
+        SecureData sd = getCryptoService().aesEncrypt(         <2>
+           Serializer.serializeStringMap(m)
+        );
+        tl.setKid(sd.getId());                                 <3>
+        tl.setSecureData(sd.getEncoded());                     <4>
+    }
+-------------
+<1> TLCapture in this example is a general purpose capture table.
+<2> `getCryptoService()` just locates the `CryptoService` using the `NameRegistrar`
+<3> `kid` stands for Key ID, we store the key UUID here
+<4> `secureData` is a general purpose blob
+
+The crypto service can be configured using a QBean descriptor like this:
+
+[source,xml]
+------------
+<crypto-service class='org.jpos.crypto.CryptoService' logger='Q2'>
+    <property name="custodian" value='demo@jpos.org' />               <1>
+    <property name="pubkeyring" value='cfg/keyring.pub' />            <2>
+    <property name="privkeyring" value='cfg/keyring.priv' />          <3>
+    <property name="lazy" value="false" />                            <4>
+    <property name="keylength" value="256" />                         <5>
+    <property name="duration" value="86400000" />                     <6>
+</crypto-service>
+------------
+<1> custodian PGP id, there can be many `custodian` entries.
+<2> path to the public keyring.
+<3> path to the password-protected private keyring.
+<4> if lazy=true, a key is generated the first time we call `aesEncrypt`, otherwise, a new one is created at service start.
+<5> key length defaults to 256. Can be reduced if AES-256 is not supported by the JVM due to export restrictions.
+<6> key duration
+
+This allows jPOS nodes to encrypt data securely without storing the encryption key to disk.
+
+[NOTE]
+======
+The transient encryption key is still in memory, so core dumps and swap should be
+disabled at the operating system level. This approach is still more secure
+than obfuscating encryption keys.
+======
+
+Decryption -- that can of course run in a different node, at a different time -- requires 
+access to the private keyring, with its optional password. Said password can be entered
+manually, obtained from a remote service or HSM, etc. and it's a two step process.
+
+First the key has to be _loaded_ into memory, using the `loadKey` method. Once the key
+is loaded, the `aesDecrypt` can be called.
+
+These are the method's signatures:
+
+[source,java]
+-------------
+ public void loadKey (String jobId, String keyId, char[] password) throws Exception;
+ public byte[] aesDecrypt (String jobId, String keyId, byte[] encoded) throws Exception;
+-------------
+
+Here `keyId`, `password`, and `encoded` cryptogram don't require too much explanation, but `jobId` does
+and here is the rationale. We could have a one-shot `aesDecrypt` method accepting the private key password,
+but decrypting the AES-256 key using PGP is an expensive operation. In situations
+where you have extract a daily file, probably encrypted by just a handful keys, you don't want to decrypt
+the key on every `aesDecrypt` call. We don't want to expose the key to the caller either, so the CryptoService
+keeps it in a private field. In order to do that, `loadKey` caches the key (until it's unloaded), so it's
+cheap to call `loadKey` followed by `aesDecrypt`, after the first call where the key is actually decrypted,
+subsequent calls will be pretty fast.
+
+In order to protect different clients from accessing keys loaded by other ones, we use a `jobId` that can be something as
+simple as a `UUID` or any nonce, only known to the caller. That `jobId` can then be used to `unload` those keys, using the
+`unloadKey` and `unloadAll` methods:
+
+[source,java]
+-------------
+    public boolean unloadKey (String jobId, String keyId);
+    public void unloadAll(String jobId);
+-------------
+
+There's also a no-args `unloadAll()` that unloads all keys, and should be used with care.
+
+[NOTE]
+======
+In order to simplify development and testing, and eventually to troubleshoot problems, we've
+also created a couple of CLI commands: `aesencrypt` and `aesdecrypt`.
+======
+
+[TIP]
+=====
+If you're accessing the CLI using the command line `q2 --cli`, remember that the default `deployDir` is
+`deploy-cli` instead of `deploy`. You need a copy (or symlink) of `25_cryptoservice.xml` in that
+directory.
+
+If you `ssh` to a running Q2 to reach the CLI, then you can ignore this tip.
+=====
+

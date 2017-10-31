@@ -89,10 +89,12 @@ public class BinLogTest implements Runnable {
 
     @AfterClass
     public static void cleanup() throws IOException {
-        for (File f : dir.listFiles()) {
-            if (f.toString().endsWith(".dat")) {
-                System.out.println ("Deleting " + f.toString());
-                f.delete();
+        if (dir.listFiles() != null) {
+            for (File f : dir.listFiles()) {
+                if (f.toString().endsWith(".dat")) {
+                    System.out.println ("Deleting " + f.toString());
+                    f.delete();
+                }
             }
         }
         System.out.println ("Deleting " + dir);

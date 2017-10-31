@@ -22,6 +22,8 @@ package org.jpos.binlog;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.TPS;
 import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -38,6 +40,11 @@ public class BinLogTest implements Runnable {
     public static File dir;
     private AtomicLong cnt = new AtomicLong();
 
+    @Before
+    public void before () {
+        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+    }
+    
     @BeforeClass
     public static void setup () throws IOException {
         dir = File.createTempFile("binlog-", "");

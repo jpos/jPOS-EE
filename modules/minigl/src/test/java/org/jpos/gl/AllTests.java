@@ -26,6 +26,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest (new TestSuite (ImportTest.class));
+        suite.addTest (new TestSuite (AddExportUserTest.class));
         suite.addTest (new TestSuite (CurrencyTest.class));
         suite.addTest (new TestSuite (PermissionTest.class));
         suite.addTest (new TestSuite (ExportTest.class));

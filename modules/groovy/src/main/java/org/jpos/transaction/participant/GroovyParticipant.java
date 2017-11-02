@@ -21,6 +21,7 @@ package org.jpos.transaction.participant;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashMap;
 
 import org.jdom2.Element;
@@ -34,6 +35,7 @@ import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.util.Log;
 
+import org.jpos.groovy.GroovySetup;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import groovy.lang.Binding;
@@ -192,6 +194,10 @@ public class GroovyParticipant extends Log
 
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/transaction/ContextDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         compiled= cfg.getBoolean("compiled", true);
         if (compiled) {
             gcl= new GroovyClassLoader();

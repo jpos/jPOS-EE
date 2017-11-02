@@ -103,8 +103,9 @@ public class GroovyRequestListener extends Log
     implements ISORequestListener, Configurable, XmlConfigurable
 {
     private boolean compiled= true;
-    private GroovyClassLoader gcl;          // this instance's GCL which can be used to create instances of the script
+    private GroovyClassLoader gcl;          // this instance's GCL which can be used to parse source into instances of Class<Script>
     private Object script;                  // can be an instance of String, File, or Class<Script>
+    private String scriptName;              // a printable name (a file name, or generated from the realm)
 
     protected HashSet whitelist;
     Configuration cfg;
@@ -148,7 +149,7 @@ public class GroovyRequestListener extends Log
 
         script= getScript(e.getChild("script"));
         if (script == null)                           // avoid typos, for instance
-            throw new ConfigurationException(("GroovyRequestListener without 'script' element."));
+            throw new ConfigurationException(("GroovyRequestListener without mandatory 'script' element."));
     }
 
 
@@ -181,7 +182,7 @@ public class GroovyRequestListener extends Log
                 if (script instanceof File)
                     ret= shell.evaluate((File)script);
                 else if (script instanceof String)
-                    ret= shell.evaluate((String)script);
+                    ret= shell.evaluate((String)script, scriptName) ;
             }
         }
         catch (Exception e)
@@ -216,6 +217,7 @@ public class GroovyRequestListener extends Log
 
         if (src != null)
         {
+            scriptName= src;                                    // should be a file path, will be output as file name part
             f= new File(src);
             if (!f.canRead())
                 throw new ConfigurationException ("Can't read '" + src + "'");
@@ -224,6 +226,7 @@ public class GroovyRequestListener extends Log
         }
         else
         {
+            scriptName= "GroovyRequestListener:"+getRealm();    // dynamic script name to show in logs and dumps
             srcText= e.getText();   // this returns, at worst, an empty String
             if (!compiled)
                 return srcText;
@@ -240,20 +243,20 @@ public class GroovyRequestListener extends Log
             // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
             // (start by reading the sections above that link)
             // This @CompileStatic could be added as a flag in an XML attribute
-            // Other options could include adding some default imports to the script
+            // Other options could include adding some default imports to the script using ImportCustomizer
+            // and then we can create a CompilerConfiguration to pass to the GCL o GroovyShell
 
             Class clazz;
             if (f != null)
                 clazz= gcl.parseClass(f);
             else
-                clazz= gcl.parseClass(srcText);
+                clazz= gcl.parseClass(srcText, scriptName);
 
             // We only support Groovy Scripts, not classes
             if (!Script.class.isAssignableFrom(clazz))
             {
-                String srcOrigin= (f != null) ? src : "<script>";
                 throw new ConfigurationException(
-                    "Groovy code for '"+srcOrigin+"' in '"+getRealm()+"' "+
+                    "Groovy code for '"+scriptName+"' "+
                     "must be a simple script, not a class."
                 );
             }

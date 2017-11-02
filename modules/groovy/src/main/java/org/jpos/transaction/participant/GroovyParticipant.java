@@ -21,6 +21,8 @@ package org.jpos.transaction.participant;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
+import java.util.HashMap;
 
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
@@ -33,6 +35,7 @@ import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.util.Log;
 
+import org.jpos.groovy.GroovySetup;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import groovy.lang.Binding;
@@ -93,6 +96,9 @@ public class GroovyParticipant extends Log
     private boolean compiled= true;
     private GroovyClassLoader gcl;
 
+    // map script part (prepare, abort...) to a name which can be a path, a realm or something to identify in error logs
+    private HashMap<String, String> scriptNames= new HashMap<>();
+
     // prepare, prepareForAbort, commit, and abort
     // can be instances of String, File, or Class<Script>
     private Object prepare;
@@ -117,7 +123,7 @@ public class GroovyParticipant extends Log
                 return (int)s.run();
             }
             else
-                return (int) eval(getShell(id, ctx), prepare);
+                return (int) eval(getShell(id, ctx), prepare, scriptNames.get("prepare"));
         } catch (Exception e) {
             error(e);
         }
@@ -136,7 +142,7 @@ public class GroovyParticipant extends Log
                 return (int)s.run();
             }
             else
-                return (int) eval(getShell(id, ctx), prepareForAbort);
+                return (int) eval(getShell(id, ctx), prepareForAbort, scriptNames.get("prepare-for-abort"));
         } catch (Exception e) {
             error(e);
         }
@@ -153,7 +159,7 @@ public class GroovyParticipant extends Log
                     s.run();
                 }
                 else
-                    eval(getShell(id, ctx), commit);
+                    eval(getShell(id, ctx), commit, scriptNames.get("commit"));
             } catch (Exception e) {
                 error(e);
             }
@@ -170,7 +176,7 @@ public class GroovyParticipant extends Log
                     s.run();
                 }
                 else
-                    eval(getShell(id, ctx), abort);
+                    eval(getShell(id, ctx), abort, scriptNames.get("abort"));
             } catch (Exception e) {
                 error(e);
             }
@@ -188,6 +194,10 @@ public class GroovyParticipant extends Log
 
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/transaction/ContextDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         compiled= cfg.getBoolean("compiled", true);
         if (compiled) {
             gcl= new GroovyClassLoader();
@@ -222,6 +232,7 @@ public class GroovyParticipant extends Log
 
             if (src != null)
             {
+                scriptNames.put(elName, src);                   // the file path, as given
                 f= new File(src);
                 if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");
@@ -230,12 +241,13 @@ public class GroovyParticipant extends Log
             }
             else
             {
+                scriptNames.put(elName, "GroovyParticipant<"+elName+">:"+getRealm());
                 srcText= e.getText();   // this returns, at worst, an empty String
                 if (!compiled)
                     return srcText;
             }
 
-            // Here we can assume compiled == true
+            // Here we can assume compiled == true (or it would have returned from the block above).
             // So we pre-compile the script into a Class<Script> object
             // that will be instantiated for each invocation of the participant's method
             try
@@ -244,14 +256,13 @@ public class GroovyParticipant extends Log
                 if (f != null)
                     clazz= gcl.parseClass(f);
                 else
-                    clazz= gcl.parseClass(srcText);
+                    clazz= gcl.parseClass(srcText, scriptNames.get(elName));
 
                 // We only support Groovy Scripts, not classes
                 if (!Script.class.isAssignableFrom(clazz))
                 {
-                    String srcOrigin= (f != null) ? src : elName;
                     throw new ConfigurationException(
-                        "Groovy code for '"+srcOrigin+"' in '"+getRealm()+"' "+
+                        "Groovy code for '"+scriptNames.get(elName)+"' "+
                         "must be a simple script, not a class."
                     );
                 }
@@ -266,11 +277,11 @@ public class GroovyParticipant extends Log
         return null;    // nothing to process
     }
 
-    private Object eval (GroovyShell shell, Object script) throws IOException {
+    private Object eval (GroovyShell shell, Object script, String name) throws IOException {
         if (script instanceof File)
             return shell.evaluate((File)script);
         else if (script instanceof String)
-            return shell.evaluate((String)script);
+            return shell.evaluate((String)script, name);
         return null;
     }
 

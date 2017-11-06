@@ -34,7 +34,7 @@ In jPOS 2.0.7 (and later), `QFactory.properties` maps the `groovy` keyword to
 
 [source,xml]
 ----------------------------------------------------------------------------------------
-<groovy logger='Q2' scr='deploy/test.groovy' />
+<groovy logger='Q2' src='deploy/test.groovy' />
 ----------------------------------------------------------------------------------------
 
 or

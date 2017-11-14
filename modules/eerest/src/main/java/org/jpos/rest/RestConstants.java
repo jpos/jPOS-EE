@@ -52,6 +52,7 @@ public enum RestConstants {
     RESPONSE("RESPONSE"),
     TRAN_APPROVED("0000"),
     DB("DB"),
+    TXNMGR("TXNMGR"),
     TXNRESULT("TXNRESULT"),
     URI_INFO("URI_INFO"),
     JPOS_CMF_VERSION(CMFConstants.CMF_VERSION.value()),
@@ -59,7 +60,8 @@ public enum RestConstants {
     DUMMY_CONSUMER("c400ded2-f9cc-11e4-accc-3c15c2cf79f2"),
     DUMMY_TIMESTAMP("1212332211222"),
     DUMMY_NONCE("121b1b1b"),
-    DUMMY_HASH("12b12b12");
+    DUMMY_HASH("12b12b12"),
+    WATCHDOG("WATCHDOG");
 
 
     private String value;

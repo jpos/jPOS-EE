@@ -18,15 +18,11 @@
 
 package org.jpos.rest;
 
-import com.jayway.restassured.http.ContentType;
-//import org.jpos.jcard.rest.ParseLogin;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -50,28 +46,8 @@ public class EchoTest extends APITestSupport {
           .then().log().all()
           .body("success", is(true),
                   "version", any(String.class),
-                  "revision", any(String.class))
-//                  "timestamp", any(String.class))
+                  "revision", any(String.class),
+                  "timestamp", any(Long.class))
           .when().get("echo");
     }
-
-    @Test
-    public void echoPOST() throws NoSuchAlgorithmException, InvalidKeyException, IOException {
-//        Map<String, Object> requestBody = new LinkedHashMap<String, Object>();
-//        requestBody.put("test", "hello");
-//        APICredential cred = createAPICredential(ParseLogin.DUMMY_CONSUMER, ParseLogin.DUMMY_CONSUMER_SECRET, UUID.randomUUID().toString(), toJson(requestBody).getBytes());
-//        given()
-//                .header("consumer-id", cred.getConsumerId())
-//                .and().header("version", cred.getVersion())
-//                .and().header("timestamp", cred.getTimestamp())
-//                .and().header("hash", cred.getHashAsBase64String())
-//                .and().header("nonce", cred.getNonce())
-//                .and().contentType(ContentType.JSON)
-//                .body(requestBody)
-//                .expect().statusCode(201)
-//                .then().log().all()
-//                .body("success", is(true))
-//                .when().post("echo");
-    }
-
 }

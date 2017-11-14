@@ -8,15 +8,7 @@
   <property name="max-sessions" value="64"/>
   <property name="debug" value="false"/>
 
-  <!--<participant class="org.jpos.jcard.PrepareContext" logger="Q2" realm="prepare-context"/>-->
-  <!--<participant class="org.jpos.transaction.Open" logger="Q2" realm="open">-->
-    <!--<property name="timeout" value="300" />-->
-  <!--</participant>-->
-  <!--<participant class="org.jpos.rest.CheckConsumer" logger="Q2" realm="open">-->
-    <!--<property name="timeout" value="300" />-->
-    <!--<property name="debug" value="true" />-->
-  <!--</participant>-->
-
+  <participant class="org.jpos.rest.participant.PrepareContext" logger="Q2" realm="prepare-context"/>
   <participant class="org.jpos.transaction.participant.Switch" logger="Q2" realm="Switch">
       <property name="echo::get" value="echo::get close trigger-response"/>
   </participant>

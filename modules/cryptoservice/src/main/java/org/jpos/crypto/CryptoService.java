@@ -139,7 +139,7 @@ public class CryptoService extends QBeanSupport implements Runnable {
      * @throws Exception if invalid key
      */
     public void loadKey (String jobId, String keyId, char[] password) throws Exception {
-        if (!keys.containsKey(keyId)) {
+        if (!keys.containsKey((jobId == null ? "" : jobId) + keyId)) {
             String v = (String) DB.execWithTransaction(db -> {
                 SysConfigManager mgr = new SysConfigManager(db, "key.");
                 return mgr.get(keyId, null);

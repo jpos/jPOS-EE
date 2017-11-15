@@ -35,11 +35,11 @@ public class DBInstantiator extends QBeanSupport {
     public void initService() throws Exception {
         super.initService();
         Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-        String usr = cfg.get("dbuser", "UNKNOWN");
-        String pswd = cfg.get("dbpass", "UNKNOWN");
-        sp.out("connection.username", usr);
-        sp.out("connection.password", pswd);
-        new org.jpos.ee.DB(cfg.get("config-modifiler"));
+        String cm = cfg.get("config-modifiler", null);
+        String dbprefix = (cm != null ? cm.split(":")[0] + ":" : "");
+        sp.out(dbprefix + "connection.username", cfg.get("dbuser", "UNKNOWN"));
+        sp.out(dbprefix + "connection.password", cfg.get("dbpass", "UNKNOWN"));
+        new org.jpos.ee.DB(cm);
     }
     public void startService() throws Exception {
         super.startService();

@@ -43,7 +43,7 @@ public class ADDUSER implements CLICommand {
             return;
         }
         if (!line.hasOption('n')) {
-            cli.println ("--nick parameter is required. See --help for help");
+            cli.println ("--name parameter is required. See --help for help");
             return;
         }
         try (DB db = new DB()) {
@@ -102,7 +102,7 @@ public class ADDUSER implements CLICommand {
     private void showHelp (CLIContext cli, String args[], Options options) {
         PrintWriter pw = new PrintWriter (cli.getOutputStream());
         HelpFormatter helpFormatter = new HelpFormatter ();
-        helpFormatter.printHelp (args[0] + "<nick>", options);
+        helpFormatter.printHelp (args[0] + "<nick> [options]", options);
         helpFormatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, args[0], null, options, 0, HelpFormatter.DEFAULT_DESC_PAD, null,false);
     }
 }

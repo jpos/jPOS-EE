@@ -18,7 +18,7 @@ If you want to use Postgresql instead of MySQL, edit
 
 Build the system using `gradle installApp` and run `build/install/testbed/bin/q2 --cli`
 
-(you can also call `gradle dist` and expand your `build/distributions/testbed-x.x.x.tar.gz) elsewhere and run `bin/q2 --cli`.
+(you can also call `gradle dist` and expand your `build/distributions/testbed-x.x.x.tar.gz` elsewhere and run `bin/q2 --cli`).
 
 
 Once you get the `q2>` prompt, try:

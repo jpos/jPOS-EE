@@ -35,11 +35,13 @@
       <param-name>pushmode</param-name>
       <param-value>manual</param-value>
     </init-param>
+    <!--
+    Enabling this feature causes "SessionExpired" in Jetty newer than 9.3.19.v20170502
     <init-param>
       <param-name>org.atmosphere.websocket.suppressJSR356</param-name>
       <param-value>true</param-value>
     </init-param>
-
+    -->
     <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
@@ -52,7 +54,7 @@
     </cookie-config>
   </session-config>
   <session-config>
-    <session-timeout>60</session-timeout>
+    <session-timeout>1800</session-timeout>
   </session-config>
   <listener>
     <listener-class>org.atmosphere.cpr.SessionSupport</listener-class>
@@ -62,4 +64,3 @@
     <param-value>true</param-value>
   </context-param>
 </web-app>
-

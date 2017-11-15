@@ -22,6 +22,8 @@ package org.jpos.binlog;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.TPS;
 import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -32,13 +34,17 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BinLogTest implements Runnable {
     public static File dir;
     private AtomicLong cnt = new AtomicLong();
 
+    @Before
+    public void before () {
+        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+    }
+    
     @BeforeClass
     public static void setup () throws IOException {
         dir = File.createTempFile("binlog-", "");
@@ -83,10 +89,12 @@ public class BinLogTest implements Runnable {
 
     @AfterClass
     public static void cleanup() throws IOException {
-        for (File f : dir.listFiles()) {
-            if (f.toString().endsWith(".dat")) {
-                System.out.println ("Deleting " + f.toString());
-                f.delete();
+        if (dir.listFiles() != null) {
+            for (File f : dir.listFiles()) {
+                if (f.toString().endsWith(".dat")) {
+                    System.out.println ("Deleting " + f.toString());
+                    f.delete();
+                }
             }
         }
         System.out.println ("Deleting " + dir);

@@ -25,8 +25,8 @@ import javax.persistence.Converter;
 @Converter(autoApply = true)
 public class TagsConverter implements AttributeConverter<Tags,String> {
     @Override
-    public String convertToDatabaseColumn(Tags attribute) {
-        return attribute.toString();
+    public String convertToDatabaseColumn(Tags tags) {
+        return tags != null && tags.size() > 0 ? tags.toString() : "";
     }
 
     @Override
@@ -34,4 +34,3 @@ public class TagsConverter implements AttributeConverter<Tags,String> {
         return new Tags(dbData);
     }
 }
-

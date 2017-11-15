@@ -58,21 +58,19 @@ import java.util.*;
  *          to Hibernate O/R mapping engine
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class DB implements Closeable
-{
+public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
 
-    private static volatile SessionFactory sessionFactory = null;
     private static String propFile;
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
+    private static Map<String,SessionFactory> sessionFactories = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates DB Object using default Hibernate instance
      */
-    public DB()
-    {
+    public DB() {
         super();
     }
 
@@ -106,8 +104,7 @@ public class DB implements Closeable
      *
      * @param log Log object
      */
-    public DB(Log log)
-    {
+    public DB(Log log) {
         super();
         setLog(log);
     }
@@ -126,31 +123,27 @@ public class DB implements Closeable
     /**
      * @return Hibernate's session factory
      */
-    public SessionFactory getSessionFactory()
-    {
-        if (sessionFactory == null)
-        {
-            synchronized (DB.class)
-            {
-                if (sessionFactory == null)
-                {
-                    try
-                    {
-                        sessionFactory = newSessionFactory();
-                    }
-                    catch (IOException | ConfigurationException | DocumentException e)
+    public SessionFactory getSessionFactory() {
+        String cm  = configModifier != null ? configModifier : "";
+        SessionFactory sf = sessionFactories.get(cm);
+        if (sf == null) {
+            synchronized (DB.class) {
+                if (sf == null) {
+                    try {
+                        sf = newSessionFactory();
+                        sessionFactories.put(cm, sf);
+                    } catch (IOException | ConfigurationException | DocumentException e)
                     {
                         throw new RuntimeException("Could not configure session factory", e);
                     }
                 }
             }
         }
-        return sessionFactory;
+        return sf;
     }
 
-    public static synchronized void invalidateSessionFactory()
-    {
-        sessionFactory = null;
+    public static synchronized void invalidateSessionFactories() {
+        sessionFactories.clear();
     }
 
     private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException {
@@ -251,10 +244,12 @@ public class DB implements Closeable
             SchemaExport export = new SchemaExport();
             List<TargetType> targetTypes=new ArrayList<>();
             if (outputFile != null) {
-                if(outputFile.trim().equals("-")) targetTypes.add(TargetType.STDOUT);
+                export.setDelimiter(";");
+                if(outputFile.trim().equals("-")) {
+                    targetTypes.add(TargetType.STDOUT);
+                }
                 else {
                     export.setOutputFile(outputFile);
-                    export.setDelimiter(";");
                     targetTypes.add(TargetType.SCRIPT);
                 }
             }
@@ -392,19 +387,32 @@ public class DB implements Closeable
         this.log = log;
     }
 
-    public static Object exec(DBAction action) throws Exception
-    {
-        try (DB db = new DB())
-        {
+    public static Object exec(DBAction action) throws Exception {
+        try (DB db = new DB()) {
             db.open();
             return action.exec(db);
         }
     }
 
-    public static Object execWithTransaction(DBAction action) throws Exception
-    {
-        try (DB db = new DB())
-        {
+    public static Object exec(String configModifier, DBAction action) throws Exception {
+        try (DB db = new DB(configModifier)) {
+            db.open();
+            return action.exec(db);
+        }
+    }
+
+    public static Object execWithTransaction(DBAction action) throws Exception {
+        try (DB db = new DB()) {
+            db.open();
+            db.beginTransaction();
+            Object obj = action.exec(db);
+            db.commit();
+            return obj;
+        }
+    }
+
+    public static Object execWithTransaction(String configModifier, DBAction action) throws Exception {
+        try (DB db = new DB(configModifier)) {
             db.open();
             db.beginTransaction();
             Object obj = action.exec(db);
@@ -454,6 +462,11 @@ public class DB implements Closeable
         }
     }
 
+    @Override
+    public String toString() {
+        return "DB{" + (configModifier != null ? configModifier : "") + '}';
+    }
+
     private MetadataImplementor getMetadata() throws IOException, ConfigurationException, DocumentException {
         StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
         String propFile;
@@ -462,9 +475,9 @@ public class DB implements Closeable
         if (configModifier != null) {
             String[] ss = configModifier.split(":");
             if (ss.length > 0)
-                dbPropertiesPrefix = ss[0] + "-";
+                dbPropertiesPrefix = ss[0] + ":";
             if (ss.length > 1)
-                metadataPrefix = ss[1] + "-";
+                metadataPrefix = ss[1] + ":";
         }
 
         String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
@@ -485,8 +498,8 @@ public class DB implements Closeable
 
         // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
         Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-        String user = (String) sp.inp("connection.username");
-        String pass = (String) sp.inp("connection.password");
+        String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+        String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
         if (user != null)
             ssrb.applySetting("hibernate.connection.username", user);
         if (pass != null)
@@ -496,6 +509,9 @@ public class DB implements Closeable
         List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
         for (String moduleConfig : moduleConfigs) {
             if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
+                if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
+                      (!moduleConfig.contains(":") && metadataPrefix.contains(":")))
+                    continue;
                 addMappings(mds, moduleConfig);
             }
         }

@@ -23,18 +23,20 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "sysconfig")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
     @Id
     @Column(length=64)
     private String id;
 
-    @Column(length=2048)
+    @Column(length=8192)
     private String value;
 
     @Column(length=64)

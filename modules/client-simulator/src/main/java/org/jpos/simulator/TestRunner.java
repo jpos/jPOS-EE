@@ -21,20 +21,13 @@ package org.jpos.simulator;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import org.jpos.iso.ISOMsg;
-import org.jpos.iso.ISOComponent;
-import org.jpos.iso.ISOUtil;
-import org.jpos.iso.ISOField;
-import org.jpos.iso.ISOPackager;
-import org.jpos.iso.ISOException;
+import java.util.*;
+
+import org.jpos.iso.*;
 import org.jpos.iso.packager.XMLPackager;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 import org.jdom2.Element;
-import org.jpos.iso.MUX;
 import org.jpos.util.NameRegistrar;
 import bsh.Interpreter;
 import bsh.BshClassManager;
@@ -306,7 +299,14 @@ public class TestRunner
                 }
             }
         }
-        if (!(new String(c.pack())).equals(new String(expected.pack()))) {
+        if (expected.getHeader() == null)
+            c.setHeader((byte[]) null);
+        if (!Arrays.equals(c.pack(), expected.pack())) {
+            evt.addMessage("Pack mismatch");
+            evt.addMessage("--- expected ---");
+            evt.addMessage(ISOUtil.hexdump (expected.pack()));
+            evt.addMessage("--- actual ---");
+            evt.addMessage(ISOUtil.hexdump (c.pack()));
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }

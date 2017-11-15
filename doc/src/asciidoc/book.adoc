@@ -40,6 +40,7 @@ include::module_binlog.adoc[]
 
 include::module_freemarker_decorator.adoc[]
 include::module_groovy.adoc[]
+include::module_cryptoservice.adoc[]
 
 == Simulators
 

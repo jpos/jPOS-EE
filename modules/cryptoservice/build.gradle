@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: CryptoService'
+
+dependencies { 
+    compile libraries.jpos
+    compile project(':modules:sysconfig')
+}
+
+

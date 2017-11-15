@@ -25,3 +25,4 @@ The core module serves two purposes:
 
 * It includes all basic dependencies needed to run any jPOS-EE application.
 * It contains base functionality shared by all jPOS-EE applications.
+

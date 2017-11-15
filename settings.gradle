@@ -32,7 +32,8 @@ include ':modules:core',
         ':modules:qi-eeuser',
         ':modules:qi-sysconfig',
         ':modules:binlog',
-        ':modules:binlog-quartz'
+        ':modules:binlog-quartz',
+        ':modules:cryptoservice'
 
 rootProject.name = 'jposee'
 

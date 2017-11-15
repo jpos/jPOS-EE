@@ -16,6 +16,18 @@
     .valo-menu-responsive[width-range~="0-1100px"] .expand-sidebar {
         display: none;
     }
+    .dashboard-panel[width-range~="1101px-"] {
+        margin-right: 8px;
+        margin-left: 8px;
+        margin-top: 10px;
+        width: 48%;
+    }
+    .dashboard-panel[width-range~="0-1100px"] {
+        margin-right: 8px;
+        margin-left: 8px;
+        margin-top: 10px;
+        width: 100%;
+    }
 
     .v-table-caption-container {
         text-transform: uppercase;

@@ -4,7 +4,7 @@ ext {
     logbackVersion = '1.1.7'
     hibernateVersion = '5.2.10.Final'
     geronimoVersion = '1.1.1'
-    jettyVersion = '9.3.19.v20170502'
+    jettyVersion = '9.4.5.v20170502'
     servletApiVersion = '3.1.0'
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.0.4.Final'
@@ -12,9 +12,8 @@ ext {
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.7.4'
     groovyVersion = '2.4.12'
-    vaadinVersion = '8.1.1'
     restAssuredVersion = '2.4.1'
-    
+    vaadinVersion = '8.1.5'
     libraries = [
             //jUnit (Tests)
             junit: 'junit:junit:4.12',

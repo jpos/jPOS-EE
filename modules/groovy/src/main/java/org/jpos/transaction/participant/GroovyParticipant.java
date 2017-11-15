@@ -21,6 +21,8 @@ package org.jpos.transaction.participant;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
+import java.util.HashMap;
 
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
@@ -33,6 +35,7 @@ import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.util.Log;
 
+import org.jpos.groovy.GroovySetup;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import groovy.lang.Binding;
@@ -41,22 +44,32 @@ import groovy.lang.GroovyShell;
 
 /**
  * <p>A TransactionParticipant whose prepare, commit and abort methods can be
- * specified using Groovy scripts.</p>
+ * specified using Groovy scripts.
  *
  * <p>To indicate what code to execute for any of the TM life-cycle methods just add
  * an element named 'prepare', 'commit' or 'abort' and optionally 'prepare-for-abort'
  * contained in that of the participant.
- * <br>
- * The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
- * with the TM standard result values (PREPARE, ABORT and its modifiers).
- * <br>
- * The Groovy script code can be placed as part of the element's content (a CDATA section
+ *
+ * <p>The 'prepare' and 'prepare-for-abort' methods are expected to return an Integer object
+ * with the TM standard result values (PREPARED, ABORTED, etc).
+ *
+ * <p>The Groovy script code can be placed as part of the element's content (a CDATA section
  * is recommended), or in an external file pointed to by the 'src' attribute. We also
  * recommend adding a "realm" attribute to identify errors in the logs, especially if you
  * have several instances of GroovyParticipant in your transaction manager.
- * <br>
- * By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
- * to be evaluated each time, then set the "compiled" property to "false".</p>
+ *
+ * <p>The following variables will be bound to each Groovy script's {@code Binding}:
+ * <ul>
+ *  <li><b>id</b> - the transaction {@code int id} passed to the participant's method</li>
+ *  <li><b>ctx</b> - the transaction {@code Serializable ctx} passed to the participant's method</li>
+ *  <li><b>log</b> - a reference to {@code this} instance (since this class extends {@code org.jpos.util.Log})</li>
+ *  <li><b>cfg</b> - this {@code TransactionParticipant}'s {@code Configuration} properties</li>
+ *  <li><b>tm</b> - a reference to the {@code TransactionManager}'s executing this transaction</li>
+ *
+ * </ul>
+ *
+ * <p>By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
+ * to be evaluated each time, then set the "compiled" property to "false".
  *
  * Add a transaction participant like this:
  *
@@ -71,6 +84,9 @@ import groovy.lang.GroovyShell;
  *       &lt;/abort&gt;
  *     &lt;/participant&gt;
  * </pre>
+ *
+ * @author <a href="mailto:barspi@transactility.com">Barzilai Spinak</a>
+ * @version $Revision$ $Date$
  */
 
 @SuppressWarnings("unused")
@@ -79,6 +95,9 @@ public class GroovyParticipant extends Log
 {
     private boolean compiled= true;
     private GroovyClassLoader gcl;
+
+    // map script part (prepare, abort...) to a name which can be a path, a realm or something to identify in error logs
+    private HashMap<String, String> scriptNames= new HashMap<>();
 
     // prepare, prepareForAbort, commit, and abort
     // can be instances of String, File, or Class<Script>
@@ -104,7 +123,7 @@ public class GroovyParticipant extends Log
                 return (int)s.run();
             }
             else
-                return (int) eval(getShell(id, ctx), prepare);
+                return (int) eval(getShell(id, ctx), prepare, scriptNames.get("prepare"));
         } catch (Exception e) {
             error(e);
         }
@@ -123,7 +142,7 @@ public class GroovyParticipant extends Log
                 return (int)s.run();
             }
             else
-                return (int) eval(getShell(id, ctx), prepareForAbort);
+                return (int) eval(getShell(id, ctx), prepareForAbort, scriptNames.get("prepare-for-abort"));
         } catch (Exception e) {
             error(e);
         }
@@ -140,7 +159,7 @@ public class GroovyParticipant extends Log
                     s.run();
                 }
                 else
-                    eval(getShell(id, ctx), commit);
+                    eval(getShell(id, ctx), commit, scriptNames.get("commit"));
             } catch (Exception e) {
                 error(e);
             }
@@ -157,7 +176,7 @@ public class GroovyParticipant extends Log
                     s.run();
                 }
                 else
-                    eval(getShell(id, ctx), abort);
+                    eval(getShell(id, ctx), abort, scriptNames.get("abort"));
             } catch (Exception e) {
                 error(e);
             }
@@ -175,6 +194,10 @@ public class GroovyParticipant extends Log
 
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/transaction/ContextDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         compiled= cfg.getBoolean("compiled", true);
         if (compiled) {
             gcl= new GroovyClassLoader();
@@ -196,7 +219,7 @@ public class GroovyParticipant extends Log
     }
 
 
-    /** Returns a String, a File, or a fully parsed Class<groovy.lang.Script>
+    /** Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
     */
     private Object getScript (Element e) throws ConfigurationException
     {
@@ -209,6 +232,7 @@ public class GroovyParticipant extends Log
 
             if (src != null)
             {
+                scriptNames.put(elName, src);                   // the file path, as given
                 f= new File(src);
                 if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");
@@ -217,12 +241,13 @@ public class GroovyParticipant extends Log
             }
             else
             {
+                scriptNames.put(elName, "GroovyParticipant<"+elName+">:"+getRealm());
                 srcText= e.getText();   // this returns, at worst, an empty String
                 if (!compiled)
                     return srcText;
             }
 
-            // Here we can assume compiled == true
+            // Here we can assume compiled == true (or it would have returned from the block above).
             // So we pre-compile the script into a Class<Script> object
             // that will be instantiated for each invocation of the participant's method
             try
@@ -231,14 +256,13 @@ public class GroovyParticipant extends Log
                 if (f != null)
                     clazz= gcl.parseClass(f);
                 else
-                    clazz= gcl.parseClass(srcText);
+                    clazz= gcl.parseClass(srcText, scriptNames.get(elName));
 
                 // We only support Groovy Scripts, not classes
                 if (!Script.class.isAssignableFrom(clazz))
                 {
-                    String srcOrigin= (f != null) ? src : elName;
                     throw new ConfigurationException(
-                        "Groovy code for '"+srcOrigin+"' in '"+getRealm()+"' "+
+                        "Groovy code for '"+scriptNames.get(elName)+"' "+
                         "must be a simple script, not a class."
                     );
                 }
@@ -253,11 +277,11 @@ public class GroovyParticipant extends Log
         return null;    // nothing to process
     }
 
-    private Object eval (GroovyShell shell, Object script) throws IOException {
+    private Object eval (GroovyShell shell, Object script, String name) throws IOException {
         if (script instanceof File)
             return shell.evaluate((File)script);
         else if (script instanceof String)
-            return shell.evaluate((String)script);
+            return shell.evaluate((String)script, name);
         return null;
     }
 

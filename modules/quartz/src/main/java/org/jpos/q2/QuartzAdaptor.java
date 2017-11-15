@@ -26,6 +26,7 @@ import org.jpos.core.XmlConfigurable;
 import org.jpos.util.LogEvent;
 import org.jpos.util.LogSource;
 import org.jpos.util.Logger;
+import org.jpos.util.NameRegistrar;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -78,12 +79,16 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
                 evt.addMessage(e1);
             }
         }
+
+        NameRegistrar.register(getName(), this);
+
         Logger.log(evt);
     }
     protected void startService() throws SchedulerException {
         scheduler.start();
     }
     protected void stopService() throws SchedulerException {
+        NameRegistrar.unregister(getName());
         scheduler.shutdown(true);
     }
     protected void destroyService() {

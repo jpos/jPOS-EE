@@ -20,7 +20,7 @@ jar {
     exclude '**/gwt-unitCache'
 }
 
-apply from: '../../jpos-app.gradle'
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
 
 test {
     dependsOn('installApp')

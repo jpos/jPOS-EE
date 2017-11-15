@@ -1,11 +1,14 @@
 plugins {
-   id "fi.jasoft.plugin.vaadin" version "1.1.10"
+   id 'com.devsoap.plugin.vaadin' version '1.2.4'
 }
 vaadin {
     version=vaadinVersion
-    addon.title='QI'
     manageDependencies = true
 }
+vaadinAddon {
+    title='QI'
+}
+
 vaadinCompile.gwtSdkFirstInClasspath=true
 
 apply plugin: 'maven-publish'

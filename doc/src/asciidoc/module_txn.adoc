@@ -127,3 +127,34 @@ public class DemoParticipant extends TxnSupport implements MyConstants          
 NOTE: If you are serious about jPOS-EE development involving Transaction Manager, we advise
 you to study the `TxnSupport` class further.
 
+=== TxnId
+
+The `txn` module has a handy `TxnId` class that can be used to generate ids in a distributed way.
+
+The id is composed of:
+
+* 1-digit century
+* 2-digits year
+* 3-digits day of year
+* 5-digits second of day
+* 3-digits node id
+* 5-digits transaction id
+
+A typical ID long value would look like this: `173000348000000001`,
+and the `toString()` method would show as `017-300-03480-000-00001`.
+
+`TxnId` also has a handy `toRrn()` method that can be used to create
+(and parse) 12-characters strings suitable to be used as retrieval
+reference numbers.
+
+`TxnId` can be used instead of UUIDs. It puts less pressure in the database
+index and provides chronological order.
+
+[WARNING]
+=========
+The last two groups, `node-id` and `transaction-id` are supposed to be unique.
+transaction-id is easy to get from the transaction manager. `node-id` is a
+tricky one, use has to ensure each node has a unique `node-id` to avoid
+collisions.
+=========
+

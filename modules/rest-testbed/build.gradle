@@ -1,0 +1,31 @@
+description = 'jPOS-EE :: Testbed'
+
+apply plugin: 'war'
+
+dependencies {
+    compile (libraries.jpos)  {
+        exclude(module: 'junit')
+        exclude(module: 'hamcrest-core')
+    }
+    providedCompile project(':modules:eerest')
+    providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
+
+}
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+
+war {
+    exclude '**/*.ico'
+    exclude '**/*.png'
+    exclude '**/*.jpg'
+    exclude '**/*.gif'
+    exclude '**/*.pdf'
+    filter(
+        org.apache.tools.ant.filters.ReplaceTokens,
+        tokens: targetConfiguration
+    )
+}
+
+installApp.dependsOn('war')
+dist.dependsOn('war')
+

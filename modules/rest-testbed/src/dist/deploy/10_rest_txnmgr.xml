@@ -1,0 +1,30 @@
+<?xml version="1.0" standalone="yes" ?>
+
+<!DOCTYPE txnmgr []>
+
+<txnmgr name='rest-txnmgr' class="org.jpos.transaction.TransactionManager" logger="Q2" realm='rest-txnmgr'>
+  <property name="queue" value="JPOS.RESTAPI.TXN"/>
+  <property name="sessions" value="2"/>
+  <property name="max-sessions" value="64"/>
+  <property name="debug" value="false"/>
+
+  <participant class="org.jpos.transaction.participant.Switch" logger="Q2" realm="Switch">
+      <property name="echo::get" value="echo::get close trigger-response"/>
+  </participant>
+
+  <group name="echo::get">
+    <participant class="org.jpos.rest.participant.EchoGet" logger="Q2" realm="echo-get" />
+  </group>
+
+  <group name="close">
+    <participant class="org.jpos.transaction.Close" logger="Q2" realm="close">
+    </participant>
+  </group>
+
+  <group name="trigger-response">
+    <participant class="org.jpos.rest.participant.TriggerResponse" logger="Q2" realm="trigger-response"/>
+  </group>
+
+
+</txnmgr>
+

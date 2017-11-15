@@ -39,6 +39,7 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.ee.support.ModuleUtils;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
+import org.jpos.util.Caller;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -49,6 +50,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author Alejandro P. Revilla
@@ -62,6 +64,7 @@ public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
+    private static Semaphore sfSem = new Semaphore(1);
 
     private static String propFile;
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
@@ -125,19 +128,17 @@ public class DB implements Closeable {
      */
     public SessionFactory getSessionFactory() {
         String cm  = configModifier != null ? configModifier : "";
+
+        sfSem.acquireUninterruptibly();
         SessionFactory sf = sessionFactories.get(cm);
-        if (sf == null) {
-            synchronized (DB.class) {
-                if (sf == null) {
-                    try {
-                        sf = newSessionFactory();
-                        sessionFactories.put(cm, sf);
-                    } catch (IOException | ConfigurationException | DocumentException e)
-                    {
-                        throw new RuntimeException("Could not configure session factory", e);
-                    }
-                }
-            }
+        try {
+            if (sf == null)
+                sessionFactories.put(cm, sf = newSessionFactory());
+        } catch (IOException | ConfigurationException | DocumentException e) {
+            throw new RuntimeException("Could not configure session factory", e);
+
+        } finally {
+            sfSem.release();
         }
         return sf;
     }

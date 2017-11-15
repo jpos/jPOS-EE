@@ -7,7 +7,7 @@ dependencies {
         exclude(module: 'junit')
         exclude(module: 'hamcrest-core')
     }
-    providedCompile project(':modules:eerest')
+    providedCompile project(':modules:eeresttest')
     providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
 
 }

@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  *
  * Sample usage:
  *
- *    &lt;participant class="org.jpos.jcard.rest.ValidateParams" logger="Q2" realm="validate-params"&gt;
+ *    &lt;participant class="org.jpos.rest.ValidateParams" logger="Q2" realm="validate-params"&gt;
  *      &lt;mandatory&gt;
  *        &lt;param name="version"&gt;"^1\.0$"&lt;/param&gt;
  *        &lt;param name="consumer"&gt;"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$&lt;/param&gt;
@@ -54,7 +54,7 @@ import java.util.regex.Pattern;
  *    &lt;/participant&gt;
  *
  *
- *    &lt;participant class="org.jpos.jcard.rest.ValidateParams" logger="Q2" realm="validate-params"&gt;
+ *    &lt;participant class="org.jpos.rest.ValidateParams" logger="Q2" realm="validate-params"&gt;
  *        &lt;mandatory&gt;
  *            &lt;param name="JSON_REQUEST" type="json-schema"&gt;
  *                {

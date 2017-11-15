@@ -3,7 +3,7 @@
 cd `dirname $0`/.. || exit 1
 rm -f deploy/shutdown.xml
 java -server \
-    -Dappname=jCard \
+    -Dappname=jPOSEE-testbed \
     -Duser.name=admin \
     -Dcom.sun.management.jmxremote \
     -Duser.name=admin \

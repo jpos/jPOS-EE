@@ -14,8 +14,6 @@ public class App extends ResourceConfig {
         super();
         register(JacksonFeature.class);
         register(new Resolver());
-        register(io.swagger.jaxrs.listing.ApiListingResource.class); //Optional
-        register(io.swagger.jaxrs.listing.SwaggerSerializers.class); //Optional
         packages("org.jpos.rest");
     }
 

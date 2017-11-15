@@ -24,7 +24,6 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.jpos.iso.ISOUtil;
-//import org.jpos.jcard.rest.CheckPIN;
 import org.jpos.q2.Q2;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
@@ -53,13 +52,12 @@ public abstract class APITestSupport {
         RestAssured.baseURI = APITest.BASE_URL;
         RestAssured.requestSpecification = new RequestSpecBuilder().build().contentType(MediaType.APPLICATION_JSON);
         sp = SpaceFactory.getSpace();
-        if (sp.rdp ("JCARD:STARTED") == null) {
+        if (sp.rdp ("JPOSEE:STARTED") == null) {
             System.setProperty("user.name", "admin");
             q2 = new Q2();
             q2.start();
         }
         ISOUtil.sleep(5000);
-//        assertNotNull(sp.rd("JCARD:STARTED", 60000L));
     }
 
     protected APICredential createAPICredential(String consumerId, String base64Key, String nonce, byte[] payLoad)

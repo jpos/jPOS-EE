@@ -14,14 +14,6 @@
   </participant>
 
   <group name="echo::get">
-    <!--<participant class="org.jpos.jcard.rest.ValidateParams" logger="Q2" realm="validate-params">-->
-      <!--
-      <mandatory>
-        <param name="v">&APIVERSION_PATTERN;</param>
-        <param name="c">&UUID_PATTERN;</param>
-      </mandatory>
-      -->
-    <!--</participant>-->
     <participant class="org.jpos.rest.participant.EchoGet" logger="Q2" realm="echo-get" />
   </group>
 

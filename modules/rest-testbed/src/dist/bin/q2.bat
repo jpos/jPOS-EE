@@ -10,7 +10,7 @@ if "%OS%"=="Windows_NT" setlocal
 
 @rem Add default JVM options here. You can also use JAVA_OPTS and RUN_OPTS to pass JVM options to this script.
 @rem 
-set DEFAULT_JVM_OPTS=-server -Dappname=jCard -Duser.name=admin %DEFAULT_JVM_OPTS%
+set DEFAULT_JVM_OPTS=-server -Dappname=jPOSEE-rest-testbed -Duser.name=admin %DEFAULT_JVM_OPTS%
 
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.

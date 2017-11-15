@@ -172,7 +172,7 @@ public class RestSupport {
             ctx.put(RestConstants.SOURCE.value(), source);
             ctx.put(RestConstants.TXNNAME.value(), txnName);
             ctx.put(RestConstants.DB.value(), db);
-            //We claim to be trusted so jCard avoid some checks
+            //We claim to be trusted so jPOS avoid some checks
             ctx.put(RestConstants.SS.value(), TRUSTED.value());
             msg.set(CMFConstants.JPF_VERSION.value(), RestConstants.JPOS_CMF_VERSION.value());
             try {

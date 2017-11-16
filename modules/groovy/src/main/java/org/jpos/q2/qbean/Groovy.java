@@ -33,7 +33,7 @@ public class Groovy extends QBeanSupport implements Runnable {
     public void startService() {
         new Thread(this, getName()).start();
     }
-    
+
     public void run() {
         try {
             Element e = getPersist();

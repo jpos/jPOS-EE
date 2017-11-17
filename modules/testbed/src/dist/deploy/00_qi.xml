@@ -17,6 +17,7 @@
   <messages>qi-core-messages</messages>
   <messages>qi-eeuser-messages</messages>
   <messages>qi-sysconfig-messages</messages>
+  <messages>qi-minigl-messages</messages>
 
   <menubar>
     <menu name="System" icon="COG" style="icon-cog" action="system" />
@@ -41,6 +42,9 @@
     <option name="SysConfig" action="sysconfig"/>
     <option name="Audit Log" action="syslog"/>
     <option name="Revision History" action="revision_history"/>
+    <section name="MiniGL"/>
+    <option name="Accounts" action="accounts"/>
+    <option name="Transactions" action="transactions"/>
   </sidebar>
 
 
@@ -141,6 +145,28 @@
     <attribute name="summary" />
     <attribute name="detail" column="false"/>
     <attribute name="trace" column="false"/>
+  </view>
+  <view route="accounts" class="org.jpos.qi.minigl.AccountsView" perm="accounting" sidebar="system">
+    <property name="entityName" value="account"/>
+    <attribute name="id" field="false" read-only="true"/>
+    <attribute name="code" column="false" regex="&ACCT_CODE_PATTERN;" />
+    <attribute name="description" column="false" regex="&TEXT_EXTENDED_PATTERN;" length="255"/>
+    <attribute name="created" column="false"/>
+    <attribute name="expiration" column="false"/>
+    <attribute name="type" column="false" read-only="true"/>
+    <attribute name="currencyCode" column="false" field="false" read-only="true" regex="&CURRENCY_PATTERN;" />
+    <attribute name="parent" column="false" read-only="true"/>
+    <attribute name="entries" column="false" read-only="true"/>
+  </view>
+  <view route="transactions" class="org.jpos.qi.minigl.TransactionsView" perm="accounting" sidebar="system">
+    <property name="entityName" value="transaction"/>
+    <attribute name="id" field="false"/>
+    <attribute name="detail" regex="&TEXT_EXTENDED_PATTERN;" length="255" required="true"/>
+    <attribute name="tags" />
+    <attribute name="timestamp" read-only="true" field="false"/>
+    <attribute name="postDate" />
+    <attribute name="journal" column="false" read-only="true"/>
+    <attribute name="entries" column="false" />
   </view>
 </xml-config>
 

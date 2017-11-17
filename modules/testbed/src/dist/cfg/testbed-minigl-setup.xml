@@ -1,0 +1,238 @@
+<?xml version="1.0" ?>
+<!DOCTYPE minigl SYSTEM 'minigl.dtd'>
+<minigl>
+    <!-- create-schema / -->
+
+    <user>
+        <nick>admin</nick>
+        <name>System Administrator</name>
+        <grant>read</grant>
+        <grant>write</grant>
+        <grant>grant</grant>
+    </user>
+
+    <currency id="840">
+        <symbol>USD</symbol>
+        <name>US Dollars</name>
+    </currency>
+
+    <currency id="858">
+        <symbol>$U</symbol>
+        <name>Pesos uruguayos</name>
+    </currency>
+
+    <currency id="PTS">
+        <symbol>PTS</symbol>
+        <name>Puntos</name>
+    </currency>
+
+    <chart-of-accounts code="jcard" created="20050101">
+        <description>jCard</description>
+        <composite-account code="1" type="debit" >
+            <description>Assets</description>
+            <composite-account code="11" type="debit" >
+                <description>Issuers</description>
+                <composite-account code="11.001" type="debit" >
+                    <description>Issuer 001</description>
+                    <account code="11.001.00" type="debit" >
+                        <description>Received Money</description>
+                    </account>
+                </composite-account>
+            </composite-account>
+            <composite-account code="12" type="debit" >
+                <description>Receivables</description>
+                <composite-account code="12.001" type="debit" >
+                    <description>Acquirer 001</description>
+                    <account code="12.001.00" type="debit" >
+                        <description>Fees to claim</description>
+                    </account>
+                    <account code="12.001.31" type="debit" >
+                        <description>Refunds to claim</description>
+                    </account>
+                    <account code="12.001.32" type="debit" >
+                        <description>Deposits to claim</description>
+                    </account>
+                </composite-account>
+                <composite-account code="12.002" type="debit">
+                    <description>Cardholders Credit</description>
+                    <account code="12.002.0000001.30" type="debit">
+                        <description>Cardholder 0000001 Credit</description>
+                    </account>
+                </composite-account>
+            </composite-account>
+        </composite-account>
+
+        <composite-account code="2" type="credit" >
+            <description>Liabilities</description>
+            <composite-account code="20" type="credit" >
+                <description>Payables</description>
+                <composite-account code="20.001" type="credit" >
+                    <description>Acquirer 001</description>
+                    <account code="20.001.001" type="credit" >
+                        <description>Acquirer 001 Transactions</description>
+                    </account>
+                    <account code="20.001.002" type="credit" >
+                        <description>Acquirer 001 Fees to pay</description>
+                    </account>
+                </composite-account>
+            </composite-account>
+            <composite-account code="21" type="credit">
+                <description>Cardholders Debit/SV</description>
+                <composite-account code="21.0000001" type="credit" >
+                    <description>Cardholder 0000001</description>
+                    <account code="21.0000001.00" type="credit" >
+                        <description>Cardholder 0000001 SV Account</description>
+                    </account>
+                    <account code="21.0000001.10" type="credit" >
+                        <description>Cardholder 0000001 Savings</description>
+                    </account>
+                    <account code="21.0000001.20" type="credit" >
+                        <description>Cardholder 0000001 Checking</description>
+                    </account>
+                    <account code="21.0000001.31" type="credit" >
+                        <description>Cardholder 0000001 Refunds</description>
+                    </account>
+                </composite-account>
+                <composite-account code="21.0000002" type="credit" >
+                    <description>Cardholder 0000002</description>
+                    <account code="21.0000002.00" type="credit" >
+                        <description>SV Account</description>
+                    </account>
+                </composite-account>
+            </composite-account>
+            <composite-account code="22" type="credit">
+                <description>Anonymous Cards</description>
+                <account code="22.0000000001" type="credit">
+                    <description>Test Gift Card with direct account</description>
+                </account>
+                <account code="22.0000000002" type="credit">
+                    <description>Test Gift Card with indirect account</description>
+                </account>
+            </composite-account>
+            <composite-account code="23" type="credit">
+                <description>Mobile Wallets</description>
+            </composite-account>
+            <composite-account code="29" type="credit">
+                <description>Temporary Liabilities</description>
+                <account code="29.001" type="credit">
+                    <description>Transfered Fees</description>
+                </account>
+            </composite-account>
+        </composite-account>
+        <composite-account code="3" type="credit" >
+            <description>Earnings</description>
+            <composite-account code="31.001" type="credit" >
+                <description>Issuer 001</description>
+                <account code="31.001.00" type="credit">
+                    <description>Earned fees</description>
+                </account>
+            </composite-account>
+        </composite-account>
+        <composite-account code="4" type="debit" >
+            <description>Losses</description>
+        </composite-account>
+    </chart-of-accounts>
+
+    <journal>
+        <name>jcard</name>
+        <start>20010101</start>
+        <end>20201231</end>
+        <status>open</status>
+        <chart>jcard</chart>
+        <layer id="858">Pesos</layer>
+        <layer id="1858">Pending Pesos</layer>
+        <layer id="840">Dollars</layer>
+        <layer id="1840">Pending Dollars</layer>
+        <layer id="2840">Credit line, USD</layer>
+
+        <grant user="admin">read</grant>
+        <grant user="admin">post</grant>
+        <grant user="admin">checkpoint</grant>
+        <grant user="admin">summarize</grant>
+
+        <rule clazz="org.jpos.gl.rule.CanPost">
+            Verifies permissions, start/end dates, status, and chart
+        </rule>
+        <rule clazz="org.jpos.gl.rule.DoubleEntry">
+            Verifies that credits equals debits
+            <layers>858,840,1858,1840</layers>
+        </rule>
+        <rule clazz="org.jpos.gl.rule.FinalMinBalance" account="21.0000001.00">
+            Check that the account has always a balance greater than 960.00
+            <param>960.00</param>
+            <layers>858,1858</layers>
+        </rule>
+        <!--
+        <rule clazz="org.jpos.gl.rule.CompositeMaxBalance" account="1">
+          Check assets doesn't go above one million
+          <param>1000000.00</param>
+        </rule>
+        <rule clazz="org.jpos.gl.rule.CompositeMinBalance" account="11">
+          Check that the account has always a balance greater than 45000.00
+          <param>45000.00</param>
+        </rule>
+        <rule clazz="org.jpos.gl.rule.FinalMaxBalance" account="31">
+          Put a limit to Bob's equity
+          <param>100000.00</param>
+        </rule>
+        -->
+    </journal>
+
+    <transaction post-date="20050901" date="20050901130000" journal="jcard">
+        <detail>Initial deposit cardholder 0000001</detail>
+
+        <entry account="11.001.00" type="debit" layer="858">
+            <detail>Initial deposit (Pesos)</detail>
+            <amount>1000.00</amount>
+        </entry>
+        <entry account="21.0000001.00" type="credit" layer="858">
+            <detail>Initial deposit (Pesos)</detail>
+            <amount>1000.00</amount>
+        </entry>
+        <entry account="11.001.00" type="debit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>100.00</amount>
+        </entry>
+        <entry account="21.0000001.00" type="credit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>100.00</amount>
+        </entry>
+    </transaction>
+
+    <transaction post-date="20071220" date="20071220130000" journal="jcard">
+        <detail>Initial deposit cardholder 0000001</detail>
+        <entry account="11.001.00" type="debit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>200.00</amount>
+        </entry>
+        <entry account="21.0000001.10" type="credit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>100.00</amount>
+        </entry>
+        <entry account="21.0000001.20" type="credit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>100.00</amount>
+        </entry>
+        <!-- Credit line, layer 2840 - single entry layer -->
+        <entry account="12.002.0000001.30" type="credit" layer="2840">
+            <detail>Credit line</detail>
+            <amount>1000.00</amount>
+        </entry>
+    </transaction>
+
+    <transaction post-date="20130622" date="20130622130000" journal="jcard">
+        <detail>Initial deposit cardholder 0000001</detail>
+        <entry account="11.001.00" type="debit" layer="840">
+            <detail>Initial deposits to GiftCard accounts</detail>
+            <amount>150.00</amount>
+        </entry>
+        <entry account="22.0000000001" type="credit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>50.00</amount>
+        </entry>
+        <entry account="22.0000000002" type="credit" layer="840">
+            <detail>Initial deposit (USD)</detail>
+            <amount>100.00</amount>
+        </entry>
+    </transaction>
+</minigl>

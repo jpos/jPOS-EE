@@ -180,7 +180,14 @@ public class NewEntryForm extends HorizontalLayout {
                 BindingValidationStatus<?> result = (BindingValidationStatus<?>) binder.validate().getFieldValidationErrors().get(0);
                 app.displayNotification(result.getResult().get().getErrorMessage());
             }
+            focusOnFirstField();
         };
+    }
+
+    private void focusOnFirstField () {
+        Object o = binder.getFields().findFirst().get();
+        if (o != null && o instanceof TextField)
+            ((TextField)o).focus();
     }
 
     private void clearFields () {

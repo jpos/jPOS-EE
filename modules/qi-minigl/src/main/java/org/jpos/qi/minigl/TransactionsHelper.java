@@ -171,7 +171,7 @@ public class TransactionsHelper extends QIHelper {
         return wasUpdated;
     }
 
-    protected boolean saveEntity (Binder binder, EntryGrid entryGrid) {
+    protected boolean saveEntity (Binder binder, EntryGrid entryGrid) throws BLException {
         try {
             return (boolean) DB.execWithTransaction(db -> {
                 if (binder.writeBeanIfValid(getOriginalEntity())) {
@@ -190,9 +190,7 @@ public class TransactionsHelper extends QIHelper {
                 return false;
             });
         } catch (Exception e) {
-            getApp().getLog().error(e);
-            getApp().displayNotification(getApp().getMessage("errorMessage.unexpected"));
-            return false;
+            throw new BLException(e.getMessage());
         }
     }
 

@@ -60,14 +60,14 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                 .setCaption(getCaptionFromId("tags"))
                 .setSortable(true)
                 .setHidable(false);
-        this.addColumn(entry -> entry.isDebit() ? entry.getAmount() : BigDecimal.ZERO)
+        this.addColumn(entry -> entry.isDebit() ? entry.getAmount() : null)
                 .setId("debit")
                 .setStyleGenerator(cellStyle -> "align-right")
                 .setRenderer(createAmountRenderer())
                 .setCaption(getCaptionFromId("debit"))
                 .setSortable(true)
                 .setHidable(false);
-        this.addColumn(entry -> entry.isCredit() ? entry.getAmount() : BigDecimal.ZERO)
+        this.addColumn(entry -> entry.isCredit() ? entry.getAmount() : null)
                 .setId("credit")
                 .setStyleGenerator(cellStyle -> "align-right")
                 .setRenderer(createAmountRenderer())

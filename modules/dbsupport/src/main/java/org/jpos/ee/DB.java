@@ -26,7 +26,6 @@ import org.hibernate.*;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
@@ -40,7 +39,6 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.ee.support.ModuleUtils;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
-import org.jpos.util.Caller;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -474,56 +472,58 @@ public class DB implements Closeable {
         String cm  = configModifier != null ? configModifier : "";
         mdSem.acquireUninterruptibly();
         Metadata md = metadatas.get(cm);
-        if (md == null) try {
-            StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
-            String propFile;
-            String dbPropertiesPrefix = "";
-            String metadataPrefix = "";
-            if (configModifier != null) {
-                String[] ss = configModifier.split(":");
-                if (ss.length > 0)
-                    dbPropertiesPrefix = ss[0] + ":";
-                if (ss.length > 1)
-                    metadataPrefix = ss[1] + ":";
-            }
-
-            String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
-            if (getClass().getClassLoader().getResource(hibCfg) == null)
-                hibCfg = null;
-
-            if (hibCfg == null)
-                hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
-            ssrb.configure(hibCfg);
-
-            propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
-            Properties dbProps = loadProperties(propFile);
-            if (dbProps != null) {
-                for (Map.Entry entry : dbProps.entrySet()) {
-                    ssrb.applySetting((String) entry.getKey(), entry.getValue());
+        try {
+            if (md == null) {
+                StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
+                String propFile;
+                String dbPropertiesPrefix = "";
+                String metadataPrefix = "";
+                if (configModifier != null) {
+                    String[] ss = configModifier.split(":");
+                    if (ss.length > 0)
+                        dbPropertiesPrefix = ss[0] + ":";
+                    if (ss.length > 1)
+                        metadataPrefix = ss[1] + ":";
                 }
-            }
 
-            // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
-            Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-            String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-            String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-            if (user != null)
-                ssrb.applySetting("hibernate.connection.username", user);
-            if (pass != null)
-                ssrb.applySetting("hibernate.connection.password", pass);
+                String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
+                if (getClass().getClassLoader().getResource(hibCfg) == null)
+                    hibCfg = null;
 
-            MetadataSources mds = new MetadataSources(ssrb.build());
-            List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
-            for (String moduleConfig : moduleConfigs) {
-                if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
-                    if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
-                      (!moduleConfig.contains(":") && metadataPrefix.contains(":")))
-                        continue;
-                    addMappings(mds, moduleConfig);
+                if (hibCfg == null)
+                    hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
+                ssrb.configure(hibCfg);
+
+                propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
+                Properties dbProps = loadProperties(propFile);
+                if (dbProps != null) {
+                    for (Map.Entry entry : dbProps.entrySet()) {
+                        ssrb.applySetting((String) entry.getKey(), entry.getValue());
+                    }
                 }
+
+                // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
+                Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+                String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+                String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+                if (user != null)
+                    ssrb.applySetting("hibernate.connection.username", user);
+                if (pass != null)
+                    ssrb.applySetting("hibernate.connection.password", pass);
+
+                MetadataSources mds = new MetadataSources(ssrb.build());
+                List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
+                for (String moduleConfig : moduleConfigs) {
+                    if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
+                        if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
+                          (!moduleConfig.contains(":") && metadataPrefix.contains(":")))
+                            continue;
+                        addMappings(mds, moduleConfig);
+                    }
+                }
+                md = mds.buildMetadata();
+                metadatas.put(cm, md);
             }
-            md = mds.buildMetadata();
-            metadatas.put(cm, md);
         } finally {
             mdSem.release();
         }

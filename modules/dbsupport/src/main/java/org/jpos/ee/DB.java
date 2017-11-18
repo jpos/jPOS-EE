@@ -23,6 +23,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.hibernate.*;
+import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
@@ -65,10 +66,12 @@ public class DB implements Closeable {
     Log log;
     String configModifier;
     private static Semaphore sfSem = new Semaphore(1);
+    private static Semaphore mdSem = new Semaphore(1);
 
     private static String propFile;
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
     private static Map<String,SessionFactory> sessionFactories = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Metadata> metadatas = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates DB Object using default Hibernate instance
@@ -128,7 +131,6 @@ public class DB implements Closeable {
      */
     public SessionFactory getSessionFactory() {
         String cm  = configModifier != null ? configModifier : "";
-
         sfSem.acquireUninterruptibly();
         SessionFactory sf = sessionFactories.get(cm);
         try {
@@ -468,55 +470,65 @@ public class DB implements Closeable {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
     }
 
-    private MetadataImplementor getMetadata() throws IOException, ConfigurationException, DocumentException {
-        StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
-        String propFile;
-        String dbPropertiesPrefix = "";
-        String metadataPrefix = "";
-        if (configModifier != null) {
-            String[] ss = configModifier.split(":");
-            if (ss.length > 0)
-                dbPropertiesPrefix = ss[0] + ":";
-            if (ss.length > 1)
-                metadataPrefix = ss[1] + ":";
-        }
-
-        String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
-        if (getClass().getClassLoader().getResource(hibCfg) == null)
-            hibCfg = null;
-
-        if (hibCfg == null)
-            hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
-        ssrb.configure(hibCfg);
-
-        propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
-        Properties dbProps = loadProperties(propFile);
-        if (dbProps != null) {
-            for (Map.Entry entry : dbProps.entrySet()) {
-                ssrb.applySetting((String) entry.getKey(), entry.getValue());
+    private Metadata getMetadata() throws IOException, ConfigurationException, DocumentException {
+        String cm  = configModifier != null ? configModifier : "";
+        mdSem.acquireUninterruptibly();
+        Metadata md = metadatas.get(cm);
+        if (md == null) try {
+            StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder();
+            String propFile;
+            String dbPropertiesPrefix = "";
+            String metadataPrefix = "";
+            if (configModifier != null) {
+                String[] ss = configModifier.split(":");
+                if (ss.length > 0)
+                    dbPropertiesPrefix = ss[0] + ":";
+                if (ss.length > 1)
+                    metadataPrefix = ss[1] + ":";
             }
-        }
 
-        // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
-        Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-        String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-        String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-        if (user != null)
-            ssrb.applySetting("hibernate.connection.username", user);
-        if (pass != null)
-            ssrb.applySetting("hibernate.connection.password", pass);
+            String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
+            if (getClass().getClassLoader().getResource(hibCfg) == null)
+                hibCfg = null;
 
-        MetadataSources mds = new MetadataSources(ssrb.build());
-        List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
-        for (String moduleConfig : moduleConfigs) {
-            if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
-                if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
+            if (hibCfg == null)
+                hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
+            ssrb.configure(hibCfg);
+
+            propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
+            Properties dbProps = loadProperties(propFile);
+            if (dbProps != null) {
+                for (Map.Entry entry : dbProps.entrySet()) {
+                    ssrb.applySetting((String) entry.getKey(), entry.getValue());
+                }
+            }
+
+            // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
+            Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+            String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+            String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+            System.out.println("User from space: " + user);
+            if (user != null)
+                ssrb.applySetting("hibernate.connection.username", user);
+            if (pass != null)
+                ssrb.applySetting("hibernate.connection.password", pass);
+
+            MetadataSources mds = new MetadataSources(ssrb.build());
+            List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
+            for (String moduleConfig : moduleConfigs) {
+                if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
+                    if ( (!metadataPrefix.contains(":") && moduleConfig.contains(":")) ||
                       (!moduleConfig.contains(":") && metadataPrefix.contains(":")))
-                    continue;
-                addMappings(mds, moduleConfig);
+                        continue;
+                    addMappings(mds, moduleConfig);
+                }
             }
+            md = mds.buildMetadata();
+            metadatas.put(cm, md);
+        } finally {
+            mdSem.release();
         }
-        return (MetadataImplementor) mds.buildMetadata();
+        return md;
     }
 
     private void addMappings(MetadataSources mds, String moduleConfig) throws ConfigurationException, DocumentException

@@ -507,7 +507,6 @@ public class DB implements Closeable {
             Space sp = SpaceFactory.getSpace("tspace:dbconfig");
             String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
             String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-            System.out.println("User from space: " + user);
             if (user != null)
                 ssrb.applySetting("hibernate.connection.username", user);
             if (pass != null)

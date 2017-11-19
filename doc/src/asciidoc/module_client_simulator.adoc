@@ -8,8 +8,7 @@ representing messages to be sent and their expected responses.
 |*When:*| Available in all versions of jPOS-EE.
 |*Who:*| The jPOS.org team.
 |*How:*| Posted by the jPOS-EE team.
-|*Where:*| Directory opt/clientsimulator available in the jPOS-EE main
-subversion repository at google code.
+|*Where:*| Directory `modules/client-simulator` available in the repository at GitHub.
 |*Why:*| When writing ISO-8583 based server applications the ability to
 easily simulate a client is usually very useful. We at jPOS.org use it
 as a high level self test for our applications.
@@ -86,12 +85,12 @@ And then the test suite:
 ----------------------------------------------------------------------------
 
 The suite can be separated in different paths, in the previous example,
-we assume that there are files named: cfg/echo_s and cfg/echo_r.
+we assume that there exist two template files named: `cfg/echo_s` and `cfg/echo_r`.
 
-The letter *s* in cfg/echo_s stands for *send* and the *r* in cfg/echo_r
+The letter *s* in `cfg/echo_s` stands for *send* and the *r* in `cfg/echo_r`
 stands for *receive*.
 
-cfg/echo_s:
+`cfg/echo_s`:
 
 [source,xml]
 ---------------------------------------
@@ -103,7 +102,7 @@ cfg/echo_s:
    </isomsg>
 ---------------------------------------
 
-cfg/echo_r:
+`cfg/echo_r`:
 
 [source,xml]
 ---------------------------------
@@ -127,7 +126,7 @@ While using fixed content may be okay for most fields and test cases,
 there are situations where you want to use dynamic content.
 
 Our simulator supports BSH scripts at the field level. Everything that
-starts with a bang character (!) is considered a script and evaluated as
+starts with a bang character (*!*) is considered a script and evaluated as
 such, so you can write:
 
 [source,xml]
@@ -142,10 +141,10 @@ such, so you can write:
 --------------------------------------------------------------------
 
 Please note that in our example terminal is a runtime script variable
-that we've defined in our block. The '@' characters operates in a
-similar way as the '!' character, but the resulting value which is
-supposed to be an hexadecimal string, is converted to byte[] using
-ISOUtil.hex2byte(String) in order to produce an ISOBinaryField.
+that we've defined in our block. The '*@*' characters operates in a
+similar way as the '*!*' character, but the resulting value, which is
+supposed to be an hexadecimal string, is converted to `byte[]` using
+`ISOUtil.hex2byte(String)` in order to produce an `ISOBinaryField`.
 
 The same thing happens at receive time, when we are trying to simulate
 voids, reversals, we usually need information received in previous
@@ -163,9 +162,9 @@ script:
    </isomsg>
 ---------------------------------------------------
 
-There's a special variable name called value where we put the received
+There's a special variable name called `value` where we put the received
 content, so in the previous example, the received retrieval reference
-number (field 37), is stored in the variable named rrn for later use.
+number (field 37), is stored in the variable named `rrn` for later use.
 
 The receive script may optionally return true or false, so we can write
 code like this:
@@ -177,7 +176,7 @@ code like this:
    </isomsg>
 ----------------------------------------------------------------------
 
-where EXPECTED_RETVALUE is initialized in a previous init block.
+where `EXPECTED_RETVALUE` is initialized in a previous init block.
 
 In fact, the previous example is equivalent to the following:
 
@@ -244,7 +243,7 @@ At the end, you get a ticket with the test results.
     Simple Echo Test        [OK] 22ms.
     Simple Echo Test        [OK] 79ms.
     Simple Echo Test 2      [OK] 22ms.
-    elapsed server=893ms(62%), 
+    elapsed server=893ms(62%),
     simulator=526ms(37%), total=1419ms
   </results>
 </log>

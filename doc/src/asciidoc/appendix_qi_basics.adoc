@@ -16,7 +16,7 @@ Indicates the title for the app.
 === Locale 
 
 Indicates the available locales for the app, it can have more than one. 
-The first one will be the defualt locale. 
+The first one will be the default locale. 
 
 Examples:
 
@@ -40,7 +40,7 @@ The naming convention for these files is: `packagename_locale.properties`
 === Menubar
 
 A menubar represents the horizontal menu at the top of the app. 
-It is represented with the `<menubar>` tag.  
+It is represented with the `<menubar>` element.  
 It contains "menus". 
 
 ==== Menu 
@@ -54,12 +54,12 @@ Example:
 === Sidebar 
 
 Represents the sidebar, it can contain <<Section,sections>> and <<Option,options>>. 
-It is represented with the `sidebar` tag. 
+It is represented with the `sidebar` element. 
 It can also be identified by an `id`. Example: `<sidebar id="info"> ... </sidebar>`  
 
 ==== Section 
 
-Represents a section of the sidebar, represented with the `<section>` tag. It has the following properties:
+Represents a section of the sidebar, represented with the `<section>` element. It has the following properties:
 
 * `name`: String, required. 
 
@@ -67,7 +67,7 @@ Example: `<section name="System"/>`
 
 ==== Option 
 
-Represents an option on the sidebar, represented with the `<option>` tag. It has the following properties: 
+Represents an option on the sidebar, represented with the `<option>` element. It has the following properties: 
 
 * `name` (string, required). 
 
@@ -107,14 +107,14 @@ Views can **can/will** contain different <<Properties,properties>> & <<Attribute
 
 ==== Properties 
 
-Represented with the `<property>` tag. It has a `name` and a `value`.
+Represented with the `<property>` element. It has a `name` and a `value`.
 Some views require:    
 
 * Entity name (string, required for entities). The name of the entity. For example, for `users`, it is `user`.  It must be included like this: `<property name="entityName" value="aName"/>`
 
 ==== Attribute 
 
-Represented with the `<attribute>` tag. 
+Represented with the `<attribute>` element. 
 It has: 
 
 * `name` (string, required)
@@ -162,7 +162,7 @@ Example:
 
 ===== TabView 
 
-If the view has a class of type `TabView`. It can contain views within the `<view>` tags. This views accept an additional property: 
+If the view has a class of type `TabView`. It can contain views within the `<view>` elements. This views accept an additional property: 
 
 * `caption` Indicates the caption for the tab. 
 

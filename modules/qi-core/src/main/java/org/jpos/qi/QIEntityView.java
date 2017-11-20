@@ -39,12 +39,14 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 
+import com.vaadin.v7.data.util.converter.StringToShortConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -300,7 +302,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         bean = (T) entity;
         final Layout formLayout = createLayout();
         getHelper().setOriginalEntity(bean);
-        binder.readBean((T)entity);
+        binder.readBean((T) entity);
         binder.setReadOnly(true);
         profileLayout.addComponent(formLayout);
 
@@ -452,14 +454,18 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                         l.addComponent(buildAndBindTimestampField(id));
                     } else if (dataType.equals(BigDecimal.class)) {
                         l.addComponent(buildAndBindBigDecimalField(id));
-                    } else if (dataType.equals(Long.class)) {
+                    } else if (dataType.equals(Long.class) || dataType.equals(long.class)) {
                         l.addComponent(buildAndBindLongField(id));
                     } else if (dataType.equals(Integer.class) || dataType.equals(int.class)) {
                         l.addComponent(buildAndBindIntField(id));
-                    } else if (dataType.equals(boolean.class)) {
+                    } else if (dataType.equals(Short.class) || dataType.equals(short.class)) {
+                        l.addComponent(buildAndBindShortField(id));
+                    } else if (dataType.equals(Boolean.class) || dataType.equals(boolean.class)) {
                         l.addComponent(buildAndBindBooleanField(id));
-                    } else {
+                    } else if (dataType.equals(String.class)) {
                         l.addComponent(buildAndBindTextField(id));
+                    } else {
+                        l.addComponent(new TextField("unconfigured data type " + dataType));
                     }
                 } catch (NoSuchFieldException e) {
                     getApp().getLog().error(e);
@@ -523,6 +529,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     protected TextField buildAndBindIntField(String id) {
+        TextField field = new TextField(getCaptionFromId("field." + id));
+        Binder.BindingBuilder builder = formatField(id,field);
+        builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder.bind(id);
+        return field;
+    }
+
+    protected TextField buildAndBindShortField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));

@@ -161,7 +161,6 @@ public class QI extends UI {
     }
 
     public String getMessage (ErrorMessage em, Object... obj) {
-        System.out.println("messagesMap: " + messagesMap);
         if (messagesMap.containsKey(locale)) {
             SortedMap map = messagesMap.get(locale);
             String format = (String) map.getOrDefault(em.getPropertyName(), em.getDefaultMessage());

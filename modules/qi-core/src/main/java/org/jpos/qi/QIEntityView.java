@@ -45,6 +45,7 @@ import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
+import org.jpos.util.AmountConverter;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -588,7 +589,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected TextField buildAndBindBigDecimalField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToBigDecimalConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new AmountConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.withNullRepresentation(BigDecimal.ZERO).bind(id);
         return field;
     }

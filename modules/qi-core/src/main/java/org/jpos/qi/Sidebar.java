@@ -114,8 +114,10 @@ public class Sidebar extends CssLayout {
 
     public void markAsSelected (String option) {
         removeSelected();
-        if (options.containsKey(option))
+        if (options.containsKey(option)) {
             options.get(option).setStyleName("selected");
+            options.get(option).focus();
+        }
     }
 
     private void removeSelected () {

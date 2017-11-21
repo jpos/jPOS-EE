@@ -105,7 +105,7 @@ public class QINavigator extends Navigator {
                     }
                     super.navigateTo(navigationState);
                     if (app.sidebar() != null) {
-                        app.sidebar().markAsSelected(navigationState.substring(1).split("/,\\?")[0]);
+                        app.sidebar().markAsSelected(navigationState.substring(1).split("/|,|\\?")[0]);
                     }
                 } catch( IllegalArgumentException e) {
                     QI.getQI().displayNotification(e.getMessage());

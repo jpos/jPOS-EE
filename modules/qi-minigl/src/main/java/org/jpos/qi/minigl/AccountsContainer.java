@@ -66,7 +66,7 @@ public class AccountsContainer extends EntityContainer implements Container.Hier
                     }
                     return rootIds;
                 } catch (GLException e) {
-                    e.printStackTrace();
+                    QI.getQI().getLog().error(e);
                     return null;
                 }
             });

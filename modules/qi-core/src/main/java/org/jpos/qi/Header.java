@@ -18,14 +18,19 @@
 
 package org.jpos.qi;
 
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
-import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.themes.ValoTheme;
 import org.jdom2.Element;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class Header extends HorizontalLayout {
     private QI app;
+    private Map<String, MenuBar.MenuItem> menuOptions;
     MenuBar.MenuItem userMenuItem;
+
     public Header(QI app) {
         super();
         this.app = app;
@@ -64,7 +69,7 @@ public class Header extends HorizontalLayout {
         TextField searchField = new TextField();
         searchField.addStyleName("inline-icon");
         searchField.addStyleName("tiny");
-        searchField.setIcon(FontAwesome.SEARCH);
+        searchField.setIcon(VaadinIcons.SEARCH);
         searchField.setWidth("400px");
         //TODO: vaadin8 incompatible methods
 //        searchField.setImmediate(true);
@@ -89,6 +94,7 @@ public class Header extends HorizontalLayout {
 
     @SuppressWarnings("unchecked")
     private MenuBar createMenu () {
+        menuOptions = new LinkedHashMap<>();
         MenuBar mb = new MenuBar();
         mb.addStyleName(ValoTheme.MENUBAR_SMALL);
         mb.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
@@ -103,8 +109,11 @@ public class Header extends HorizontalLayout {
             }
         }
         userMenuItem = mb.addItem(app.getUser().getNick(), null);
-        userMenuItem.setIcon(FontAwesome.USER);
-        userMenuItem.addItem("Profile", selectedItem -> app.navigateTo("/profile"));
+        userMenuItem.setIcon(VaadinIcons.USER);
+        userMenuItem.addItem("Profile", selectedItem -> {
+            removeSelected();
+            app.navigateTo("/profile");
+        });
         userMenuItem.addItem("Log Out", selectedItem -> app.logout());
         return mb;
     }
@@ -116,9 +125,10 @@ public class Header extends HorizontalLayout {
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
                         e.getAttributeValue("name"),
-                        selectedItem -> app.navigateTo("/" + e.getAttributeValue("action"))
+                        selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);
+                menuOptions.put(e.getAttributeValue("name"), mi);
                 for (Element child : e.getChildren()) {
                     addMenuItem (mi, child);
                 }
@@ -133,7 +143,7 @@ public class Header extends HorizontalLayout {
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
                         e.getAttributeValue("name"),
-                        selectedItem -> app.navigateTo("/" + e.getAttributeValue("action"))
+                        selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);
                 for (Element child : e.getChildren()) {
@@ -145,6 +155,19 @@ public class Header extends HorizontalLayout {
         }
     }
 
+    private void menuItemSelected (MenuBar.MenuItem selectedItem, Element e) {
+        removeSelected();
+        app.navigateTo("/" + e.getAttributeValue("action"));
+        selectedItem.setStyleName("underline");
+    }
+
+    private void removeSelected () {
+        for (String s : menuOptions.keySet())  {
+            MenuBar.MenuItem item = menuOptions.get(s);
+            item.setStyleName("");
+        }
+    }
+
     private void decorate (MenuBar.MenuItem mi, Element e) {
         String style = e.getAttributeValue("style");
         if (style != null)
@@ -152,9 +175,9 @@ public class Header extends HorizontalLayout {
         String iconName = e.getAttributeValue("icon");
         if (iconName != null) {
             try {
-                mi.setIcon(FontAwesome.valueOf(iconName));
+                mi.setIcon(VaadinIcons.valueOf(iconName));
             } catch (IllegalArgumentException ex) {
-                mi.setIcon(FontAwesome.EXCLAMATION_TRIANGLE);
+                mi.setIcon(VaadinIcons.EXCLAMATION);
                 mi.setEnabled(false);
             }
         }

@@ -1,4 +1,4 @@
-<crypto-service class='org.jpos.crypto.CryptoService' logger='Q2' enabled='false'>
+<crypto-service class='org.jpos.crypto.CryptoService' logger='Q2' enabled='true'>
     <property name="custodian" value='demo@jpos.org' />
     <property name="pubkeyring" value='cfg/keyring.pub' />
     <property name="privkeyring" value='cfg/keyring.priv' />

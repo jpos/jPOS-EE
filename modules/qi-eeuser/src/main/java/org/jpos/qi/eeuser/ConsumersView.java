@@ -6,14 +6,20 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.encoders.Base64;
+import org.jpos.crypto.CryptoService;
+import org.jpos.crypto.SecureData;
 import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.util.NameRegistrar;
 import org.jpos.util.QIUtils;
+import org.jpos.util.Serializer;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -167,13 +173,19 @@ public class ConsumersView extends QIEntityView<Consumer> {
         Consumer c = getInstance();
         c.setUser(this.selectedUser);
         Map<String,String> smap = new HashMap<>();
+        try{
+            smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
+            SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
+            c.setKid(sd.getId());
+            c.setSecureData(sd.getEncoded());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NameRegistrar.NotFoundException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-//        smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
-//        c.setKid(getCurrentBDKName());
-//        SecureDESKey bdk = getCurrentBDK();
-//        c.setSecureData(getSSM().customEncryptMap(bdk, smap));
-
-//        return c;
 
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
@@ -187,45 +199,6 @@ public class ConsumersView extends QIEntityView<Consumer> {
                 }));
     }
 
-    private SecretKey generateKey () throws NoSuchAlgorithmException {
-        KeyGenerator gen = KeyGenerator.getInstance(HASH_ALGORITHM);
-        return gen.generateKey();
-    }
-
-
-//    private SSM getSSM() throws NameRegistrar.NotFoundException {
-//        return (SSM) NameRegistrar.get("ssm");
-//    }
-//
-//    private String getCurrentBDKName() {
-//        return "bdk.001";
-//    }
-//    private SecureDESKey getCurrentBDK() throws NameRegistrar.NotFoundException, SecureKeyStore.SecureKeyStoreException {
-//        SecureKeyStore ks = (SecureKeyStore) NameRegistrar.get("ks");
-//        return (SecureDESKey) ks.getKey(getCurrentBDKName());
-//    }
-
-
-//    private SSM getSSM() throws SMException {
-//        return new SSM("cfg/test.lmk", "com.sun.crypto.provider.SunJCE"); //TODO: Pick from config
-//    }
-//    private String getCurrentBDKName() {
-//        return "bdk.001"; //TODO: Pick from config
-//    }
-//    private SecureDESKey getCurrentBDK() throws SecureKeyStore.SecureKeyStoreException, SMException {
-//        return getBDK(getCurrentBDKName());
-//    }
-//    protected SecureDESKey getBDK (String bdkName)
-//            throws SMException, SecureKeyStore.SecureKeyStoreException
-//    {
-//        try {
-//            SecureKeyStore ks = (SecureKeyStore) NameRegistrar.get ("ks");
-//            return (SecureDESKey) ks.getKey (bdkName);
-//        } catch (NameRegistrar.NotFoundException e) {
-//            throw new SMException (e.getMessage());
-//        }
-//    }
-
     @Override
     public boolean canEdit() {
         return true;
@@ -233,4 +206,13 @@ public class ConsumersView extends QIEntityView<Consumer> {
     @Override
     public boolean canAdd() {return true;}
     public boolean canRemove() {return true;}
+
+    private CryptoService getCryptoService() throws NameRegistrar.NotFoundException {
+       return (CryptoService) NameRegistrar.get("crypto-service");
+    }
+
+    private SecretKey generateKey () throws NoSuchAlgorithmException {
+        KeyGenerator gen = KeyGenerator.getInstance(HASH_ALGORITHM);
+        return gen.generateKey();
+    }
 }

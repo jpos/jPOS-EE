@@ -106,6 +106,8 @@ public abstract class DateRangeComponent extends HorizontalLayout {
             if (event.getValue() != null) {
                 datePickerFrom.setValue(null);
                 datePickerTo.setValue(null);
+                if (refreshBtn != null)
+                    refreshBtn.click();
             }
         });
         return combo;

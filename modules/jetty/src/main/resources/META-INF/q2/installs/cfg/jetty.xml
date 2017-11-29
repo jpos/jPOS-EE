@@ -76,6 +76,37 @@
       </Arg>
     </Call>
 
+    <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+        <Set name="KeyStorePath"><Property name="jetty.home" default="." />/cfg/keystore.jks</Set>
+        <Set name="KeyStorePassword">jposjposjposjpos</Set>
+        <Set name="ExcludeCipherSuites">
+            <Array type="java.lang.String">
+                <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
+                <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
+                <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
+                <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+                <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
+                <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+                <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+                <Item>SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_128_CBC_SHA256</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_128_GCM_SHA256</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA256</Item>
+                <Item>TLS_DHE_RSA_WITH_AES_256_GCM_SHA384</Item>
+                <Item>TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            </Array>
+        </Set>
+        <Set name="ExcludeProtocols">
+            <Array type="java.lang.String">
+                <Item>SSLv3</Item>
+                <Item>TLSv1</Item>
+            </Array>
+        </Set>
+    </New>
+
     <Call name="addConnector">
         <Arg>
             <New class="org.eclipse.jetty.server.ServerConnector">
@@ -103,31 +134,6 @@
         </Arg>
     </Call>
 
-    <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
-        <Set name="KeyStorePath"><Property name="jetty.home" default="." />/cfg/keystore.jks</Set>
-        <Set name="KeyStorePassword">jposjposjposjpos</Set>
-        <Set name="ExcludeCipherSuites">
-            <Array type="java.lang.String">
-                <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
-                <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
-                <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
-                <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
-                <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
-                <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
-                <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
-                <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
-                <Item>SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_128_CBC_SHA256</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_128_GCM_SHA256</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA256</Item>
-                <Item>TLS_DHE_RSA_WITH_AES_256_GCM_SHA384</Item>
-                <Item>TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
-            </Array>
-        </Set>
-    </New>
-    
     <Call class="org.eclipse.jetty.util.log.Log" name="getRootLogger">
       <Call name="setDebugEnabled">
         <Arg type="boolean">true</Arg>

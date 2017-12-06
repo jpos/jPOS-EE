@@ -178,14 +178,9 @@ public class ConsumersView extends QIEntityView<Consumer> {
             SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
             c.setKid(sd.getId());
             c.setSecureData(sd.getEncoded());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NameRegistrar.NotFoundException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            getApp().getLog().error(e);
         }
-
 
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),

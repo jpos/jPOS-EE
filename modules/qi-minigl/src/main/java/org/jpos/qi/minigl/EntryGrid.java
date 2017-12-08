@@ -7,11 +7,11 @@ import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.grid.HeightMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import org.jpos.ee.BLException;
 import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,10 +36,11 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
         if (caption != null)
             this.setCaption(caption);
         this.addStyleName("v-grid");
-        this.addColumn(entry -> entry.getAccount().getCode()).setId("account")
+        this.addColumn(entry ->"<label>" + entry.getAccount().getCode() + "</label>&nbsp;<label class='v-label-light'>" + entry.getAccount().getDescription() + "</label>").setId("account")
                 .setCaption(getCaptionFromId("account"))
                 .setSortable(true)
-                .setHidable(false);;
+                .setHidable(false)
+                .setRenderer(new HtmlRenderer());
         this.addColumn(GLEntry::getLayer).setId("layer")
                 .setCaption(getCaptionFromId("layer"))
                 .setSortable(true)

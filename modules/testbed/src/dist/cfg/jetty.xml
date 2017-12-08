@@ -32,6 +32,49 @@
     </New>
 
 
+    <New id="RewriteHandler" class="org.eclipse.jetty.rewrite.handler.RewriteHandler">
+        <Set name="rules">
+            <Array type="org.eclipse.jetty.rewrite.handler.Rule">
+                <Item>
+                    <New id="header-xframe" class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
+                        <Set name="pattern">*</Set>
+                        <Set name="name">X-Frame-Options</Set>
+                        <Set name="value">SAMEORIGIN</Set>
+                    </New>
+                </Item>
+                <Item>
+                    <New id="header-xxss" class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
+                        <Set name="pattern">*</Set>
+                        <Set name="name">X-XSS-Protection</Set>
+                        <Set name="value">1; mode=block</Set>
+                    </New>
+                </Item>
+                <Item>
+                    <New id="header-xcontenttype" class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
+                        <Set name="pattern">*</Set>
+                        <Set name="name">X-Content-Type-Options</Set>
+                        <Set name="value">nosniff</Set>
+                    </New>
+                </Item>
+                <Item>
+                    <New id="header-sts" class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
+                        <Set name="pattern">*</Set>
+                        <Set name="name">Strict-Transport-Security</Set>
+                        <Set name="value">max-age=31536000; includeSubDomains; preload</Set>
+                    </New>
+                </Item>
+                <Item>
+                    <New id="header-csp" class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
+                        <Set name="pattern">*</Set>
+                        <Set name="name">Content-Security-Policy</Set>
+                        <Set name="value">default-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'</Set>
+                    </New>
+                </Item>
+            </Array>
+        </Set>
+    </New>
+
+
     <Set name="handler">
       <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
         <Set name="handlers">
@@ -42,6 +85,9 @@
            <Item>
              <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
            </Item>
+             <Item>
+                 <Ref refid="RewriteHandler"/>
+             </Item>
          </Array>
         </Set>
       </New>

@@ -79,6 +79,7 @@ ext {
             jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
             jetty_ajp: "org.eclipse.jetty:jetty-ajp:${jettyVersion}",
             jetty_continuation: "org.eclipse.jetty:jetty-continuation:${jettyVersion}",
+            jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
 
             // Quartz Scheduler
             quartz: 'org.quartz-scheduler:quartz:2.2.1',
@@ -104,7 +105,8 @@ ext {
             libraries.jetty_websocket,
             libraries.jetty_websocket_jsr356,
             libraries.jetty_security,
-            libraries.jetty_continuation
+            libraries.jetty_continuation,
+            libraries.jetty_rewrite
     ]
 
     /*
@@ -112,7 +114,7 @@ ext {
             libraries.jetty_jndi,
             libraries.jetty_annotations,
             libraries.jetty_policy,
-            libraries.jetty_rewrite,
+
             libraries.jetty_servlets,
             libraries.jetty_ajp
     */

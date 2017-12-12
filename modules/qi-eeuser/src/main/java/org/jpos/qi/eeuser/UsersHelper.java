@@ -182,8 +182,8 @@ public class UsersHelper extends QIHelper {
     public List<Role> getRoles() {
         try {
             return (List<Role>) DB.exec((db) -> {
-                Criteria crit = db.session().createCriteria(Role.class);
-                return crit.list();
+                RoleManager mgr = new RoleManager(db);
+                return mgr.getAll();
             });
         } catch (Exception e) {
             getApp().getLog().error(e);

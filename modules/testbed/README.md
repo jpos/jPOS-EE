@@ -26,7 +26,7 @@ Once you get the `q2>` prompt, try:
 
 ```
 createschema - true
-addrole admin login sysadmin sysconfig users.read users.write
+addrole admin login sysadmin sysconfig accounting users.read users.write
 addrole test login sysadmin sysconfig users.read users.write
 adduser admin -ptest -radmin -rtest -n"System Administrator"
 sysconfig
@@ -35,6 +35,8 @@ add sys.MAX_LOGIN_ATTEMPTS 5
 add sys.PASSWORD_AGE 90
 add perm.login "Can log into the system"
 add perm.sysadmin "Has administrator privileges"
+add perm.sysconfig "Has access to sysconfig records"
+add perm.accounting "Has access to accounting records"
 add perm.users.read "Has read access to system's users information"
 add perm.users.write "Can administer system's users"
 exit

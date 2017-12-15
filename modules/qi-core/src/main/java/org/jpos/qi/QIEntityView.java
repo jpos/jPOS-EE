@@ -20,7 +20,6 @@ package org.jpos.qi;
 
 import com.vaadin.data.*;
 import com.vaadin.data.converter.LocalDateToDateConverter;
-import com.vaadin.data.converter.StringToBigDecimalConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.data.validator.RegexpValidator;
@@ -39,15 +38,14 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 
-import com.vaadin.v7.data.util.converter.StringToShortConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
+import org.jpos.qi.system.EmptyView;
 import org.jpos.util.AmountConverter;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -81,8 +79,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private ViewConfig viewConfig;
     private T bean;
 
-
-    private static DateFormat dateFormat;
 
     public QIEntityView(Class<T> clazz, String name) {
         super();
@@ -120,13 +116,28 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     public void showGeneralView () {
-        Layout header = createHeader(title);
-        addComponent(header);
-        grid = createGrid();
-        grid.setDataProvider(getHelper().getDataProvider());
-        formatGrid();
-        addComponent(grid);
-        setExpandRatio(grid, 1);
+        //check if it has items, else show EmptyView
+        try {
+            System.out.println("getHelper().getItemCount() " + getHelper().getItemCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (getHelper().getItemCount() == 0) {
+                getApp().getNavigator().getDisplay().showView(new EmptyView(canAdd()));
+            } else {
+                Layout header = createHeader(title);
+                addComponent(header);
+                grid = createGrid();
+                grid.setDataProvider(getHelper().getDataProvider());
+                formatGrid();
+                addComponent(grid);
+                setExpandRatio(grid, 1);
+            }
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            getApp().displayNotification(e.getMessage());
+        }
     }
 
     public void showSpecificView (final String parameter) {

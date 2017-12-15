@@ -51,6 +51,7 @@
   <!--VIEWS-->
   <view route="home" class="org.jpos.qi.views.DefaultView" perm="*" sidebar = "system"/>
   <view route="system" class="org.jpos.qi.views.DefaultView" perm="*"  sidebar="system"/>
+  <view route="empty" class="org.jpos.qi.system.EmptyView" perm="*" sidebar="system"/>
 
   <view route="about" class="org.jpos.qi.system.AboutView" perm="login" sidebar="system"/>
   <view route="log" class="org.jpos.qi.system.LogListenerView" perm="sysadmin" sidebar="system" >

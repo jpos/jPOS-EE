@@ -1,19 +1,19 @@
-= QI Basics 
+=== QI Basics 
 
-== Main XML 
+==== Main XML 
 
 The main configuration is done on `00_qi.xml` 
 
 The main contents of this file are: 
 
-=== Title 
+===== Title 
 
 Example:
 `<title>jPOS QI</title>` 
 
 Indicates the title for the app.  
 
-=== Locale 
+===== Locale 
 
 Indicates the available locales for the app, it can have more than one. 
 The first one will be the default locale. 
@@ -24,7 +24,7 @@ Examples:
 
 `<locale>es-UY</locale>`
 
-=== Messages
+===== Messages
 Indicates the names of the `.properties` files available. It can contain more than one.
 
 Example: 
@@ -37,13 +37,13 @@ Example:
 
 The naming convention for these files is: `packagename_locale.properties` 
 
-=== Menubar
+===== Menubar
 
 A menubar represents the horizontal menu at the top of the app. 
 It is represented with the `<menubar>` element.  
 It contains "menus". 
 
-==== Menu 
+====== Menu 
 It represents the menu item.
 It has a `name`, an `icon`, a `style`, and an `action`. 
 
@@ -51,13 +51,13 @@ Example:
 
 `<menu name="System" icon="COG" style="icon-cog" action="system" />`
 
-=== Sidebar 
+===== Sidebar 
 
 Represents the sidebar, it can contain <<Section,sections>> and <<Option,options>>. 
 It is represented with the `sidebar` element. 
 It can also be identified by an `id`. Example: `<sidebar id="info"> ... </sidebar>`  
 
-==== Section 
+====== Section 
 
 Represents a section of the sidebar, represented with the `<section>` element. It has the following properties:
 
@@ -65,7 +65,7 @@ Represents a section of the sidebar, represented with the `<section>` element. I
 
 Example: `<section name="System"/>`
 
-==== Option 
+====== Option 
 
 Represents an option on the sidebar, represented with the `<option>` element. It has the following properties: 
 
@@ -87,7 +87,7 @@ Example:
 
 
 
-=== View 
+===== View 
 
 Represents a view, it has the following properties: 
 
@@ -105,14 +105,14 @@ Example:
 
 Views can **can/will** contain different <<Properties,properties>> & <<Attribute,attributes>>. 
 
-==== Properties 
+====== Properties 
 
 Represented with the `<property>` element. It has a `name` and a `value`.
 Some views require:    
 
 * Entity name (string, required for entities). The name of the entity. For example, for `users`, it is `user`.  It must be included like this: `<property name="entityName" value="aName"/>`
 
-==== Attribute 
+====== Attribute 
 
 Represented with the `<attribute>` element. 
 It has: 
@@ -158,19 +158,18 @@ It has:
 Example: 
 
 
-==== Different classes of views 
-
-===== TabView 
+====== Different classes of views  - TabView
 
 If the view has a class of type `TabView`. It can contain views within the `<view>` elements. This views accept an additional property: 
 
 * `caption` Indicates the caption for the tab. 
 
 
-== QI Permissions
+==== QI Permissions
 
 * _sysadmin_ : Needed to access `/roles`, `/permissions` and roles field in `/users`.
 * _login_ : Needed to login to **QI** and access `/about`, `/memory`, `/log`.
 * _sysconfig_ : Needed to access `/sysconfig`.
 * _users.write_: Needed to access `/users`.
 * _accounting_: Needed to access `/accounts` and `/transactions`.
+

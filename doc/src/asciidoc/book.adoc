@@ -28,6 +28,7 @@ include::introduction_module.adoc[]
 
 include::module_core.adoc[]
 include::module_txn.adoc[]
+include::module_qi.adoc[]
 
 == Database Support
 

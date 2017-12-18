@@ -160,8 +160,9 @@ public abstract class QIHelper {
             BLException;
 
 
+    @SuppressWarnings("unchecked")
     public DataProvider getDataProvider() {
-        Map<String,Boolean> orders = new HashMap<>();
+        Map<String,Boolean> orders = new LinkedHashMap<>();
         DataProvider dataProvider = DataProvider.fromCallbacks(
                 (CallbackDataProvider.FetchCallback) query -> {
                     int offset = query.getOffset();

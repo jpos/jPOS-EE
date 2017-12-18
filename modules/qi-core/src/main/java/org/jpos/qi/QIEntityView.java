@@ -118,11 +118,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public void showGeneralView () {
         //check if it has items, else show EmptyView
         try {
-            System.out.println("getHelper().getItemCount() " + getHelper().getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
             if (getHelper().getItemCount() == 0) {
                 getApp().getNavigator().getDisplay().showView(new EmptyView(canAdd()));
             } else {

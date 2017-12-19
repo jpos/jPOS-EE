@@ -2,9 +2,7 @@ package org.jpos.qi.system;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewDisplay;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.qi.QI;
 import org.jpos.qi.views.DefaultView;
@@ -15,17 +13,18 @@ import org.jpos.qi.views.DefaultView;
 public class EmptyView extends DefaultView implements ViewDisplay  {
 
     public EmptyView(boolean canAdd) {
+        Label emptyLabel = new Label("There are no items in this view");
+        emptyLabel.addStyleName(ValoTheme.LABEL_H2);
+        addComponentsAndExpand(emptyLabel);
+        setComponentAlignment(emptyLabel, Alignment.TOP_CENTER);
         if (canAdd) {
             Button addNew = new Button(QI.getQI().getMessage("add"));
             String actualRoute = QI.getQI().getNavigator().getState();
             addNew.addClickListener(listener -> QI.getQI().getNavigator().navigateTo(actualRoute + "/new"));
             addNew.addStyleName(ValoTheme.BUTTON_LARGE);
             addNew.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-            HorizontalLayout hl = new HorizontalLayout(addNew);
-            addComponentsAndExpand(hl);
-        } else {
-            HorizontalLayout hl = new HorizontalLayout(new Label("empty"));
-            addComponentsAndExpand(hl);
+            addComponent(addNew);
+            setComponentAlignment(addNew,Alignment.TOP_CENTER);
         }
 
     }

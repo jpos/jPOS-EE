@@ -22,6 +22,7 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.provider.CallbackDataProvider;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.QuerySortOrder;
+import com.vaadin.data.provider.SortOrder;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
 import org.jpos.core.Configuration;
@@ -162,12 +163,12 @@ public abstract class QIHelper {
 
     @SuppressWarnings("unchecked")
     public DataProvider getDataProvider() {
-        Map<String,Boolean> orders = new LinkedHashMap<>();
         DataProvider dataProvider = DataProvider.fromCallbacks(
                 (CallbackDataProvider.FetchCallback) query -> {
                     int offset = query.getOffset();
                     int limit = query.getLimit();
                     Iterator it = query.getSortOrders().iterator();
+                    Map<String,Boolean> orders = new LinkedHashMap<>();
                     while (it.hasNext()) {
                         QuerySortOrder order = (QuerySortOrder) it.next();
                         orders.put(order.getSorted(),order.getDirection() == SortDirection.DESCENDING);

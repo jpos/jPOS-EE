@@ -35,10 +35,9 @@ public class ADDUSER implements CLICommand {
         options.addOption ("n", "name", true, "User's full name");
         options.addOption ("p", "password", true, "The password");
         options.addOption ("r", "role", true, "User role");
-        options.addOption ("h", "help", false, "This help");
         CommandLine line = parser.parse(options, shl(shl(args)));
 
-        if (args.length < 2 || line.hasOption('h')) {
+        if (args.length < 2) {
             showHelp (cli, args, options);
             return;
         }

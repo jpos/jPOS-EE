@@ -1,5 +1,3 @@
-Usage: rmrole <role>
-q2> adduser 
 usage: adduser <nick>
  -h,--help             This help
  -n,--name <arg>       User's full name

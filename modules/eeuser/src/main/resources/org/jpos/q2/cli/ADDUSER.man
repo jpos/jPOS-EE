@@ -1,5 +1,4 @@
 usage: adduser <nick>
- -h,--help             This help
  -n,--name <arg>       User's full name
  -p,--password <arg>   The password
  -r,--role <arg>       User role

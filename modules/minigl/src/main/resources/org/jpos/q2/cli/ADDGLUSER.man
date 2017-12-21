@@ -1,0 +1,4 @@
+usage: addgluser <nick>
+ -u,--user        <arg>       User's nick
+ -n,--name        <arg>       User's full name
+ -p,--permissions <arg>       User's permissions

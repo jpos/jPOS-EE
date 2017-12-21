@@ -52,7 +52,9 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
         super.showGeneralView();
         editMode = false;
         shouldReverse = false;
-        getGrid().setSortOrder(GridSortOrder.asc(getGrid().getColumn("id")));
+        if (getGrid() != null) {
+            getGrid().setSortOrder(GridSortOrder.asc(getGrid().getColumn("id")));
+        }
     }
 
     @Override

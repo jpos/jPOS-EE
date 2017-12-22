@@ -26,9 +26,10 @@ Once you get the `q2>` prompt, try:
 
 ```
 createschema - true
-addrole admin login sysadmin sysconfig accounting users.read users.write
-addrole test login sysadmin sysconfig users.read users.write
-adduser admin -ptest -radmin -rtest -n"System Administrator"
+addrole   admin login sysadmin sysconfig accounting users.read users.write
+addrole   test login sysadmin sysconfig users.read users.write
+adduser   admin -ptest -radmin -rtest -n"System Administrator"
+addgluser admin -n"System Administrator" -p"read" -p"write" -p"post" -p"checkpoint"
 sysconfig
 add sys.REMEMBER_PASSWORD_ENABLED true
 add sys.MAX_LOGIN_ATTEMPTS 5

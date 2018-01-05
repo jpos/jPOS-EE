@@ -366,7 +366,8 @@ public class GLTransaction extends Cloneable {
             Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
-        elem.setAttribute ("journal", getJournal().getName());
+        if (getJournal() != null)
+            elem.setAttribute ("journal", getJournal().getName());
 
         for (GLEntry entry : getEntries()) {
             elem.addContent (entry.toXML (deep));

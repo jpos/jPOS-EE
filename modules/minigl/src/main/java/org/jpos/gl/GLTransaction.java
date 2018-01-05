@@ -354,7 +354,8 @@ public class GLTransaction extends Cloneable {
      */
     public Element toXML (boolean deep) {
         Element elem = new Element ("transaction");
-        elem.setAttribute ("id", Long.toString(getId()));
+        if (getId() != 0L)
+            elem.setAttribute ("id", Long.toString(getId()));
         Util.setDateTimeAttribute (elem, "date", getTimestamp());
         Util.setDateAttribute (elem, "post-date", getPostDate());
 

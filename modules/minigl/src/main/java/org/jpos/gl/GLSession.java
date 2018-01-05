@@ -229,7 +229,7 @@ public class GLSession {
     public void checkPermission (String action, Journal j) throws GLException {
         if (!hasPermission (action, j)) {
             throw new GLException (
-                "User '" + user.getName() + "' (" + user.getId() + 
+                "User '" + user.getNick() + "' (" + user.getName() +
                 ") does not have '" + action + "' permission in journal '" + 
                 j.getName() + "' (" + j.getId() + ")"
             );
@@ -420,7 +420,7 @@ public class GLSession {
     }
     /**
      * @param parent parent account.
-     * @return list of composite accounts children of the parent account
+     * @return list of final accounts children of the parent account
      * @throws HibernateException on database errors.
      * @throws GLException if users doesn't have global READ permission.
      * @see GLPermission
@@ -1081,6 +1081,11 @@ public class GLSession {
         return balance;
     }
 
+    public List<FinalAccount> getDeepFinalChildren(Account acct) throws HibernateException, GLException {
+        checkPermission (GLPermission.READ);
+        return getDeepFinalChildren0(acct);
+    }
+
     /**
      * AccountDetail for date range
      * @param journal the journal.
@@ -1180,6 +1185,7 @@ public class GLSession {
 
         return new AccountDetail(journal, acct, balance, entries, layers);
     }
+
 
     /**
      * @param journal the journal.
@@ -1447,8 +1453,6 @@ public class GLSession {
         }
         return balance;
     }
-
-
 
     // -----------------------------------------------------------------------
     // PUBLIC HELPERS 
@@ -1784,6 +1788,18 @@ public class GLSession {
         List<Long> list = new ArrayList<Long>();
         recurseChildren (acct, list);
         return list;        
+    }
+
+    private List<FinalAccount> getDeepFinalChildren0(Account acct) throws HibernateException, GLException {
+        List<FinalAccount> list = new ArrayList<>();
+        if (acct.getChildren() != null) {
+            for (Account a : acct.getChildren()) {
+                list.addAll(getDeepFinalChildren0(a));
+            }
+        } else if (acct instanceof FinalAccount) {
+            list.add((FinalAccount) acct);
+        }
+        return list;
     }
 
     public String toString() {

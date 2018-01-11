@@ -191,8 +191,10 @@ public class ConsumersView extends QIEntityView<Consumer> {
         Consumer c = getInstance();
         c.setUser(this.selectedUser);
         Map<String,String> smap = new HashMap<>();
+        String secret64= "?";
         try{
-            smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
+            secret64= Base64.toBase64String(generateKey().getEncoded());
+            smap.put("S", secret64);
             SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
             c.setKid(sd.getId());
             c.setSecureData(sd.getEncoded());
@@ -202,7 +204,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
 
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
-                getApp().getMessage("secretDescription","el secreto"),
+                getApp().getMessage("secretDescription", secret64),
                 getApp().getMessage("secretConfirm"),
                 getApp().getMessage("cancel"),
                 confirm -> {

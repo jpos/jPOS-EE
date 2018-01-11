@@ -145,7 +145,7 @@ It has:
 
 	A number, indicating the max length for the field value. 
 
-* `expandRatio` (numeric,optional)
+* `expand-ratio` (numeric,optional)
 
 	A number, indicating if the field's expandRatio to be used. (Check https://vaadin.com/docs/-/part/framework/layout/layout-settings.html#layout.settings.size.expanding(Vaadin docs) for more info).
 

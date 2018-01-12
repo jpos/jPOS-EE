@@ -18,6 +18,7 @@
 
 package org.jpos.qi;
 
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -48,7 +49,9 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
         this.no.addStyleName(ValoTheme.BUTTON_DANGER);
         this.callback = callback;
 
-        Label questionLabel = new Label(question);
+        // HTML is safe to assume and allows for line breaks and other stuff
+        // We can always escape HTML special chars
+        Label questionLabel = new Label(question, ContentMode.HTML);
         questionLabel.setCaptionAsHtml(true);
         if (question != null) {
             content.addComponent(questionLabel);

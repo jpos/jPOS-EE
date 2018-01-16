@@ -116,19 +116,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     public void showGeneralView () {
-        //check if it has items, else show EmptyView
         try {
-            if (getHelper().getItemCount() == 0) {
-                getApp().getNavigator().getDisplay().showView(new EmptyView(canAdd()));
-            } else {
-                Layout header = createHeader(title);
-                addComponent(header);
-                grid = createGrid();
-                grid.setDataProvider(getHelper().getDataProvider());
-                formatGrid();
-                addComponent(grid);
-                setExpandRatio(grid, 1);
-            }
+            Layout header = createHeader(title);
+            addComponent(header);
+            grid = createGrid();
+            grid.setDataProvider(getHelper().getDataProvider());
+            formatGrid();
+            addComponent(grid);
+            setExpandRatio(grid, 1);
         } catch (Exception e) {
             getApp().getLog().error(e);
             getApp().displayNotification(e.getMessage());

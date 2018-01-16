@@ -37,7 +37,6 @@ import org.jpos.util.Serializer;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -187,14 +186,14 @@ public class ConsumersView extends QIEntityView<Consumer> {
         return null;
     }
 
-    public void saveEntity () throws BLException {
+    public void saveEntity () {
+        // TODO: BBB maybe the logic of creating a consumer and its secret should be
+        // abstracted away inside ConsumerManager and not in UI code?
         Consumer c = getInstance();
         c.setUser(this.selectedUser);
         Map<String,String> smap = new HashMap<>();
-        String secret64= "?";
         try{
-            secret64= Base64.toBase64String(generateKey().getEncoded());
-            smap.put("S", secret64);
+            smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
             SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
             c.setKid(sd.getId());
             c.setSecureData(sd.getEncoded());
@@ -204,7 +203,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
 
         getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
-                getApp().getMessage("secretDescription", secret64),
+                getApp().getMessage("secretDescription", smap.getOrDefault("S", "?")),
                 getApp().getMessage("secretConfirm"),
                 getApp().getMessage("cancel"),
                 confirm -> {

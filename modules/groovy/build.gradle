@@ -3,6 +3,9 @@ description = 'jPOS-EE :: Groovy Module'
 dependencies {
     compile libraries.jpos
     compile libraries.groovy
+    compile libraries.groovysh
+    compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.11'
+
     compile libraries.groovySql
 }
 

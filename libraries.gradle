@@ -89,6 +89,7 @@ ext {
 
             // Groovy
             groovy: "org.codehaus.groovy:groovy:${groovyVersion}",
+            groovysh: "org.codehaus.groovy:groovy-groovysh:${groovyVersion}",
             groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}",
 
             // Jackson

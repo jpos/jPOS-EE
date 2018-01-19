@@ -43,7 +43,6 @@ import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
-import org.jpos.qi.system.EmptyView;
 import org.jpos.util.AmountConverter;
 
 import java.math.BigDecimal;

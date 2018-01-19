@@ -138,7 +138,7 @@ public abstract class QIHelper {
 
     public String getEntityName() {
         if (entityName == null || entityName.isEmpty()) {
-            String name = cfg.get("entityName");
+            String name = cfg != null ? cfg.get("entityName", null) : null;
             if (name == null || name.isEmpty()) {
                 QI.getQI().displayError("view.config.error", "view.config.error.detail");
             }

@@ -23,9 +23,12 @@ import com.vaadin.data.Validator;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import org.apache.commons.lang3.StringUtils;
+import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
+import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 
@@ -137,5 +140,18 @@ public class SysConfigView extends QIEntityView<SysConfig> {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    @Override
+    public void setConfiguration (Configuration cfg) {
+        super.setConfiguration(cfg);
+        this.prefix = cfg.get("prefix", prefix);
+        String title = cfg.get("title", null);
+        if (title != null)
+            setTitle("<strong>" + title + "</strong>");
+        String name = cfg.get("name", null);
+        if (name != null) {
+            setGeneralRoute("/" + name);
+        }
     }
 }

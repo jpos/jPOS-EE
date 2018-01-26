@@ -24,6 +24,7 @@ import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.FSDMsg;
+import org.jpos.util.ProtectedLogListener;
 
 import java.io.Serializable;
 
@@ -46,8 +47,8 @@ import java.io.Serializable;
  *        &lt;property name="protect-ISOMsg" value="2" /&gt;
  *        &lt;property name="protect-ISOMsg" value="35" /&gt;
  *        &lt;property name="protect-ISOMsg" value="45" /&gt;
- *        &lt;property name="protect-ISOMsg" value="52" /&gt;
- *        &lt;property name="protect-ISOMsg" value="55" /&gt;
+ *        &lt;property name="wipe-ISOMsg" value="52" /&gt;
+ *        &lt;property name="wipe-ISOMsg" value="55" /&gt;
  *
  *        &lt;property name="protect-FSDMsg" value="account-number" /&gt;
  *        &lt;property name="protect-FSDMsg" value="track2-data" /&gt;
@@ -56,13 +57,13 @@ import java.io.Serializable;
  **/
  
  public class ProtectDebugInfo extends TxnSupport implements AbortParticipant {
+     private String[] protectedEntrys;
+     private String[] wipedEntrys;
+     private String[] protectISO;
+     private String[] wipeISO;
+     private String[] protectFSD;
 
-     String[] protectedEntrys;
-     String[] wipedEntrys;
-     String[] protectISO;
-     String[] protectFSD;
-
-     public int prepare (long id, Serializable o) {
+    public int prepare (long id, Serializable o) {
          return PREPARED | READONLY;
      }
      public int prepareForAbort (long id, Serializable o) {
@@ -75,7 +76,6 @@ import java.io.Serializable;
          protect ((Context) o);
      }
      private void protect (Context ctx) {
-
          /* wipe by removing entries from the context  */
          for (String s: wipedEntrys)
              ctx.remove(s);
@@ -90,6 +90,8 @@ import java.io.Serializable;
                      ctx.put (s, m);   // place a clone in the context
                      for (String p: protectISO)
                          protectField(m,Integer.parseInt(p));
+                     for (String p: wipeISO)
+                         wipeField(m,Integer.parseInt(p));
                  }
              }
              if (o instanceof FSDMsg){
@@ -112,7 +114,19 @@ import java.io.Serializable;
              m.set (f, protect (m.getString (f)));
          }
      }
-     private void protectField (FSDMsg m, String f) {
+    private void wipeField (ISOMsg m, int f) {
+        if (m != null) {
+            Object v = m.getValue(f);
+            if (v != null) {
+                if (v instanceof String)
+                    m.set(f, ProtectedLogListener.WIPED);
+                else
+                    m.set(f, ProtectedLogListener.BINARY_WIPED);
+            }
+        }
+    }
+
+    private void protectField (FSDMsg m, String f) {
          if (f != null) {
              String s = m.get (f);
              if (s != null) 
@@ -134,6 +148,7 @@ import java.io.Serializable;
          this.protectedEntrys = cfg.getAll("protect-entry");
          this.wipedEntrys = cfg.getAll("wipe-entry");
          this.protectISO = cfg.getAll("protect-ISOMsg");
+         this.wipeISO = cfg.getAll("wipe-ISOMsg");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
      }
  }

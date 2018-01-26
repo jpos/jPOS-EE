@@ -31,18 +31,18 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 @SuppressWarnings("unused unchecked")
 public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
-    Scheduler scheduler;
-    Element config;
+    private Scheduler scheduler;
+    private Element config;
     protected void initService() throws Exception {
-        scheduler = StdSchedulerFactory.getDefaultScheduler();
+        scheduler = createScheduler();
         QFactory factory = getFactory();
         LogEvent evt = getLog().createInfo();
-        for (Element e : (List<Element>) config.getChildren("job")) {
+        for (Element e : config.getChildren("job")) {
             String jobId = e.getAttributeValue("id");
             if (jobId == null)
                 jobId = UUID.randomUUID().toString();
@@ -128,5 +128,29 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
         public boolean running() {
             return QuartzAdaptor.this.running();
         }
+    }
+
+    private Scheduler createScheduler() throws SchedulerException {
+        Properties p = new Properties();
+
+        p.setProperty("org.quartz.scheduler.instanceName", getName());
+        p.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
+        p.setProperty("org.quartz.scheduler.rmi.proxy", "false");
+        p.setProperty("org.quartz.scheduler.rmi.export", "false");
+        p.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
+        p.setProperty("org.quartz.threadPool.threadCount", "10");
+        p.setProperty("org.quartz.scheduler.instanceName", getName());
+        p.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
+        p.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+        p.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
+        p.setProperty("org.quartz.threadPool.threadPriority", "5");
+
+        // add ability to override defaults
+        cfg.keySet()
+          .stream()
+          .filter (s -> s.startsWith("org.quartz."))
+          .forEach(s -> p.put(s, cfg.get(s)));
+
+        return new StdSchedulerFactory(p).getScheduler();
     }
 }

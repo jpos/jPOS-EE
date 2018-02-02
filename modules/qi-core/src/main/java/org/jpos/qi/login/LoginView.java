@@ -223,10 +223,10 @@ public class LoginView extends VerticalLayout {
                 .bind(string -> string, null);
         binder.setBean("");
         username.focus();
+        username.setReadOnly(false);
         password = new PasswordField();
         password.setCaption(app.getMessage("login.password"));
         password.setMaxLength(64);
-
         binder.forField(password)
                 .asRequired(app.getMessage("errorMessage.req", password.getCaption()))
                 .withValidator(new RegexpValidator(
@@ -234,6 +234,7 @@ public class LoginView extends VerticalLayout {
                         PASSWORD_PATTERN)
                 )
                 .bind(string -> string, null);
+        password.setReadOnly(false);
 
         rememberMe = new CheckBox (app.getMessage("login.remember"));
         rememberMe.setDescription(app.getMessage("login.rememberDesc"));

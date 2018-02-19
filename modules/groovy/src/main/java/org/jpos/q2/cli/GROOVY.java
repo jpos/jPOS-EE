@@ -4,6 +4,8 @@ package org.jpos.q2.cli;
 import groovy.lang.Binding;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
+import org.jline.terminal.Attributes;
+import org.jline.terminal.Terminal;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 
@@ -17,9 +19,21 @@ public class GROOVY implements CLICommand
   @Override
   public void exec(CLIContext cli, String[] strings) throws Exception
   {
+
+
+    Terminal term= cli.getReader().getTerminal();
+
+    // Starting with jLine 3.3.0 they changed the defaults for the type of Terminal created
+    // when accessing Q2 --ssh, enabling local echo (which gives duplicated chars on the screen).
+    // Disabling local echo doesn't hurt the type of Terminal created when calling Q2 with the --cli option because
+    // that Terminal already has it disabled
+    Attributes termAttrs= term.getAttributes();
+    termAttrs.setLocalFlag(Attributes.LocalFlag.ECHO, false);
+    term.setAttributes(termAttrs);
+
     // if we use cli.getXxxStream(), it doesn't work correctly during remote access
-    InputStream  in=  cli.getReader().getTerminal().input();
-    OutputStream out= cli.getReader().getTerminal().output();
+    InputStream  in=  term.input();
+    OutputStream out= term.output();
     OutputStream err= out;
 
     Binding binding= new Binding();

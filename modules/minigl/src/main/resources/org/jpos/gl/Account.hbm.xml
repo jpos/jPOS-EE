@@ -43,7 +43,7 @@
      <column name="type" sql-type="smallint" />
     </property>
     <property name="currencyCode">
-     <column name="currency" sql-type="char(3)" />
+     <column name="currency" sql-type="char(5)" />
     </property>
     <many-to-one name="parent" not-null="false" cascade="evict" foreign-key="FKAccountParent" lazy="false"/>
     <subclass name="org.jpos.gl.CompositeAccount" discriminator-value="C">

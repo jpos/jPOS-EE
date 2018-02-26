@@ -1,6 +1,6 @@
 <!DOCTYPE xml-config [
         <!ENTITY AMOUNT_PATTERN  "[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?">
-        <!ENTITY CURRENCY_PATTERN "^\d{1,4}">
+        <!ENTITY CURRENCY_PATTERN "^\d{1,5}">
         <!ENTITY TEXT_PATTERN "^[\w\s.,\-\']*$">
         <!ENTITY TEXT_EXTENDED_PATTERN "^[\w\s.,\-\'():]*$">
         <!ENTITY WORD_PATTERN "^[\w.\-]*$">

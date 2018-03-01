@@ -46,10 +46,9 @@ public class ViewConfig {
         columns = new LinkedHashMap<>();
         readOnlyFields = new ArrayList<>();
     }
-
-    public void addField(String field, String perm, String regex, int length, boolean required) {
+    public void addField(String field, String perm, String regex, int length, boolean required, String width) {
         if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
-            fields.put(field, new FieldConfig(perm, regex, length,required));
+            fields.put(field, new FieldConfig(perm, regex, length,required, width));
     }
 
     public void addField(String field, String perm, String[] options, int length, boolean required) {
@@ -92,6 +91,8 @@ public class ViewConfig {
             String name = f.getAttributeValue("name");
             String perm = f.getAttributeValue("perm");
             String regex = f.getAttributeValue("regex");
+            String width = f.getAttributeValue("width");
+
             String optionsStr = f.getAttributeValue("options");
             int length = f.getAttribute("length") != null ? f.getAttribute("length").getIntValue() : 0;
 
@@ -105,7 +106,7 @@ public class ViewConfig {
                     String[] options = optionsStr.split(",");
                     addField(name,perm,options,length,isRequired);
                 }
-                addField(name, perm, regex, length,isRequired);
+                addField(name, perm, regex, length,isRequired, width);
             }
             if (addColumn) {
                 addColumn(name, perm);
@@ -130,16 +131,17 @@ public class ViewConfig {
         private String perm;
         private String regex;
         private String[] options;
+        private String width;
         private int length;
         private int expandRatio = -1;
         private boolean required;
 
-
-        FieldConfig(String perm, String regex, int length, boolean required) {
+        FieldConfig(String perm, String regex, int length, boolean required, String width) {
             this.perm = perm;
             this.regex = regex;
             this.length = length;
             this.required = required;
+            this.width = width;
         }
 
         FieldConfig(String perm, String[] options, int length, boolean required) {
@@ -188,5 +190,9 @@ public class ViewConfig {
         public boolean isRequired() { return required; }
 
         public void setRequired(boolean required) { this.required = required; }
+
+        public String getWidth() {
+            return width;
+        }
     }
 }

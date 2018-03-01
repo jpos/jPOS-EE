@@ -601,12 +601,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected Binder.BindingBuilder formatField(String id, HasValue field) {
         List<Validator> v = getValidators(id);
         Binder.BindingBuilder builder = getBinder().forField(field);
-        for (Validator val : v) {
+        for (Validator val : v)
             builder.withValidator(val);
-        }
-        if (isRequired(id)) {
+        if (isRequired(id))
             builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
-        }
+        
+        ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
+        String width = config != null ? config.getWidth() : null;
+        if (field instanceof AbstractComponent)
+            ((AbstractComponent)field).setWidth(width);
         builder = builder.withNullRepresentation("");
         return builder;
     }

@@ -85,8 +85,8 @@
     <property name="entityName" value="user"/>
     <attribute name="id" field="false" required="true"/>
     <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true"/>
-    <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="1" />
-    <attribute name="email" length="128" expand-ratio="1"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="1" width="40%"/>
+    <attribute name="email" length="128" expand-ratio="1" width="40%"/>
     <attribute name="active" expand-ratio="1"/>
     <attribute name="roles" column="false" perm="sysadmin"/>
   </view>

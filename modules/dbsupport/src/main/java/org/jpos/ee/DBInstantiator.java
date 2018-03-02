@@ -41,7 +41,4 @@ public class DBInstantiator extends QBeanSupport {
         sp.out(dbprefix + "connection.password", cfg.get("dbpass", "UNKNOWN"));
         new org.jpos.ee.DB(cm);
     }
-    public void startService() throws Exception {
-        super.startService();
-    }
 }

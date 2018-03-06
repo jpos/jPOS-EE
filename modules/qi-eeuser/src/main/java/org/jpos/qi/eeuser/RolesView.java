@@ -81,7 +81,9 @@ public class RolesView extends QIEntityView {
                 allPermissions.add(p);
             }
             f.setItems(allPermissions);
-            f.setItemCaptionGenerator((ItemCaptionGenerator<Permission>) item -> sysconfigs.get(allPermissions.indexOf(item)).getValue());
+            f.setItemCaptionGenerator((ItemCaptionGenerator<Permission>) item ->
+                    sysconfigs.get(allPermissions.indexOf(item)).getId().substring(5) + " : " + //remove "perm." prefix
+                            sysconfigs.get(allPermissions.indexOf(item)).getValue());
             Binder.BindingBuilder builder = getBinder().forField(f);
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);

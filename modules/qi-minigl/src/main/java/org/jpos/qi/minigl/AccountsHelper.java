@@ -203,18 +203,6 @@ public class AccountsHelper extends QIHelper {
         return dataProvider;
     }
 
-    public List<Journal> getJournals() {
-        try {
-            return (List<Journal>) DB.exec(db -> {
-                GLSession session = new GLSession(db);
-                return session.getAllJournals();
-            });
-        } catch (Exception e) {
-            getApp().getLog().error(e);
-            return null;
-        }
-    }
-
     public List<Layer> getLayers (Journal journal) {
         try {
             return (List<Layer>) DB.exec(db -> {

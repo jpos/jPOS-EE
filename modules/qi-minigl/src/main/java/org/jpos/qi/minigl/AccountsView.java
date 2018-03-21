@@ -329,17 +329,6 @@ public class AccountsView extends QIEntityView<Account> {
         }
     }
 
-    private ComboBox createJournalsCombo() {
-        ComboBox<Journal> box = new ComboBox(getApp().getMessage("journal").toUpperCase());
-        box.setItemCaptionGenerator(j -> j.getName());
-        List<Journal> journals = ((AccountsHelper)getHelper()).getJournals();
-        box.setItems(journals);
-        box.setStyleName(ValoTheme.COMBOBOX_SMALL);
-        box.setSelectedItem(journals.get(0));
-        box.setEmptySelectionAllowed(false);
-        return box;
-    }
-
     private short[] convertLayersToShortArray(Set<Layer> layers) {
         short[] shorts = new short[layers.size()];
         int index = 0;
@@ -362,7 +351,7 @@ public class AccountsView extends QIEntityView<Account> {
         Panel filterPanel = new Panel();
         filterPanel.addStyleName("v-panel-well");
 
-        journals = createJournalsCombo();
+        journals = new JournalsCombo(true);
 
         rangeLabelTitle = new Label();
         rangeLabelTitle.addStyleName(ValoTheme.LABEL_BOLD);

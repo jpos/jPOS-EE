@@ -21,6 +21,7 @@ package org.jpos.qi.minigl;
 import com.vaadin.data.Binder;
 import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.data.provider.GridSortOrder;
+import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
@@ -106,7 +107,8 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     private HorizontalLayout createFilters() {
         HorizontalLayout controls = new HorizontalLayout();
         controls.setWidth("100%");
-        journals = createJournalsCombo();
+        journals = new JournalsCombo(true);
+        journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
         controls.addComponents(journals, dateRangeComponent);
         controls.setComponentAlignment(dateRangeComponent, Alignment.MIDDLE_LEFT);
         controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
@@ -129,7 +131,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
                 return buildAndBindDateField(propertyId);
             }
             case ("journal"): {
-                ComboBox<Journal> field = createJournalsCombo();
+                ComboBox<Journal> field = new JournalsCombo(true);
                 field.setCaption(getCaptionFromId(propertyId));
                 formatField(propertyId, field).bind(propertyId);
                 return field;
@@ -153,22 +155,6 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
             }
         }
         return null;
-    }
-
-    /**
-     * Create and fill journals combo
-     * @return the combo
-     */
-    private ComboBox createJournalsCombo() {
-        ComboBox<Journal> box = new ComboBox(getApp().getMessage("journal").toUpperCase());
-        box.setItemCaptionGenerator(Journal::getName);
-        List<Journal> journals = ((TransactionsHelper)getHelper()).getJournals();
-        ((TransactionsHelper)getHelper()).setDefaultJournalId(journals.get(0).getId());
-        box.setItems(journals);
-        box.setStyleName(ValoTheme.COMBOBOX_SMALL);
-        box.setSelectedItem(journals.get(0));
-        box.setEmptySelectionAllowed(false);
-        return box;
     }
 
     /**

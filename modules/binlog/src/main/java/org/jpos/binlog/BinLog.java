@@ -20,10 +20,7 @@ package org.jpos.binlog;
 
 import org.jpos.iso.ISOUtil;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.channels.FileLock;
 import java.security.SecureRandom;
 import java.util.*;
@@ -172,8 +169,20 @@ public abstract class BinLog implements AutoCloseable {
      */
     private RandomAccessFile open (File dir, int fileNumber, String mode) throws IOException {
         File file = new File (dir, toFileName(fileNumber));
-        RandomAccessFile raf = new RandomAccessFile(file, mode);
-        verifyHeader(raf);
+        RandomAccessFile raf = null;
+        if (!file.canRead()) {
+            switch (mode) {
+                case "r":
+                    throw new EOFException(file + " not available");
+                case "rw":
+                    raf = new RandomAccessFile(file, mode);
+                    writeHeader(raf, fileNumber);
+                    break;
+            }
+        }
+        if (raf == null)
+            raf = new RandomAccessFile(file, mode);
+        verifyHeader(file, raf);
         return raf;
     }
 
@@ -244,17 +253,17 @@ public abstract class BinLog implements AutoCloseable {
                 .orElse(null);
     }
 
-    private void verifyHeader(RandomAccessFile raf) throws IOException {
+    private void verifyHeader(File file, RandomAccessFile raf) throws IOException {
         synchronized(mutex) {
             if (raf.length() < TAIL_OFFSET + Long.BYTES)
-                throw new IOException ("Invalid jPOS BinLog file " + fileNumber);
+                throw new IOException ("Invalid jPOS BinLog file " + fileNumber + " (" + file.toString() + ": " + raf.length() + "/" +  TAIL_OFFSET + Long.BYTES + ")");
             raf.seek(0);
             int magic = raf.readInt();
             if (!(FILE_MAGIC == magic))
                 throw new IOException ("Invalid jPOS BinLog version " + fileNumber);
             long pos = readTailOffset(raf);
             if (pos < TAIL_OFFSET + Long.BYTES)
-                throw new IOException ("Invalid jPOS BinLog header " + fileNumber);
+                throw new IOException ("Invalid jPOS BinLog header " + fileNumber + "/" + file.toString());
             long rafLength = raf.length();
             if (pos > rafLength)
                 throw new IOException ("Truncated jPOS BinLog file " + fileNumber + " (" + pos + "/" + rafLength + ")");

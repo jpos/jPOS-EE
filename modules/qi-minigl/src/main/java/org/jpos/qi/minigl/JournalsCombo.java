@@ -14,7 +14,7 @@ public class JournalsCombo extends ComboBox<Journal> {
      * Create and fill journals combo
      */
     public JournalsCombo (boolean required) {
-        super(QI.getQI().getMessage("journal").toUpperCase());
+        super(QI.getQI().getMessage("journal"));
         setItemCaptionGenerator(Journal::getName);
         List<Journal> journals = getJournals();
         if (journals != null)

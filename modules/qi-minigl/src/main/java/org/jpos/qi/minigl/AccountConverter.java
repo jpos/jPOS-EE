@@ -24,13 +24,29 @@ import com.vaadin.data.ValueContext;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.gl.Account;
+import org.jpos.gl.FinalAccount;
 import org.jpos.gl.GLSession;
+import org.jpos.qi.QI;
 
 
 /**
  * Created by alcarraz on 15/09/15.
  */
 public class AccountConverter implements Converter<String, Account> {
+
+    private boolean createNew;
+    private boolean required;
+
+    public AccountConverter() {
+        //By default we allow to leave the field empty but if there is a value we require that an account exists
+        this(false, false);
+    }
+
+    public AccountConverter (boolean required, boolean createNew) {
+        super();
+        this.required = required;
+        this.createNew = createNew;
+    }
 
     @Override
     public Result<Account> convertToModel(String value, ValueContext valueContext) {
@@ -39,7 +55,10 @@ public class AccountConverter implements Converter<String, Account> {
                 Account acct = (Account) DB.exec(db -> {
                     GLSession session = new GLSession(db);
                     Account res = session.getAccount("jcard",value);
-                    if (res == null) {
+                    if (res == null && createNew) {
+                        res = new FinalAccount();
+                        res.setCode(value);
+                    } else if (res == null) {
                         throw new BLException("Invalid Account Code");
                     }
                     return res;
@@ -49,7 +68,10 @@ public class AccountConverter implements Converter<String, Account> {
                 return Result.error(e.getMessage());
             }
         }
-        return Result.ok(null);
+        if (required)
+            return Result.error(QI.getQI().getMessage("errorMessage.req", QI.getQI().getMessage("account")));
+        else
+            return Result.ok(null);
     }
 
     @Override

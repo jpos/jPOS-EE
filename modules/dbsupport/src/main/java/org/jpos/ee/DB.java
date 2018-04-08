@@ -478,22 +478,25 @@ public class DB implements Closeable {
                 String propFile;
                 String dbPropertiesPrefix = "";
                 String metadataPrefix = "";
-                if (configModifier != null) {
+
+                String hibCfg = null;
+                if (cm.endsWith(".cfg.xml")) {
+                    hibCfg = cm;
+                } else if (configModifier != null) {
                     String[] ss = configModifier.split(":");
                     if (ss.length > 0)
                         dbPropertiesPrefix = ss[0] + ":";
                     if (ss.length > 1)
                         metadataPrefix = ss[1] + ":";
+                    hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
+                    if (getClass().getClassLoader().getResource(hibCfg) == null)
+                        hibCfg = null;
+
                 }
-
-                String hibCfg = System.getProperty("HIBERNATE_CFG","/" + dbPropertiesPrefix + "hibernate.cfg.xml");
-                if (getClass().getClassLoader().getResource(hibCfg) == null)
-                    hibCfg = null;
-
                 if (hibCfg == null)
                     hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
-                ssrb.configure(hibCfg);
 
+                ssrb.configure(hibCfg);
                 propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
                 Properties dbProps = loadProperties(propFile);
                 if (dbProps != null) {

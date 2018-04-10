@@ -24,6 +24,7 @@ import com.vaadin.data.ValueContext;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.gl.Account;
+import org.jpos.gl.CompositeAccount;
 import org.jpos.gl.FinalAccount;
 import org.jpos.gl.GLSession;
 import org.jpos.qi.QI;
@@ -35,6 +36,7 @@ import org.jpos.qi.QI;
 public class AccountConverter implements Converter<String, Account> {
 
     private boolean createNew;
+    private boolean createFinal;
     private boolean required;
 
     public AccountConverter() {
@@ -43,9 +45,15 @@ public class AccountConverter implements Converter<String, Account> {
     }
 
     public AccountConverter (boolean required, boolean createNew) {
+        //By default we allow to leave the field empty but if there is a value we require that an account exists
+        this(required, createNew, true);
+    }
+
+    public AccountConverter (boolean required, boolean createNew, boolean createFinal) {
         super();
         this.required = required;
         this.createNew = createNew;
+        this.createFinal = createFinal;
     }
 
     @Override
@@ -56,7 +64,10 @@ public class AccountConverter implements Converter<String, Account> {
                     GLSession session = new GLSession(db);
                     Account res = session.getAccount("jcard",value);
                     if (res == null && createNew) {
-                        res = new FinalAccount();
+                        if (createFinal)
+                            res = new FinalAccount();
+                        else
+                            res = new CompositeAccount();
                         res.setCode(value);
                     } else if (res == null) {
                         throw new BLException("Invalid Account Code");

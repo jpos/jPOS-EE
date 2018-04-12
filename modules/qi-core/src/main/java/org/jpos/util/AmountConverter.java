@@ -35,6 +35,7 @@ public class AmountConverter extends StringToBigDecimalConverter {
         NumberFormat amountFormat = NumberFormat.getInstance();
         amountFormat.setGroupingUsed(true);
         amountFormat.setMinimumFractionDigits(2);
+        amountFormat.setMaximumFractionDigits(7);
         if (amountFormat instanceof DecimalFormat) {
             ((DecimalFormat) amountFormat).setParseBigDecimal(true);
         }

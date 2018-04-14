@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Alejandro P. Revilla
@@ -63,8 +64,9 @@ public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
-    private static Semaphore sfSem = new Semaphore(1);
-    private static Semaphore mdSem = new Semaphore(1);
+
+    private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Semaphore> mdSems = Collections.synchronizedMap(new HashMap<>());
 
     private static String propFile;
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
@@ -75,7 +77,7 @@ public class DB implements Closeable {
      * Creates DB Object using default Hibernate instance
      */
     public DB() {
-        super();
+        this((String) null);
     }
 
     /**
@@ -101,6 +103,8 @@ public class DB implements Closeable {
     public DB (String configModifier) {
         super();
         this.configModifier = configModifier;
+        sfSems.putIfAbsent(configModifier, new Semaphore(1));
+        mdSems.putIfAbsent(configModifier, new Semaphore(1));
     }
 
     /**
@@ -128,15 +132,18 @@ public class DB implements Closeable {
      * @return Hibernate's session factory
      */
     public SessionFactory getSessionFactory() {
+        Semaphore sfSem = sfSems.get(configModifier);
+        SessionFactory sf;
         String cm  = configModifier != null ? configModifier : "";
-        sfSem.acquireUninterruptibly();
-        SessionFactory sf = sessionFactories.get(cm);
         try {
+            if (!sfSem.tryAcquire(60, TimeUnit.SECONDS)) {
+                throw new RuntimeException ("Unable to acquire lock");
+            }
+            sf = sessionFactories.get(cm);
             if (sf == null)
                 sessionFactories.put(cm, sf = newSessionFactory());
-        } catch (IOException | ConfigurationException | DocumentException e) {
+        } catch (IOException | ConfigurationException | DocumentException | InterruptedException e) {
             throw new RuntimeException("Could not configure session factory", e);
-
         } finally {
             sfSem.release();
         }
@@ -147,7 +154,7 @@ public class DB implements Closeable {
         sessionFactories.clear();
     }
 
-    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException {
+    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException, InterruptedException {
         return getMetadata().buildSessionFactory();
     }
 
@@ -259,7 +266,7 @@ public class DB implements Closeable {
             if(targetTypes.size()>0)
                 export.create(EnumSet.copyOf(targetTypes), getMetadata());
         }
-        catch (IOException | ConfigurationException e)
+        catch (IOException | ConfigurationException | InterruptedException e)
         {
             throw new HibernateException("Could not create schema", e);
         }
@@ -468,9 +475,12 @@ public class DB implements Closeable {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
     }
 
-    private Metadata getMetadata() throws IOException, ConfigurationException, DocumentException {
+    private Metadata getMetadata() throws IOException, ConfigurationException, DocumentException, InterruptedException {
+        Semaphore mdSem = mdSems.get(configModifier);
+        if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
+            throw new RuntimeException ("Unable to acquire lock");
+
         String cm  = configModifier != null ? configModifier : "";
-        mdSem.acquireUninterruptibly();
         Metadata md = metadatas.get(cm);
         try {
             if (md == null) {

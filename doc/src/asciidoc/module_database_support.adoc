@@ -34,6 +34,16 @@ For H2 Embedded database:
     </dependency>
 ----
 
+For MS-SQL database:
+[source,xml]
+----
+    <dependency>
+        <groupId>org.jpos.ee</groupId>
+        <artifactId>jposee-db-mssql</artifactId>
+        <version>${jposee.version}</version>
+    </dependency>
+----
+
 WARNING: Only one of these dependencies should defined in your project.
 
 === MySQL (R) Support
@@ -104,7 +114,6 @@ Upon running 'setup', your runtime directory will contain a file: cfg/db.propert
 hibernate.connection.username=sa                                         <1>
 hibernate.connection.password=password                                   <2>
 hibernate.hbm2ddl.auto=update                                            <3>
-#
 hibernate.connection.url=jdbc:postgresql://localhost:5432/jposee         <4>
 hibernate.connection.driver_class=org.postgresql.Driver
 hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
@@ -145,7 +154,6 @@ Upon running 'setup', your runtime directory will contain a file: cfg/db.propert
 hibernate.connection.username=sa                                         <1>
 hibernate.connection.password=                                           <2>
 hibernate.hbm2ddl.auto=update                                            <3>
-#
 hibernate.connection.url=jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000         <4>
 hibernate.connection.driver_class=org.h2.Driver
 hibernate.dialect=org.hibernate.dialect.H2Dialect
@@ -158,3 +166,4 @@ hibernate.dialect=org.hibernate.dialect.H2Dialect
 <4> Replace the host and database (jposee) to match your database settings.
 
 NOTE: You want to change those defaults
+

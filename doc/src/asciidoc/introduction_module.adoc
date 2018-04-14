@@ -18,7 +18,7 @@ Some immediate benefits are:
 * Your project just uses the modules as versioned dependencies. As a result your project's
   footprint is reduced, as now only need to track your code, not all the jPOS-EE dependencies in your version control system.
 * The barrier to entry is greatly reduced, since a new developer could setup a
-  jPOS-EE project 5 minutes.
+  jPOS-EE project in five minutes.
 * No need to track module dependencies.
 * Each module contains "sample" configurations used during project setup at runtime.
 

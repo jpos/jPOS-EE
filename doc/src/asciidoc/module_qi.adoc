@@ -24,6 +24,7 @@ Examples:
 
 `<locale>es-UY</locale>`
 
+
 ===== Messages
 Indicates the names of the `.properties` files available. It can contain more than one.
 
@@ -36,6 +37,7 @@ Example:
  `<messages>qi-sysconfig-messages</messages>`
 
 The naming convention for these files is: `packagename_locale.properties` 
+
 
 ===== Menubar
 
@@ -63,14 +65,14 @@ Represents a section of the sidebar, represented with the `<section>` element. I
 
 * `name`: String, required. 
 
+
 Example: `<section name="System"/>`
 
 ====== Option 
 
 Represents an option on the sidebar, represented with the `<option>` element. It has the following properties: 
 
-* `name` (string, required). 
-
+* `name` (string, required).  
 	The name that will be shown on the sidebar.
  
 * `action` (string, required). 
@@ -117,43 +119,23 @@ Some views require:
 Represented with the `<attribute>` element. 
 It has: 
 
-* `name` (string, required)
-	
-	The name of the attribute, it will be shown on the column, or field.  
+* `name` (string, required) The name of the attribute, it will be shown on the column, or field.  
 
-* `field` (boolean, optional)
+* `field` (boolean, optional) Boolean value indicating whether the attribute should be shown as a field, on the specific view. 
 
-	Boolean value indicating whether the attribute should be shown as a field, on the specific view. 
+* `column` (boolean, optional) Boolean value indicating whether the attribute should be shown as a columnn on the general view.
 
-* `column` (boolean, optional)
+* `read-only` (boolean, optional) Boolean value indicating if the attribute should be editable
 
-	Boolean value indicating whether the attribute should be shown as a columnn on the general view.
+* `required` (boolean, optional) Indicates if the field is required. Default is false. 
 
-* `read-only` (boolean, optional)
+* `regex` (string, optional) A string indicating the regex used for validating the field. 
 
-	Boolean value indicating if the attribute should be editable
+* `length` (numeric,optional) A number, indicating the max length for the field value. 
 
-* `required` (boolean, optional)
+* `expand-ratio` (numeric,optional) A number, indicating if the field's expandRatio to be used. (Check link:https://vaadin.com/docs/-/part/framework/layout/layout-settings.html#layout.settings.size.expanding(Vaadin docs)[Vaadin Docs] for more info).
 
-	Indicates if the field is required. Default is false. 
-
-* `regex` (string, optional)
-
-	A string indicating the regex used for validating the field. 
-
-* `length` (numeric,optional) 
-
-	A number, indicating the max length for the field value. 
-
-* `expand-ratio` (numeric,optional)
-
-	A number, indicating if the field's expandRatio to be used. (Check https://vaadin.com/docs/-/part/framework/layout/layout-settings.html#layout.settings.size.expanding(Vaadin docs) for more info).
-
-* `perm` (string, optional)
-
-	The permission needed to access the field. 
-
-	
+* `perm` (string, optional) The permission needed to access the field. 
 
 Example: 
 

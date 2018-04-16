@@ -1,0 +1,174 @@
+Several jPOS-EE components rely on the `dbsupport` module to configure an access
+the underlying database (or databases) using Hibernate.
+
+One of the most used class is `org.jpos.ee.DB` and its usage is straightforward:
+
+[source,java]
+-------------
+    DB db = new DB();
+    db.open();
+    ...
+    ...
+    db.close();
+-------------
+
+If you want to update the database, your code may look like this:
+
+[source,java]
+-------------
+    DB db = new DB();
+    db.open();
+    db.beginTransaction();
+    ...
+    ...
+    db.commit();
+    db.close();
+-------------
+
+The DB object implements the `Closeable`, so you can use the try-with-resources construct like this:
+
+[source,java]
+-------------
+    try (DB db = new DB()) {
+        db.open();
+        db.beginTransaction();
+        ...
+        ...
+        db.commit();
+    }                                <1>
+-------------
+<1> No need to call `db.close()` as `DB implements Closeable`.
+
+Also, the `DB` object provides a couple of functional alternatives to the code above:
+
+[source,java]
+-------------
+DB.exec ((db) -> {
+    return db.session().get(YourObject.class, yourId);
+});
+-------------
+
+or `withTransaction` that encloses your function between a `beginTransaction/commit` block.
+
+[source,java]
+-------------
+DB.execWithTransaction((db) -> {
+    db.session().save(obj);
+    return obj;
+});
+-------------
+
+[NOTE]
+======
+Very often we find ourselves answering the question WHY (on earth) we have this
+`DB` object instead of just using Hibernate session factory and sessions
+directly. The answer comes from the history of jPOS-EE, which initially used an
+object-oriented database (ObjectStore). ObjectStore had a `DB` object that one
+had to instantiate to access the database, and we were used to it. Interesting
+enough, ObjectStore helped model JDO, which in term influenced the JPA we have
+today.
+
+Once we moved away from the object-oriented database to Hibernate, we found it
+useful to keep that DB object around used by our code, slightly isolating us
+from Hibernate and providing some helper functionality, and that's the only
+reason there's a DB object in jPOS-EE.
+======
+
+=== DB Support configuration
+
+Hibernate applications are usually configured by means of a single `hibernate.cfg.xml` file
+that looks like this:
+
+[source,xml]
+------------
+
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        ...
+        ...
+        <mapping class="org.jpos.ee.SysConfig"/>
+        <mapping resource="org/jpos/ee/User.hbm.xml" />
+        <mapping resource="org/jpos/ee/Consumer.hbm.xml" />
+        <mapping resource="org/jpos/ee/Revision.hbm.xml" />
+        <mapping resource="org/jpos/ee/Role.hbm.xml" />
+        <mapping class="com.your.company.entity.YourEntity" />
+        ...
+        ...
+    </session-factory>
+</hibernate-configuration>
+------------
+
+Besides standard configuration (c3p0, jdbc, transaction isolation), the `hibernate.cfg.xml` file has
+a collection of mappings for your application's entities, but jPOS-EE applications are built _à la carte_
+picking modules from the jPOS-EE modules offeering, as well as customer specific modules.
+
+So if an application wants to use jPOS-EE DB support using say Postgresql backend, and wants to use the
+`sysconfig` module, and `eeuser` module, you would add the following dependencies:
+
+[source,groovy]
+--------
+   compile "org.jpos.ee:jposee-db-postgresql:${jposeeVersion}" <1>
+   compile "org.jpos.ee:jposee-sysconfig:${jposeeVersion}"
+   compile "org.jpos.ee:jposee-eeuser:${jposeeVersion}"
+--------
+<1> the `db-postgresql` depends on `dbsupport` so no need to include it explicitly
+
+But upon adding these modules as a dependency, the developer would have to manually add
+these mappings to the `hibernate.cfg.xml`.
+
+In addition, as part of the edit work, you need to specify the Hibernate dialect to be used
+(i.e. `org.hibernate.dialect.MySQL5InnoDBDialect` for MySQL, or `PostgreSQLDialect` for Posgresql),
+JDBC URL, etc.
+
+jPOS-EE uses a simple convention to dynamically create the Hibernate configuration file based on the
+following rules:
+
+* It uses an initial 
+  link:https://github.com/jpos/jPOS-EE/blob/master/modules/dbsupport/src/main/resources/hibernate.cfg.xml[hibernate.cfg.xml]
+  template available in the application's CLASSPATH as starting point.
+
+* It scans the classpath looking for XML configuration files in each dependency jar inside the
+  `META-INF/org/jpos/ee/modules`, for example, the `eeuser` module has the file:
+
+[source,xml]
+------------
+<module name="eeuser">
+    <mappings>
+        <mapping resource="org/jpos/ee/User.hbm.xml" />
+        <mapping resource="org/jpos/ee/Consumer.hbm.xml" />
+        <mapping resource="org/jpos/ee/Revision.hbm.xml" />
+        <mapping resource="org/jpos/ee/Role.hbm.xml" />
+    </mappings>
+</module>
+------------
+
+So those mappings become part of the main Hibernate configuration. 
+See link:https://github.com/jpos/jPOS-EE/blob/master/modules/eeuser/src/main/resources/META-INF/org/jpos/ee/modules/eeuser.xml[eeuser.xml]
+
+* Finally, it searchs for a `cfg/db.properties` file in the current working directory for additional configuration and overrides.
+
+Here is a sample `db.properties`:
+
+[source]
+--------
+ibernate.connection.username=sa
+hibernate.connection.password=password
+hibernate.hbm2ddl.auto=validate
+hibernate.connection.url=jdbc:postgresql://localhost:5432/jposee
+hibernate.connection.driver_class=org.postgresql.Driver
+hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+--------
+
+[TIP]
+=====
+In addition to the XML module mapping file available in each module's classpath, the `db-*` set of modules
+(such as `db-mysql`, `db-postgresql`, etc.) has a sample `db.properties` file included in its
+`META-INF/q2/installs/cfg` directory, so a call to `gradle installResources` or the `install` CLI command
+(that you can invoke by calling `q2 --cli`) will export it to the operating system, where you can easily
+edit it.
+=====
+

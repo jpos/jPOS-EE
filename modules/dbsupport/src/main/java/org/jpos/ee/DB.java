@@ -67,6 +67,7 @@ public class DB implements Closeable {
 
     private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Semaphore> mdSems = Collections.synchronizedMap(new HashMap<>());
+    private static Semaphore newSessionSem = new Semaphore(1);
 
     private static String propFile;
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
@@ -155,7 +156,13 @@ public class DB implements Closeable {
     }
 
     private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException, InterruptedException {
-        return getMetadata().buildSessionFactory();
+        Metadata md = getMetadata();
+        try {
+            newSessionSem.acquireUninterruptibly();
+            return md.buildSessionFactory();
+        } finally {
+            newSessionSem.release();
+        }
     }
 
     private void configureProperties(Configuration cfg) throws IOException

@@ -1,4 +1,4 @@
-Several jPOS-EE components rely on the `dbsupport` module to configure an access
+Several jPOS-EE components rely on the `dbsupport` module to configure and access
 the underlying database (or databases) using Hibernate.
 
 One of the most used class is `org.jpos.ee.DB` and its usage is straightforward:
@@ -25,7 +25,7 @@ If you want to update the database, your code may look like this:
     db.close();
 -------------
 
-The DB object implements the `Closeable`, so you can use the try-with-resources construct like this:
+The DB object implements the `Closeable` interface, so you can use the try-with-resources construct like this:
 
 [source,java]
 -------------
@@ -34,7 +34,7 @@ The DB object implements the `Closeable`, so you can use the try-with-resources 
         db.beginTransaction();
         ...
         ...
-        db.commit();                 
+        db.commit();
     }                                <1>
 -------------
 <1> No need to call `db.close()` as `DB implements Closeable`.
@@ -48,7 +48,7 @@ DB.exec ((db) -> {
 });
 -------------
 
-or `withTransaction` that encloses your function between a `beginTransaction/commit` block.
+or `execWithTransaction` that encloses your function within a `beginTransaction/commit` block.
 
 [source,java]
 -------------

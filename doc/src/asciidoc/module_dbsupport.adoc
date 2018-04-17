@@ -220,7 +220,7 @@ Finally, if this black magic feels confusing, you can always call
 
 [source,java]
 -------------
-   DB DB = new DB("path/to/your/hibernate.cfg.xml");
+   DB db = new DB("path/to/your/hibernate.cfg.xml");
 -------------
 
 [NOTE]

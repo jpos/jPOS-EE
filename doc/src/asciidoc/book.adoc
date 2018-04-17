@@ -32,6 +32,7 @@ include::module_qi.adoc[]
 
 == Database Support
 
+include::module_dbsupport.adoc[]
 include::module_database_support.adoc[]
 
 == Binary Log

@@ -34,7 +34,7 @@ The DB object implements the `Closeable`, so you can use the try-with-resources 
         db.beginTransaction();
         ...
         ...
-        db.commit();
+        db.commit();                 
     }                                <1>
 -------------
 <1> No need to call `db.close()` as `DB implements Closeable`.
@@ -155,7 +155,7 @@ Here is a sample `db.properties`:
 
 [source]
 --------
-ibernate.connection.username=sa
+hibernate.connection.username=sa
 hibernate.connection.password=password
 hibernate.hbm2ddl.auto=validate
 hibernate.connection.url=jdbc:postgresql://localhost:5432/jposee
@@ -171,4 +171,63 @@ In addition to the XML module mapping file available in each module's classpath,
 (that you can invoke by calling `q2 --cli`) will export it to the operating system, where you can easily
 edit it.
 =====
+
+So to recap, the following diagram shows how a dynamic `hibernate.cfg.xml` configuration is created when
+we call `DB db = new DB()` with no arguments:
+
+image:images/DB_configuration.png[width="75%",alt="DB Configuration"]
+
+remember, the `mapping` files are taken from the special `META-INF/org/jpos/ee/modules/*.xml`.
+
+[TIP]
+=====
+This configuration is suitable for situations where you have to connect to a single JDBC endpoint
+and access and map a unique set of entities. If that's not your case, read below for additional
+options.
+=====
+
+==== Accessing a secondary/slave database
+
+If you want to access an alternate database, you can use a modifier when instantiating your DB object,
+for example:
+
+[source,java]
+-------------
+   DB db = new DB ("slave");               <1>
+   db.open();
+   db.session().setDefaultReadOnly(true);  <2>
+
+   ...
+   ...
+-------------
+<1> We call this constructor parameter a 'config modifier'
+<2> If this is a real `slave`, you may want to set the underlying Hibernate session to read-only mode.
+
+In this case, jPOS-EE will operate in a very similar way as the one described in the previous section, 
+but instead of reading properties from the `cfg/db.properties` file, it would read them from 
+`cfg/slave:db.properties`.
+
+The previous example works for situations where the set of entities mapped to
+tables in your secondary database are the same as the primary database. If that's not the case,
+in addition to read an alternate JDBC configuration from your `slave:db.properties` you want to map
+a different set of entities.
+
+if your config modifier has actually two modifiers, separated by a colon (i.e. `slave:legacy`),
+then we'd read JDBC and optional properties from the `cfg/slave:db.properties`, but when we scan
+for mapping files, we use the following pattern `META-INF/org/jpos/ee/modules/legacy:*.xml`.
+
+Finally, if this black magic feels confusing, you can always call
+
+[source,java]
+-------------
+   DB DB = new DB("path/to/your/hibernate.cfg.xml");
+-------------
+
+[NOTE]
+======
+The `DB` class uses an internal cache of sessions factories, so the first time
+you call it with no args or a given modifier, it will create a sessionFactory
+(an expensive operation that requires access to the database), but after that
+slow first time, creating new DB objects is a very cheap operation.
+======
 

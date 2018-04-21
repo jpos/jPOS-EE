@@ -36,7 +36,7 @@
         index="timestamp"/>
     </property>
     <property name="postDate"  type="timestamp">
-     <column name="postDate" sql-type="timestamp" not-null="false"
+     <column name="postDate" sql-type="datetime" not-null="false"
         index="postDate"/>
     </property>
 

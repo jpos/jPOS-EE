@@ -32,7 +32,7 @@
       <column name="tags" sql-type="varchar(255)" not-null="false" />
     </property>
     <property name="timestamp" type="timestamp">
-     <column name="timestamp" sql-type="timestamp" not-null="true" 
+     <column name="timestamp" not-null="true"
         index="timestamp"/>
     </property>
     <property name="postDate"  type="timestamp">

@@ -30,11 +30,11 @@ Indicates the names of the `.properties` files available. It can contain more th
 
 Example: 
  
- `<messages>qi-core-messages</messages>`
-
- `<messages>qi-eeuser-messages</messages>`
- 
- `<messages>qi-sysconfig-messages</messages>`
+	<messages>qi-core-messages</messages>
+	
+ 	<messages>qi-eeuser-messages</messages>
+	
+ 	<messages>qi-sysconfig-messages</messages>
 
 The naming convention for these files is: `packagename_locale.properties` 
 
@@ -72,16 +72,11 @@ Example: `<section name="System"/>`
 
 Represents an option on the sidebar, represented with the `<option>` element. It has the following properties: 
 
-* `name` (string, required).  
-	The name that will be shown on the sidebar.
+* `name` (string, required).  The name that will be shown on the sidebar.
  
-* `action` (string, required). 
-	
-	What will be executed on click. 
+* `action` (string, required). What will be executed on click. 
 
-* `perm` (string, optional). 
-	
-	The permission required to execute the action.  
+* `perm` (string, optional). The permission required to execute the action.  
 
 Example: 
 
@@ -93,10 +88,7 @@ Example:
 
 Represents a view, it has the following properties: 
 
-* `route` (string, required). 
-	
-	The `route` of the view to show. 
-	
+* `route` (string, required). The `route` of the view to show. 
 * `class` 
 * `perm` ('*' means any perm).
 * `sidebar` optional sidebar id. Indicates to which sidebar the view corresponds.
@@ -112,7 +104,9 @@ Views can **can/will** contain different <<Properties,properties>> & <<Attribute
 Represented with the `<property>` element. It has a `name` and a `value`.
 Some views require:    
 
-* Entity name (string, required for entities). The name of the entity. For example, for `users`, it is `user`.  It must be included like this: `<property name="entityName" value="aName"/>`
+* `entityName` (string, required for entities). The name of the entity. For example, for `users`, it is `user`.  It must be included like this: `<property name="entityName" value="aName"/>`
+
+* `name` (string, required when extending a class). The name for the view. When extending a class (Ex: when extending from SysConfig), it is a required field. 	It must be included like this: `<property name="name" value="aName"/>`
 
 ====== Attribute 
 

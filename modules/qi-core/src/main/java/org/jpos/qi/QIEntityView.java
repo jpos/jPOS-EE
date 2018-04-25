@@ -810,6 +810,10 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setConfiguration (Configuration cfg) {
         this.cfg = cfg;
+        String name = cfg.get("name");
+        if (name != null && QI.getQI().getView(name)!= null)  {
+            this.setViewConfig(QI.getQI().getView(name));
+        }
     }
 
     public Configuration getConfiguration() {

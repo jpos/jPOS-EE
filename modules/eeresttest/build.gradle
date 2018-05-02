@@ -10,7 +10,7 @@ dependencies {
     providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
     providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
     compile libraries.commons_lang
-    testCompile "com.jayway.restassured:rest-assured:${restAssuredVersion}"
+    testCompile libraries.restAssured
     providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
 }
 

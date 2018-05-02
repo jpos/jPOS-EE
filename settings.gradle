@@ -35,7 +35,8 @@ include ':modules:core',
         ':modules:qi-minigl',
         ':modules:binlog',
         ':modules:binlog-quartz',
-        ':modules:cryptoservice'
+        ':modules:cryptoservice',
+        ':modules:qrest'
 
 rootProject.name = 'jposee'
 

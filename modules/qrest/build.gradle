@@ -1,0 +1,19 @@
+description = 'jPOS-EE :: QRest'
+
+dependencies {
+    compile libraries.jpos
+    compile libraries.jacksonDatabind
+    compile libraries.nettyHandler
+    compile libraries.nettyCodecHttp
+    testCompile libraries.junit
+    testCompile libraries.restAssured
+
+}
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+
+test {
+    dependsOn('installApp')
+    workingDir = "build/install/qrest"
+}
+

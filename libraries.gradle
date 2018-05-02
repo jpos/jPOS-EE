@@ -12,8 +12,10 @@ ext {
     jsonSchemaVersion = '2.2.6'
     jacksonVersion = '2.9.4'
     groovyVersion = '2.4.12'
-    restAssuredVersion = '2.4.1'
+    restAssuredVersion = '2.9.0'
     vaadinVersion = '8.3.3'
+    nettyVersion = '4.1.24.Final'
+
     libraries = [
             //jUnit (Tests)
             junit: 'junit:junit:4.12',
@@ -93,7 +95,14 @@ ext {
             groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}",
 
             // Jackson
-            jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+            jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
+
+            // Netty
+            nettyHandler: "io.netty:netty-handler:${nettyVersion}",
+            nettyCodecHttp: "io.netty:netty-codec-http:${nettyVersion}",
+
+            // RestAssured
+            restAssured: "com.jayway.restassured:rest-assured:2.9.0"
     ]
 
     jettyLibs = [

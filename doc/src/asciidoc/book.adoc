@@ -38,6 +38,9 @@ include::module_database_support.adoc[]
 == Binary Log
 include::module_binlog.adoc[]
 
+== Rest Support
+include::module_qrest.adoc[]
+
 == Tools
 
 include::module_freemarker_decorator.adoc[]

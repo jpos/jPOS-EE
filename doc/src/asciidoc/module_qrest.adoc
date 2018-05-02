@@ -1,0 +1,244 @@
+=== QRest
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | Lightweight REST server
+| *When*         | Implemented during 2.2.5
+| *Who*          | The jPOS Software team.
+| *Where*        | Directory modules/qrest
+| *Why*          | Used by local Q2 nodes as audit trail or to SAF its transactions
+| *Status*       | Experimental
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-qrest</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+Traditionally, jPOS based REST applications use the Jetty module, Jersey, etc. as described
+in the link:http://jpos.org/tutorials[jPOS Tutorials]. But we have situations where we just
+need to provide a little `ok` response to say a `/health` endpoint on each Q2 running
+(for monitoring purposes).
+
+Configuring Jetty/Jersey and deploying a `war` seems like overkill for these use cases so
+we've created a little **QRest** module that can be configured like this:
+
+[source,xml]
+----------------------------------------------------------------------------------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+    <property name='port' value='8081' />                                            <1>
+    <property name='queue' value='TXNMGR' />                                         <2>
+</qrest>
+----------------------------------------------------------------------------------------
+<1> Listening port
+<2> Transaction manager queue name
+
+Once the server receives an HTTP request, it creates a `org.jpos.transaction.Context`, places a reference to the http request
+(under the Constant name `REQUEST` (defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`
+constant (so that a `SendResponse` participant can reply) and send it off to the TransactionManager for processing.
+
+The TransactionManager is configured like this:
+
+
+[source,xml]
+----------------------------------------------------------------------------------------
+<txnmgr class="org.jpos.transaction.TransactionManager" logger="Q2">
+  <property name="queue" value="TXNMGR"/>
+  <property name="sessions" value="2"/>
+  <property name="max-sessions" value="128"/>
+  <property name="debug" value="true"/>
+
+  <participant class="org.jpos.rest.participant.Router">
+    <route path="/jpos/myroute/{mypathparam}**" method="GET" name="mygroup1"/>
+    <route path="/jpos/myroute/{mypathparam}**" method="POST" name="mygroup2"/>
+    <route path="/jpos/fixedroute" method="POST" name="..."/>
+    <route path="/q2**" method="GET" name="q2"/>                                    <1>
+  </participant>
+
+  <group name="q2">
+    <participant class="org.jpos.qrest.participant.Q2Info" />
+  </group>
+
+  ..
+  ..
+  <group name="group1">
+    ..
+    ..
+  </group>
+  <group name="group2">
+    ..
+    ..
+  </group>
+  <participant class="org.jpos.rest.SendResponse" logger="Q2"/>
+</txnmgr>
+----------------------------------------------------------------------------------------
+<1> This route is special, see below, route processing gets delegated to the Q2Info class
+
+[TIP]
+=====
+This old link:http://jpos.org/blog/2013/10/eating-our-own-dogfood/[Blog Post] explained how
+the TransactionManager could be used to implement REST based APIs. The QRest service can
+be used to simplify a lot of Jetty/Server/Jersey boilerplate.
+=====
+
+The `Router` participant is actually a `GroupSelector` (from the TransactionManager's standpoint)
+and takes care of parsing and placing in the Context both _Path Parameters_ as well as _Query Parameters_
+(under the `PATHPARAMS` and `QUERYPARAMS` contants).
+
+So if we define a route like this:
+
+[source,xml]
+----------------------------------------------------------------------------------------
+  <route path="/jpos/muxes/{muxname}" method="GET" name="muxes"/>
+----------------------------------------------------------------------------------------
+
+and we fire `curl localhost:8081/jpos/muxes/ABC`, we'll see that the Context will have a:
+
+[source,xml]
+----------------------------------------------------------------------------------------
+ o.j.r.Constants.PATHPARAMS: {muxname=ABC}
+----------------------------------------------------------------------------------------
+
+If we add query parameters to the call, i.e.: `curl "localhost:8081/jpos/muxes/XYZ?a=1&b=2&c=3"`
+
+the query parameters will be available under the `QUERYPARAMS` constant.
+
+[source,xml]
+----------------------------------------------------------------------------------------
+      o.j.r.Constants.QUERYPARAMS: {a=[1], b=[2], c=[3]}
+      o.j.r.Constants.PATHPARAMS: {muxname=XYZ}
+----------------------------------------------------------------------------------------
+
+In addition to having the Router participant parse the route, one can define wildcard
+handlers for some routes. This is the case of the `Q2Info` participant that -- although work in progress --
+intends to provide useful information about a running Q2 system.
+
+So anything that starts with `/q2` (or whatever one choose to set in the XML configuration) will be handled
+by Q2Info.
+
+Q2Info itself has its own routes, but those are hardcoded. So if we call `/q2/version`, we get output like this:
+
+
+[source,json]
+----------------------------------------------------------------------------------------
+{
+  "version" : "jPOS 2.1.2-SNAPSHOT master/0a14e5c (2018-04-30 22:34:16 UTC)"
+}
+----------------------------------------------------------------------------------------
+
+`/q2/uptime` would give us:
+
+
+[source,json]
+----------------------------------------------------------------------------------------
+{
+  "uptime" : 601483
+}
+----------------------------------------------------------------------------------------
+
+`/q2/diskspace`:
+
+[source,json]
+----------------------------------------------------------------------------------------
+{
+  "diskspace" : {
+    "free" : 616271151104,
+    "usable" : 616009007104
+  }
+}
+----------------------------------------------------------------------------------------
+
+Q2Info also provides now information about the MUXES, and we plan to expand it to provide
+information about other components (servers, transaction manager, space).
+
+i.e.: `curl localhost:8081/q2/muxes`
+
+
+[source,json]
+----------------------------------------------------------------------------------------
+  "muxes" : [ {
+    "name" : "clientsimulator-mux",
+    "type" : "QMUX",
+    "connected" : true,
+    "rx" : 21,
+    "tx" : 21,
+    "txExpired" : 0,
+    "txPending" : 0,
+    "rxExpired" : 0,
+    "rxPending" : 0,
+    "rxUnhandled" : 0,
+    "rxForwarded" : 0,
+    "metrics" : {
+      "all" : {
+        "autoResize" : false,
+        "highestTrackableValue" : 60000,
+        "lowestDiscernibleValue" : 1,
+        "numberOfSignificantValueDigits" : 2,
+        "tag" : null,
+        "maxValue" : 18,
+        "minNonZeroValue" : 3,
+        "totalCount" : 21,
+        "estimatedFootprintInBytes" : 10752,
+        "startTimeStamp" : 9223372036854775807,
+        "endTimeStamp" : 0,
+        "maxValueAsDouble" : 18.0,
+        "mean" : 6.190476190476191,
+        "stdDeviation" : 3.141413809994408,
+        "neededByteBufferCapacity" : 11560,
+        "minValue" : 3
+      },
+      "ok" : {
+        "autoResize" : false,
+        "highestTrackableValue" : 60000,
+        "lowestDiscernibleValue" : 1,
+        "numberOfSignificantValueDigits" : 2,
+        "tag" : null,
+        "maxValue" : 18,
+        "minNonZeroValue" : 3,
+        "totalCount" : 21,
+        "estimatedFootprintInBytes" : 10752,
+        "startTimeStamp" : 9223372036854775807,
+        "endTimeStamp" : 0,
+        "maxValueAsDouble" : 18.0,
+        "mean" : 6.190476190476191,
+        "stdDeviation" : 3.141413809994408,
+        "neededByteBufferCapacity" : 11560,
+        "minValue" : 3
+      }
+    },
+    "last" : "2018-05-02 17:56:48",
+    "idle" : 1306237
+  } ]
+}
+----------------------------------------------------------------------------------------
+
+If we use the mux name as part of the URI, we get information for a particular MUX, i.e.:
+`curl localhost:8081/q2/muxes/clientsimulator-mux`
+
+
+Here is a copy of the internal Q2Info route configuration:
+
+
+[source,java]
+----------------------------------------------------------------------------------------
+    private void initInternalRoutes() {
+        routes.add(new Route<>("/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
+        routes.add(new Route<>("/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
+        routes.add(new Route<>("/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
+        routes.add(new Route<>("/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
+        routes.add(new Route<>("/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
+        routes.add(new Route<>("/q2/diskspace**", "GET", (t,s) -> diskspace()));
+        routes.add(new Route<>("/q2/muxes/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
+        routes.add(new Route<>("/q2/muxes**", "GET", (t,s) -> muxes()));
+    }
+----------------------------------------------------------------------------------------
+
+If we just call `/q2`, it will output them all.
+
+

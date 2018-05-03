@@ -40,7 +40,7 @@ we've created a little **QRest** module that can be configured like this:
 <2> Transaction manager queue name
 
 Once the server receives an HTTP request, it creates a `org.jpos.transaction.Context`, places a reference to the http request
-(under the Constant name `REQUEST` (defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`
+(under the Constant name `REQUEST` defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`
 constant (so that a `SendResponse` participant can reply) and send it off to the TransactionManager for processing.
 
 The TransactionManager is configured like this:

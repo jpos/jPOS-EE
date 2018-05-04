@@ -13,7 +13,7 @@ ext {
     jacksonVersion = '2.9.4'
     groovyVersion = '2.4.12'
     restAssuredVersion = '2.9.0'
-    vaadinVersion = '8.3.3'
+    vaadinVersion = '8.4.1'
     nettyVersion = '4.1.24.Final'
 
     libraries = [

@@ -93,7 +93,7 @@ public class Q2Info implements TransactionParticipant {
           .collect(Collectors.toList());
 
         Map<String,Object> wrapper = new HashMap<>();
-        wrapper.put("muxes", muxes);
+        wrapper.put("mux", muxes);
         return wrapper;
     }
 
@@ -127,6 +127,33 @@ public class Q2Info implements TransactionParticipant {
         }
     }
 
+    private Map<String, Object> txnmgr () {
+        List<Object> txnmgr =  NameRegistrar.getAsMap().entrySet()
+                .stream().filter(e -> e.getValue() instanceof TransactionManager)
+                .map(e -> txnmgrInfo((TransactionManager) e.getValue()))
+                .collect(Collectors.toList());
+
+        Map<String,Object> wrapper = new HashMap<>();
+        wrapper.put("txnmgr", txnmgr);
+        return wrapper;
+    }
+
+    private Map<String,Object> txnmgrInfo(TransactionManager txnmgr) {
+        Map<String,Object> m = new LinkedHashMap<>();
+        m.put ("name", txnmgr.getName());
+        m.put ("type", txnmgr.getClass().getSimpleName());
+        m.put ("tail", txnmgr.getTail());
+        m.put ("head", txnmgr.getHead());
+        m.put ("inTransit", txnmgr.getInTransit());
+        m.put ("TPSAvg", txnmgr.getTPSAvg());
+        m.put ("TPSPeak", txnmgr.getTPSPeak());
+        m.put ("TPSPeakWhen", txnmgr.getTPSPeakWhen());
+        m.put ("TPSElapsed", txnmgr.getTPSElapsed());
+        m.put ("metrics", txnmgr.getMetrics().metrics());
+        return m;
+    }
+
+
     private void initInternalRoutes() {
         routes.add(new Route<>("/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
         routes.add(new Route<>("/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
@@ -134,8 +161,9 @@ public class Q2Info implements TransactionParticipant {
         routes.add(new Route<>("/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
         routes.add(new Route<>("/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
         routes.add(new Route<>("/q2/diskspace**", "GET", (t,s) -> diskspace()));
-        routes.add(new Route<>("/q2/muxes/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
-        routes.add(new Route<>("/q2/muxes**", "GET", (t,s) -> muxes()));
+        routes.add(new Route<>("/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
+        routes.add(new Route<>("/q2/mux**", "GET", (t,s) -> muxes()));
+        routes.add(new Route<>("/q2/txnmgr**", "GET", (t,s) -> txnmgr()));
     }
 
     private  Map<String, Object> newMap () {

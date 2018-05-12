@@ -117,10 +117,19 @@ simple as a `UUID` or any nonce, only known to the caller. That `jobId` can then
 
 There's also a no-args `unloadAll()` that unloads all keys, and should be used with care.
 
+For some use cases (i.e. long running crypto-service based micro-service), it is possible to "UNLOCK" the system by calling
+
+[source,java]
+-------------
+    public boolean unlock (char[] password);
+-------------
+
+For completeness, there's also a `lock()` method.
+
 [NOTE]
 ======
 In order to simplify development and testing, and eventually to troubleshoot problems, we've
-also created a couple of CLI commands: `aesencrypt` and `aesdecrypt`.
+also created a couple of CLI commands: `encrypt`, `decrypt`, `lock` and `unlock` in the `crypto` CLI subsystem.
 ======
 
 [TIP]
@@ -131,4 +140,27 @@ directory.
 
 If you `ssh` to a running Q2 to reach the CLI, then you can ignore this tip.
 =====
+
+==== Using GnuPG to generate keys
+
+* Generate key
+
+[source]
+--------
+gpg --full-generate-key
+--------
+
+* Export custodian public keys into keyring.pub
+
+[source]
+--------
+gpg --armor --export xxx@domain.com yyy@domain.com > cfg/keyring.pub
+--------
+
+* Export custodian private keys into keyring.priv
+[source]
+--------
+gpg --armor --export-secret-keys xxx@domain.com yyy@domain.com > cfg/keyring.priv
+--------
+
 

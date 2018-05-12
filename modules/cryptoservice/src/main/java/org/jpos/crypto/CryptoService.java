@@ -75,6 +75,7 @@ public class CryptoService extends QBeanSupport implements Runnable {
     private long waitTimeout;
     private Random rnd = new SecureRandom();
     private long duration;
+    private char[] unlock;
 
     /**
      * Encrypts data using the current key
@@ -150,7 +151,7 @@ public class CryptoService extends QBeanSupport implements Runnable {
             byte[] key = PGPHelper.decrypt(
               v.getBytes(),
               privKeyRing,
-              password);
+              password != null ? password : unlock);
             keys.put ((jobId == null ? "" : jobId) + keyId,
               new SecretKeySpec(key, 0, key.length, "AES"));
         }
@@ -164,6 +165,33 @@ public class CryptoService extends QBeanSupport implements Runnable {
      */
     public boolean unloadKey (String jobId, String keyId) {
         return keys.remove(jobId == null ? "" : jobId + keyId + keyId) != null;
+    }
+
+    /**
+     * Unlock the CryptoService
+     */
+    public boolean unlock (char[] password) {
+        try {
+            String job = UUID.randomUUID().toString();
+            loadKey(job, id.toString(), password);
+            unloadAll(job);
+            this.unlock = password;
+            return true;
+        } catch (Exception e) {
+            getLog().warn(e);
+            return false;
+        }
+    }
+
+    /**
+     * Lock the CryptoService
+     */
+    public void lock () {
+        this.unlock = null;
+    }
+
+    public boolean isUnlocked() {
+        return unlock != null;
     }
 
     /**

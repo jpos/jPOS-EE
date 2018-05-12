@@ -16,39 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2.cli;
+package org.jpos.q2.cli.crypto;
 
 import org.jpos.crypto.CryptoService;
-import org.jpos.crypto.SecureData;
-import org.jpos.iso.ISOUtil;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.util.NameRegistrar;
 
-import javax.crypto.spec.IvParameterSpec;
-import java.nio.ByteBuffer;
-
-public class AESENCRYPT implements CLICommand {
-    CryptoService cs;
+@SuppressWarnings("unused")
+public class LOCK implements CLICommand {
+    private CryptoService cs;
 
     @Override
     public void exec(CLIContext cli, String[] args) throws Exception {
-        cs = (CryptoService) NameRegistrar.getIfExists("crypto-service");
-        if (args.length != 2) {
+        cs = NameRegistrar.getIfExists("crypto-service");
+        if (args.length != 1) {
             usage(cli);
             if (cs == null)
                 cli.println ("'crypto-service' not registered");
             return;
         }
-        encrypt(cli, args[1]);
+        try {
+            lock(cli);
+        } catch (Exception e) {
+            cli.println (e.getMessage());
+        }
     }
 
     private void usage (CLIContext cli) {
-        cli.println ("Usage: AESENCRYPT clear-text");
+        cli.println ("Usage: LOCK");
     }
 
-    private void encrypt (CLIContext cli, String clear) throws Exception {
-        SecureData sd = cs.aesEncrypt(clear.getBytes());
-        cli.println (sd.getId() + " " + ISOUtil.hexString(sd.getEncoded()));
+    private void lock (CLIContext cli) {
+        cs.lock();
     }
 }

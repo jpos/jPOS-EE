@@ -35,5 +35,13 @@ public class Response {
     public Object body() {
         return body;
     }
+
+    @Override
+    public String toString() {
+        return "Response{" +
+          "status=" + status +
+          ", body=" + body +
+          '}';
+    }
 }
 

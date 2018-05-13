@@ -24,6 +24,8 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysConfigManager;
 import org.jpos.q2.QBeanSupport;
+import org.jpos.space.Space;
+import org.jpos.space.TSpace;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 import org.jpos.util.NameRegistrar;
@@ -60,11 +62,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * and that requires the private key-ring's password.
  *
  */
-public class CryptoService extends QBeanSupport implements Runnable {
-    private UUID id;
-    private SecretKey sk;
-    private long timestamp;
-    private Map<String, SecretKey> keys = Collections.synchronizedMap(new HashMap<>());
+public final class CryptoService extends QBeanSupport implements Runnable {
+    private volatile UUID id;
+    private volatile SecretKey sk;
+    private volatile long timestamp;
+    private Space<UUID, SecretKey> keys = new TSpace<>();
 
     private CountDownLatch ready = new CountDownLatch(1);
     private Semaphore sem = new Semaphore(1);
@@ -74,6 +76,7 @@ public class CryptoService extends QBeanSupport implements Runnable {
     private String privKeyRing;
     private long waitTimeout;
     private Random rnd = new SecureRandom();
+    private long ttl;
     private long duration;
     private char[] unlock;
 
@@ -99,28 +102,34 @@ public class CryptoService extends QBeanSupport implements Runnable {
             new Thread(this, getName() + "-renew").start();
         }
         SecretKey wk = sk;
-        String wkid = id.toString();
+        UUID wid = id;
         sem.release();
+        
         cipher.init(Cipher.ENCRYPT_MODE, wk, new IvParameterSpec(iv));
         byte[] enc = cipher.doFinal(b);
         ByteBuffer buf = ByteBuffer.allocate(iv.length + enc.length);
         buf.put(iv);
         buf.put(enc);
-        return new SecureData(wkid, buf.array());
+        return new SecureData(wid, buf.array());
     }
 
     /**
      * Decrypts data. Requires a "loaded" key (@see loadKey method).
      *
-     * @param jobId optional jobId
+     * @param jobId jobId
      * @param keyId the key id
      * @param encoded encoded cryptogram
      * @return clear text
      * @throws Exception if key is not loaded
      */
-    public byte[] aesDecrypt (String jobId, String keyId, byte[] encoded) throws Exception {
-        jobId = jobId == null ? "" : jobId;
-        SecretKey sk = keys.get(jobId+keyId);
+    public byte[] aesDecrypt (UUID jobId, UUID keyId, byte[] encoded) throws Exception
+    {
+        UUID xid = xor(jobId, keyId);
+        SecretKey sk = keys.rdp(xid);
+        if (sk == null && unlock != null) {
+            loadKey(jobId, keyId, unlock);
+            sk = keys.rdp(xid);
+        }
         if (sk == null) {
             throw new SecurityException("Key not loaded");
         }
@@ -134,27 +143,16 @@ public class CryptoService extends QBeanSupport implements Runnable {
     /**
      * Load key, enables decryption
      *
-     * @param jobId optional job id
+     * @param jobId job id
      * @param keyId key to load
      * @param password private key-ring password
      * @throws Exception if invalid key
      */
-    public void loadKey (String jobId, String keyId, char[] password) throws Exception {
-        if (!keys.containsKey((jobId == null ? "" : jobId) + keyId)) {
-            String v = (String) DB.execWithTransaction(db -> {
-                SysConfigManager mgr = new SysConfigManager(db, "key.");
-                return mgr.get(keyId, null);
-            });
-            if (v == null) {
-                throw new SecurityException("Invalid key");
-            }
-            byte[] key = PGPHelper.decrypt(
-              v.getBytes(),
-              privKeyRing,
-              password != null ? password : unlock);
-            keys.put ((jobId == null ? "" : jobId) + keyId,
-              new SecretKeySpec(key, 0, key.length, "AES"));
-        }
+    public void loadKey (UUID jobId, UUID keyId, char[] password) throws Exception {
+        UUID xid = xor(jobId, keyId);
+
+        if (keys.rdp(xid) == null)
+            keys.put(xid, getKey(keyId, password), ttl);
     }
 
     /**
@@ -163,8 +161,8 @@ public class CryptoService extends QBeanSupport implements Runnable {
      * @param keyId the key id
      * @return true if key was cached, false otherwise
      */
-    public boolean unloadKey (String jobId, String keyId) {
-        return keys.remove(jobId == null ? "" : jobId + keyId + keyId) != null;
+    public boolean unloadKey (UUID jobId, UUID keyId) {
+        return keys.inp(xor(jobId, keyId)) != null;
     }
 
     /**
@@ -172,10 +170,16 @@ public class CryptoService extends QBeanSupport implements Runnable {
      */
     public boolean unlock (char[] password) {
         try {
-            String job = UUID.randomUUID().toString();
-            loadKey(job, id.toString(), password);
-            unloadAll(job);
-            this.unlock = password;
+            if (isLocked()) {
+                sem.acquire();
+                UUID wid = id;
+                sem.release();
+
+                UUID job = UUID.randomUUID();
+                loadKey(job, wid, password);
+                unloadKey(job, wid);
+                this.unlock = password;
+            }
             return true;
         } catch (Exception e) {
             getLog().warn(e);
@@ -190,28 +194,12 @@ public class CryptoService extends QBeanSupport implements Runnable {
         this.unlock = null;
     }
 
-    public boolean isUnlocked() {
-        return unlock != null;
-    }
-
-    /**
-     * Clear key cache
-     */
-    public void unloadAll() {
-        keys.clear();
-    }
-
-    /**
-     * Remove all cached keys for given job
-     * @param jobId the job ID
-     */
-    public void unloadAll(String jobId) {
-        if (jobId != null && !jobId.isEmpty())
-            keys.keySet().removeIf(s -> s.startsWith(jobId));
+    public boolean isLocked () {
+        return unlock == null;
     }
 
     @Override
-    protected void initService() throws Exception {
+    protected void initService() {
         if (!lazy.get())
             new Thread(this, getName()).start();
         NameRegistrar.register(getName(), this);
@@ -225,7 +213,13 @@ public class CryptoService extends QBeanSupport implements Runnable {
     @Override
     public void run() {
         try {
+            boolean tryUnlock = id == null; // first run
             renewKey();
+            if (tryUnlock) {
+                String unlockPassword = cfg.get("unlock-password", null);
+                if (unlockPassword != null)
+                    unlock (unlockPassword.toCharArray());
+            }
         } catch (Exception e) {
             getLog().error(e);
         }
@@ -238,6 +232,7 @@ public class CryptoService extends QBeanSupport implements Runnable {
         pubKeyRing = cfg.get("pubkeyring", "cfg/keyring.pub");
         privKeyRing = cfg.get("privkeyring", "cfg/keyring.priv");
         waitTimeout = cfg.getLong("timeout", 30000L);
+        ttl = cfg.getLong("ttl", 3600000L);
         duration = cfg.getLong("duration", 86400000L);
     }
 
@@ -277,7 +272,29 @@ public class CryptoService extends QBeanSupport implements Runnable {
         Logger.log(evt);
     }
 
-    private byte[] decrypt (SecretKey sk, IvParameterSpec iv, byte[] cryptogram) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InterruptedException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    private SecretKey getKey (UUID keyId, char[] password) throws Exception {
+        password = password != null ? password : unlock;
+
+        String v = (String) DB.execWithTransaction(db -> {
+            SysConfigManager mgr = new SysConfigManager(db, "key.");
+            return mgr.get(keyId.toString(), null);
+        });
+        if (v == null) {
+            throw new SecurityException("Invalid key");
+        }
+        byte[] key = PGPHelper.decrypt(
+          v.getBytes(),
+          privKeyRing,
+          password != null ? password : unlock);
+        return new SecretKeySpec(key, 0, key.length, "AES");
+
+    }
+
+
+    private byte[] decrypt (SecretKey sk, IvParameterSpec iv, byte[] cryptogram)
+      throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException,
+      IllegalBlockSizeException, NoSuchProviderException, InvalidAlgorithmParameterException
+    {
         final Cipher cipher = Cipher.getInstance(AES, "BC");
         cipher.init(Cipher.DECRYPT_MODE, sk, iv);
         return cipher.doFinal(cryptogram);
@@ -291,5 +308,11 @@ public class CryptoService extends QBeanSupport implements Runnable {
 
     private boolean isExpired () {
         return System.currentTimeMillis() - timestamp > duration;
+    }
+
+    private UUID xor (UUID a, UUID b) {
+        return new UUID(
+          a.getMostSignificantBits() ^ b.getMostSignificantBits(),
+          a.getLeastSignificantBits() ^ b.getLeastSignificantBits());
     }
 }

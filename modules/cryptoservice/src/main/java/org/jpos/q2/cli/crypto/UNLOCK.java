@@ -32,14 +32,17 @@ public class UNLOCK implements CLICommand {
         cs = NameRegistrar.getIfExists("crypto-service");
         if (args.length != 1) {
             usage(cli);
-            if (cs == null)
-                cli.println ("'crypto-service' not registered");
             return;
         }
-        try {
-            cli.println (unlock(cli) ? "Unlocked" : "Invalid password/keystore");
-        } catch (Exception e) {
-            cli.println (e.getMessage());
+        if (cs == null)
+            cli.println ("'crypto-service' not registered");
+        else {
+            try {
+                cli.println(unlock(cli) ? "Unlocked" : "Invalid password/keystore");
+            } catch (Exception e) {
+                cli.println(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 

@@ -16,36 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2.cli.crypto;
+package org.jpos.q2.cli;
 
-import org.jpos.crypto.CryptoService;
-import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
-import org.jpos.util.NameRegistrar;
+import org.jpos.q2.CLISubSystem;
 
-@SuppressWarnings("unused")
-public class LOCK implements CLICommand {
-    private CryptoService cs;
+/**
+ * CLI implementation - CRYPTO service specific commands
+ */
+public class CRYPTO implements CLISubSystem {
+    @Override
+    public String getPrompt(CLIContext ctx, String[] args) {
+        return "crypto> ";
+    }
 
     @Override
-    public void exec(CLIContext cli, String[] args) throws Exception {
-        cs = NameRegistrar.getIfExists("crypto-service");
-        if (args.length != 1) {
-            usage(cli);
-            if (cs == null)
-                cli.println ("'crypto-service' not registered");
-            return;
-        }
-        cs.lock();
-        if (!cs.isLocked())
-            cli.println("Locked");
-    }
-
-    private void usage (CLIContext cli) {
-        cli.println ("Usage: LOCK");
-    }
-
-    private void lock (CLIContext cli) {
-        cs.lock();
+    public String[] getCompletionPrefixes(CLIContext ctx, String[] args) {
+        return new String[] { "org.jpos.q2.cli.crypto." };
     }
 }
+

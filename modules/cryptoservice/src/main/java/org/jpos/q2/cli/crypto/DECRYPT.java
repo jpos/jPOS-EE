@@ -25,6 +25,9 @@ import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.util.NameRegistrar;
 
+import java.util.Base64;
+import java.util.UUID;
+
 @SuppressWarnings("unused")
 public class DECRYPT implements CLICommand {
     private CryptoService cs;
@@ -49,14 +52,20 @@ public class DECRYPT implements CLICommand {
         cli.println ("Usage: DECRYPT key-id cypher-text");
     }
 
-    private void decrypt (CLIContext cli, String keyId, String cryptogram) throws Exception {
+    private void decrypt (CLIContext cli, String sKeyId, String cryptogram) throws Exception {
+        UUID jobId = UUID.randomUUID();
+        UUID keyId = UUID.fromString(sKeyId);
+        byte[] cleartext;
         try {
-            cs.loadKey(this.toString(), keyId, cs.isUnlocked() ? null : cli.getReader().readLine("Password: ", '*').toCharArray());
+            if (cs.isLocked()) {
+                cs.loadKey(jobId, keyId, cli.getReader().readLine("Password: ", '*').toCharArray());
+            }
+            byte[] clearText = cs.aesDecrypt(jobId, keyId, Base64.getDecoder().decode(cryptogram));
+            cli.println (ISOUtil.hexdump(clearText));
         } catch (PGPException e) {
             throw new IllegalArgumentException("Invalid password/key - " + e.getMessage());
+        } finally {
+            cs.unloadKey(jobId, keyId);
         }
-        byte[] cleartext = cs.aesDecrypt(this.toString(), keyId, ISOUtil.hex2byte(cryptogram));
-        cs.unloadKey(this.toString(), keyId);
-        cli.println (ISOUtil.hexdump(cleartext));
     }
 }

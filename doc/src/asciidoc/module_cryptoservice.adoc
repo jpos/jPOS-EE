@@ -63,6 +63,7 @@ The crypto service can be configured using a QBean descriptor like this:
     <property name="lazy" value="false" />                            <4>
     <property name="keylength" value="256" />                         <5>
     <property name="duration" value="86400000" />                     <6>
+    <property name="ttl" value="3600000" />                           <7>
 </crypto-service>
 ------------
 <1> custodian PGP id, there can be many `custodian` entries.
@@ -71,6 +72,7 @@ The crypto service can be configured using a QBean descriptor like this:
 <4> if lazy=true, a key is generated the first time we call `aesEncrypt`, otherwise, a new one is created at service start.
 <5> key length defaults to 256. Can be reduced if AES-256 is not supported by the JVM due to export restrictions.
 <6> key duration
+<7> internal key cache time-to-live (in millis).
 
 This allows jPOS nodes to encrypt data securely without storing the encryption key to disk.
 

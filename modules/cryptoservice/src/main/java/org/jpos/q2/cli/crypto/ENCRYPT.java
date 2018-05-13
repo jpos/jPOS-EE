@@ -18,22 +18,21 @@
 
 package org.jpos.q2.cli.crypto;
 
+import java.util.Base64;
+
 import org.jpos.crypto.CryptoService;
 import org.jpos.crypto.SecureData;
-import org.jpos.iso.ISOUtil;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.util.NameRegistrar;
 
-import javax.crypto.spec.IvParameterSpec;
-import java.nio.ByteBuffer;
-
+@SuppressWarnings("unused")
 public class ENCRYPT implements CLICommand {
-    CryptoService cs;
+    private CryptoService cs;
 
     @Override
     public void exec(CLIContext cli, String[] args) throws Exception {
-        cs = (CryptoService) NameRegistrar.getIfExists("crypto-service");
+        cs = NameRegistrar.getIfExists("crypto-service");
         if (args.length != 2) {
             usage(cli);
             if (cs == null)
@@ -49,6 +48,6 @@ public class ENCRYPT implements CLICommand {
 
     private void encrypt (CLIContext cli, String clear) throws Exception {
         SecureData sd = cs.aesEncrypt(clear.getBytes());
-        cli.println (sd.getId() + " " + ISOUtil.hexString(sd.getEncoded()));
+        cli.println (sd.getId() + " " + Base64.getEncoder().encodeToString(sd.getEncoded()));
     }
 }

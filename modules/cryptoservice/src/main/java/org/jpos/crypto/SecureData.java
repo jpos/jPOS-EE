@@ -18,19 +18,26 @@
 
 package org.jpos.crypto;
 
+import java.util.UUID;
+
+/**
+ * Wraps a cryptogram with its key id
+ */
 public class SecureData {
-    private String id;
+    private UUID id;
     private byte[] encoded;
 
-    public SecureData(String id, byte[] encoded) {
+    /**
+     * @param id key id
+     * @param encoded encoded cryptogram
+     */
+    public SecureData(UUID id, byte[] encoded) {
         this.id = id;
         this.encoded = encoded;
     }
-
-    public String getId() {
+    public UUID getId() {
         return id;
     }
-
     public byte[] getEncoded() {
         return encoded;
     }

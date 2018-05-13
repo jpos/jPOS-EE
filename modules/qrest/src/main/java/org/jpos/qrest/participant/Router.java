@@ -46,7 +46,7 @@ public class Router implements GroupSelector, XmlConfigurable {
     @Override
     public String select(long id, Serializable context) {
         Context ctx = (Context) context;
-        FullHttpRequest request = (FullHttpRequest)  ctx.get(REQUEST);
+        FullHttpRequest request = ctx.get(REQUEST);
         ctx.log ("Method: " + request.method().name());
         ctx.log ("Routes: " + routes);
         List<Route<String>> routesByMethod = routes.get(request.method().name());

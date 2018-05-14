@@ -195,7 +195,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
         try{
             smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
             SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
-            c.setKid(sd.getId());
+            c.setKid(sd.getId().toString());
             c.setSecureData(sd.getEncoded());
         } catch (Exception e) {
             getApp().getLog().error(e);

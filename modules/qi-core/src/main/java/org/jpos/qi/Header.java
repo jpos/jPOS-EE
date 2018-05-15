@@ -164,7 +164,7 @@ public class Header extends HorizontalLayout {
     private void removeSelected () {
         for (String s : menuOptions.keySet())  {
             MenuBar.MenuItem item = menuOptions.get(s);
-            item.setStyleName("");
+            item.setStyleName("menuitem");
         }
     }
 

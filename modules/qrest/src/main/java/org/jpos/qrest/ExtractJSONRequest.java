@@ -18,5 +18,22 @@
 
 package org.jpos.qrest;
 
-public class ExtractJSONRequest {
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.util.CharsetUtil;
+import org.jpos.transaction.Context;
+import org.jpos.transaction.TransactionParticipant;
+
+import java.io.Serializable;
+
+import static org.jpos.qrest.Constants.JSON_REQUEST;
+import static org.jpos.qrest.Constants.REQUEST;
+
+public class ExtractJSONRequest implements TransactionParticipant {
+    @Override
+    public int prepare(long id, Serializable context) {
+        Context ctx = (Context) context;
+        FullHttpRequest request = ctx.get(REQUEST);
+        ctx.put (JSON_REQUEST.name(), request.content().toString(CharsetUtil.UTF_8));
+        return PREPARED | READONLY | NO_JOIN;
+    }
 }

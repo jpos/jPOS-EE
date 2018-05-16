@@ -171,14 +171,14 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     public boolean unlock (char[] password) {
         try {
             if (isLocked()) {
+                // attempt encrypt/decrypt
+                UUID id = UUID.randomUUID();
+                SecretKey sk = generateKey();
+                byte[] b = pgpEncrypt(id.toString(), sk.getEncoded());
+                PGPHelper.decrypt(b, privKeyRing, password);
                 sem.acquire();
-                UUID wid = id;
-                sem.release();
-
-                UUID job = UUID.randomUUID();
-                loadKey(job, wid, password);
-                unloadKey(job, wid);
                 this.unlock = password;
+                sem.release();
             }
             return true;
         } catch (Exception e) {
@@ -213,13 +213,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     @Override
     public void run() {
         try {
-            boolean tryUnlock = id == null; // first run
             renewKey();
-            if (tryUnlock) {
-                String unlockPassword = cfg.get("unlock-password", null);
-                if (unlockPassword != null)
-                    unlock (unlockPassword.toCharArray());
-            }
         } catch (Exception e) {
             getLog().error(e);
         }
@@ -234,6 +228,9 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         waitTimeout = cfg.getLong("timeout", 30000L);
         ttl = cfg.getLong("ttl", 3600000L);
         duration = cfg.getLong("duration", 86400000L);
+        String unlockPassword = cfg.get("unlock-password", null);
+        if (unlockPassword != null)
+            unlock (unlockPassword.toCharArray());
     }
 
     private SecretKey generateKey() throws NoSuchAlgorithmException {

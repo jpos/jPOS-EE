@@ -10,7 +10,7 @@ ext {
     jgroupsVersion = '4.0.4.Final'
     jaxrsVersion = '2.0.1'
     jsonSchemaVersion = '2.2.6'
-    jacksonVersion = '2.9.4'
+    jacksonVersion = '2.9.5'
     groovyVersion = '2.4.12'
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.4.1'
@@ -102,7 +102,9 @@ ext {
             nettyCodecHttp: "io.netty:netty-codec-http:${nettyVersion}",
 
             // RestAssured
-            restAssured: "com.jayway.restassured:rest-assured:2.9.0"
+            restAssured: "com.jayway.restassured:rest-assured:2.9.0",
+
+            jsonSchemaValidator: "com.github.fge:json-schema-validator:${jsonSchemaVersion}"
     ]
 
     jettyLibs = [

@@ -26,11 +26,11 @@ import org.jpos.ee.BLException;
 
 public class ConfirmDialog extends Window implements Button.ClickListener {
     Callback callback;
-    Button yes = new Button("Yes", this);
-    Button no = new Button("No", this);
+    Button yes = new Button(QI.getQI().getMessage("confirm"), this);
+    Button no = new Button(QI.getQI().getMessage("cancel"), this);
 
     public ConfirmDialog(String caption, String question, Callback callback) {
-        this(caption,question,"Yes","No",callback);
+        this(caption,question,QI.getQI().getMessage("confirm"),QI.getQI().getMessage("cancel"),callback);
     }
 
     public ConfirmDialog(String caption, String question, String confirm, String cancel, Callback callback) {
@@ -44,9 +44,8 @@ public class ConfirmDialog extends Window implements Button.ClickListener {
         setContent(content);
 
         this.yes.setCaption(confirm);
-        this.yes.addStyleName(ValoTheme.BUTTON_FRIENDLY);
+        this.yes.addStyleName(ValoTheme.BUTTON_PRIMARY);
         this.no.setCaption(cancel);
-        this.no.addStyleName(ValoTheme.BUTTON_DANGER);
         this.callback = callback;
 
         // HTML is safe to assume and allows for line breaks and other stuff

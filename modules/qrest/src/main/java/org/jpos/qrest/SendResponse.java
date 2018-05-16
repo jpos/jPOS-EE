@@ -23,10 +23,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import org.jpos.rc.Result;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -77,6 +80,8 @@ public class SendResponse implements AbortParticipant {
     private FullHttpResponse getResponse (Context ctx) {
         Object r = ctx.get(RESPONSE);
         FullHttpResponse httpResponse;
+
+
         if (r instanceof FullHttpResponse) {
             httpResponse = (FullHttpResponse) r;
         } else if (r instanceof Response) {
@@ -102,10 +107,13 @@ public class SendResponse implements AbortParticipant {
                 ctx.log(e);
                 httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
-        } else
-            httpResponse = error(HttpResponseStatus.NOT_FOUND);
-
+        } else {
+            Result result = ctx.getResult();
+            if (result.hasFailures()) {
+                httpResponse = error(HttpResponseStatus.BAD_REQUEST);
+            } else
+                httpResponse = error(HttpResponseStatus.NOT_FOUND);
+        }
         return httpResponse;
     }
 }
-

@@ -18,10 +18,10 @@
 
 package org.jpos.qi.system;
 
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.server.*;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
@@ -45,7 +45,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogListenerView extends CssLayout
-       implements Runnable, View, LogListener, ViewChangeListener, Configurable
+       implements Runnable, View, LogListener, ViewChangeListener, Configurable,
+        ClientConnector.DetachListener, SessionDestroyListener
 {
     private AtomicBoolean active = new AtomicBoolean();
     private AtomicBoolean paused = new AtomicBoolean();
@@ -70,7 +71,7 @@ public class LogListenerView extends CssLayout
         sp = (Space<String,LogEvent>) SpaceFactory.getSpace();
         key = toString();
         pause = new Button();
-        pause.setIcon(FontAwesome.PAUSE);
+        pause.setIcon(VaadinIcons.PAUSE);
         pause.addStyleName(ValoTheme.BUTTON_TINY);
         pause.addStyleName("qi-float-right");
         pause.addClickListener((Button.ClickListener) event -> togglePause());
@@ -86,6 +87,9 @@ public class LogListenerView extends CssLayout
         addComponent(createSlider());
         addComponent (label);
         addComponent (pause);
+
+        qi.addDetachListener(this);
+        VaadinService.getCurrent().addSessionDestroyListener(this);
     }
 
     public void enter(ViewChangeListener.ViewChangeEvent event) {
@@ -160,7 +164,8 @@ public class LogListenerView extends CssLayout
                 realms.put(r, cb);
                 realmsLayout.setSizeUndefined();
             } finally {
-                getSession().getLockInstance().unlock();
+                if (getSession() != null)
+                    getSession().getLockInstance().unlock();
             }
             realmsLayout.addComponent(cb);
         }
@@ -180,7 +185,7 @@ public class LogListenerView extends CssLayout
     }
 
     private void pause() {
-        pause.setIcon(FontAwesome.PLAY);
+        pause.setIcon(VaadinIcons.PLAY);
         paused.set(true);
         try {
             if (runner != null)
@@ -189,7 +194,7 @@ public class LogListenerView extends CssLayout
     }
 
     private void resume() {
-        pause.setIcon(FontAwesome.PAUSE);
+        pause.setIcon(VaadinIcons.PAUSE);
         pause.setEnabled(true);
         paused.set(false);
         if (active.get()) {
@@ -224,5 +229,18 @@ public class LogListenerView extends CssLayout
             }
         });
         return slider;
+    }
+
+    @Override
+    public void detach(DetachEvent event) {
+        if (bll != null)
+            bll.removeListener (this);
+
+    }
+
+    @Override
+    public void sessionDestroy(SessionDestroyEvent event) {
+        if (bll != null)
+            bll.removeListener (this);
     }
 }

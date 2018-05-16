@@ -96,14 +96,8 @@ public class QI extends UI {
                         additionalProp.load(getClass().getResourceAsStream("/" + additionalName.concat("_" + localeCode + ".properties")));
                         master.putAll(additionalProp);
                     }
-                } catch (NullPointerException n) {
+                } catch (NullPointerException | IOException n) {
                     //Log but continue
-                    //Show notification only if main locale is faulty
-                    if (locale.toString().equals(localeCode))
-                        displayNotification("Invalid locale '" + localeCode +"' : check configuration");
-                    log.error(ErrorMessage.SYSERR_INVALID_LOCALE,localeCode);
-                } catch (IOException e) {
-                    //Log but continue.
                     //Show notification only if main locale is faulty
                     if (locale.toString().equals(localeCode))
                         displayNotification("Invalid locale '" + localeCode +"' : check configuration");

@@ -5,9 +5,9 @@ dependencies {
     compile libraries.jacksonDatabind
     compile libraries.nettyHandler
     compile libraries.nettyCodecHttp
+    compile libraries.jsonSchemaValidator
     testCompile libraries.junit
     testCompile libraries.restAssured
-
 }
 
 apply from: "${rootProject.projectDir}/jpos-app.gradle"

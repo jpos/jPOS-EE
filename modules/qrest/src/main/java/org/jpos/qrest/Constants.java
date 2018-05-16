@@ -21,6 +21,7 @@ package org.jpos.qrest;
 public enum Constants {
     SESSION,
     REQUEST,
+    JSON_REQUEST,
     QUERYPARAMS,
     PATHPARAMS,
     RESPONSE,

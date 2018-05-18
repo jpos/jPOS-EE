@@ -23,7 +23,7 @@ Sample response:
 -------------
 {
     "kid": "d7e82270-7041-4434-8cf9-c4d0f26f620d",
-    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk2bBTUdldlZLShz6T42MIG5E4km36Xz/G8rH7mtZlVjE7OSizQzOC14h9/TNLLiRA="
+    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk...."
 }
 -------------
 
@@ -37,7 +37,7 @@ Sample response:
 -------------
 {
     "kid": "d7e82270-7041-4434-8cf9-c4d0f26f620d",
-    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk2bBTUdldlZLShz6T42MIG5E4km36Xz/G8rH7mtZlVjE7OSizQzOC14h9/TNLLiRA="
+    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk...."
 }
 -------------
 

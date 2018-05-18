@@ -228,14 +228,22 @@ Here is a copy of the internal Q2Info route configuration:
 [source,java]
 ----------------------------------------------------------------------------------------
     private void initInternalRoutes() {
-        routes.add(new Route<>("/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
-        routes.add(new Route<>("/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
-        routes.add(new Route<>("/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
-        routes.add(new Route<>("/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
-        routes.add(new Route<>("/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
-        routes.add(new Route<>("/q2/diskspace**", "GET", (t,s) -> diskspace()));
-        routes.add(new Route<>("/q2/muxes/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
-        routes.add(new Route<>("/q2/muxes**", "GET", (t,s) -> muxes()));
+        routes.add(new Route<>("/q2/version**", "GET",
+            (t,s) -> mapOf ("version", q2Version())));
+        routes.add(new Route<>("/q2/applicationVersion**", "GET",
+            (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
+        routes.add(new Route<>("/q2/instanceId**", "GET",
+            (t,s) -> mapOf("instanceId", q2.getInstanceId())));
+        routes.add(new Route<>("/q2/uptime**", "GET",
+            (t,s) -> mapOf("uptime", q2.getUptime())));
+        routes.add(new Route<>("/q2/started**", "GET",
+            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
+        routes.add(new Route<>("/q2/diskspace**", "GET",
+            (t,s) -> diskspace()));
+        routes.add(new Route<>("/q2/muxes/{muxname}**", "GET",
+            (t,s) -> muxInfo(t,s)));
+        routes.add(new Route<>("/q2/muxes**", "GET",
+            (t,s) -> muxes()));
     }
 ----------------------------------------------------------------------------------------
 

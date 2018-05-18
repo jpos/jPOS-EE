@@ -1,0 +1,63 @@
+<txnmgr class="org.jpos.transaction.TransactionManager" logger="Q2" realm='qrest-txnmgr'>
+  <property name="queue" value="TXNMGR"/>
+  <property name="sessions" value="2"/>
+  <property name="max-sessions" value="128"/>
+  <property name="debug" value="true"/>
+
+  <participant class="org.jpos.qrest.participant.Router">
+    <route path="/encrypt" method="PUT" name="encrypt"/>
+    <route path="/decrypt" method="PUT" name="decrypt"/>
+  </participant>
+
+  <group name="encrypt">
+    <participant class="org.jpos.qrest.ExtractJSONRequest" />
+    <participant class="org.jpos.qrest.ValidateParams">
+      <mandatory>
+        <param name="JSON_REQUEST" type="json-schema">
+          {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "title": "Encrypt",
+            "description": "Encrypt command",
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties" : false,
+            "required": [ "text" ]
+          }
+        </param>
+      </mandatory>
+    </participant>
+    <participant class="org.jpos.cryptoserver.participant.Encrypt" logger="Q2" />
+  </group>
+  <group name="decrypt">
+    <participant class="org.jpos.qrest.ExtractJSONRequest" />
+    <participant class="org.jpos.qrest.ValidateParams">
+      <mandatory>
+        <param name="JSON_REQUEST" type="json-schema">
+          {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "Decrypt",
+          "description": "Decrypt command",
+          "type": "object",
+          "properties": {
+            "kid": {
+             "type": "string"
+            },
+            "cryptogram": {
+              "type": "string"
+            }
+          },
+          "additionalProperties" : false,
+          "required": [ "kid", "cryptogram" ]
+          }
+        </param>
+      </mandatory>
+    </participant>
+    <participant class="org.jpos.cryptoserver.participant.Decrypt" logger="Q2" />
+  </group>
+  <participant class="org.jpos.qrest.SendResponse" logger="Q2"/>
+</txnmgr>
+

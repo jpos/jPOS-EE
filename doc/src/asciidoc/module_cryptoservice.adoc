@@ -1,11 +1,12 @@
+[[cryptoservice]]
 === Crypto Service
 
 The `cryptoservice` module uses AES-256 to encrypt sensitive data, such as
 primary account numbers and protects the encryption key using PGP.
 
 At start-up time, and at regular intervals, the crypto service generates a
-new AES-256 key, encrypts it using PGP using one or more recipient ids, and
-stores the resulting encrypted message in the sysconfig table, using the
+new AES-256 key, encrypts it using PGP using one or more recipient ids (custodians),
+and stores the resulting encrypted message in the sysconfig table, using the
 "key." prefix, and a unique key UUID, i.e.:
 
 [source]
@@ -142,6 +143,21 @@ directory.
 
 If you `ssh` to a running Q2 to reach the CLI, then you can ignore this tip.
 =====
+
+
+For testing purposes, it is possible to set the `unlock-password` property in the
+crypto service configuration QBean, i.e.:
+
+[source,xml]
+------------
+<property name="unlock-password" value="demo" />
+------------
+
+[NOTE]
+======
+This is of course highly insecure, the whole PGP based crypto service scheme makes
+no sense at all when unlocking the private key in such a way.
+======
 
 ==== Using GnuPG to generate keys
 

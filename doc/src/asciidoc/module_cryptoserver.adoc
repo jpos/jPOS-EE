@@ -1,0 +1,55 @@
+=== Crypto Server
+
+The `cryptoserver` module offers a REST (qrest based) API to encrypt and decrypt using the `cryptoservice`.
+
+It supports the following operations
+
+==== encrypt
+
+* Path: `/encrypt`
+* Body:
+
+[source,json]
+-------------
+{
+  "text" : "The quick brown fox jumps over the lazy dog 0123456789"
+}
+-------------
+
+
+Sample response:
+
+[source,json]
+-------------
+{
+    "kid": "d7e82270-7041-4434-8cf9-c4d0f26f620d",
+    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk2bBTUdldlZLShz6T42MIG5E4km36Xz/G8rH7mtZlVjE7OSizQzOC14h9/TNLLiRA="
+}
+-------------
+
+
+==== decrypt
+
+* Path: `/decrypt`
+* Body:
+
+[source,json]
+-------------
+{
+    "kid": "d7e82270-7041-4434-8cf9-c4d0f26f620d",
+    "cryptogram": "rp5uz7QMjRaEqPIbXzOZNI6bLuWYcdP0sH3I0FSKpRk2bBTUdldlZLShz6T42MIG5E4km36Xz/G8rH7mtZlVjE7OSizQzOC14h9/TNLLiRA="
+}
+-------------
+
+[source,json]
+-------------
+{
+  "text" : "The quick brown fox jumps over the lazy dog 0123456789"
+}
+-------------
+
+[NOTE]
+======
+The node running `cryptoserver` has to be `unlocked` (see <<cryptoservice>> module).
+======
+

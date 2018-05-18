@@ -1,0 +1,9 @@
+<crypto-service class='org.jpos.crypto.CryptoService' logger='Q2' enabled='true'>
+    <property name="custodian" value='demo@jpos.org' />
+    <property name="pubkeyring" value='cfg/keyring.pub' />
+    <property name="privkeyring" value='cfg/keyring.priv' />
+    <property name="lazy" value="true" />
+    <property name="keylength" value="256" />
+    <property name="duration" value="86400000" />
+    <property name="unlock-password" value="demo" />
+</crypto-service>

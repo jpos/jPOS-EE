@@ -37,6 +37,7 @@ public class RestTest  {
     @BeforeClass
     public static void setUp() throws NameRegistrar.NotFoundException {
         RestAssured.baseURI = BASE_URL;
+        RestAssured.useRelaxedHTTPSValidation();
         RestAssured.requestSpecification = new RequestSpecBuilder().build().contentType(APPLICATION_JSON.toString());
         if (q2 == null) {
             q2 = new Q2();

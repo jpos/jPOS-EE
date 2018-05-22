@@ -18,7 +18,13 @@
 
 package org.jpos.qrest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.BindException;
+import java.security.*;
+import java.util.Arrays;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,13 +32,20 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.jpos.core.Configuration;
+import org.jpos.core.ConfigurationException;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
 import org.jpos.transaction.Context;
+import org.jpos.util.LogEvent;
+import org.jpos.util.Logger;
 import org.jpos.util.NameRegistrar;
+
+import javax.net.ssl.*;
 
 public class RestServer extends QBeanSupport implements Runnable {
     private ServerBootstrap serverBootstrap;
@@ -42,9 +55,20 @@ public class RestServer extends QBeanSupport implements Runnable {
     private Space sp;
     private Thread initializerThread;
 
+    private String password=null;
+    private String keyPassword=null;
+    private String keyStore=null;
+    private boolean serverAuthNeeded;
+
+    private boolean enableTLS=false;
+    private boolean clientAuthNeeded=false;
+    private String[] enabledCipherSuites;
+    private String[] enabledProtocols;
+
     @Override
-    protected void initService() {
+    protected void initService() throws GeneralSecurityException, IOException {
         sp = SpaceFactory.getSpace();
+        final SSLContext sslContext = enableTLS ? getSSLContext() : null;
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         serverBootstrap = new ServerBootstrap();
@@ -56,6 +80,9 @@ public class RestServer extends QBeanSupport implements Runnable {
               public void initChannel(SocketChannel ch) throws Exception {
                   int timeout = cfg.getInt("timeout", 300);
                   ch.pipeline().addLast(new IdleStateHandler(timeout,timeout,timeout));
+                  if (enableTLS) {
+                      ch.pipeline().addLast(new SslHandler(getSSLEngine(sslContext), true));
+                  }
                   ch.pipeline().addLast(new HttpServerCodec()) ;
                   ch.pipeline().addLast(new HttpObjectAggregator(512*1024));
                   ch.pipeline().addLast(new RestSession(RestServer.this));
@@ -64,10 +91,14 @@ public class RestServer extends QBeanSupport implements Runnable {
           .option(ChannelOption.SO_BACKLOG, 128)
           .option(ChannelOption.SO_REUSEADDR, true)
           .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+        if (enableTLS) {
+            logSSLEngineInfo(getSSLEngine(sslContext));
+        }
     }
 
     @Override
-    protected void startService () throws Exception {
+    protected void startService () {
         initializerThread = new Thread(this, getName());
         initializerThread.start();
     }
@@ -112,5 +143,92 @@ public class RestServer extends QBeanSupport implements Runnable {
 
     public void queue (Context ctx) {
         sp.out(cfg.get("queue"), ctx, 60000L);
+    }
+
+    @Override
+    public void setConfiguration (Configuration cfg) throws ConfigurationException {
+        super.setConfiguration(cfg);
+        enableTLS = cfg.getBoolean("TLS", false);
+        keyStore = cfg.get("keystore");
+        password = cfg.get("storepassword", getPassword());
+        keyPassword = cfg.get("keypassword", getKeyPassword());
+        clientAuthNeeded = cfg.getBoolean("client-auth", false);
+        serverAuthNeeded = cfg.getBoolean("server-auth", false);
+        enabledCipherSuites = cfg.getAll("enabled-cipher");
+        enabledProtocols = cfg.getAll("enable-protocol");
+    }
+
+    private SSLEngine getSSLEngine(SSLContext sslContext) throws IOException {
+        SSLEngine engine = null;
+        engine = sslContext.createSSLEngine();
+        if (enabledCipherSuites != null && enabledCipherSuites.length > 0) {
+            engine.setEnabledCipherSuites(enabledCipherSuites);
+        }
+        if (enabledProtocols != null && enabledProtocols.length > 0) {
+            engine.setEnabledProtocols(enabledProtocols);
+        }
+        engine.setNeedClientAuth(clientAuthNeeded);
+        engine.setUseClientMode(false);
+        engine.beginHandshake();
+        return engine;
+    }
+
+    private SSLContext getSSLContext() throws GeneralSecurityException, IOException {
+        KeyStore ks = KeyStore.getInstance("JKS");
+        if (keyStore == null || keyStore.length() == 0) {
+            keyStore = System.getProperty("user.home") + File.separator + ".keystore";
+        }
+        try (FileInputStream fis = new FileInputStream(new File(keyStore))) {
+            ks.load(fis, password.toCharArray());
+        }
+        KeyManagerFactory km = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        km.init(ks, keyPassword.toCharArray());
+        KeyManager[] kma = km.getKeyManagers();
+        TrustManager[] tma = getTrustManagers(ks);
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kma, tma, SecureRandom.getInstance("SHA1PRNG"));
+
+        return sslContext;
+    }
+
+    private TrustManager[] getTrustManagers(KeyStore ks)
+      throws GeneralSecurityException {
+        if (serverAuthNeeded) {
+            TrustManagerFactory tm = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tm.init( ks );
+            return tm.getTrustManagers();
+        } else {
+            // Create a trust manager that does not validate certificate chains
+            return new TrustManager[]{
+              new X509TrustManager() {
+                  public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                      return new java.security.cert.X509Certificate[] {};
+                  }
+                  public void checkClientTrusted(
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                  }
+                  public void checkServerTrusted(
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                  }
+              }
+            };
+        }
+    }
+
+    private void logSSLEngineInfo (SSLEngine engine) {
+        LogEvent evt = getLog().createInfo();
+        evt.addMessage("ciphersuites: " + Arrays.toString(engine.getEnabledCipherSuites()));
+        evt.addMessage("   protocols: " + Arrays.toString(engine.getEnabledProtocols()));
+        Logger.log(evt);
+    }
+
+    // Have custom hooks get passwords
+    // You really need to modify these two implementations
+    protected String getPassword() {
+        return System.getProperty("jpos.ssl.storepass", null);
+    }
+
+    protected String getKeyPassword() {
+        return System.getProperty("jpos.ssl.keypass", null);
     }
 }

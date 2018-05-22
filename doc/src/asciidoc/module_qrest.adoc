@@ -34,17 +34,34 @@ we've created a little **QRest** module that can be configured like this:
 <qrest class='org.jpos.qrest.RestServer' logger='Q2'>
     <property name='port' value='8081' />                                            <1>
     <property name='queue' value='TXNMGR' />                                         <2>
+    <property name="TLS" value="true" />                                             <3>
+    <property name="server-auth" value="false" />                                    <4>
+    <property name="client-auth" value="false" />                                    <5>
+    <property name="keystore" value="cfg/keystore.jks" />                            <6>
+    <property name="storepassword" value="jposjposjposjpos" />                       <7>
+    <property name="keypassword"   value="jposjposjposjpos" />                       <8>
+    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" />  <9>
+    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" />
+    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" />
+    ...
+    ...
 </qrest>
 ----------------------------------------------------------------------------------------
 <1> Listening port
 <2> Transaction manager queue name
+<3> `true` to enable TLS
+<4> Set to `false` in order to allow self-signed certificates
+<5> `true` requires client-side certificates
+<6> Keystore location
+<7> Store password
+<8> Key password
+<9> Enabled ciphers (optional, defaults to 'all' if not present)
 
 Once the server receives an HTTP request, it creates a `org.jpos.transaction.Context`, places a reference to the http request
 (under the Constant name `REQUEST` defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`
 constant (so that a `SendResponse` participant can reply) and send it off to the TransactionManager for processing.
 
 The TransactionManager is configured like this:
-
 
 [source,xml]
 ----------------------------------------------------------------------------------------

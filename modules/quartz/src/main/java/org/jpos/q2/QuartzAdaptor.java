@@ -139,7 +139,6 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
         p.setProperty("org.quartz.scheduler.rmi.export", "false");
         p.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
         p.setProperty("org.quartz.threadPool.threadCount", "10");
-        p.setProperty("org.quartz.scheduler.instanceName", getName());
         p.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
         p.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         p.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");

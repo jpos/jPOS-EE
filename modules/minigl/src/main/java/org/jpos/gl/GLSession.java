@@ -1042,7 +1042,7 @@ public class GLSession {
                 Account a = (Account) iter.next();
                 BigDecimal[] b = getBalances (journal, a, date, inclusive, layersCopy, maxId);
                 balance[0] = balance[0].add (b[0]);
-                // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
+                // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating a failed to lazily initialize a collection
             }
         }
         else if (acct.isFinalAccount()) {
@@ -1069,7 +1069,7 @@ public class GLSession {
                 }
             } else {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
-                if (bcache != null && bcache.getRef() <= maxId) {
+                if (bcache != null && (maxId == 0 || bcache.getRef() <= maxId)) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }

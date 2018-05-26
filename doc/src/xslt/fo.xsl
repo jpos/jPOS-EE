@@ -8,15 +8,36 @@
     <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/fo/docbook.xsl"/>
     <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/fo/highlight.xsl"/>
     <xsl:import href="asciidoc-fo.xsl"/>
-
     <xsl:param name="highlight.source" select="1"/>
     <xsl:param name="highlight.xslthl.config">http://docbook.sourceforge.net/release/xsl/current/highlighting/xslthl-config.xml</xsl:param>
 
+    <xsl:param name="paper.type" select="'A4'"/>
+    <xsl:param name="body.font.family" select="'serif'"/>
+    <xsl:param name="body.font.master">10</xsl:param>
+    <xsl:param name="body.font.size">
+      <xsl:value-of select="$body.font.master"/><xsl:text>pt</xsl:text>
+    </xsl:param>
+    <!-- asciidoc-br is customized below
+    <xsl:template match="processing-instruction('asciidoc-br')">
+      <fo:block/>
+    </xsl:template>
+    -->
+    <xsl:template match="processing-instruction('asciidoc-hr')">
+      <fo:block space-after="1em">
+        <fo:leader leader-pattern="rule" rule-thickness="0.5pt"  rule-style="solid" leader-length.minimum="100%"/>
+      </fo:block>
+    </xsl:template>
+    <xsl:template match="processing-instruction('asciidoc-pagebreak')">
+      <fo:block break-after='page'/>
+    </xsl:template>
+    <xsl:attribute-set name="monospace.properties">
+      <xsl:attribute name="font-size">10pt</xsl:attribute>
+    </xsl:attribute-set>
     <xsl:param name="symbol.font.family"/>
     <xsl:param name="shade.verbatim">1</xsl:param>
     <xsl:param name="saxon.extensions" select="1"/>
     <xsl:param name="use.extensions" select="'1'"/>
-    <xsl:param name="ulink.show" select="0"/>
+    <xsl:param name="ulink.show" select="1"/>
     <xsl:param name="tablecolumns.extension" select="'1'"/>
     <xsl:param name="linenumbering.extension" select="'1'"/>
     <xsl:param name="linenumbering.everyNth" select="'1'"/>
@@ -55,7 +76,7 @@
 -->
 
     <xsl:template match="d:informalexample[@role='license']">
-        <fo:block font-size="8pt">
+        <fo:block font-size="9pt">
             <xsl:apply-imports/>
         </fo:block>
     </xsl:template>
@@ -185,14 +206,16 @@
       </xsl:attribute>
     </xsl:attribute-set>
 
-    <!-- Make links bold and blue -->
+    <!-- Make links bold -->
     <xsl:attribute-set name="xref.properties">
         <xsl:attribute name="font-weight">bold</xsl:attribute>
+        <!--
+        <xsl:attribute name="font-style">italic</xsl:attribute>
         <xsl:attribute name="color">blue</xsl:attribute>
+    -->
     </xsl:attribute-set>
 
     <!-- Prevent blank pages in output -->
-
     <xsl:template name="book.titlepage.verso"/>
     <xsl:template name="book.titlepage.before.verso"/>
     <xsl:template name="book.titlepage.separator"/>
@@ -207,7 +230,7 @@
                             <fo:block>
                                 <fo:external-graphic src="url(images/logo.jpg)"/>
                             </fo:block>
-                            <fo:block font-family="Helvetica" font-size="22pt" padding-before="10mm">
+                            <fo:block font-family="Helvetica" font-size="16pt" padding-before="10mm">
                                 <xsl:value-of select="/d:book/d:bookinfo/d:title"/>
                             </fo:block>
                             <fo:block font-family="Helvetica" font-size="12pt" padding="10mm">
@@ -225,4 +248,12 @@
         book    toc,title,figure,table,example,equation
     </xsl:param>
 
+    <xsl:template name="xref.target">
+      <xsl:param name="context" select="."/>
+      <xsl:param name="object" select="."/>
+      <xsl:text>#</xsl:text>
+      <xsl:call-template name="object.id">
+          <xsl:with-param name="object" select="$object"/>
+      </xsl:call-template>
+    </xsl:template>
 </xsl:stylesheet>

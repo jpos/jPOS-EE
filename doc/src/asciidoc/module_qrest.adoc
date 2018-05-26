@@ -32,19 +32,19 @@ we've created a little **QRest** module that can be configured like this:
 [source,xml]
 ----------------------------------------------------------------------------------------
 <qrest class='org.jpos.qrest.RestServer' logger='Q2'>
-    <property name='port' value='8081' />                                            <1>
-    <property name='queue' value='TXNMGR' />                                         <2>
-    <property name="TLS" value="true" />                                             <3>
-    <property name="server-auth" value="false" />                                    <4>
-    <property name="client-auth" value="false" />                                    <5>
-    <property name="keystore" value="cfg/keystore.jks" />                            <6>
-    <property name="storepassword" value="jposjposjposjpos" />                       <7>
-    <property name="keypassword"   value="jposjposjposjpos" />                       <8>
-    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" />  <9>
-    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" />
-    <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" />
-    ...
-    ...
+  <property name='port' value='8081' />                                            <1>
+  <property name='queue' value='TXNMGR' />                                         <2>
+  <property name="TLS" value="true" />                                             <3>
+  <property name="server-auth" value="false" />                                    <4>
+  <property name="client-auth" value="false" />                                    <5>
+  <property name="keystore" value="cfg/keystore.jks" />                            <6>
+  <property name="storepassword" value="jposjposjposjpos" />                       <7>
+  <property name="keypassword"   value="jposjposjposjpos" />                       <8>
+  <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" />  <9>
+  <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" />
+  <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" />
+  ...
+  ...
 </qrest>
 ----------------------------------------------------------------------------------------
 <1> Listening port
@@ -75,7 +75,7 @@ The TransactionManager is configured like this:
     <route path="/jpos/myroute/{mypathparam}**" method="GET" name="mygroup1"/>
     <route path="/jpos/myroute/{mypathparam}**" method="POST" name="mygroup2"/>
     <route path="/jpos/fixedroute" method="POST" name="..."/>
-    <route path="/q2**" method="GET" name="q2"/>                                    <1>
+    <route path="/q2**" method="GET" name="q2"/>                                 <1>
   </participant>
 
   <group name="q2">
@@ -105,8 +105,8 @@ be used to simplify a lot of Jetty/Server/Jersey boilerplate.
 =====
 
 The `Router` participant is actually a `GroupSelector` (from the TransactionManager's standpoint)
-and takes care of parsing and placing in the Context both _Path Parameters_ as well as _Query Parameters_
-(under the `PATHPARAMS` and `QUERYPARAMS` contants).
+and takes care of parsing and placing in the Context both _Path Parameters_ as well as 
+_Query Parameters_ (under the `PATHPARAMS` and `QUERYPARAMS` contants).
 
 So if we define a route like this:
 
@@ -254,7 +254,8 @@ Here is a copy of the internal Q2Info route configuration:
         routes.add(new Route<>("/q2/uptime**", "GET",
             (t,s) -> mapOf("uptime", q2.getUptime())));
         routes.add(new Route<>("/q2/started**", "GET",
-            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
+            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - 
+            q2.getUptime()))));
         routes.add(new Route<>("/q2/diskspace**", "GET",
             (t,s) -> diskspace()));
         routes.add(new Route<>("/q2/muxes/{muxname}**", "GET",

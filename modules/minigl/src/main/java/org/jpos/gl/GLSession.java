@@ -1092,17 +1092,18 @@ public class GLSession {
      * @param acct the account.
      * @param start date (inclusive).
      * @param end date (inclusive).
+     * @param ascendingOrder boolean.
+     * @param maxResults int.
      * @return Account detail for given period.
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public AccountDetail getAccountDetail 
-        (Journal journal, Account acct, Date start, Date end, short[] layers) 
+        (Journal journal, Account acct, Date start, Date end, short[] layers, boolean ascendingOrder, int maxResults)
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
         start = Util.floor (start);
         end   = Util.ceil (end);
-
         Criteria crit = session.createCriteria (GLEntry.class);
 
         boolean hasChildren = false;
@@ -1127,17 +1128,43 @@ public class GLSession {
             .add (Restrictions.ge ("postDate", start))
             .add (Restrictions.le ("postDate", end));
 
-        BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers, 0L);
-        crit.addOrder (Order.asc ("postDate"));
-        crit.addOrder (Order.asc ("timestamp"));
-        crit.addOrder (Order.asc ("id"));
-        List entries = crit.list();
-        // BigDecimal finalBalance = applyEntries (initialBalance[0], entries);
+        if (maxResults > 0)
+            crit.setMaxResults(maxResults);
 
-        return new AccountDetail (
-                journal, acct, 
-                initialBalance[0],
-                start, end, entries, layers );
+        long maxEntry = 0L;
+        List <GLEntry>  entries;
+        if (ascendingOrder) {
+            crit.addOrder (Order.asc ("postDate"));
+            crit.addOrder (Order.asc ("timestamp"));
+            crit.addOrder (Order.asc ("id"));
+            entries = crit.list();
+        } else {
+            crit.addOrder (Order.desc ("postDate"));
+            crit.addOrder (Order.desc ("timestamp"));
+            crit.addOrder (Order.desc ("id"));
+            entries = crit.list();
+            if (entries.size() > 0) {
+                maxEntry = entries.get(0).getId();
+            }
+        }
+        BigDecimal initialBalance[] = getBalances(journal, acct, start, false, layers, maxEntry);
+        return new AccountDetail(journal, acct, initialBalance[0], start, end, entries, layers, ascendingOrder);
+    }
+
+    /**
+     * AccountDetail for date range
+     * @param journal the journal.
+     * @param acct the account.
+     * @param start date (inclusive).
+     * @param end date (inclusive).
+     * @return Account detail for given period.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public AccountDetail getAccountDetail
+    (Journal journal, Account acct, Date start, Date end, short[] layers)
+            throws HibernateException, GLException
+    {
+        return getAccountDetail(journal, acct, start, end, layers, true, 0);
     }
 
     /**
@@ -1183,7 +1210,7 @@ public class GLSession {
         if (entries.size() > 0)
             balance = getBalances(journal, acct, (Date) null, true, layers, entries.get(0).getId())[0];
 
-        return new AccountDetail(journal, acct, balance, entries, layers);
+        return new AccountDetail(journal, acct, balance, null, null, entries, layers, false);
     }
 
 

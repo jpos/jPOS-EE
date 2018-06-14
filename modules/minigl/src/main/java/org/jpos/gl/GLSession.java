@@ -1102,8 +1102,6 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        start = Util.floor (start);
-        end   = Util.ceil (end);
         Criteria crit = session.createCriteria (GLEntry.class);
 
         boolean hasChildren = false;
@@ -1124,9 +1122,15 @@ public class GLSession {
 
         crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
-            .add (Restrictions.eq ("journal", journal))
-            .add (Restrictions.ge ("postDate", start))
-            .add (Restrictions.le ("postDate", end));
+            .add (Restrictions.eq ("journal", journal));
+        if (start != null) {
+            start = Util.floor(start);
+            crit.add (Restrictions.ge ("postDate", start));
+        }
+        if (end != null) {
+            end = Util.ceil(end);
+            crit.add (Restrictions.le ("postDate", end));
+        }
 
         if (maxResults > 0)
             crit.setMaxResults(maxResults);
@@ -1180,37 +1184,7 @@ public class GLSession {
     (Journal journal, Account acct, short[] layers, int maxResults)
             throws HibernateException, GLException
     {
-        checkPermission (GLPermission.READ);
-        Criteria crit = session.createCriteria (GLEntry.class);
-
-        boolean hasChildren = false;
-        if (acct.isCompositeAccount()) {
-            Disjunction dis = Restrictions.disjunction();
-            for (Long l : getChildren (acct)) {
-                hasChildren = true;
-                dis.add (Restrictions.idEq(l));
-            }
-            if (hasChildren) {
-                Criteria subCrit = crit.createCriteria(("account"));
-                subCrit.add (dis);
-            }
-        }
-        if (!hasChildren) {
-            crit.add (Restrictions.eq ("account", acct));
-        }
-
-        crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
-        crit = crit.createCriteria ("transaction")
-                .add (Restrictions.eq ("journal", journal));
-
-        crit.addOrder (Order.desc ("id"));
-        crit.setMaxResults(maxResults);
-        List<GLEntry> entries = crit.list();
-        BigDecimal balance = ZERO;
-        if (entries.size() > 0)
-            balance = getBalances(journal, acct, (Date) null, true, layers, entries.get(0).getId())[0];
-
-        return new AccountDetail(journal, acct, balance, null, null, entries, layers, false);
+        return getAccountDetail(journal, acct, null, null, layers, false, maxResults);
     }
 
 

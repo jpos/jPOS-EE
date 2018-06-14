@@ -30,14 +30,14 @@ import org.hibernate.type.IntegerType;
 import javax.persistence.criteria.*;
 
 @SuppressWarnings("unused")
-public class SysConfigManager extends ManagerSupport<SysConfig> {
+public class SysConfigManager extends DBManager<SysConfig> {
     private String prefix = "";
 
     public SysConfigManager (DB db) {
-        super(db);
+        super(db,SysConfig.class);
     }
     public SysConfigManager (DB db, String prefix) {
-        super(db);
+        super(db,SysConfig.class);
         this.prefix = prefix;
     }
     public void setPrefix (String prefix) {
@@ -130,7 +130,7 @@ public class SysConfigManager extends ManagerSupport<SysConfig> {
     }
 
     @Override
-    protected Predicate[] buildPredicates(Root<SysConfig> root) {
+    protected Predicate[] buildFilters(Root<SysConfig> root) {
         Predicate[] predicates = new Predicate[] {
             db.session().getCriteriaBuilder().like(root.get("id"),prefix + "%")
         };

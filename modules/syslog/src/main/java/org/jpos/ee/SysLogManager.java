@@ -26,7 +26,7 @@ import org.hibernate.Transaction;
 
 
 @SuppressWarnings("unused")
-public class SysLogManager extends ManagerSupport<SysLog> {
+public class SysLogManager extends DBManager<SysLog> {
     boolean autoCommit;
 
     /**
@@ -34,7 +34,7 @@ public class SysLogManager extends ManagerSupport<SysLog> {
      * (open/begin/commit/close is not required).
      */
     public SysLogManager () {
-        super (new DB());
+        super (new DB(),SysLog.class);
         autoCommit = true;
     }
 
@@ -45,7 +45,7 @@ public class SysLogManager extends ManagerSupport<SysLog> {
      * @param db the DB instance
      */
     public SysLogManager (DB db) {
-        super(db);
+        super(db,SysLog.class);
         autoCommit = false;
     }
 
@@ -55,7 +55,7 @@ public class SysLogManager extends ManagerSupport<SysLog> {
      * @param autoCommit true if we want this manager to auto-commit log events
      */
     public SysLogManager (DB db, boolean autoCommit) {
-        super(db);
+        super(db, SysLog.class);
         this.autoCommit = autoCommit;
     }
 

@@ -18,10 +18,10 @@
 
 package org.jpos.ee;
 
-public class RoleManager extends ManagerSupport<Role> {
+public class RoleManager extends DBManager<Role> {
 
     public RoleManager (DB db) {
-        super(db);
+        super(db,Role.class);
     }
 
     public Role getRoleByName (String name) {

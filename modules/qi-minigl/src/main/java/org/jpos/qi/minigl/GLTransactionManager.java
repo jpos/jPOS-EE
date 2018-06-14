@@ -19,32 +19,32 @@
 package org.jpos.qi.minigl;
 
 import org.jpos.ee.DB;
-import org.jpos.ee.ManagerSupport;
+import org.jpos.ee.DBManager;
 import org.jpos.gl.GLTransaction;
 
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.Date;
 
-public class GLTransactionManager extends ManagerSupport<GLTransaction> {
+public class GLTransactionManager extends DBManager<GLTransaction> {
 
    private Date start;
    private Date end;
    private Long journalId;
 
     public GLTransactionManager(DB db) {
-        super(db);
+        super(db,GLTransaction.class);
     }
 
     public GLTransactionManager(DB db, Long journalId, Date start, Date end) {
-        super(db);
+        super(db,GLTransaction.class);
         this.start = start;
         this.end = end;
         this.journalId = journalId;
     }
 
     @Override
-    protected Predicate[] buildPredicates(Root<GLTransaction> root) {
+    protected Predicate[] buildFilters(Root<GLTransaction> root) {
         db.session().enableFetchProfile("eager");
         Predicate journalPredicate = null;
         if (journalId != null) {

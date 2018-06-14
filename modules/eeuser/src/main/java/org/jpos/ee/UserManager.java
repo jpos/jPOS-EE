@@ -21,17 +21,12 @@ package org.jpos.ee;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Base64;
-import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.query.criteria.internal.OrderImpl;
 import org.jpos.iso.ISOUtil;
 import org.jpos.security.SystemSeed;
 
@@ -42,7 +37,7 @@ import javax.persistence.criteria.*;
 /**
  * @author Alejandro Revilla
  */
-public class UserManager extends ManagerSupport<User> {
+public class UserManager extends DBManager<User> {
 
     VERSION version;
 
@@ -51,7 +46,7 @@ public class UserManager extends ManagerSupport<User> {
     }
 
     public UserManager (DB db, VERSION version) {
-        super (db);
+        super (db, User.class);
         this.version = version;
     }
 
@@ -92,7 +87,7 @@ public class UserManager extends ManagerSupport<User> {
     }
 
     @Override
-    protected Predicate[] buildPredicates(Root<User> root) {
+    protected Predicate[] buildFilters(Root<User> root) {
         return new Predicate[] {
                 db.session().getCriteriaBuilder().isFalse(root.get("deleted"))
         };

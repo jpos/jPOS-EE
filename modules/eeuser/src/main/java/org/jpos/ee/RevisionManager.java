@@ -34,10 +34,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 @SuppressWarnings("unused")
-public class RevisionManager extends ManagerSupport<Revision> {
+public class RevisionManager extends DBManager<Revision> {
 
     public RevisionManager (DB db) {
-        super(db);
+        super(db,Revision.class);
     }
     @SuppressWarnings("unchecked")
     public List<Revision> getRevisionsByRef (String ref)

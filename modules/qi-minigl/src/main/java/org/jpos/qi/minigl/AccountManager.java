@@ -20,7 +20,7 @@ package org.jpos.qi.minigl;
 
 import org.hibernate.query.criteria.internal.OrderImpl;
 import org.jpos.ee.DB;
-import org.jpos.ee.ManagerSupport;
+import org.jpos.ee.DBManager;
 import org.jpos.gl.Account;
 import org.jpos.gl.CompositeAccount;
 
@@ -32,11 +32,11 @@ import java.util.Map;
 /**
  * Created by jr on 8/8/17.
  */
-public class AccountManager extends ManagerSupport<Account> {
+public class AccountManager extends DBManager<Account> {
     
     
     public AccountManager(DB db) {
-        super(db);
+        super(db,Account.class);
     }
 
     public List<Account> getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {

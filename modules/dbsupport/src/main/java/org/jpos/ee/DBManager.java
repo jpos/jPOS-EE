@@ -23,29 +23,25 @@ import org.hibernate.query.criteria.internal.OrderImpl;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.criteria.*;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by jr on 6/6/17.
- */
-public class ManagerSupport<T> {
+public class DBManager<T> {
 
     protected DB db;
     private Class<T> clazz;
 
-    public ManagerSupport(DB db) {
+    public DBManager(DB db, Class<T> clazz) {
         this.db = db;
-        clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        this.clazz = clazz;
     }
 
     public int getItemCount()  {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<T> root = query.from(clazz);
-        Predicate[] predicates = buildPredicates(root);
+        Predicate[] predicates = buildFilters(root);
         if (predicates != null)
             query.where(predicates);
         query.select(criteriaBuilder.count(root));
@@ -64,7 +60,7 @@ public class ManagerSupport<T> {
                 orderList.add(order);
             }
         }
-        Predicate[] predicates = buildPredicates(root);
+        Predicate[] predicates = buildFilters(root);
         if (predicates != null)
             query.where(predicates);
         query.select(root);
@@ -108,7 +104,7 @@ public class ManagerSupport<T> {
         Predicate equals = criteriaBuilder.equal(root.get(param), value);
         query.where(equals);
         if (withFilter) {
-            Predicate[] predicates = buildPredicates(root);
+            Predicate[] predicates = buildFilters(root);
             if (predicates != null) {
                 //overrides previous predicates
                 query.where(criteriaBuilder.and(criteriaBuilder.and(predicates), equals));
@@ -118,6 +114,6 @@ public class ManagerSupport<T> {
         return query;
     }
 
-    protected Predicate[] buildPredicates(Root<T> root) { return null; }
+    protected Predicate[] buildFilters(Root<T> root) { return null; }
 
 }

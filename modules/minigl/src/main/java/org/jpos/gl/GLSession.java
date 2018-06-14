@@ -1123,11 +1123,11 @@ public class GLSession {
         crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
             .add (Restrictions.eq ("journal", journal));
-        if (start != null) {
+        if (start != null || (start == null && ascendingOrder)) {
             start = Util.floor(start);
             crit.add (Restrictions.ge ("postDate", start));
         }
-        if (end != null) {
+        if (end != null || (end == null && ascendingOrder)) {
             end = Util.ceil(end);
             crit.add (Restrictions.le ("postDate", end));
         }
@@ -1137,11 +1137,13 @@ public class GLSession {
 
         long maxEntry = 0L;
         List <GLEntry>  entries;
+        BigDecimal initialBalance[];
         if (ascendingOrder) {
             crit.addOrder (Order.asc ("postDate"));
             crit.addOrder (Order.asc ("timestamp"));
             crit.addOrder (Order.asc ("id"));
             entries = crit.list();
+            initialBalance = getBalances(journal, acct, start, false, layers, maxEntry);
         } else {
             crit.addOrder (Order.desc ("postDate"));
             crit.addOrder (Order.desc ("timestamp"));
@@ -1150,8 +1152,8 @@ public class GLSession {
             if (entries.size() > 0) {
                 maxEntry = entries.get(0).getId();
             }
+            initialBalance = getBalances(journal, acct, end, true, layers, maxEntry);
         }
-        BigDecimal initialBalance[] = getBalances(journal, acct, start, false, layers, maxEntry);
         return new AccountDetail(journal, acct, initialBalance[0], start, end, entries, layers, ascendingOrder);
     }
 

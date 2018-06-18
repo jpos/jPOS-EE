@@ -19,9 +19,18 @@
 package org.jpos.q2.cli.crypto;
 
 import org.jpos.crypto.CryptoService;
+import org.jpos.crypto.SensitiveString;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.util.NameRegistrar;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 
 @SuppressWarnings("unused")
 public class UNLOCK implements CLICommand {
@@ -50,7 +59,7 @@ public class UNLOCK implements CLICommand {
         cli.println ("Usage: UNLOCK");
     }
 
-    private boolean unlock (CLIContext cli) {
-        return cs.unlock(cli.getReader().readLine("Password: ", '*').toCharArray());
+    private boolean unlock (CLIContext cli) throws NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidKeyException {
+        return cs.unlock(new SensitiveString(cli.getReader().readLine("Password: ", '*')));
     }
 }

@@ -42,6 +42,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * Provides AES encryption service
@@ -78,7 +79,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     private Random rnd = new SecureRandom();
     private long ttl;
     private long duration;
-    private char[] unlock;
+    private Supplier<String> unlock;
 
     /**
      * Encrypts data using the current key
@@ -127,7 +128,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         UUID xid = xor(jobId, keyId);
         SecretKey sk = keys.rdp(xid);
         if (sk == null && unlock != null) {
-            loadKey(jobId, keyId, unlock);
+            loadKey(jobId, keyId, unlock.get().toCharArray());
             sk = keys.rdp(xid);
         }
         if (sk == null) {
@@ -168,16 +169,16 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     /**
      * Unlock the CryptoService
      */
-    public boolean unlock (char[] password) {
+    public boolean unlock (Supplier<String> passwordSupplier) {
         try {
             if (isLocked()) {
                 // attempt encrypt/decrypt
                 UUID id = UUID.randomUUID();
                 SecretKey sk = generateKey();
                 byte[] b = pgpEncrypt(id.toString(), sk.getEncoded());
-                PGPHelper.decrypt(b, privKeyRing, password);
+                PGPHelper.decrypt(b, privKeyRing, passwordSupplier.get().toCharArray());
                 sem.acquire();
-                this.unlock = password;
+                this.unlock = passwordSupplier;
                 sem.release();
             }
             return true;
@@ -229,8 +230,13 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         ttl = cfg.getLong("ttl", 3600000L);
         duration = cfg.getLong("duration", 86400000L);
         String unlockPassword = cfg.get("unlock-password", null);
-        if (unlockPassword != null)
-            unlock (unlockPassword.toCharArray());
+        if (unlockPassword != null) {
+            try {
+                unlock (new SensitiveString(unlockPassword));
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+                throw new ConfigurationException(e);
+            }
+        }
     }
 
     private SecretKey generateKey() throws NoSuchAlgorithmException {
@@ -269,8 +275,10 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         Logger.log(evt);
     }
 
-    private SecretKey getKey (UUID keyId, char[] password) throws Exception {
-        password = password != null ? password : unlock;
+    private SecretKey getKey (UUID keyId, char[] passPhrase) throws Exception {
+        if (passPhrase == null && unlock == null)
+            throw new SecurityException("Passphrase not available");
+        passPhrase = passPhrase != null ? passPhrase : unlock.get().toCharArray();
 
         String v = (String) DB.execWithTransaction(db -> {
             SysConfigManager mgr = new SysConfigManager(db, "key.");
@@ -282,11 +290,11 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         byte[] key = PGPHelper.decrypt(
           v.getBytes(),
           privKeyRing,
-          password != null ? password : unlock);
+          passPhrase
+        );
         return new SecretKeySpec(key, 0, key.length, "AES");
 
     }
-
 
     private byte[] decrypt (SecretKey sk, IvParameterSpec iv, byte[] cryptogram)
       throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException,

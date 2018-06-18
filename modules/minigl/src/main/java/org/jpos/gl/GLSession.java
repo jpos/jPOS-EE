@@ -1092,6 +1092,7 @@ public class GLSession {
      * @param acct the account.
      * @param start date (inclusive).
      * @param end date (inclusive).
+     * @param layers array of the layers included.
      * @param ascendingOrder boolean.
      * @param maxResults int.
      * @return Account detail for given period.

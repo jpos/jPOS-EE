@@ -44,26 +44,50 @@ public class AccountDetail {
      * Constructs an AccountDetail.
      * @param journal the Journal.
      * @param account the account.
-     * @param initialBalance initial balance (reporting currency).
+     * @param balance balance (reporting currency), could be initial if naturalOrder or final if not.
+     * @param start start date (inclusive).
+     * @param end end date (inclusive).
+     * @param entries list of GLEntries.
+     * @param layers the layers involved in this detail
+     * @param ascendingOrder if we should compute balance normally or inverted
+     */
+    public AccountDetail(
+        Journal journal, Account account,
+        BigDecimal balance,
+        Date start, Date end, List<GLEntry> entries, short[] layers, boolean ascendingOrder)
+    {
+        super();
+        this.journal               = journal;
+        this.account               = account;
+        this.start                 = start;
+        this.end                   = end;
+        this.entries               = entries;
+        this.layers                = layers;
+        if (ascendingOrder) {
+            this.initialBalance = balance;
+            computeBalances();
+        } else {
+            this.finalBalance = balance;
+            computeReverseBalances(balance);
+        }         
+    }
+
+    /**
+     * Constructs an AccountDetail.
+     * @param journal the Journal.
+     * @param account the account.
+     * @param balance balance (reporting currency), could be initial if naturalOrder or final if not.
      * @param start start date (inclusive).
      * @param end end date (inclusive).
      * @param entries list of GLEntries.
      * @param layers the layers involved in this detail
      */
     public AccountDetail(
-        Journal journal, Account account,
-        BigDecimal initialBalance,
-        Date start, Date end, List<GLEntry> entries, short[] layers)
+            Journal journal, Account account,
+            BigDecimal balance,
+            Date start, Date end, List<GLEntry> entries, short[] layers)
     {
-        super();
-        this.journal               = journal;
-        this.account               = account;
-        this.initialBalance        = initialBalance;
-        this.start                 = start;
-        this.end                   = end;
-        this.entries               = entries;
-        this.layers                = layers;
-        computeBalances();
+        this(journal, account, balance, start, end, entries, layers, true);
     }
 
     /**
@@ -79,13 +103,7 @@ public class AccountDetail {
             BigDecimal balance,
             List<GLEntry> entries, short[] layers)
     {
-        super();
-        this.journal               = journal;
-        this.account               = account;
-        this.finalBalance          = balance;
-        this.entries               = entries;
-        this.layers                = layers;
-        computeReverseBalances(balance);
+        this(journal, account, balance, null, null, entries, layers, false);
     }
 
     public Journal getJournal() {

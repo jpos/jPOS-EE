@@ -1069,7 +1069,7 @@ public class GLSession {
                 }
             } else {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
-                if (bcache != null && (maxId == 0 || bcache.getRef() <= maxId)) {
+                if (bcache != null && bcache.getRef() <= maxId) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }

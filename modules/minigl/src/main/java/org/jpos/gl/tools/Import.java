@@ -179,27 +179,28 @@ public class Import implements EntityResolver {
         parent.getChildren().add (acct);
     }
 
-    private void createTransactions (Session sess, Iterator iter) 
-        throws SQLException, HibernateException, ParseException
-    {
+    private void createTransactions (DB db, Iterator iter)
+      throws SQLException, HibernateException, ParseException, GLException {
+        GLSession gls = new GLSession(db);
         while (iter.hasNext()) {
-            Transaction txn = sess.beginTransaction();
+            Transaction txn = db.beginTransaction();
             Element elem = (Element) iter.next ();
             GLTransaction glt = new GLTransaction (elem);
             Journal journal = getJournal (
-                sess, elem.getAttributeValue ("journal")
+                db.session(), elem.getAttributeValue ("journal")
             );
             glt.setJournal (journal);
-            sess.save (glt);
-            createEntries (
-                sess, glt, 
+            addEntries (
+                db.session(), glt,
                 elem.getChildren("entry").iterator()
             );
+            gls.post(journal, glt);
+            System.out.println (glt.getId() + " " + glt.getDetail());
             txn.commit ();
         }
     }
-    private void createEntries (
-        Session sess, GLTransaction glt, Iterator iter) 
+    private void addEntries (
+        Session sess, GLTransaction glt, Iterator iter)
         throws SQLException, HibernateException, ParseException
     {
         Account chart = glt.getJournal().getChart ();
@@ -209,10 +210,10 @@ public class Import implements EntityResolver {
                 "credit".equals (elem.getAttributeValue ("type")) ?
                 (new GLCredit ()) :
                 (new GLDebit ());
+
             entry.fromXML (elem);
             entry.setAccount (getFinalAccount (sess, chart, elem));
             entry.setTransaction (glt);
-            sess.save (entry);
             glt.getEntries().add (entry);
         }
     }
@@ -346,13 +347,14 @@ public class Import implements EntityResolver {
         if (root.getChild ("create-schema") != null)
             createSchema ();
 
-        Session sess = new DB().open();
-        createUsers (sess, root.getChildren ("user").iterator());
-        createCurrencies (sess, root.getChildren ("currency").iterator());
-        createCharts (sess, root.getChildren ("chart-of-accounts").iterator());
-        createJournals (sess, root.getChildren ("journal").iterator());
-        createTransactions (sess, root.getChildren ("transaction").iterator());
-        sess.close ();
+        try (DB db = new DB()) {
+            Session sess = db.open();
+            createUsers(sess, root.getChildren("user").iterator());
+            createCurrencies(sess, root.getChildren("currency").iterator());
+            createCharts(sess, root.getChildren("chart-of-accounts").iterator());
+            createJournals(sess, root.getChildren("journal").iterator());
+            createTransactions(db, root.getChildren("transaction").iterator());
+        }
     }
 
     public static void main (String[] args) {
@@ -362,7 +364,7 @@ public class Import implements EntityResolver {
         try {
             new Import().parse (args[0]);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println (e.getMessage());
         }
    }
 }

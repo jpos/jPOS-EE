@@ -119,7 +119,7 @@
   </rule>
   <rule clazz="org.jpos.gl.rule.DoubleEntry">
    Verify that credits equals debits
-   <layers>0,1</layers>
+   <layers>0</layers>
   </rule>
   <rule clazz="org.jpos.gl.rule.CompositeMaxBalance" account="1">
     Check assets doesn't go above one million
@@ -132,8 +132,8 @@
   </rule>
   <rule clazz="org.jpos.gl.rule.CompositeMinBalance" account="11">
     Check that the account has always a balance greater than 45000.00
-    <param>45000.00</param>
-    <layers>0,1</layers>
+    <param>-45000.00</param>
+    <layers>0,1,2</layers>
   </rule>
   <rule clazz="org.jpos.gl.rule.FinalMaxBalance" account="31">
     Put a limit to Bob's equity
@@ -158,7 +158,7 @@
   </rule>
   <rule clazz="org.jpos.gl.rule.DoubleEntry">
    Verify that credits equals debits
-   <param>0.1</param>
+   <layers>0</layers>
   </rule>
  </journal>
 

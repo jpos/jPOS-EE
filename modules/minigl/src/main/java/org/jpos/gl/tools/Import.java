@@ -128,12 +128,12 @@ public class Import implements EntityResolver {
             journal.setChart (
                 getChart (sess, elem.getChildTextTrim ("chart"))
             );
+            sess.save (journal);
             journal.setPermissions (
                 createPermissions (
-                    sess, elem.getChildren ("grant").iterator()
+                    sess, journal, elem.getChildren ("grant").iterator()
                 )
             );
-            sess.save (journal);
             createJournalLayers (
                 sess, journal, elem.getChildren ("layer").iterator()
             );
@@ -194,8 +194,8 @@ public class Import implements EntityResolver {
                 db.session(), glt,
                 elem.getChildren("entry").iterator()
             );
-            gls.post(journal, glt);
             System.out.println (glt.getId() + " " + glt.getDetail());
+            gls.post(journal, glt);
             txn.commit ();
         }
     }
@@ -286,7 +286,7 @@ public class Import implements EntityResolver {
         }
         return (GLUser) l.get(0);
     }
-    private Set createPermissions (Session session, Iterator iter) 
+    private Set createPermissions (Session session, Journal j, Iterator iter)
         throws HibernateException
     {
         Set permissions = new HashSet ();
@@ -295,8 +295,10 @@ public class Import implements EntityResolver {
             GLUser user = getUser (session, e.getAttributeValue ("user"));
             GLPermission p = new GLPermission (e.getTextTrim());
             p.setUser (user);
-            session.save (p);
+            p.setJournal (j);
             permissions.add (p);
+            user.getPermissions().add(p);
+            session.save (p);
         }
         return permissions;
     }

@@ -68,7 +68,7 @@ public class RulesTest extends TestBase {
             tx.commit();
         } catch (GLException e) {
             assertEquals (
-                "Transaction does not balance. debits=5.00, credits=5.01", 
+                "Transaction (Unbalanced transaction) does not balance. debits=5.00, credits=5.01 (layer=0)",
                 e.getMessage()
             );
             tx.rollback();
@@ -122,7 +122,7 @@ public class RulesTest extends TestBase {
     }
 
     public void testCompositeMinBalance () throws Exception {
-        BigDecimal amount = new BigDecimal ("5001.00");
+        BigDecimal amount = new BigDecimal ("48001.00");
         GLTransaction txn = 
             createTransaction (
                 "check parent MinBalance rule", 

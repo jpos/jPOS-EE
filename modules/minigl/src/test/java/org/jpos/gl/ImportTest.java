@@ -23,6 +23,9 @@ import org.jpos.gl.tools.Import;
 
 public class ImportTest extends TestCase {
     public void testImport() throws Exception {
+        String userName = System.getProperty("user.name");
+        System.setProperty("user.name", "travis");
         new Import().parse("../test-classes/testdata.xml");
+        System.setProperty("user.name", userName);
     }
 }

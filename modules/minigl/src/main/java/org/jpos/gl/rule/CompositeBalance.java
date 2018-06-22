@@ -18,9 +18,8 @@
 
 package org.jpos.gl.rule;
 
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Iterator;
 import java.math.BigDecimal;
 import org.jpos.gl.Account;
 import org.jpos.gl.JournalRule;
@@ -29,15 +28,12 @@ import org.jpos.gl.GLException;
 import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
 import org.jpos.gl.Journal;
-import org.hibernate.Session;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
+import org.jpos.util.Log;
+import org.jpos.util.LogEvent;
 
 abstract class CompositeBalance implements JournalRule {
     private static final BigDecimal ZERO = new BigDecimal ("0.00");
-    private static final Log log = 
-        LogFactory.getLog (CompositeMinBalance.class);
 
     protected abstract String getRuleName();
     protected abstract boolean isError
@@ -50,11 +46,11 @@ abstract class CompositeBalance implements JournalRule {
     {
         Journal journal = txn.getJournal();
         session.lock (journal, account);
-        BigDecimal balance = session.getBalance (journal, account);
-        BigDecimal paramBalance = 
-            (param != null) ?  new BigDecimal (param) : ZERO;
-        BigDecimal impact = getImpact (txn, offsets);
+        BigDecimal balance = session.getBalance (journal, account, layers);
 
+        BigDecimal paramBalance =
+            (param != null) ?  new BigDecimal (param) : ZERO;
+        BigDecimal impact = getImpact (txn, layers, offsets);
         if (isError (balance.add(impact), paramBalance)) {
             StringBuffer sb = new StringBuffer (getRuleName());
             sb.append (" rule for account ");
@@ -68,16 +64,26 @@ abstract class CompositeBalance implements JournalRule {
             throw new GLException (sb.toString());
         }
     }
-    private BigDecimal getImpact (GLTransaction txn, int[] offsets) {
+    private BigDecimal getImpact (GLTransaction txn, short[] layers, int[] offsets) {
         BigDecimal impact = ZERO;
         List entries = txn.getEntries();
         
         for (int i=0; i<offsets.length; i++) {
-            impact = impact.add (
-                ((GLEntry) entries.get (offsets[i])).getImpact ()
-            );
+            GLEntry e = ((GLEntry) entries.get (offsets[i]));
+            if (isInLayer(e.getLayer(), layers)) {
+                impact = impact.add (
+                  e.getImpact ()
+                );
+            }
         }
         return impact;
+    }
+
+    private boolean isInLayer (short layer, short[] layers) {
+        for (short l : layers)
+            if (layer == l)
+                return true;
+        return false;
     }
 }
 

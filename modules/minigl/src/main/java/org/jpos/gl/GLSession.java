@@ -1609,7 +1609,7 @@ public class GLSession {
     }
     private void addRules
         (Map<String,Object> ruleMap, Journal journal, List acctHierarchy, int offset)
-        throws HibernateException, GLException
+        throws HibernateException
     {
         Query q = session.createQuery (
             "from org.jpos.gl.RuleInfo where journal=:journal and account in (:accts) order by id"

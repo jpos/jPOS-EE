@@ -28,7 +28,6 @@ public class SummarizeTransactions extends TestBase {
     public void testSummarize() throws Exception {
         Date POSTDATE = Util.parseDateTime ("20050104120000");
         Journal tj = gls.getJournal ("TestJournal");
-        System.out.println ("Creating summarized Transaction");
         Transaction tx = gls.beginTransaction();
         gls.summarize (tj, POSTDATE, POSTDATE, "Summarized Stress Txn", new short[] { 0 });
         tx.commit();

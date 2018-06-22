@@ -46,6 +46,7 @@ public class GLSession {
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
     private long SAFE_WINDOW = 1000L;
+    private boolean ignoreBalanceCache = false;
 
     /**
      * Construct a GLSession for a given user.
@@ -1067,7 +1068,7 @@ public class GLSession {
                     balance[0] = chkp.getBalance();
                     txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
                 }
-            } else {
+            } else if (!ignoreBalanceCache) {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
                 if (bcache != null && bcache.getRef() <= maxId) {
                     balance[0] = bcache.getBalance();
@@ -1456,6 +1457,14 @@ public class GLSession {
             }
         }
         return balance;
+    }
+
+    public boolean isIgnoreBalanceCache() {
+        return ignoreBalanceCache;
+    }
+
+    public void setIgnoreBalanceCache(boolean ignoreBalanceCache) {
+        this.ignoreBalanceCache = ignoreBalanceCache;
     }
 
     // -----------------------------------------------------------------------

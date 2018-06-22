@@ -80,6 +80,7 @@ public class BalanceCache implements Serializable {
             .append("layers", getLayers())
             .append("journal", getJournal())
             .append("account", getAccount())
+            .append("balance", getBalance())
             .toString();
     }
     public boolean equals(Object other) {

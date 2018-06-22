@@ -18,7 +18,6 @@
 
 package org.jpos.gl;
 
-import org.hibernate.Session;
 import org.hibernate.HibernateException;
 
 public interface JournalRule {

@@ -116,7 +116,6 @@ public class GLPermission {
 	return false;
     }
     public String toString () {
-        return getName ();
+        return (getUser() != null ? getUser().getNick() + "/" : "") + getName () + (journal != null ? (" (" + journal.getName() + ")") : "");
     }
 }
-

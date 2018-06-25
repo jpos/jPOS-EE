@@ -47,7 +47,16 @@ public class TestRunner
         super();
     }
     protected void initService() throws ISOException {
-        packager = new XMLPackager();
+        String packagerClass = cfg.get("packager", null);
+        if (packagerClass != null) {
+            try {
+                packager = (ISOPackager) Class.forName(packagerClass).newInstance();
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                throw new ISOException("Error instatiating packager", e);
+            }
+        } else {
+            packager = new XMLPackager();
+        }
     }
     protected void startService() {
         for (int i=0; i<cfg.getInt("sessions", 1); i++)

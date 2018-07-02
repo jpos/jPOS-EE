@@ -108,7 +108,8 @@ public class RestServer extends QBeanSupport implements Runnable {
         if (initializerThread != null) {
             initializerThread.interrupt();
             NameRegistrar.unregister(getName());
-            cf.channel().close();
+            if (cf != null && cf.channel() != null)
+                cf.channel().close();
         }
     }
 

@@ -79,6 +79,10 @@ public class DBManager<T> {
         return this.getAll(0,-1,null);
     }
 
+    public T getItemByParam(String param, Object value) {
+        return getItemByParam(param,value,false);
+    }
+
     public T getItemByParam(String param, Object value, boolean withFilter) {
         try {
             CriteriaQuery<T> query = createQueryByParam(param, value, withFilter);
@@ -86,6 +90,10 @@ public class DBManager<T> {
         } catch (NoResultException nre) {
             return null;
         }
+    }
+
+    public List<T> getItemsByParam(String param, Object value) {
+        return getItemsByParam(param,value,false);
     }
 
     public List<T> getItemsByParam(String param, Object value, boolean withFilter) {

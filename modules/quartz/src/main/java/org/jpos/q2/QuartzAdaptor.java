@@ -79,7 +79,7 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable, Trig
             try {
                 trigger = TriggerBuilder.newTrigger()
                         .withIdentity(e.getAttributeValue("id"), getName())
-                        .withSchedule(CronScheduleBuilder.cronSchedule(e.getAttributeValue("when")))
+                        .withSchedule(CronScheduleBuilder.cronSchedule(e.getAttributeValue("when"))
                         .withMisfireHandlingInstructionFireAndProceed())
                         .build();
 

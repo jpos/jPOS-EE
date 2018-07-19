@@ -115,8 +115,10 @@ public class RestServer extends QBeanSupport implements Runnable {
 
     @Override
     protected void destroyService() {
-        workerGroup.shutdownGracefully();
-        bossGroup.shutdownGracefully();
+        if (workerGroup != null) {
+            workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
+        }
     }
 
     @Override

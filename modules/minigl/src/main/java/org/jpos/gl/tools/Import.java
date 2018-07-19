@@ -194,9 +194,9 @@ public class Import implements EntityResolver {
                 db.session(), glt,
                 elem.getChildren("entry").iterator()
             );
-            System.out.println (glt.getId() + " " + glt.getDetail());
             gls.post(journal, glt);
             txn.commit ();
+            System.out.println (glt.getId() + " " + glt.getDetail());
         }
     }
     private void addEntries (

@@ -20,10 +20,7 @@ package org.jpos.q2.cli;
 
 import org.apache.commons.cli.*;
 import org.jpos.ee.DB;
-import org.jpos.gl.GLException;
-import org.jpos.gl.GLPermission;
-import org.jpos.gl.GLSession;
-import org.jpos.gl.GLUser;
+import org.jpos.gl.*;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 
@@ -56,14 +53,10 @@ public class ADDGLUSER implements CLICommand {
             try {
                 GLSession gls = new GLSession(db);
                 u = gls.getUser(args[1]);
-            } catch (GLException glException) {
-                String exceptionMessage = glException.getMessage();
-                String invalidUserMessage = "Invalid user '" + System.getProperty("user.name") + "'";
-                if (invalidUserMessage.equals(exceptionMessage) && !args[1].equals(System.getProperty("user.name"))) {
+            } catch (InvalidGLUserException glException) {
+                if (!args[1].equals(glException.getUsername())) {
                     cli.println("Create GLUser with nick: " + System.getProperty("user.name") + " first.");
                     return;
-                } else if (!invalidUserMessage.equals(exceptionMessage)) {
-                    throw glException;
                 }
             }
             if (u != null) {

@@ -68,7 +68,7 @@ public class GLSession {
             user = getUser (username);
             if (user == null) {
                close();
-               throw new GLException ("Invalid user '" + username + "'");
+               throw new InvalidGLUserException(username);
             }
         }
     }
@@ -109,7 +109,7 @@ public class GLSession {
             if (user == null) {
                 if (autoClose)
                     close();
-               throw new GLException ("Invalid user '" + username + "'");
+               throw new InvalidGLUserException(username);
             }
         }
     }

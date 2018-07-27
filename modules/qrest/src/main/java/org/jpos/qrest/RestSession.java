@@ -24,6 +24,8 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.jpos.transaction.Context;
+import org.jpos.util.LogEvent;
+import org.jpos.util.Logger;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
@@ -48,13 +50,22 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        server.getLog().warn(cause);
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        String msg = cause.getMessage();
+        LogEvent evt = server.getLog().createWarn(ctx.channel() + " " + msg);
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+            if (msg != null && !msg.equals(cause.getMessage())) {
+                msg = cause.getMessage();
+                evt.addMessage("  " + msg);
+            }
+        }
+        Logger.log(evt);
         ctx.writeAndFlush(new DefaultFullHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
@@ -76,7 +87,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if (evt instanceof IdleStateEvent) {
             IdleState e = ((IdleStateEvent) evt).state();
             if (e == IdleState.READER_IDLE) {

@@ -94,6 +94,10 @@ subprojects {
 
     dependencies {
         testCompile libraries.junit
+        //Java 10 support
+        testCompile('com.sun.xml.bind:jaxb-impl:2.1.2')
+        testCompile('com.sun.activation:javax.activation:1.2.0')
+        testCompile('javax.xml.bind:jaxb-api:2.3.0')
     }
 
     task allDeps(type: DependencyReportTask) {}

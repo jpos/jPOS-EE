@@ -23,21 +23,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import org.jpos.core.Configurable;
+import org.jpos.core.Configuration;
 import org.jpos.rc.Result;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static org.jpos.qrest.Constants.*;
 
-public class SendResponse implements AbortParticipant {
+public class SendResponse implements AbortParticipant, Configurable {
     private static ObjectMapper mapper = Mapper.getMapper();
+    private String contentType;
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -64,9 +65,12 @@ public class SendResponse implements AbortParticipant {
 
     private void sendResponse (Context ctx, ChannelHandlerContext ch, FullHttpRequest request, FullHttpResponse response) {
         boolean keepAlive = HttpUtil.isKeepAlive(request);
+        HttpHeaders headers = response.headers();
         if (keepAlive)
-            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        if (contentType != null)
+            headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
+        headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         ChannelFuture cf = ch.writeAndFlush(response);
         ctx.log(cf);
         if (!keepAlive)
@@ -115,5 +119,9 @@ public class SendResponse implements AbortParticipant {
                 httpResponse = error(HttpResponseStatus.NOT_FOUND);
         }
         return httpResponse;
+    }
+
+    public void setConfiguration (Configuration cfg) {
+        this.contentType = cfg.get("content-type", null);
     }
 }

@@ -27,7 +27,6 @@ import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 
-import static com.jayway.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
 public class RestTest  {
@@ -76,5 +75,16 @@ public class RestTest  {
             )
           ));
     }
-}
 
+    @Test
+    public void testPost()  {
+        given().and().body("{ \"test\": \"Test JSON\" }")
+          .log().all().post("q2")
+          .then().statusCode(200).assertThat()
+          .body("version", equalTo(
+            String.format("jPOS %s %s/%s (%s)",
+              Q2.getVersion(), Q2.getBranch(), Q2.getRevision(), Q2.getBuildTimestamp()
+            )
+          ));
+    }
+}

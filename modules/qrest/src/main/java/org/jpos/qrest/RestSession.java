@@ -23,6 +23,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.CharsetUtil;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -31,9 +32,11 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
 
 public class RestSession extends ChannelInboundHandlerAdapter {
     private RestServer server;
+    private String contentKey;
 
     RestSession(RestServer server) {
         this.server = server;
+        contentKey = server.getConfiguration().get("content", null);
     }
 
     @Override
@@ -43,6 +46,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             final FullHttpRequest request = (FullHttpRequest) msg;
             ctx.put(Constants.SESSION, ch);
             ctx.put(Constants.REQUEST, request);
+            if (contentKey != null)
+                ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
             server.queue(ctx);
         } else {
             super.channelRead(ch, msg);

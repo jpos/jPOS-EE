@@ -6,6 +6,7 @@
 
   <participant class="org.jpos.qrest.participant.Router">
     <route path="/q2**" method="GET" name="q2"/>
+    <route path="/q2**" method="POST" name="q2"/>
   </participant>
 
   <group name="q2">
@@ -15,4 +16,3 @@
     <!--<property name="content-type" value="application/json" />-->
   </participant>
 </txnmgr>
-

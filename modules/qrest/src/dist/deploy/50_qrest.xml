@@ -1,6 +1,7 @@
 <qrest class='org.jpos.qrest.RestServer' logger='Q2'>
     <property name='port' value='8081' />
     <property name='queue' value='TXNMGR' />
+    <property name='content' value='JSON_REQUEST' />
 
     <!--
     <property name="TLS" value="true" />

@@ -68,6 +68,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         HttpHeaders headers = response.headers();
         if (keepAlive)
             headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+
         if (contentType != null)
             headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());

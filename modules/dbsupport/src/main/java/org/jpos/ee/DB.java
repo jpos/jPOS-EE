@@ -402,35 +402,35 @@ public class DB implements Closeable {
         this.log = log;
     }
 
-    public static Object exec(DBAction action) throws Exception {
+    public static <T> T exec(DBAction<T> action) throws Exception {
         try (DB db = new DB()) {
             db.open();
             return action.exec(db);
         }
     }
 
-    public static Object exec(String configModifier, DBAction action) throws Exception {
+    public static <T> T exec(String configModifier, DBAction<T> action) throws Exception {
         try (DB db = new DB(configModifier)) {
             db.open();
             return action.exec(db);
         }
     }
 
-    public static Object execWithTransaction(DBAction action) throws Exception {
+    public static <T> T execWithTransaction(DBAction<T> action) throws Exception {
         try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
-            Object obj = action.exec(db);
+            T obj = action.exec(db);
             db.commit();
             return obj;
         }
     }
 
-    public static Object execWithTransaction(String configModifier, DBAction action) throws Exception {
+    public static <T> T execWithTransaction(String configModifier, DBAction<T> action) throws Exception {
         try (DB db = new DB(configModifier)) {
             db.open();
             db.beginTransaction();
-            Object obj = action.exec(db);
+            T obj = action.exec(db);
             db.commit();
             return obj;
         }

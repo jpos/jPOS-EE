@@ -19,6 +19,6 @@
 package org.jpos.ee;
 
 @FunctionalInterface
-public interface DBAction {
-    Object exec (DB db) throws Exception;
-}       
+public interface DBAction<T> {
+    T exec (DB db) throws Exception;
+}

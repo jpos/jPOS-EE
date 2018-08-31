@@ -27,7 +27,7 @@ public class JournalsCombo extends ComboBox<Journal> {
             String defJournalName= getDefaultJournalName();
             Journal defJournal= journals.stream().filter(j -> defJournalName.equals(j.getName())).findFirst().orElse(null);
             setSelectedItem(defJournal);
-        }ac
+        }
     }
 
     private List<Journal> getJournals () {

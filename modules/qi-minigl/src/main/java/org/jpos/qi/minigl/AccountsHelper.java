@@ -21,16 +21,12 @@ package org.jpos.qi.minigl;
 import com.vaadin.data.Binder;
 import com.vaadin.data.provider.*;
 import com.vaadin.shared.data.sort.SortDirection;
-import com.vaadin.v7.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.v7.data.fieldgroup.FieldGroup;
-import com.vaadin.v7.data.util.BeanItem;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.gl.Account;
-import org.jpos.gl.GLSession;
+import org.jpos.gl.CompositeAccount;
 import org.jpos.gl.Journal;
 import org.jpos.gl.Layer;
-import org.jpos.qi.QI;
 import org.jpos.qi.QIHelper;
 
 import java.util.*;
@@ -53,7 +49,7 @@ public class AccountsHelper extends QIHelper {
     @Override
     public boolean updateEntity(Binder binder) throws BLException {
         try {
-            return (boolean) DB.execWithTransaction((db) -> {
+            return DB.execWithTransaction((db) -> {
                 Account oldAcct = (Account) ((Account) getOriginalEntity()).clone();
                 binder.writeBean(getOriginalEntity());
                 Account a = (Account) getOriginalEntity();
@@ -73,7 +69,7 @@ public class AccountsHelper extends QIHelper {
 
     @Override
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
-        List<Account> agents = (List<Account>) DB.exec(db -> {
+        List<Account> agents = DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
             return mgr.getAll(offset,limit,orders);
 
@@ -82,7 +78,7 @@ public class AccountsHelper extends QIHelper {
     }
 
     private Stream getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
-        List<Account> accounts = (List<Account>) DB.exec(db -> {
+        List<Account> accounts = DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
             return  mgr.getAllChildren(offset,limit,orders,parent);
         });
@@ -90,14 +86,14 @@ public class AccountsHelper extends QIHelper {
     }
 
     private boolean hasChildrenAccounts(Account parent) throws Exception {
-        return (boolean) DB.exec(db -> {
+        return DB.exec(db -> {
             db.session().refresh(parent);
             return parent.getChildren() != null && parent.getChildren().size() > 0;
         });
     }
 
     private int getChildrenCount(Account parent) throws Exception {
-        return (int) DB.exec(db -> {
+        return DB.exec(db -> {
             db.session().refresh(parent);
             return parent.getChildren().size();
         });
@@ -106,7 +102,7 @@ public class AccountsHelper extends QIHelper {
 
     @Override
     public int getItemCount() throws Exception {
-        return (int) DB.exec(db -> {
+        return DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
             return mgr.getItemCount();
         });
@@ -160,14 +156,14 @@ public class AccountsHelper extends QIHelper {
     }
 
     private int getPossibleParentsCount() throws Exception {
-        return (int) DB.exec(db -> {
+        return DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
             return mgr.getCompositeAccountsCount();
         });
     }
 
     private Stream getPossibleParents(int offset, int limit, Map<String,Boolean> orders) throws Exception {
-        List<Account> accounts = (List<Account>) DB.exec(db -> {
+        List<CompositeAccount> accounts = DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
             return  mgr.getCompositeAccounts(offset,limit,orders);
         });
@@ -205,7 +201,7 @@ public class AccountsHelper extends QIHelper {
 
     public List<Layer> getLayers (Journal journal) {
         try {
-            return (List<Layer>) DB.exec(db -> {
+            return DB.exec(db -> {
                 db.session().enableFetchProfile("eager");
                 db.session().refresh(journal);
                 return new ArrayList<Layer>(journal.getLayers());

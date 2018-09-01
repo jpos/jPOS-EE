@@ -47,7 +47,7 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
     public EntryGrid (String caption) {
         this (caption, false);
     }
-    
+
     public EntryGrid(String caption, boolean canEdit) {
         super();
         this.canEdit = canEdit;
@@ -67,7 +67,7 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                     String detail = entry.getTransaction() != null ? entry.getTransaction().getDetail() : "";
                     String entryDetail = entry.getDetail() != null ? entry.getDetail() : "";
                     if (entryDetail.length() > 0)
-                        detail = detail.length() > 0 ? detail + ", " + entryDetail : entryDetail;
+                        detail = (detail != null && detail.length() > 0) ? detail + ", " + entryDetail : entryDetail;
                     return detail;
                 })
                 .setId("detail")

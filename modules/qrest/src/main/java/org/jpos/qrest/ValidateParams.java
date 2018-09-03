@@ -30,9 +30,6 @@ import org.jpos.core.XmlConfigurable;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionParticipant;
 import org.jpos.util.Caller;
-import org.jpos.util.Log;
-import org.jpos.util.LogSource;
-import org.jpos.util.Logger;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 /**
  * Validate mandatory and optional parameters. Support JsonSchema.
@@ -88,25 +86,29 @@ import java.util.regex.Pattern;
  */
 
 @SuppressWarnings("unused")
-public class ValidateParams implements TransactionParticipant, XmlConfigurable, LogSource {
+public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     private Map<String,Pattern> mandatory;
     private Map<String,Pattern> optional;
     private Map<String,JsonSchema> mandatoryJson;
     private Map<String,JsonSchema> optionalJson;
 
-    private Log log;
-
     @Override
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
-
-        checkMandatory(ctx);
-        checkOptional(ctx);
-        checkMandatoryJson(ctx);
-        checkOptionalJson(ctx);
-        return (ctx.getResult().hasFailures() ? ABORTED : PREPARED) | READONLY | NO_JOIN;
+        if (!checkMandatory(ctx) ||
+            !checkOptional(ctx) ||
+            !checkMandatoryJson(ctx) ||
+            !checkOptionalJson(ctx))
+            return ABORTED | NO_JOIN | READONLY;
+        return PREPARED | NO_JOIN | READONLY;
     }
-    
+
+    @Override
+    public void commit(long id, Serializable context) { }
+
+    @Override
+    public void abort(long id, Serializable context) { }
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -123,7 +125,7 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable, 
                         JsonSchema schema = JsonSchemaFactory.byDefault().getJsonSchema(nodeSchema);
                         mandatoryJson.put(e.getAttributeValue("name"), schema);
                     } catch (Exception ex) {
-                        throw new ConfigurationException (ex);
+                         throw new ConfigurationException(ex);
                     }
                 } else {
                     mandatory.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
@@ -152,89 +154,64 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable, 
         }
     }
 
-    @Override
-    public void setLogger(Logger logger, String realm) {
-        this.log = new Log(logger, realm);
-    }
-
-    @Override
-    public String getRealm() {
-        return log.getRealm();
-    }
-
-    @Override
-    public Logger getLogger() {
-        return log.getLogger();
-    }
-
-    private void checkMandatory (Context ctx) {
+    private boolean checkMandatory (Context ctx) {
         for (Map.Entry<String,Pattern> entry : mandatory.entrySet()) {
             Object v = ctx.get(entry.getKey());
             String value = v != null ? v.toString() : null;
             if (value == null) {
-                ctx.getResult().fail(
-                  ResultCode.MANDATORY_PARAM_NOT_PRESENT, Caller.info(), "Mandatory param '%s' not present", entry.getKey()
-                );
-                return;
+                ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Mandatory param " + entry.getKey().toLowerCase() + " not present");
+                return false;
             }
             Pattern p = entry.getValue();
             Matcher m = p.matcher(value);
             if (!m.matches()) {
-                ctx.getResult().fail(
-                  ResultCode.INVALID_PARAM, Caller.info(), "Invalid param '%s'", entry.getKey()
-                );
-                return;
+                ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
+                return false;
             }
         }
+        return true;
     }
 
-    private void checkOptional (Context ctx) {
+    private boolean checkOptional (Context ctx) {
         for (Map.Entry<String,Pattern> entry : optional.entrySet()) {
             String value = ctx.getString(entry.getKey());
             if (value != null) {
                 Pattern p = entry.getValue();
                 Matcher m = p.matcher(value);
                 if (!m.matches()) {
-                    ctx.getResult().fail(
-                      ResultCode.INVALID_OPTIONAL_PARAM, Caller.info(), "Invalid optional param '%s'", entry.getKey()
-                    );
-                    return;
+                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
+                    return false;
                 }
             }
         }
+        return true;
     }
 
-    private void checkMandatoryJson (Context ctx) {
-        int errors = 0;
+    private boolean checkMandatoryJson (Context ctx) {
+        ctx.log ("Mandatory JSON: " + mandatoryJson);
         for (Map.Entry<String,JsonSchema> entry : mandatoryJson.entrySet()) {
             String value = ctx.getString(entry.getKey());
             ProcessingReport report;
+            ctx.log ("Checking " + entry.getKey() + " value=" + value);
             if (value != null) {
                 try {
                     JsonSchema schema = entry.getValue();
                     JsonNode node = JsonLoader.fromString(value);
                     report = schema.validate(node);
-                    if (!report.isSuccess()) {
-                        ctx.getResult().fail(
-                          ResultCode.INVALID_MANDATORY_JSON, Caller.info(), "Invalid mandatory JSON '%s'", entry.getKey()
-                        );
-                        ctx.log(report);
-                    }
                 } catch(Exception ex) {
-                    ctx.getResult().fail(
-                      ResultCode.INVALID_MANDATORY_JSON, Caller.info(), "Invalid mandatory JSON param '%s' - %s", entry.getKey(), ex.getMessage()
-                    );
+                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), ex.toString());
+                    return false;
                 }
-            } else {
-                ctx.getResult().fail(
-                  ResultCode.MANDATORY_JSON_NOT_PRESENT, Caller.info(), "Mandatory JSON '%s' not present", entry.getKey()
-                );
-
+                if (!report.isSuccess()) {
+                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
+                    return false;
+                }
             }
         }
+        return true;
     }
 
-    private void checkOptionalJson (Context ctx) {
+    private boolean checkOptionalJson (Context ctx) {
         for (Map.Entry<String,JsonSchema> entry : optionalJson.entrySet()) {
             String value = ctx.getString(entry.getKey());
             ProcessingReport report;
@@ -243,17 +220,16 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable, 
                     JsonSchema schema = entry.getValue();
                     JsonNode node = JsonLoader.fromString(value);
                     report = schema.validate(node);
-                    if (!report.isSuccess()) {
-                        ctx.getResult().fail(
-                          ResultCode.INVALID_OPTIONAL_JSON, Caller.info(), "Invalid mandatory JSON '%s'", entry.getKey()
-                        );
-                    }
                 } catch(Exception ex) {
-                    ctx.getResult().fail(
-                      ResultCode.INVALID_OPTIONAL_JSON, Caller.info(), "Mandatory JSON '%s' not present", entry.getKey()
-                    );
+                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), ex.toString());
+                    return false;
+                }
+                if (!report.isSuccess()) {
+                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
+                    return false;
                 }
             }
         }
+        return true;
     }
 }

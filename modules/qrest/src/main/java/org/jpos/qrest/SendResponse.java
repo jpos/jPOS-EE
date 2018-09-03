@@ -86,7 +86,6 @@ public class SendResponse implements AbortParticipant, Configurable {
         Object r = ctx.get(RESPONSE);
         FullHttpResponse httpResponse;
 
-
         if (r instanceof FullHttpResponse) {
             httpResponse = (FullHttpResponse) r;
         } else if (r instanceof Response) {
@@ -115,7 +114,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         } else {
             Result result = ctx.getResult();
             if (result.hasFailures()) {
-                httpResponse = error(HttpResponseStatus.BAD_REQUEST);
+                httpResponse = error(HttpResponseStatus.valueOf(result.failure().getIrc().irc()));
             } else
                 httpResponse = error(HttpResponseStatus.NOT_FOUND);
         }

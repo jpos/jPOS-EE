@@ -1,5 +1,6 @@
 package org.jpos.qrest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.jpos.rc.IRC;
 
 import java.util.HashMap;
@@ -9,14 +10,16 @@ import java.util.Map;
  * QRest-specific internal result codes
  */
 public enum ResultCode implements IRC {
-    OK                          (0, true),
-    SYSTEM_ERROR                (19000,false,true),
-    MANDATORY_PARAM_NOT_PRESENT (19101),
-    MANDATORY_JSON_NOT_PRESENT  (19102),
-    INVALID_PARAM               (19103),
-    INVALID_OPTIONAL_PARAM      (19104),
-    INVALID_MANDATORY_JSON      (19105),
-    INVALID_OPTIONAL_JSON       (19106);
+    OK (HttpResponseStatus.OK.code(), true),
+    CREATED (HttpResponseStatus.CREATED.code(), true),
+    ACCEPTED (HttpResponseStatus.ACCEPTED.code(), true),
+    NO_CONTENT (HttpResponseStatus.NO_CONTENT.code(), true, true),
+    BAD_REQUEST (HttpResponseStatus.BAD_REQUEST.code(), false, true),
+    FORBIDDEN (HttpResponseStatus.FORBIDDEN.code(), false, true),
+    NOT_FOUND (HttpResponseStatus.NOT_FOUND.code(), false, true),
+    INTERNAL_SERVER_ERROR (HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), false, true),
+    NOT_ACCEPTABLE (HttpResponseStatus.NOT_ACCEPTABLE.code(), false, true),
+    NOT_IMPLEMENTED (HttpResponseStatus.NOT_IMPLEMENTED.code(), false, true);
 
     int irc;
     boolean success;
@@ -27,11 +30,6 @@ public enum ResultCode implements IRC {
             lookup.put(irc.irc(), irc);
     }
 
-    ResultCode(int irc) {
-        this.irc = irc;
-        this.success = false;
-        this.inhibit = false;
-    }
     ResultCode(int irc, boolean success) {
         this.irc = irc;
         this.success = success;

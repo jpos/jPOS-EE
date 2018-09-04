@@ -73,7 +73,7 @@ public class RevisionsView extends QIEntityView<Revision> {
 
     @Override
     protected Component buildAndBindCustomComponent(String propertyId) {
-        List<Validator> validators = getValidators(propertyId);
+        List<Validator> validators = getFieldFactory().getValidators(propertyId);
         ReadOnlyField field = new ReadOnlyField();
         field.setCaption(getCaptionFromId(propertyId));
         Binder binder = getBinder();

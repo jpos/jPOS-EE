@@ -19,11 +19,6 @@
 package org.jpos.qi;
 
 import com.vaadin.data.*;
-import com.vaadin.data.converter.LocalDateToDateConverter;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.converter.StringToLongConverter;
-import com.vaadin.data.validator.RegexpValidator;
-import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Grid;
@@ -38,17 +33,14 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
-import org.jpos.util.AmountConverter;
+import org.jpos.util.FieldFactory;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.jpos.util.QIUtils.getCaptionFromId;
@@ -77,6 +69,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private Configuration cfg;
     private ViewConfig viewConfig;
     private T bean;
+    private FieldFactory fieldFactory;
 
 
     public QIEntityView(Class<T> clazz, String name) {
@@ -211,9 +204,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         g.setSizeFull();
         g.setSelectionMode(Grid.SelectionMode.SINGLE);
         g.setColumnReorderingAllowed(true);
-        g.addItemClickListener(event -> {
-            navigateToSpecificView(event);
-        });
+        g.addItemClickListener(this::navigateToSpecificView);
         return g;
     }
 
@@ -232,14 +223,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         DecimalFormat nf = new DecimalFormat();
         nf.setGroupingUsed(false);
 
-        Iterator<Grid.Column> it = grid.getColumns().iterator();
-        while (it.hasNext()) {
-            Grid.Column c  = it.next();
+        for (Grid.Column c : (Iterable<Grid.Column>) grid.getColumns()) {
             String columnId = c.getId();
             if (!Arrays.asList(getVisibleColumns()).contains(columnId)) {
                 grid.removeColumn(columnId);
             } else {
-                c.setCaption(getCaptionFromId("column."+columnId))
+                c.setCaption(getCaptionFromId("column." + columnId))
                         .setSortProperty(columnId)
                         .setSortable(true)
                         .setHidable(true);
@@ -253,7 +242,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                     Object value = c.getValueProvider().apply(obj);
                     if (value instanceof BigDecimal && !c.getId().equals("id")) {
                         return "align-right";
-                    } 
+                    }
                     return null;
                 });
             }
@@ -446,32 +435,19 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return layout;
     }
 
+    public FieldFactory createFieldFactory () {
+        return new FieldFactory(getBean(), getViewConfig(), getBinder());
+    }
+
     protected void addFields(Layout l) {
-        Object o = bean;
+        fieldFactory = createFieldFactory();
         for (String id : getVisibleFields()) {
             //Check if there's a custom builder
             Component field = buildAndBindCustomComponent(id);
             if (field == null) {
                 //if it wasn't built yet, build it now.
                 try {
-                    Class dataType = getDataType(id);
-                    if (dataType.equals(Date.class)) {
-                        l.addComponent(buildAndBindTimestampField(id));
-                    } else if (dataType.equals(BigDecimal.class)) {
-                        l.addComponent(buildAndBindBigDecimalField(id));
-                    } else if (dataType.equals(Long.class) || dataType.equals(long.class)) {
-                        l.addComponent(buildAndBindLongField(id));
-                    } else if (dataType.equals(Integer.class) || dataType.equals(int.class)) {
-                        l.addComponent(buildAndBindIntField(id));
-                    } else if (dataType.equals(Short.class) || dataType.equals(short.class)) {
-                        l.addComponent(buildAndBindShortField(id));
-                    } else if (dataType.equals(Boolean.class) || dataType.equals(boolean.class)) {
-                        l.addComponent(buildAndBindBooleanField(id));
-                    } else if (dataType.equals(String.class)) {
-                        l.addComponent(buildAndBindTextField(id));
-                    } else {
-                        l.addComponent(new TextField("unconfigured data type " + dataType));
-                    }
+                    l.addComponent(fieldFactory.buildAndBindField(id));
                 } catch (NoSuchFieldException e) {
                     getApp().getLog().error(e);
                 }
@@ -480,138 +456,18 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             }
         }
     }
-
-    private Class getDataType(String id) throws NoSuchFieldException {
-        Object o = bean;
-        try {
-            return o.getClass().getDeclaredField(id).getType();
-        } catch(NoSuchFieldException e) {
-            return o.getClass().getSuperclass().getDeclaredField(id).getType();
-        }
-    }
-
     //Override on specific views to create a custom field for a certain property, or to add validators.
     // Do not forget to getValidators and add them.
     protected Component buildAndBindCustomComponent(String propertyId) {
         return null;
     }
 
-    //Reads regex and length from 00_qi.xml
-    //Override to add more customValidators
-    protected List<Validator> getValidators(String propertyId) {
-        List<Validator> validators = new ArrayList<>();
-        ViewConfig.FieldConfig config = viewConfig.getFields().get(propertyId);
-        if (config != null) {
-            String regex = config.getRegex();
-            int length = config.getLength();
-            String[] options = config.getOptions();
-            if (options != null) {
-                //Change the field to a Combo loaded with the options
-                ComboBox combo = new ComboBox(getCaptionFromId("field."+propertyId),Arrays.asList(options));
-                getBinder().bind(combo,propertyId);
-                return null;
-            }
-            if (regex != null) {
-                validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", propertyId),regex));
-            }
-            if (length > 0) {
-                validators.add(new StringLengthValidator(getApp().getMessage("errorMessage.invalidField", propertyId),0,length));
-            }
-        }
-        return validators;
+    protected Binder.BindingBuilder formatField (String propertyId, HasValue field) {
+        return getFieldFactory().formatField(propertyId, field);
     }
 
     protected boolean isRequired(String propertyId) {
-        return viewConfig.getFields().get(propertyId).isRequired();
-    }
-
-    protected TextField buildAndBindLongField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
-        builder.bind(id);
-        return field;
-    }
-
-    protected TextField buildAndBindIntField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
-        builder.bind(id);
-        return field;
-    }
-
-    protected TextField buildAndBindShortField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
-        builder.bind(id);
-        return field;
-    }
-
-    protected CheckBox buildAndBindBooleanField(String id) {
-        CheckBox box = new CheckBox(StringUtils.capitalize(getCaptionFromId("field." + id)),false);
-        Binder.BindingBuilder builder = formatField(id,box);
-        builder.bind(id);
-        return box;
-    }
-
-    protected TextField buildAndBindTextField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,field);
-        builder.bind(id);
-        return field;
-    }
-
-
-    protected TextField buildAndBindTimestampField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        getBinder().forField(field).withConverter(toModel -> null, toPresentation -> {
-            if (toPresentation != null) {
-                DateFormat dateFormat = new SimpleDateFormat(getApp().getMessage("timestampformat"));
-                return dateFormat.format(toPresentation);
-            }
-            return "";
-        }).bind(id);
-        return field;
-    }
-
-    protected DateField buildAndBindDateField(String id) {
-        DateField dateField = new DateField(getCaptionFromId("field." + id));
-        List<Validator> v = getValidators(id);
-        Binder.BindingBuilder builder = getBinder().forField(dateField);
-        for (Validator val : v) {
-            builder.withValidator(val);
-        }
-        if (isRequired(id)) {
-            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
-        };
-        builder.withConverter(new LocalDateToDateConverter()).bind(id);
-        return dateField;
-    }
-
-    protected TextField buildAndBindBigDecimalField(String id) {
-        TextField field = new TextField(getCaptionFromId("field." + id));
-        Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new AmountConverter(getApp().getMessage("errorMessage.NaN",id)));
-        builder.withNullRepresentation(BigDecimal.ZERO).bind(id);
-        return field;
-    }
-
-    protected Binder.BindingBuilder formatField(String id, HasValue field) {
-        List<Validator> v = getValidators(id);
-        Binder.BindingBuilder builder = getBinder().forField(field);
-        for (Validator val : v)
-            builder.withValidator(val);
-        if (isRequired(id))
-            builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
-        
-        ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
-        String width = config != null ? config.getWidth() : null;
-        if (field instanceof AbstractComponent)
-            ((AbstractComponent)field).setWidth(width);
-        builder = builder.withNullRepresentation("");
-        return builder;
+        return getFieldFactory().isRequired(propertyId);
     }
 
     private void loadRevisionHistory (Layout formLayout, String ref) {
@@ -826,6 +682,18 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setViewConfig(ViewConfig viewConfig) {
         this.viewConfig = viewConfig;
+    }
+    
+    public FieldFactory getFieldFactory() {
+        return fieldFactory;
+    }
+
+    public void setFieldFactory(FieldFactory fieldFactory) {
+        this.fieldFactory = fieldFactory;
+    }
+
+    public T getBean() {
+        return bean;
     }
 
     public void setBean(T bean) {

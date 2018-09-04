@@ -128,7 +128,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
                 return field;
             }
             case ("postDate"): {
-                return buildAndBindDateField(propertyId);
+                return getFieldFactory().buildAndBindDateField(propertyId);
             }
             case ("journal"): {
                 ComboBox<Journal> field = new JournalsCombo(true);

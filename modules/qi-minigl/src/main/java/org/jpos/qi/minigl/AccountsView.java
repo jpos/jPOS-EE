@@ -39,6 +39,7 @@ import org.jpos.qi.components.DateRange;
 import org.jpos.qi.components.DateRangeComponent;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.util.FieldFactory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -193,10 +194,10 @@ public class AccountsView extends QIEntityView<Account> {
     @Override
     protected Component buildAndBindCustomComponent(String propertyId) {
         if ("created".equalsIgnoreCase(propertyId)){
-            return buildAndBindDateField(propertyId);
+            return getFieldFactory().buildAndBindDateField(propertyId);
         }
         if ("expiration".equalsIgnoreCase(propertyId)){
-            return buildAndBindDateField(propertyId);
+            return getFieldFactory().buildAndBindDateField(propertyId);
         }
         if ("parent".equalsIgnoreCase(propertyId)) {
             ComboBox<Account> parentCombo = new ComboBox<>(getCaptionFromId(propertyId));
@@ -209,8 +210,7 @@ public class AccountsView extends QIEntityView<Account> {
             ComboBox<Integer> typeCombo = new ComboBox<>(getCaptionFromId(propertyId));
             typeCombo.setItems(Account.CHART,Account.DEBIT,Account.CREDIT);
             typeCombo.setItemCaptionGenerator(type -> getApp().getMessage("account." + type).toUpperCase());
-            formatField(propertyId,typeCombo)
-                    .bind(propertyId);
+            formatField(propertyId,typeCombo).bind(propertyId);
             return typeCombo;
         }
         if ("entries".equalsIgnoreCase(propertyId)) {
@@ -221,20 +221,26 @@ public class AccountsView extends QIEntityView<Account> {
     }
 
     @Override
-    protected List<Validator> getValidators(String propertyId) {
-        List<Validator> validators = super.getValidators(propertyId);
-        if ("currencyCode".equalsIgnoreCase(propertyId)) {
-            Validator<String> currencyCodeValidator = (Validator<String>) (value, context) -> {
-                Account parentAccount = getInstance().getParent();
-                if (parentAccount != null && parentAccount.getCurrencyCode() != null && !parentAccount.getCurrencyCode().equals(value)) {
-                    return ValidationResult.error(getApp().getMessage("errorMessage.currencyCodeMismatch"));
+    public FieldFactory createFieldFactory() {
+        return new FieldFactory(getBean(), getViewConfig(), getBinder()) {
+            @Override
+            public List<Validator> getValidators(String propertyId) {
+                List<Validator> validators = super.getValidators(propertyId);
+                if ("currencyCode".equalsIgnoreCase(propertyId)) {
+                    Validator<String> currencyCodeValidator = (Validator<String>) (value, context) -> {
+                        Account parentAccount = getInstance().getParent();
+                        if (parentAccount != null && parentAccount.getCurrencyCode() != null && !parentAccount.getCurrencyCode().equals(value)) {
+                            return ValidationResult.error(getApp().getMessage("errorMessage.currencyCodeMismatch"));
+                        }
+                        return ValidationResult.ok();
+                    };
+                    validators.add(currencyCodeValidator);
                 }
-                return ValidationResult.ok();
-            };
-            validators.add(currencyCodeValidator);
-        }
-        return validators;
+                return validators;
+            }
+        };
     }
+
 
     public void formatEntriesGrid () {
         String pattern = getApp().getMessage("datetime");

@@ -127,7 +127,7 @@ public class ViewConfig {
         this.configuration = configuration;
     }
 
-    class FieldConfig {
+    public class FieldConfig {
         private String perm;
         private String regex;
         private String[] options;

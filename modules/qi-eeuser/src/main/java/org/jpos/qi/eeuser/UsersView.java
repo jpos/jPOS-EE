@@ -28,6 +28,7 @@ import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.*;
 import org.jpos.qi.*;
+import org.jpos.util.FieldFactory;
 import org.jpos.util.PasswordGenerator;
 
 import java.util.List;
@@ -133,7 +134,7 @@ public class UsersView extends QIEntityView<User> {
             CheckBoxGroup g = new CheckBoxGroup(StringUtils.capitalize(getCaptionFromId(propertyId)));
             g.setItems(((UsersHelper)getHelper()).getRoles());
             g.setItemCaptionGenerator((ItemCaptionGenerator<Role>) item -> StringUtils.capitalize(item.getName()));
-            List<Validator> v = getValidators(propertyId);
+            List<Validator> v = getFieldFactory().getValidators(propertyId);
             Binder.BindingBuilder builder = getBinder().forField(g);
             for (Validator val : v) {
                 builder.withValidator(val);
@@ -144,22 +145,26 @@ public class UsersView extends QIEntityView<User> {
         return null;
     }
 
-    protected List<Validator> getValidators(String propertyId) {
-        List<Validator> list = super.getValidators(propertyId);
-        if ("email".equals(propertyId)) {
-            list.add(new EmailValidator(getApp().getMessage("errorMessage.invalidEmail")) {
-                @Override
-                protected boolean isValid(String value) {
-                    return value == null || value.isEmpty() || super.isValid(value);
+    @Override
+    public FieldFactory createFieldFactory() {
+        return new FieldFactory(getBean(), getViewConfig(), getBinder()) {
+            public List<Validator> getValidators(String propertyId) {
+                List<Validator> list = super.getValidators(propertyId);
+                if ("email".equals(propertyId)) {
+                    list.add(new EmailValidator(getApp().getMessage("errorMessage.invalidEmail")) {
+                        @Override
+                        protected boolean isValid(String value) {
+                            return value == null || value.isEmpty() || super.isValid(value);
+                        }
+                    });
                 }
-            });
-        }
-        if ("nick".equals(propertyId)) {
-            list.add(((UsersHelper)getHelper()).getNickTakenValidator());
-        }
-        return list;
+                if ("nick".equals(propertyId)) {
+                    list.add(((UsersHelper)getHelper()).getNickTakenValidator());
+                }
+                return list;
+            }
+        };
     }
-
 
     @Override
     public void setGridGetters() {

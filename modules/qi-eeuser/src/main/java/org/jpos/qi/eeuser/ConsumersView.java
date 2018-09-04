@@ -181,7 +181,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
             return box;
         }
         if ("startdate".equalsIgnoreCase(propertyId) || "endDate".equalsIgnoreCase(propertyId)) {
-            return buildAndBindDateField(propertyId);
+            return getFieldFactory().buildAndBindDateField(propertyId);
         }
         return null;
     }

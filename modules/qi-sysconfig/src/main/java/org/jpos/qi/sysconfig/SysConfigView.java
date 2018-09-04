@@ -96,7 +96,7 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     protected Component buildAndBindCustomComponent(String propertyId) {
         if ("id".equals(propertyId)) {
             TextField id = new TextField(getCaptionFromId(propertyId));
-            List<Validator> validators = getValidators(propertyId);
+            List<Validator> validators = getFieldFactory().getValidators(propertyId);
             Binder<SysConfig> binder = getBinder();
             Binder.BindingBuilder builder = binder.forField(id)
                 .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(propertyId))))

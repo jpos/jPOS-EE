@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: ISO over HTTP Client Code'
+
+dependencies {
+    compile libraries.jpos
+    compile "org.jdom:jdom2:2.0.6"
+}
+

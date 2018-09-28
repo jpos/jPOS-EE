@@ -28,7 +28,7 @@
     </id>
     <discriminator column="subclass" type="string" length="1" />
 
-    <property name="detail" type="string" />
+    <property name="detail" type="string" length="4096" />
     <property name="tags"  type="org.jpos.ee.usertype.TagsType">
       <column name="tags" sql-type="varchar(255)" not-null="false" />
     </property>

@@ -42,6 +42,7 @@ public class UsersView extends QIEntityView<User> {
     private Binder<String> passwordBinder;
     private PasswordField currentPasswordField;
     private PasswordField repeatPasswordField;
+    private PasswordField newPasswordField;
     private Panel passwordPanel;
     private Button changePassBtn;
     private Button resetPassBtn;
@@ -125,8 +126,10 @@ public class UsersView extends QIEntityView<User> {
             changePassBtn.setEnabled(false);
             getCancelBtn().setEnabled(false);
             getApp().scrollIntoView(passwordPanel);
+            newPasswordField.setReadOnly(false);
+            currentPasswordField.setReadOnly(false);
+            repeatPasswordField.setReadOnly(false);
         }
-
     }
 
     protected Component buildAndBindCustomComponent(String propertyId) {
@@ -193,9 +196,13 @@ public class UsersView extends QIEntityView<User> {
         b.setEnabled(false);
         b.addClickListener((Button.ClickListener) event -> {
             passwordPanel.setVisible(!passwordPanel.isVisible());
-            passwordBinder.setReadOnly(!binderIsReadOnly);
+            binderIsReadOnly = !binderIsReadOnly;
+            passwordBinder.setReadOnly(binderIsReadOnly);
             changePassBtn.setCaption(passwordPanel.isVisible() ?
                     getApp().getMessage("cancel") : getApp().getMessage("changePassword"));
+            currentPasswordField.setReadOnly(binderIsReadOnly);
+            newPasswordField.setReadOnly(binderIsReadOnly);
+            repeatPasswordField.setReadOnly(binderIsReadOnly);
         });
         return b;
     }
@@ -250,7 +257,7 @@ public class UsersView extends QIEntityView<User> {
             form.addComponent(currentPasswordField);
         }
 
-        PasswordField newPasswordField = new PasswordField(getApp().getMessage("passwordForm.newPassword"));
+        newPasswordField = new PasswordField(getApp().getMessage("passwordForm.newPassword"));
         newPasswordField.setWidth("80%");
         passwordBinder.forField(newPasswordField)
                 .asRequired(getApp().getMessage("errorMessage.req",newPasswordField.getCaption()))

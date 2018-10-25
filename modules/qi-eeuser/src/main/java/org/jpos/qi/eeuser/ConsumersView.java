@@ -134,7 +134,6 @@ public class ConsumersView extends QIEntityView<Consumer> {
         g.addColumn(consumer -> consumer.getUser().getNickAndId()).setId("user");
         g.addColumn(Consumer::isActive).setId("active");
         g.addColumn(Consumer::isDeleted).setId("deleted");
-
         //select first item on user combobox
         userComboBox.setValue(userComboBox.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
     }
@@ -187,21 +186,19 @@ public class ConsumersView extends QIEntityView<Consumer> {
     }
 
     public void saveEntity () {
-        // TODO: BBB maybe the logic of creating a consumer and its secret should be
-        // abstracted away inside ConsumerManager and not in UI code?
         Consumer c = getInstance();
-        c.setUser(this.selectedUser);
-        Map<String,String> smap = new HashMap<>();
-        try{
-            smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
-            SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
-            c.setKid(sd.getId().toString());
-            c.setSecureData(sd.getEncoded());
-        } catch (Exception e) {
-            getApp().getLog().error(e);
-        }
-
-        getApp().addWindow(new ConfirmDialog(
+        if (getBinder().writeBeanIfValid(c)) {
+            c.setUser(this.selectedUser);
+            Map<String,String> smap = new HashMap<>();
+            try{
+                smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
+                SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
+                c.setKid(sd.getId().toString());
+                c.setSecureData(sd.getEncoded());
+            } catch (Exception e) {
+                getApp().getLog().error(e);
+            }
+            getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
                 getApp().getMessage("secretDescription", smap.getOrDefault("S", "?")),
                 getApp().getMessage("secretConfirm"),
@@ -210,7 +207,8 @@ public class ConsumersView extends QIEntityView<Consumer> {
                     if (confirm) {
                         super.saveEntity();
                     }
-                }));
+            }));
+        }
     }
 
     @Override

@@ -99,7 +99,7 @@ public abstract class QIHelper {
     public boolean removeEntity() throws BLException {
         Object entity = getOriginalEntity();
         try {
-            return (boolean) DB.execWithTransaction(db -> {
+            return DB.execWithTransaction(db -> {
                 db.session().delete(entity);
                 addRevisionRemoved(db, getEntityName(), getItemId(entity));
                 return true;
@@ -111,7 +111,7 @@ public abstract class QIHelper {
 
     public boolean saveEntity(Binder binder) throws BLException {
         try {
-            return (boolean) DB.execWithTransaction(db -> {
+            return DB.execWithTransaction(db -> {
                 if (binder.writeBeanIfValid(getOriginalEntity())) {
                     db.save(getOriginalEntity());
                     addRevisionCreated(db, getEntityName(), getItemId(getOriginalEntity()));

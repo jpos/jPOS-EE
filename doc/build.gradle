@@ -23,7 +23,7 @@ task a2x(dependsOn: copySources) {
   doLast {
     def inFile = "${buildDir}/docbook/source/book.adoc"
     def outFile = "${buildDir}/docbook/source/book.xml"
-    def cmd = "asciidoctor --safe -a docinfo -a lang=en -d book -b docbook5 -o ${outFile} ${inFile}"
+    def cmd = "asciidoctor -r asciidoctor-diagram --safe -a docinfo -a lang=en -d book -b docbook5 -o ${outFile} ${inFile}"
     def proc = cmd.execute(null, file(inFile).parentFile)
     proc.in.eachLine { line -> println line }
     proc.err.eachLine {line -> println 'ERROR: '+line }

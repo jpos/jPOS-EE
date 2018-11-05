@@ -77,6 +77,11 @@ include::module_fsdmsgX.adoc[]
 // - Mail
 //------------------------------------------------------------
 
+= Database schema
+
+include::schema/sysconfig.adoc[]
+include::schema/syslog.adoc[]
+
 = Appendices
 
 include::appendix_copyright.adoc[]

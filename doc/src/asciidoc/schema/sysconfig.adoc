@@ -1,0 +1,46 @@
+== SysConfig
+
+[graphviz, sysconfig, png]
+----
+digraph sysconfig {
+    sysconfig
+}
+----
+
+The `sysconfig` table is a general purpose table used by jPOS-EE to store its configuration.
+
+The table has the following columns:
+
+- `id`
+- `value`
+- `readPerm`
+- `writePerm`
+
+[source]
+--------
+  Column   |          Type           | Modifiers 
+-----------+-------------------------+-----------
+ id        | character varying(64)   | not null
+ value     | character varying(8192) | 
+ readperm  | character varying(64)   |                 <1>
+ writeperm | character varying(64)   |                
+Indexes:
+    "sysconfig_pkey" PRIMARY KEY, btree (id)
+--------
+<1> `readPerm` and `writePerm` properties can be optionally used by 
+     the user interface in order to limit access to specific entries.
+
+Most jPOS applications typically use a prefix, for example:
+
+[source]
+--------
+              id               |               value                
+-------------------------------+------------------------------------
+ perm.sysadmin                 | System Administrator
+ perm.login                    | Login
+ perm.sysconfig.read           | View System Configuration
+ perm.sysconfig.write          | Edit System Configuration
+ perm.users.write              | Write permission on Users
+ perm.users.read               | Read permission on Users
+ perm.accounting               | Full access to accounting records
+--------

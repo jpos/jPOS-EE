@@ -7,19 +7,16 @@ jPOS Extended Edition
 :revnumber: {jposee_version}
 :toc:
 
-Introduction
-============
+= Introduction
 
 include::overview.adoc[]
 
 include::contributing.adoc[]
-
-// include::getting_started.adoc[]
+include::getting_started.adoc[]
 
 // include::tutorial.adoc[]
 
-Modules
-=======
+= Modules
 
 == Introduction to modules
 

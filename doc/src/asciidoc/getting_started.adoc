@@ -5,11 +5,11 @@
 jPOS-EE-SDK assumes that the following software is installed in your
 development environment:
 
-* http://java.sun.com[JDK 1.6 or higher]
-* A git client such as git-core (command-line) or http://www.syntevo.com/smartgit/index.html[SmartGIT]
+* JDK 1.8 or higher
+* A git client 
 
 While jPOS and jPOS-EE can be used in a Windows environment, we develop
-it within our Unix environment, so you'll find many useful Unix scripts
+it in an Unix environment, so you'll find many useful Unix scripts
 with no Windows counterpart. If you use windows, you may choose to install
 a Unix-like environment such as http://www.cygwin.com[Cygwin] so you can
 make use of the unix scripts directly.
@@ -49,11 +49,37 @@ In this chapter we will work through setting up the development environment cons
 * Downloading the jPOS-EE SDK source code using Git.
 * Compiling and installing the components locally on your system.
 
-=== Downloading the SDK
+== Maven coordinates
 
-jPOS-EE is distributed via Git only. In order to get a copy of
-it, and keep your copy up-to-date with the latest revision, you need to
-use a Git client.
+jPOS-EE modules are regularly published to jPOS' maven repository. You can use its
+dependencies by adding
+
+    <repository>
+        <id>jpos-ee</id>
+        <name>jPOS Maven Repository</name>
+        <url>http://jpos.org/maven</url>
+    </repository>
+
+to your Maven or
+
+    repositories {
+        ...
+        maven { url 'http://jpos.org/maven' }
+        ...
+    }
+
+to your Gradle configuration.
+
+[TIP]
+=====
+We recommend you use the https://github.com/jpos/jPOS-template[jPOS Template], 
+in particular its `multimodule` branch when building jPOS-EE based applications.
+=====
+
+=== Downloading the sources
+
+In order to get a copy of it, and keep your copy up-to-date with 
+the latest revision, you need to use a Git client.
 
 Git installation instructions for Windows, Linux and MacOS X are available here:
 http://help.github.com/set-up-git-redirect[Git Setup].
@@ -81,30 +107,24 @@ This will create a new directory ``jPOS-EE'' containing a clone of what's curren
 
 === Installing the SDK
 
-Install the framework, please enter following command from within the SDK top-level directory:
+If you're not using jPOS Maven repo, you can install your dependencies locally
+by calling:
 
-    ./gradlew install
-
-[TIP]
-==========================================================================
-This step might take some time while Gradle downloads all dependencies.
-If you already have Gradle installed in your system, you don't have to
-use the Gradle Wrapper `gradlew`, you can just use your pre-installed
-`gradle`. Make sure you have a recent version compatible with the one
-we are using. Check `build.gradle` for details.
-
-If you have Gradle installed, you may also want to speed-up your builds
-by setting the `GRADLE_OPTS=-Dorg.gradle.daemon=true` variable or by
-calling +
-`gradle --daemon ...`
-==========================================================================
+    gradle install
 
 If your build completes with ``BUILD SUCCESSFUL'' , you are ready to proceed to create your first project!
 
 [NOTE]
-.What did we just do?
 ==========================================================================
 Gradle just built and installed all of its components into your local Maven
 repository, where they can be accessed by any of your projects.
+
+If you have made local changes to the jPOS-EE sources, followed by a call
+to `gradle install`, make sure that your `mavenLocal()` repository comes
+*before* `http://jpos.org/maven` in your repository list so that dependencies
+are taken from your local `$HOME/.m2/repository` directory.
+
+Please note that while this is OK during development, it's a bad practice
+if you expect to produce repeatable builds.
 ==========================================================================
 

@@ -65,7 +65,7 @@ Very often we find ourselves answering the question WHY (on earth) we have this
 directly. The answer comes from the history of jPOS-EE, which initially used an
 object-oriented database (ObjectStore). ObjectStore had a `DB` object that one
 had to instantiate to access the database, and we were used to it. Interesting
-enough, ObjectStore helped model JDO, which in term influenced the JPA we have
+enough, ObjectStore helped model JDO, which in turn influenced the JPA we have
 today.
 
 Once we moved away from the object-oriented database to Hibernate, we found it

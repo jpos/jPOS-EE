@@ -42,14 +42,14 @@ instructions on what you need, and the changes won't break any existing
 jPOS or jPOS-EE functionality, then we are willing to do so, but if you
 decide to go that route, you'll be on your own.
 
-== Preparing your environment
+=== Preparing your environment
 
 In this chapter we will work through setting up the development environment consisting of:
 
 * Downloading the jPOS-EE SDK source code using Git.
 * Compiling and installing the components locally on your system.
 
-== Maven coordinates
+=== Maven coordinates
 
 jPOS-EE modules are regularly published to jPOS' maven repository. You can use its
 dependencies by adding

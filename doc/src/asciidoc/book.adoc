@@ -13,8 +13,7 @@ include::overview.adoc[]
 
 include::contributing.adoc[]
 include::getting_started.adoc[]
-
-// include::tutorial.adoc[]
+include::tutorial.adoc[]
 
 = Modules
 
@@ -78,12 +77,7 @@ include::module_fsdmsgX.adoc[]
 // - Mail
 //------------------------------------------------------------
 
-//-------------------------------------------------------------
-// APPENDICES
-//-------------------------------------------------------------
-
-Appendices
-==========
+= Appendices
 
 include::appendix_copyright.adoc[]
 include::appendix_license.adoc[]

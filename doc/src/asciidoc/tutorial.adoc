@@ -1,6 +1,6 @@
-== Five minute tutorial
+=== Five minute tutorial
 
-=== Initial setup, jPOS project
+==== Initial setup, jPOS project
 
 Once you have jPOS-EE installed, in order to create your own project, 
 you can take advantage of our companion ``jPOS Template''.
@@ -68,7 +68,7 @@ The jPOS template creates a standard jPOS application with its
 `build/install/myjposproject` directory.
 
 
-=== Adding a jPOS-EE Module
+==== Adding a jPOS-EE Module
 
 Now lets add a jPOS-EE module. We'll start with a simple one, the <<server-simulator, Server Simulator>>.
 
@@ -99,7 +99,7 @@ you'll see two new libraries:
 * `jposee-core-2.0.2-SNAPSHOT.jar` and
 * `jposee-server-simulator-2.0.2-SNAPSHOT.jar`
 
-=== Pulling configuration from modules
+==== Pulling configuration from modules
 
 Now a little hack: jPOS-EE modules contain sample configuration files
 inside their distributed jars. Those are intended as a reference and need to be
@@ -171,4 +171,10 @@ so you can `telnet localhost 10000` and fire an XML message like this.
 
 If everything works alright, you should get a 0810 response.
 ====================
+
+[TIP]
+=====
+You may want to visit the jPOS http://jpos.org/tutorials[Tutorials] page for
+additional tutorials.
+=====
 

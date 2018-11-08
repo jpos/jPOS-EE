@@ -5,7 +5,6 @@ import com.vaadin.data.HasValue;
 import com.vaadin.data.Validator;
 import com.vaadin.data.converter.LocalDateToDateConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.*;
@@ -16,10 +15,8 @@ import org.jpos.qi.ViewConfig;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 import static org.jpos.util.QIUtils.getCaptionFromId;
 
@@ -67,7 +64,7 @@ public class FieldFactory {
     protected TextField buildAndBindLongField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToLongConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToLongFormattedConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }
@@ -117,13 +114,17 @@ public class FieldFactory {
 
     public DateField buildAndBindDateField(String id) {
         DateField dateField = new DateField(getCaptionFromId("field." + id));
-        List<Validator> v = getValidators(id);
         Binder.BindingBuilder builder = getBinder().forField(dateField);
+        builder.withConverter(new LocalDateToDateConverter()).bind(id);
+        if (viewConfig == null)
+            return dateField;
+        List<Validator> v = getValidators(id);
         for (Validator val : v)
             builder.withValidator(val);
         if (isRequired(id))
             builder.asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId("field."+id))));
-        builder.withConverter(new LocalDateToDateConverter()).bind(id);
+        if ("endDate".equals(id))
+            dateField.addValueChangeListener((HasValue.ValueChangeListener<LocalDate>) event -> dateField.addStyleName("expired-date"));
         return dateField;
     }
 
@@ -136,8 +137,11 @@ public class FieldFactory {
     }
 
     public Binder.BindingBuilder formatField(String id, HasValue field) {
-        List<Validator> v = getValidators(id);
         Binder.BindingBuilder builder = getBinder().forField(field);
+        builder = builder.withNullRepresentation("");
+        if (viewConfig == null)
+            return builder;
+        List<Validator> v = getValidators(id);
         for (Validator val : v)
             builder.withValidator(val);
         if (isRequired(id))
@@ -146,13 +150,14 @@ public class FieldFactory {
         String width = config != null ? config.getWidth() : null;
         if (field instanceof AbstractComponent)
             ((AbstractComponent)field).setWidth(width);
-        builder = builder.withNullRepresentation("");
         return builder;
     }
 
     //Reads regex and length from 00_qi.xml
     //Override to add more customValidators
     public List<Validator> getValidators(String propertyId) {
+        if (viewConfig == null)
+            return Collections.EMPTY_LIST;
         List<Validator> validators = new ArrayList<>();
         ViewConfig.FieldConfig config = viewConfig.getFields().get(propertyId);
         if (config != null) {

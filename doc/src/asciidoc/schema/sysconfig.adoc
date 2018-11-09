@@ -3,7 +3,7 @@
 [graphviz, sysconfig, png]
 ----
 digraph sysconfig {
-    sysconfig
+    sysconfig [shape=box, style="filled"]
 }
 ----
 

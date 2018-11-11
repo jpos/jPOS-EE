@@ -1,6 +1,6 @@
 == SysLog
 
-[graphviz, syslog, png]
+[graphviz, syslog, svg]
 ----
 digraph syslog{
     syslog [shape=box, style="filled"]
@@ -21,23 +21,21 @@ The table has the following columns:
 - `detail`: specific info about the event
 - `trace`: additional information (i.e. dumps)
 
-[source]
---------
-  Column  |            Type             | Modifiers 
-----------+-----------------------------+-----------
- id       | bigint                      | not null
- date     | timestamp without time zone | 
- deleted  | character(1)                | 
- source   | character varying(64)       | 
- type     | character varying(32)       | 
- severity | integer                     | 
- summary  | character varying(255)      | 
- detail   | text                        | 
- trace    | text                        | 
-Indexes:
-    "syslog_pkey" PRIMARY KEY, btree (id)
-
---------
+[source,sql]
+------------
+create table syslog (
+    id bigint not null auto_increment, 
+    date datetime, 
+    deleted char(1), 
+    source varchar(64), 
+    type varchar(32), 
+    severity integer, 
+    summary varchar(255), 
+    detail longtext, 
+    trace longtext, 
+    primary key (id)
+)
+------------
 
 Here is a sample use:
 
@@ -53,8 +51,5 @@ Here is a sample use:
  1613 | 2018-10-16 17:14:43.698 | RESTAPI01 | SYSTEM |        2 | Stop (uptime 14m13s)
  1614 | 2018-10-16 17:14:50.987 | N01       | SYSTEM |        2 | Start
  1618 | 2018-10-16 19:46:20.14  | N01       | SYSTEM |        2 | Stop (uptime 2h31m29s)
-
- ...
- ...
 --------
 

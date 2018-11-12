@@ -64,8 +64,8 @@
   </view>
   <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="sysconfig"/>
-    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" />
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
+    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" expand-ratio="1" />
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
   </view>
   <!--<view route="permissions" class="org.jpos.qi.sysconfig.PermissionView" perm="sysadmin" sidebar="system">-->
     <!--<property name="entityName" value="permission"/>-->
@@ -77,8 +77,8 @@
     <property name="entityName" value="permission"/>
     <property name="prefix" value="perm." />
     <property name="title" value="Permissions" />
-    <attribute name="id" read-only="true" required="true"/>
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
+    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" expand-ratio="1" />
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
   </view>
 
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">

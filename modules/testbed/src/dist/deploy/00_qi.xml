@@ -147,7 +147,6 @@
   </view>
   <view route="syslog" class="org.jpos.qi.system.AuditLogView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="syslog"/>
-    <attribute name="id" field="false"/>
     <attribute name="date" />
     <attribute name="source" />
     <attribute name="type" />

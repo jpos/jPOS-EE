@@ -1,13 +1,22 @@
 == SysLog
 
-[graphviz, syslog, svg]
+[plantuml, syslog, svg]
 ----
-digraph syslog{
-    syslog [shape=box, style="filled"]
-}
+@startuml
+class SysLog {
+  int id;
+  Date date;
+  String source;
+  int severity;
+  String summary;
+  String detail;
+  String trace;
+  boolean deleted;
+} 
+@enduml
 ----
 
-The `syslog` table is a general purpose table used by jPOS-EE to record
+The `SysLog` entity is a general purpose entity used by jPOS-EE to record
 an audit trail of relevant events.
 
 The table has the following columns:
@@ -20,22 +29,8 @@ The table has the following columns:
 - `summary`: a brief description of the event, suitable to be printed by the UI in a column
 - `detail`: specific info about the event
 - `trace`: additional information (i.e. dumps)
+- `deleted`: logical delete
 
-[source,sql]
-------------
-create table syslog (
-    id bigint not null auto_increment, 
-    date datetime, 
-    deleted char(1), 
-    source varchar(64), 
-    type varchar(32), 
-    severity integer, 
-    summary varchar(255), 
-    detail longtext, 
-    trace longtext, 
-    primary key (id)
-)
-------------
 
 Here is a sample use:
 
@@ -52,4 +47,5 @@ Here is a sample use:
  1614 | 2018-10-16 17:14:50.987 | N01       | SYSTEM |        2 | Start
  1618 | 2018-10-16 19:46:20.14  | N01       | SYSTEM |        2 | Stop (uptime 2h31m29s)
 --------
+
 

@@ -1,34 +1,32 @@
 [[sysconfig]]
 == SysConfig
 
-[graphviz, sysconfig, svg]
+[plantuml, sysconfig, svg]
 ----
-digraph sysconfig {
-    sysconfig [shape=box, style="filled"]
-}
+@startuml
+
+class SysConfig {
+  String id;
+  String value;
+  String readPerm;
+  String writePerm;
+} 
+
+@enduml
 ----
 
-The `sysconfig` table is a general purpose table used by jPOS-EE to store its configuration.
+The `SysConfig` entity footnote:['sysconfig' table] is a general purpose entity 
+used by jPOS-EE to store configuration parameters.
 
-The table has the following columns:
+It contains the following properties:
 
 - `id`
 - `value`
 - `readPerm`
 - `writePerm`
 
-[source,sql]
-------------
-create table sysconfig (
-    id varchar(64) not null, 
-    value varchar(8192), 
-    readPerm varchar(64),                                              <1>
-    writePerm varchar(64), 
-    primary key (id) 
-)
-------------
-<1> `readPerm` and `writePerm` properties can be optionally used by 
-     the user interface in order to limit access to specific entries.
+`readPerm` and `writePerm` properties can be optionally used by 
+the user interface in order to limit access to specific entries.
 
 Most jPOS applications typically use a prefix, for example:
 
@@ -65,7 +63,7 @@ This prefix is configured in `00_qi.xml` like this:
 ------------
 <1> There goes the `perm.` prefix.
 
-Using this technique, it's easier to create CRUD operations for different kind of
+Using this technique, it's easy to create CRUD operations for different kind of
 configuration groups (roles, permissions, hosts, cryptograms, etc.) just by copying
 that little XML element snippet inside the application's `00_qi.xml`.
 

@@ -77,10 +77,11 @@ include::module_fsdmsgX.adoc[]
 // - Mail
 //------------------------------------------------------------
 
-= Database schema
+= jPOS-EE Entities
 
-include::schema/sysconfig.adoc[]
-include::schema/syslog.adoc[]
+include::entities/sysconfig.adoc[]
+include::entities/syslog.adoc[]
+include::entities/eeuser.adoc[]
 
 = Appendices
 

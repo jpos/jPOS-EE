@@ -32,18 +32,18 @@ import java.security.SecureRandom;
 public enum HashVersion {
     UNKNOWN((byte)0xFF, 0, 0, 0, null) {
         @Override
-        String hash (String seed, String secret, byte[] salt) {
+        public String hash (String seed, String secret, byte[] salt) {
             throw new IllegalStateException("invalid version");
         }
 
         @Override
-        boolean check (String seed, String secret, String hash ) {
+        public boolean check (String seed, String secret, String hash ) {
             throw new IllegalStateException("invalid version");
         }
     },
     ZERO((byte)0, 0, 160, 40, null) {
         @Override
-        String hash (String seed, String secret, byte[] salt) throws NoSuchAlgorithmException {
+        public String hash (String seed, String secret, byte[] salt) throws NoSuchAlgorithmException {
             MessageDigest md = MessageDigest.getInstance ("SHA");
             md.update (seed.getBytes());
             return ISOUtil.hexString (
@@ -52,13 +52,13 @@ public enum HashVersion {
         }
 
         @Override
-        boolean check (String seed, String secret, String hash) throws NoSuchAlgorithmException {
+        public boolean check (String seed, String secret, String hash) throws NoSuchAlgorithmException {
             return hash.equals(hash(seed, secret, null));
         }
     },
     ONE((byte) 1,100000,2048, 388, Base64.decode("K7f2dgQQHK5CW6Wz+CscUA==")) {
         @Override
-        String hash (String seed, String secret, byte[] salt) throws Exception {
+        public String hash (String seed, String secret, byte[] salt) throws Exception {
             if (salt == null) {
                 System.out.println ("-- generated salt --");
                 salt = ONE.genSalt();
@@ -75,7 +75,7 @@ public enum HashVersion {
         }
 
         @Override
-        boolean check (String seed, String secret, String hash) throws Exception {
+        public boolean check (String seed, String secret, String hash) throws Exception {
             byte[] b = Base64.decode(hash);
             byte[] salt = new byte[ONE.getSalt().length];
             System.arraycopy (b, 1, salt, 0, salt.length);
@@ -134,8 +134,8 @@ public enum HashVersion {
         return UNKNOWN;
     }
 
-    abstract String hash (String seed, String secret, byte[] salt) throws Exception;
-    abstract boolean check (String seed, String secret, String hash) throws Exception;
+    public abstract String hash (String seed, String secret, byte[] salt) throws Exception;
+    public abstract boolean check (String seed, String secret, String hash) throws Exception;
 
     private byte[] genSalt () throws NoSuchAlgorithmException {
         return genSalt(salt.length);

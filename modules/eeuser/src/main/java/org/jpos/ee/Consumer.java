@@ -27,9 +27,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 @SuppressWarnings("unused")
 public class Consumer extends Cloneable implements Serializable, SoftDelete {
     private String id;
-    private String kid;
-    private byte[] secureData;
     private User user;
+    private String hash;
     private boolean deleted;
     private boolean active;
     private Date startDate;
@@ -68,20 +67,12 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
         return roles;
     }
 
-    public String getKid() {
-        return kid;
+    public String getHash() {
+        return hash;
     }
 
-    public void setKid(String kid) {
-        this.kid = kid;
-    }
-
-    public byte[] getSecureData() {
-        return secureData;
-    }
-
-    public void setSecureData(byte[] secureData) {
-        this.secureData = secureData;
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     public User getUser() {
@@ -169,6 +160,7 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
             .append("id", getId())
             .toString();
     }
+
     public boolean equals(Object other) {
         if ( !(other instanceof Consumer) ) return false;
         Consumer castOther = (Consumer) other;

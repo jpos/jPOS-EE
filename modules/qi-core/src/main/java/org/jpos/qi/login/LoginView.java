@@ -47,8 +47,8 @@ public class LoginView extends VerticalLayout {
     private Binder<String> binder;  //just used to add validators to fields
 
 
-    public String USERNAME_PATTERN =  "^[\\w|#=@.-]{1,60}$";
-    public String PASSWORD_PATTERN = "^[\\w|#=@!\\_.-]{1,64}$";
+    public static String USERNAME_PATTERN =  "^[\\w|#=@.-]{1,60}$";
+    public static String PASSWORD_PATTERN = "^[\\w|#=@!\\_.-]{1,64}$";
 
     public LoginView () {
         super();
@@ -86,8 +86,6 @@ public class LoginView extends VerticalLayout {
                     loginOk(user, rememberMe.getValue());
                     failed = false;
                 }
-            } else {
-                failed = true;
             }
         } catch (ParseException e) {
             app.displayNotification(e.getMessage());
@@ -96,7 +94,6 @@ public class LoginView extends VerticalLayout {
             username.focus();
             loginFailed(u, helper.getUserByNick(u));
         }
-
     }
 
     private void loginOk (User user, boolean rememberMe) {

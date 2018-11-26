@@ -26,20 +26,16 @@ import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.jpos.crypto.CryptoService;
-import org.jpos.crypto.SecureData;
 import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.util.NameRegistrar;
 import org.jpos.util.QIUtils;
-import org.jpos.util.Serializer;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -189,18 +185,16 @@ public class ConsumersView extends QIEntityView<Consumer> {
         Consumer c = getInstance();
         if (getBinder().writeBeanIfValid(c)) {
             c.setUser(this.selectedUser);
-            Map<String,String> smap = new HashMap<>();
+            String sk = "?";
             try{
-                smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
-                SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
-                c.setKid(sd.getId().toString());
-                c.setSecureData(sd.getEncoded());
+                sk = Base64.toBase64String(generateKey().getEncoded());
+                c.setHash(HashVersion.ONE.hash(Long.toString(c.getUser().getId(),16), sk, HashVersion.ONE.getSalt()));
             } catch (Exception e) {
                 getApp().getLog().error(e);
             }
             getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
-                getApp().getMessage("secretDescription", smap.getOrDefault("S", "?")),
+                getApp().getMessage("secretDescription", sk),
                 getApp().getMessage("secretConfirm"),
                 getApp().getMessage("cancel"),
                 confirm -> {

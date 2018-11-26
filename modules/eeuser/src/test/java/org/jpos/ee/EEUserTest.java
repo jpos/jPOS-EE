@@ -22,7 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -42,14 +41,14 @@ public class EEUserTest {
         checkUser();
     }
 
-    private void createUser() throws BLException {
+    private void createUser() throws Exception {
         db.beginTransaction();
         User user = new User();
         user.setNick("admin");
         user.setName("User Administrator");
         user.setActive(true);
         db.session().save(user);
-        UserManager mgr = new UserManager(db, UserManager.VERSION.ZERO);
+        UserManager mgr = new UserManager(db, HashVersion.ZERO);
         mgr.setPassword(user, "test", null);
         Role role = new Role("admin");
         Set<Permission> perms = role.getPermissions();
@@ -60,9 +59,9 @@ public class EEUserTest {
         user.getRoles().add(role);
         db.commit();
     }
-    public void checkUser() throws BLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void checkUser() throws Exception {
         db.beginTransaction();
-        UserManager mgr = new UserManager(db, UserManager.VERSION.ZERO);
+        UserManager mgr = new UserManager(db, HashVersion.ZERO);
         User u = mgr.getUserByNick("admin");
         assertNotNull("User can't be null", u);
         assertTrue("User has 'login' permission", u.hasPermission("login"));

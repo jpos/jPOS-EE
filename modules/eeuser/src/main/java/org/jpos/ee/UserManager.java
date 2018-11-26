@@ -18,47 +18,38 @@
 
 package org.jpos.ee;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
-import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Base64;
 import org.hibernate.HibernateException;
-import org.jpos.iso.ISOUtil;
-import org.jpos.security.SystemSeed;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.criteria.*;
 
 /**
  * @author Alejandro Revilla
  */
 public class UserManager extends DBManager<User> {
-
-    VERSION version;
+    private HashVersion version;
 
     public UserManager (DB db) {
-        this (db, VERSION.ONE);
+        this (db, HashVersion.ONE);
     }
 
-    public UserManager (DB db, VERSION version) {
+    public UserManager (DB db, HashVersion version) {
         super (db, User.class);
         this.version = version;
     }
 
-    public void setPassword (User u, String clearpass) throws BLException {
+    public void setPassword (User u, String clearpass) throws Exception {
         setPassword(u, clearpass, null, version);
     }
 
-    public void setPassword (User u, String clearpass, User author) throws BLException {
+    public void setPassword (User u, String clearpass, User author) throws Exception {
         setPassword(u, clearpass, author, version);
     }
 
-    public void setPassword (User u, String clearpass, User author, VERSION v) throws BLException {
+    public void setPassword (User u, String clearpass, User author, HashVersion v) throws Exception {
         if (u.getPasswordHash() != null)
             u.addPasswordHistoryValue(u.getPasswordHash());
         switch (v) {
@@ -111,9 +102,7 @@ public class UserManager extends DBManager<User> {
      * @throws BLException if invalid user/pass
      * @throws HibernateException on low level hibernate related exception
      */
-    public User getUserByNick (String nick, String pass)
-        throws HibernateException, BLException
-    {
+    public User getUserByNick (String nick, String pass) throws Exception {
         User u = getUserByNick(nick);
         assertNotNull (u, "User does not exist");
         assertTrue(checkPassword(u, pass), "Invalid password");
@@ -129,14 +118,12 @@ public class UserManager extends DBManager<User> {
         return getUserById(id,false);
     }
 
-    public boolean checkPassword (User u, String clearpass)
-            throws HibernateException, BLException
-    {
+    public boolean checkPassword (User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid pass");
         String passwordHash = u.getPasswordHash();
         assertNotNull(passwordHash, "Password is null");
-        VERSION v = VERSION.getVersion(passwordHash);
-        assertTrue(v != VERSION.UNKNOWN, "Unknown password");
+        HashVersion v = HashVersion.getVersion(passwordHash);
+        assertTrue(v != HashVersion.UNKNOWN, "Unknown password");
         switch (v) {
             case ZERO:
                 return checkV0Password(passwordHash, u.getId(), clearpass);
@@ -151,12 +138,12 @@ public class UserManager extends DBManager<User> {
      * @param clearpass new password in clear
      * @return true if password is in PasswordHistory
      */
-    public boolean checkNewPassword (User u, String clearpass) throws BLException {
+    public boolean checkNewPassword (User u, String clearpass) throws Exception {
         if (checkPassword (u, clearpass)) {
             return false; // same password not allowed
         }
         for (PasswordHistory p : u.getPasswordhistory()) {
-            VERSION v = VERSION.getVersion(p.getValue());
+            HashVersion v = HashVersion.getVersion(p.getValue());
             switch (v) {
                 case ZERO:
                     if (checkV0Password(p.getValue(), u.getId(), clearpass))
@@ -169,60 +156,38 @@ public class UserManager extends DBManager<User> {
         return true;
     }
 
-    public boolean upgradePassword (User u, String clearpass)
-            throws HibernateException, BLException
+    public boolean upgradePassword (User u, String clearpass) throws Exception
     {
         assertNotNull(clearpass, "Invalid pass");
         String passwordHash = u.getPasswordHash();
         assertNotNull(passwordHash, "Password is null");
-        VERSION v = VERSION.getVersion(passwordHash);
-        if (v == VERSION.ZERO && checkV0Password(passwordHash, u.getId(), clearpass)) {
-            setPassword(u, clearpass, null, VERSION.ONE);
+        HashVersion v = HashVersion.getVersion(passwordHash);
+        if (v == HashVersion.ZERO && checkV0Password(passwordHash, u.getId(), clearpass)) {
+            setPassword(u, clearpass, null, HashVersion.ONE);
             return true;
         }
         return false;
     }
 
-    public VERSION getVersion() {
+    public HashVersion getVersion() {
         return version;
     }
 
-    public void setVersion(VERSION version) {
+    public void setVersion(HashVersion version) {
         this.version = version;
     }
 
-    private void setV1Password (User u, String clearpass) throws BLException {
+    private void setV1Password (User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid password");
-        byte[] salt = genSalt(VERSION.ONE.getSalt().length);
-        u.setPasswordHash(genV1Hash(clearpass, salt));
+        u.setPasswordHash(HashVersion.ONE.hash(Long.toString(u.getId(),16), clearpass, HashVersion.ONE.getSalt()));
     }
 
-    private String genV1Hash(String password, byte[] salt) throws BLException {
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            int iterations = VERSION.ONE.getIterations();
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, VERSION.ONE.getKeylength());
-            return org.bouncycastle.util.encoders.Base64.toBase64String(
-                Arrays.concatenate(
-                    new byte[]{VERSION.ONE.getVersion()},
-                    VERSION.ONE.getSalt(salt),
-                    skf.generateSecret(spec).getEncoded())
-            );
-        } catch (Exception e) {
-            throw new BLException (e.getLocalizedMessage());
-        }
+    private boolean checkV1Password (String passwordHash, String clearpass) throws Exception {
+        return HashVersion.ONE.check("", clearpass, passwordHash);
     }
 
-    private boolean checkV1Password (String passwordHash, String clearpass) throws BLException {
-        byte[] b = Base64.decode(passwordHash);
-        byte[] salt = new byte[VERSION.ONE.getSalt().length];
-        System.arraycopy (b, 1, salt, 0, salt.length);
-        String computedPasswordHash = genV1Hash(clearpass, VERSION.ONE.getSalt(salt));
-        return computedPasswordHash.equals(passwordHash);
-    }
-
-    private boolean checkV0Password(String passwordHash, long id, String clearpass) {
-        return passwordHash.equals(genV0Hash(id, clearpass));
+    private boolean checkV0Password(String passwordHash, long id, String clearpass) throws Exception {
+        return passwordHash.equals(HashVersion.ZERO.hash(Long.toString(id, 16), clearpass, null));
     }
 
     // HELPER METHODS
@@ -237,87 +202,8 @@ public class UserManager extends DBManager<User> {
             throw new BLException (error);
     }
 
-    private static String genV0Hash(long id, String clearpass) {
-        String hash = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance ("SHA");
-            md.update (Long.toString(id,16).getBytes());
-            hash = ISOUtil.hexString (
-                md.digest (clearpass.getBytes())
-            ).toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
-            // should never happen
-        }
-        return hash;
-    }
-    private void setV0Password (User u, String clearpass) throws BLException {
+    private void setV0Password (User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid password");
-        u.setPasswordHash(genV0Hash(u.getId(), clearpass));
-    }
-
-    private byte[] genSalt(int len) {
-        SecureRandom sr;
-        try {
-            sr = SecureRandom.getInstance("SHA1PRNG");
-            byte[] salt = new byte[len];
-            sr.nextBytes(salt);
-            return salt;
-        } catch (NoSuchAlgorithmException ignored) {
-            // Should never happen, SHA1PRNG is a supported algorithm
-        }
-        return null;
-    }
-
-    public enum VERSION {
-        UNKNOWN((byte)0xFF, 0, 0, 0, null),
-        ZERO((byte)0, 0, 160, 40, null),
-        ONE((byte) 1,100000,2048, 388, Base64.decode("K7f2dgQQHK5CW6Wz+CscUA=="));
-
-        private byte version;
-        private int iterations;
-        private int keylength;
-        private int encodedLength;
-        private byte[] salt;
-
-        VERSION(byte version, int iterations, int keylength, int encodedLength, byte[] salt) {
-            this.version = version;
-            this.iterations = iterations;
-            this.keylength = keylength;
-            this.encodedLength = encodedLength;
-            this.salt = salt;
-        }
-
-        public byte getVersion() {
-            return version;
-        }
-        public int getIterations() {
-            return iterations;
-        }
-        public int getKeylength() {
-            return keylength;
-        }
-
-        public int getEncodedLength() {
-            return encodedLength;
-        }
-
-        public byte[] getSalt() {
-            return ISOUtil.xor(salt, SystemSeed.getSeed(salt.length, salt.length));
-        }
-        public byte[] getSalt(byte[] salt) {
-            return ISOUtil.xor(salt, getSalt());
-        }
-        public static VERSION getVersion (String hash) {
-            for (VERSION v : VERSION.values()) {
-                if (v.getEncodedLength() == hash.length())
-                    return v;
-                if (v != UNKNOWN && v != ZERO) {
-                    byte[] b = Base64.decode(hash);
-                    if (b[0] == v.getVersion())
-                        return v;
-                }
-            }
-            return UNKNOWN;
-        }
+        u.setPasswordHash(HashVersion.ZERO.hash(Long.toString(u.getId()), clearpass, null));
     }
 }

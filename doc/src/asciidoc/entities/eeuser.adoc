@@ -101,8 +101,7 @@ class PasswordHistory {
 
 class Consumer {
   String name
-  String kid
-  byte[] secureData
+  String hash
   boolean deleted
   Date startDate;
   Date endDate;
@@ -124,7 +123,7 @@ Consumer --o Role
 |Property             | Description
 | id                  | internal id
 | nick                | unique system-wide nick name
-| passwordHash        | current strategy (`VERSION.ONE`) uses `PBKDF2WithHmacSHA256`
+| passwordHash        | current strategy (`HashVersion.ONE`) uses `PBKDF2WithHmacSHA256`
 | name                | the user name
 | email               | primary e-mail address - additional email addresses can be stored in the `User.props` map
 | roles               |  user roles (which in turn have a permissions set)
@@ -234,11 +233,11 @@ A Consumer belongs to a user, but it has its own set of roles and permissions.
 |===
 |Property             | Description
 | id                  | application-specific ID (i.e. UUID)
-| kid                 | key ID (relates to `secureData` property)
-| secureData          | sensitive data (such as consumer secrets) encrypted using the <<cryptoservice,CryptoService module>>
+| hash                | current strategy (`HashVersion.ONE`) uses `PBKDF2WithHmacSHA256`
 | active              | true if the user is active
 | deleted             | logical delete
 | startDate           | if not null, user is not valid before this date
+| endDate             | if not null, user is not valid after this date
 | user                | Consumers belong to a given user
 | roles               | set of roles (which in turn has permissions)
 | props               | application-specific properties

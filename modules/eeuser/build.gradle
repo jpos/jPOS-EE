@@ -22,3 +22,4 @@ test {
     workingDir testRuntimeDir
 }
 
+apply from: "${rootProject.projectDir}/jpos-app.gradle"

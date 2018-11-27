@@ -26,7 +26,6 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class ConsumerManager extends DBManager<Consumer> {
-
     private User user;
 
     public ConsumerManager (DB db) {
@@ -38,15 +37,16 @@ public class ConsumerManager extends DBManager<Consumer> {
         this.user = user;
     }
 
-    public Consumer getById (String id)
-            throws HibernateException
+    public Consumer getById (String id) throws HibernateException
     {
-        return db.session().get(Consumer.class, id);
+        return getItemByParam("id", id, true);
     }
 
     public List<Consumer> getConsumers (User user) {
         this.user = user;
-        return getAll();
+        List<Consumer> consumers = getAll();
+        this.user = null;
+        return consumers;
     }
 
     protected Predicate[] buildFilters(Root<Consumer> root) {
@@ -57,6 +57,5 @@ public class ConsumerManager extends DBManager<Consumer> {
         }
         return new Predicate[]{notDeleted};
     }
-
 
 }

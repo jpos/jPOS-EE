@@ -36,6 +36,7 @@ public class ADDCONSUMER implements CLICommand {
         Options options = new Options();
         options.addOption ("u", "user", true, "User's nick name");
         options.addOption ("U", "uuid", true, "Optional UUID");
+        options.addOption ("S", "secret", true, "Optional secret");
         options.addOption ("r", "role", true, "User role");
         CommandLine line = parser.parse(options, shl(args));
 
@@ -78,7 +79,8 @@ public class ADDCONSUMER implements CLICommand {
                 cli.println ("Consumer already exists");
                 return;
             }
-            String secret = Base64.toBase64String(UUID.randomUUID().toString().getBytes());
+            String secret = line.hasOption('S') ?
+              line.getOptionValue('S') : Base64.toBase64String(UUID.randomUUID().toString().getBytes());
             Consumer c = new Consumer();
             c.setId(id);
             c.setUser(u);

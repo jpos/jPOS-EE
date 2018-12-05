@@ -2,7 +2,7 @@
 
 The `eeuser` module can be used to represent visitors and users of the system. 
 
-[graphviz, eeuser-module, svg]
+[graphviz, eeuser-module, svg, width=450]
 ----
 digraph eeuser {
     node [shape=box, width=2.0];  user; visitor;

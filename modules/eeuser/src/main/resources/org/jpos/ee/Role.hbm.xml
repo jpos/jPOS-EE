@@ -26,9 +26,13 @@
             <generator class="native" />
         </id>
 
-        <property name="name" type="string">
-            <column name="name" sql-type="varchar(64)" unique="true" not-null="true" />
-        </property>
+        <properties name="UK_RealmRole" unique="true">
+         <property name="name" type="string" unique-key="UK_RealmRole">
+            <column name="name" sql-type="varchar(64)" not-null="true" unique-key="UK_RealmRole" />
+         </property>
+         <many-to-one name="realm"  not-null="false" insert="false" update="false" foreign-key="FKRoleRealm" />
+        </properties>
+        <many-to-one name="parent" not-null="false" insert="false" update="false" foreign-key="FKRoleParent" />
 
         <set name="permissions" lazy="false" table="role_perms" order-by="name">
             <key column="role" foreign-key="FKRolePermissions"/>

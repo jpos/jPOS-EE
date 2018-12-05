@@ -18,21 +18,22 @@
 
 package org.jpos.ee;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
+import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
-public class Role extends Cloneable {
+public class Role extends Cloneable implements Serializable {
+    private static final long serialVersionUID = 6235762883633501492L;
     private Long id;
     private String name;
     private Set<Permission> permissions;
+    private Role parent;
+    private Realm realm;
 
     public Role () {
         super();
-        permissions    = new LinkedHashSet<Permission>();
+        permissions    = new LinkedHashSet<>();
     }
     public Role(String name) {
         this();
@@ -47,12 +48,28 @@ public class Role extends Cloneable {
         this.id = id;
     }
 
+    public Realm getRealm() {
+        return realm;
+    }
+
+    public void setRealm(Realm realm) {
+        this.realm = realm;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Role getParent() {
+        return parent;
+    }
+
+    public void setParent(Role parent) {
+        this.parent = parent;
     }
 
     public Set<Permission> getPermissions() {
@@ -79,23 +96,31 @@ public class Role extends Cloneable {
         permissions.clear ();
     }
 
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", getId())
-                .append("name", getName())
-                .toString();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(id, role.id) &&
+          Objects.equals(realm, role.realm) &&
+          Objects.equals(name, role.name) &&
+          Objects.equals(permissions, role.permissions) &&
+          Objects.equals(parent, role.parent);
     }
 
-    public boolean equals(Object other) {
-        if ( !(other instanceof Role) ) return false;
-        Role castOther = (Role) other;
-        return new EqualsBuilder()
-                .append(this.getId(), castOther.getId())
-                .isEquals();
-    }
+    @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(getId())
-                .toHashCode();
+        return Objects.hash(id, realm, name, permissions, parent);
+    }
+
+    @Override
+    public String toString() {
+        return "Role{" +
+          "id=" + id +
+          ", realm='" + realm + '\'' +
+          ", name='" + name + '\'' +
+          ", permissions=" + permissions +
+          ", parent=" + parent +
+          '}';
     }
 }

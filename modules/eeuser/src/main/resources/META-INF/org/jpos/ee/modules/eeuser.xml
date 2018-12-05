@@ -22,5 +22,7 @@
         <mapping resource="org/jpos/ee/Consumer.hbm.xml" />
         <mapping resource="org/jpos/ee/Revision.hbm.xml" />
         <mapping resource="org/jpos/ee/Role.hbm.xml" />
+        <mapping class="org.jpos.ee.Realm" />
+        <mapping class="org.jpos.ee.RealmRole" />
     </mappings>
 </module>

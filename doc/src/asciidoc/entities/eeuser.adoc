@@ -1,21 +1,43 @@
 == EEUser module
 
-The `eeuser` module can be used to represent visitors and users of the system. 
+The `eeuser` module can be used to represent visitors and users of the system with their
+respective roles and permissions. Roles can be system-wide, or per-Resource (tenant).
 
-[graphviz, eeuser-module, svg]
+[graphviz, eeuser-module, svg, width=450]
 ----
 digraph eeuser {
-    node [shape=box, width=2.0];  user; visitor;
-    node [shape=circle, fixedsize=true,width=1.0]; consumer; roles; permissions; props; history; revision
-    user -> roles;
+    node [shape=box, width=2.0];  user; visitor; realm;
+    node [shape=circle, fixedsize=true,width=1.2]; consumer; role; permissions; props; history; revision;
+    node [shape=circle, fixedsize=true,width=1.2,label="realm\nrole"]; realm_role;
     visitor -> user
-    user -> props;
-    user -> history;
-    user -> consumer;
-    user -> revision;
 
-    consumer -> roles;
-    roles -> permissions;
+    // node [shape=circle, fixedsize=true,width=1.2,label="user\nrole"]; user_role;
+    // node [shape=circle, fixedsize=true,width=1.2,label="consumer\nrole"]; consumer_role;
+
+    // user -> props;
+    // user -> history;
+    // user -> revision;
+
+    user -> consumer;
+    user -> role;
+    user -> realm_role;
+
+    realm -> realm_role;
+
+    consumer -> role;
+    consumer -> realm_role;
+
+    role -> permissions;
+
+    // realm -> realm_role;
+    // realm_role -> role;
+
+    // user -> user_role;
+    // realm -> user_role;
+
+    // role -> realm_role;
+    // consumer -> consumer_role;
+    // realm -> consumer_role;
 }
 ----
 

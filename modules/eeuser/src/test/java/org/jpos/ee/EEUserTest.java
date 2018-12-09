@@ -18,6 +18,7 @@
 
 package org.jpos.ee;
 
+import org.jpos.util.Chronometer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +38,16 @@ public class EEUserTest {
 
     @Test
     public void tests() throws Exception {
+        createRealms();
         createUser();
         checkUser();
+    }
+
+    private void createRealms() throws Exception {
+        db.beginTransaction();
+        db.save(new Realm("TEST"));
+        db.save(new Realm("PROD"));
+        db.commit();
     }
 
     private void createUser() throws Exception {
@@ -50,13 +59,21 @@ public class EEUserTest {
         db.session().save(user);
         UserManager mgr = new UserManager(db, HashVersion.ZERO);
         mgr.setPassword(user, "test", null);
-        Role role = new Role("admin");
-        Set<Permission> perms = role.getPermissions();
-        perms.add(Permission.valueOf("login"));
-        perms.add(Permission.valueOf("admin"));
 
-        db.session().save(role);
-        user.getRoles().add(role);
+        RealmManager rmgr = new RealmManager(db);
+        Realm testRealm = rmgr.getRealmByName("TEST");
+        Realm prodRealm = rmgr.getRealmByName("PROD");
+
+
+        Role r = createRole(db, null, "admin", "login", "admin");
+        user.getRoles().add(r);
+        // user permissions: `login`, `admin`, `role.admin`
+
+        Role r1 = createRole (db, testRealm, "tester", "testread", "testwrite");
+        r1.setParent(r);
+        user.getRoles().add(r1);
+        // adds permissions: `TEST.testread`, `TEST.testwrite`
+
         db.commit();
     }
     public void checkUser() throws Exception {
@@ -67,9 +84,22 @@ public class EEUserTest {
         assertTrue("User has 'login' permission", u.hasPermission("login"));
         assertTrue("User has 'admin' permission", u.hasPermission("admin"));
         assertTrue("User has 'admin' role", u.hasPermission("role.admin"));
+
+//        for (Role r : u.getRoles()) {
+//            System.out.println("Role " + r.getName() + "-> " + r.getActivePermissions());
+//        }
+
+        assertTrue("User has 'TEST:testread", u.hasPermission("TEST:testread"));
+        assertTrue("User has 'TEST:admin", u.hasPermission("TEST:admin"));
+
+        assertTrue("User has all permissions TEST:role.tester, TEST:testread, TEST:testwrite, TEST:admin, TEST:login",
+          u.hasAllPermissions(
+             new String[] {"TEST:role.tester", "TEST:testread", "TEST:testwrite", "TEST:admin", "TEST:login"})
+          );
         assertTrue("User has all permissions", u.hasAllPermissions(new String[]{"login", "admin", "role.admin"}));
         assertTrue("User has any permissions", u.hasAnyPermission(new String[]{"nologin", "admin", "role.admin"}));
         assertFalse("User don't have 'superuser' permission", u.hasPermission("superuser"));
+
         assertTrue("User password is 'test'", mgr.checkPassword(u, "test"));
         assertEquals("User hash is correct", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
         assertFalse("Password has to be in history", mgr.checkNewPassword(u, "test"));
@@ -91,8 +121,18 @@ public class EEUserTest {
         db.commit();
     }
 
+
     @After
     public void tearDown() {
         db.close();
+    }
+
+    private Role createRole (DB db, Realm realm, String name, String... permissions) {
+        Role role = new Role(realm, name);
+        Set<Permission> perms = role.getPermissions();
+        for (String p : permissions)
+            perms.add(Permission.valueOf(p));
+        db.save(role);
+        return role;
     }
 }

@@ -30,8 +30,7 @@ digraph eeuser {
 For web-based applications, a _visitor_ represents a remote user, either
 anonymous or logged into the system. The _Visitor_ entity allows implementing the optional
 _remember me_ feature. When its _User_ is not null, that means the user
-is already logged in. The UI sets a Cookie that is used to locate a
-given visitor.
+is already logged in. A Cookie is used to locate a given visitor.
 
 [plantuml, visitor, svg]
 ----
@@ -60,7 +59,9 @@ class Visitor {
 
 === User
 
-_Users_, in turn have _roles_ containing _permissions_.
+_Users_, in turn have _roles_ containing _permissions_. 
+
+Roles can be limited to certain realms. Roles can have a parent, in which case, it inherits its permissions.
 
 [TIP]
 =====
@@ -121,6 +122,7 @@ class Consumer {
   Date endDate;
   User user
   Set props
+  Set roles;
 }
 
 Realm    --o Role
@@ -237,7 +239,7 @@ of the system, e.g.:
 <1> user can access its own profile
 <2> but needs `sysadmin` permission in order to administer roles
 
-=== Realm Roles
+=== Role's realm
 
 In multi-tenant systems, a user may have a role `admin` within a given realm 
 (e.g., a given `Issuer`) but not on others. A `role` can have an optional `realm` 
@@ -281,7 +283,7 @@ A user that has Role 2 (`company_1`) and 4 (`company_3`) will have the permissio
 
 [NOTE]
 ======
-The permission is derived from the realm name, plus a colon and the real permission name.
+The permission is formed out of the realm name, plus a colon and the real permission name.
 ======
 
 === Consumer

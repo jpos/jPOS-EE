@@ -22,22 +22,35 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Role extends Cloneable implements Serializable {
-    private static final long serialVersionUID = 6235762883633501492L;
+    private static final long serialVersionUID = -8259326520155524014L;
     private Long id;
+    private Realm realm;
     private String name;
     private Set<Permission> permissions;
     private Role parent;
-    private Realm realm;
 
     public Role () {
-        super();
-        permissions    = new LinkedHashSet<>();
+        permissions = new LinkedHashSet<>();
     }
     public Role(String name) {
         this();
         setName(name);
+    }
+    public Role(Realm realm, String name) {
+        this();
+        this.realm = realm;
+        setName(name);
+    }
+
+    public Role(Realm realm, String name, Set<Permission> permissions, Role parent) {
+        this();
+        this.realm = realm;
+        this.name = name;
+        this.permissions = permissions;
+        this.parent = parent;
     }
 
     public Long getId() {
@@ -81,8 +94,10 @@ public class Role extends Cloneable implements Serializable {
     }
 
     public boolean hasPermission (String permName) {
-        return permName != null && (permissions.contains(Permission.valueOf(permName)) || permName.equals("role." + name));
+        return permName != null && (getActivePermissions().contains(Permission.valueOf(permName)));
     }
+
+
 
     public void addPermission (String permName) {
         permissions.add (Permission.valueOf(permName));
@@ -122,5 +137,33 @@ public class Role extends Cloneable implements Serializable {
           ", permissions=" + permissions +
           ", parent=" + parent +
           '}';
+    }
+
+    /**
+     * get Fully Qualified Role Name
+     * @return [realm:]role.name
+     */
+    private String getFQRN() {
+        return getRealm () != null ? String.format("%s:role.%s", getRealm().getName(), getName()) :
+          String.format("role.%s", getName());
+    }
+
+
+    public Set<Permission> getActivePermissions() {
+        Set<Permission> perm = new LinkedHashSet<>();
+        perm.add(Permission.valueOf(getFQRN()));
+        perm.addAll(getActivePermissions(getRealm()));
+        for (Role r = this; r.getParent() != null; ) {
+            r = r.getParent();
+            perm.addAll(r.getActivePermissions(getRealm()));
+        }
+        return perm;
+    }
+
+    private Set<Permission> getActivePermissions (Realm r) {
+        return r != null ?
+          permissions.stream().map(
+            p -> Permission.valueOf(r.getName() + ":" + p.getName())
+          ).collect(Collectors.toSet()) : permissions;
     }
 }

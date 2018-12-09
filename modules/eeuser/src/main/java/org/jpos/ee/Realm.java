@@ -28,7 +28,7 @@ import java.util.Objects;
 @Table(name = "realm", uniqueConstraints={@UniqueConstraint(columnNames={"name"}, name="UK_realm_name")})
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Realm implements Serializable {
-    private static final long serialVersionUID = -2936172248484190612L;
+    private static final long serialVersionUID = -5382324365781372973L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
@@ -61,6 +61,15 @@ public class Realm implements Serializable {
     }
 
     public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Realm(String name) {
+        this.name = name;
+    }
+
+    public Realm(String name, String description) {
+        this.name = name;
         this.description = description;
     }
 

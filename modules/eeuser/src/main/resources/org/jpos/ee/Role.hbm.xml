@@ -25,19 +25,19 @@
         <id name="id" column="id" type="long">
             <generator class="native" />
         </id>
-
         <property name="name" type="string">
-            <column name="name" sql-type="varchar(64)" unique="true" not-null="true" />
+            <column name="name" sql-type="varchar(64)" not-null="true" unique-key="UK_RoleRealmName" />
         </property>
+        <many-to-one name="realm"  not-null="false" insert="false" update="false" foreign-key="FK_RoleRealm" unique-key="UK_RoleRealmName" />
+        <many-to-one name="parent" not-null="false" insert="false" update="false" foreign-key="FK_RoleParent" />
 
         <set name="permissions" lazy="false" table="role_perms" order-by="name">
-            <key column="role" foreign-key="FKRolePermissions"/>
+            <key column="role" foreign-key="FK_RolePermissions"/>
             <composite-element class="org.jpos.ee.Permission">
                 <property name="name" type="string">
                     <column name="name" sql-type="varchar(64)" not-null="true" />
                 </property>
             </composite-element>
         </set>
-
     </class>
 </hibernate-mapping>

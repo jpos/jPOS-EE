@@ -39,7 +39,6 @@
      <key column="eeuser" foreign-key="FKUserRolesUser"/>
      <many-to-many column="role" class="org.jpos.ee.Role" foreign-key="FKUserRolesRole"/>
     </set>
-
     <list name="passwordhistory"  table="eeuser_passwordhistory" cascade="all-delete-orphan">
       <key column="eeuser" not-null="true"/>
       <list-index column="id"/>

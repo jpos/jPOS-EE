@@ -46,7 +46,7 @@ import com.vaadin.client.ui.AbstractComponentConnector;
 import com.vaadin.client.ui.VLabel;
 import com.vaadin.shared.ui.Connect;
 import com.vaadin.shared.ui.Connect.LoadStyle;
-import com.vaadin.v7.shared.ui.label.LabelState;
+import com.vaadin.shared.ui.label.LabelState;
 import org.jpos.server.ui.XLabel;
 
 @Connect(value = XLabel.class, loadStyle = LoadStyle.EAGER)
@@ -78,11 +78,11 @@ public class XLabelConnector extends AbstractComponentConnector {
             getWidget().setText(getState().text);
             break;
         case HTML:
-        case RAW:
-            sinkOnloads = true;
-        case XML:
-            getWidget().setHTML(getState().text);
-            break;
+//        case RAW:
+//            sinkOnloads = true;
+//        case XML:
+//            getWidget().setHTML(getState().text);
+//            break;
         default:
             getWidget().setText("");
             break;

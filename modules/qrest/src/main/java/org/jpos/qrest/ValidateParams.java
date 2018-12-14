@@ -89,7 +89,6 @@ import java.util.regex.Pattern;
 public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     private Map<String,Pattern> mandatoryPathParams;
     private Map<String,Pattern> mandatoryQueryParams;
-    private Map<String,Pattern> optionalPathParams;
     private Map<String,Pattern> optionalQueryParams;
     private Map<String,JsonSchema> mandatoryJson;
     private Map<String,JsonSchema> optionalJson;
@@ -98,7 +97,6 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
         if (!checkMandatoryPathParams(ctx) ||
-            !checkOptionalPathParams(ctx) ||
             !checkMandatoryQueryParams(ctx) ||
             !checkOptionalQueryParams(ctx) ||
             !checkMandatoryJson(ctx) ||
@@ -142,7 +140,6 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                 }
             }
         }
-        optionalPathParams = new HashMap<>();
         optionalQueryParams = new HashMap<>();
         optionalJson = new HashMap<>();
         Element o = cfg.getChild("optional");
@@ -159,12 +156,10 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                         throw new ConfigurationException(ex);
                     }
                 } else if ("path".equals(e.getAttributeValue("type"))){
-                    optionalPathParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
-                } else if ("query".equals(e.getAttributeValue("type"))){
-                    optionalQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
-                } else {
                     throw new ConfigurationException("Misconfigured param: " +
-                            e.getAttributeValue("name") + ". Type missing.");
+                            e.getAttributeValue("name") + ". Path param cannot be optional.");
+                } else {
+                    optionalQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
                 }
             }
         }
@@ -190,17 +185,6 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                 return false;
             }
             return validParam(ctx, entry, value);
-        }
-        return true;
-    }
-
-    private boolean checkOptionalPathParams (Context ctx) {
-        Map<String,Object> pathParams = ctx.get(Constants.PATHPARAMS);
-        for (Map.Entry<String,Pattern> entry : optionalPathParams.entrySet()) {
-            String value = (String) pathParams.get(entry.getKey());
-            if (value != null) {
-                return validParam(ctx, entry, value);
-            }
         }
         return true;
     }

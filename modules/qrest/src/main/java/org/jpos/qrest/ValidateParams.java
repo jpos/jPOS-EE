@@ -87,16 +87,20 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class ValidateParams implements TransactionParticipant, XmlConfigurable {
-    private Map<String,Pattern> mandatory;
-    private Map<String,Pattern> optional;
+    private Map<String,Pattern> mandatoryPathParams;
+    private Map<String,Pattern> mandatoryQueryParams;
+    private Map<String,Pattern> optionalPathParams;
+    private Map<String,Pattern> optionalQueryParams;
     private Map<String,JsonSchema> mandatoryJson;
     private Map<String,JsonSchema> optionalJson;
 
     @Override
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
-        if (!checkMandatory(ctx) ||
-            !checkOptional(ctx) ||
+        if (!checkMandatoryPathParams(ctx) ||
+            !checkOptionalPathParams(ctx) ||
+            !checkMandatoryQueryParams(ctx) ||
+            !checkOptionalQueryParams(ctx) ||
             !checkMandatoryJson(ctx) ||
             !checkOptionalJson(ctx))
             return ABORTED | NO_JOIN | READONLY;
@@ -113,7 +117,8 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     @SuppressWarnings("unchecked")
     @Override
     public void setConfiguration(Element cfg) throws ConfigurationException{
-        mandatory = new HashMap<>();
+        mandatoryPathParams = new HashMap<>();
+        mandatoryQueryParams = new HashMap<>();
         mandatoryJson = new HashMap<>();
         Element m = cfg.getChild("mandatory");
         if (m != null) {
@@ -127,12 +132,18 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                     } catch (Exception ex) {
                          throw new ConfigurationException(ex);
                     }
+                } else if ("path".equals(e.getAttributeValue("type"))){
+                    mandatoryPathParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                } else if ("query".equals(e.getAttributeValue("type"))) {
+                    mandatoryQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
                 } else {
-                    mandatory.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                    throw new ConfigurationException("Misconfigured param: " +
+                            e.getAttributeValue("name") + ". Type missing.");
                 }
             }
         }
-        optional = new HashMap<>();
+        optionalPathParams = new HashMap<>();
+        optionalQueryParams = new HashMap<>();
         optionalJson = new HashMap<>();
         Element o = cfg.getChild("optional");
         if (o != null) {
@@ -147,41 +158,73 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                     } catch (IOException | ProcessingException ex) {
                         throw new ConfigurationException(ex);
                     }
+                } else if ("path".equals(e.getAttributeValue("type"))){
+                    optionalPathParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                } else if ("query".equals(e.getAttributeValue("type"))){
+                    optionalQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
                 } else {
-                    optional.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                    throw new ConfigurationException("Misconfigured param: " +
+                            e.getAttributeValue("name") + ". Type missing.");
                 }
             }
         }
     }
 
-    private boolean checkMandatory (Context ctx) {
-        for (Map.Entry<String,Pattern> entry : mandatory.entrySet()) {
-            Object v = ctx.get(entry.getKey());
+    private boolean validParam(Context ctx, Map.Entry<String, Pattern> entry, String value) {
+        Pattern p = entry.getValue();
+        Matcher m = p.matcher(value);
+        if (!m.matches()) {
+            ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkMandatoryPathParams (Context ctx) {
+        Map<String,Object> pathParams = ctx.get(Constants.PATHPARAMS);
+        for (Map.Entry<String,Pattern> entry : mandatoryPathParams.entrySet()) {
+            Object v = pathParams.get(entry.getKey());
             String value = v != null ? v.toString() : null;
             if (value == null) {
                 ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Mandatory param " + entry.getKey().toLowerCase() + " not present");
                 return false;
             }
-            Pattern p = entry.getValue();
-            Matcher m = p.matcher(value);
-            if (!m.matches()) {
-                ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
-                return false;
+            return validParam(ctx, entry, value);
+        }
+        return true;
+    }
+
+    private boolean checkOptionalPathParams (Context ctx) {
+        Map<String,Object> pathParams = ctx.get(Constants.PATHPARAMS);
+        for (Map.Entry<String,Pattern> entry : optionalPathParams.entrySet()) {
+            String value = (String) pathParams.get(entry.getKey());
+            if (value != null) {
+                return validParam(ctx, entry, value);
             }
         }
         return true;
     }
 
-    private boolean checkOptional (Context ctx) {
-        for (Map.Entry<String,Pattern> entry : optional.entrySet()) {
-            String value = ctx.getString(entry.getKey());
+    private boolean checkMandatoryQueryParams (Context ctx) {
+        Map<String,Object> queryParams = ctx.get(Constants.QUERYPARAMS);
+        for (Map.Entry<String,Pattern> entry : mandatoryQueryParams.entrySet()) {
+            Object v = queryParams.get(entry.getKey());
+            String value = v != null ? v.toString() : null;
+            if (value == null) {
+                ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Mandatory param " + entry.getKey().toLowerCase() + " not present");
+                return false;
+            }
+            return validParam(ctx, entry, value);
+        }
+        return true;
+    }
+
+    private boolean checkOptionalQueryParams (Context ctx) {
+        Map<String,Object> queryParams = ctx.get(Constants.QUERYPARAMS);
+        for (Map.Entry<String,Pattern> entry : optionalQueryParams.entrySet()) {
+            String value = (String) queryParams.get(entry.getKey());
             if (value != null) {
-                Pattern p = entry.getValue();
-                Matcher m = p.matcher(value);
-                if (!m.matches()) {
-                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
-                    return false;
-                }
+                return validParam(ctx, entry, value);
             }
         }
         return true;

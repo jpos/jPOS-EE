@@ -170,9 +170,9 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
         Matcher m = p.matcher(value);
         if (!m.matches()) {
             ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Invalid param " + entry.getKey().toLowerCase());
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private boolean checkMandatoryPathParams (Context ctx) {

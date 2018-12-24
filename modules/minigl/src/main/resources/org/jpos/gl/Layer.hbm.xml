@@ -28,7 +28,7 @@
     </meta>
     <composite-id>
      <key-property name="id" type="short" />
-     <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
+     <key-many-to-one name="journal" class="org.jpos.gl.Journal" column="journal" />
     </composite-id>
     <property name="name" type="string" length="80" />
   </class>

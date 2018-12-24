@@ -28,9 +28,9 @@
     </meta>
     <composite-id unsaved-value="any">
      <key-many-to-one name="journal" class="org.jpos.gl.Journal"
-         foreign-key="FKAccountLockJournal"/>
+         foreign-key="FKAccountLockJournal"  column="journal"/>
      <key-many-to-one name="account" class="org.jpos.gl.Account" 
-         foreign-key="FKAccountLockAccount" />
+         foreign-key="FKAccountLockAccount"  column="account" />
     </composite-id>
   </class>
 </hibernate-mapping>

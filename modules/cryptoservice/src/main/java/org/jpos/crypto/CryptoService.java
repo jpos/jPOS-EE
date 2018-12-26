@@ -76,7 +76,6 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     private String pubKeyRing;
     private String privKeyRing;
     private long waitTimeout;
-    private Random rnd = new SecureRandom();
     private long ttl;
     private long duration;
     private Supplier<String> unlock;
@@ -280,7 +279,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
             throw new SecurityException("Passphrase not available");
         passPhrase = passPhrase != null ? passPhrase : unlock.get().toCharArray();
 
-        String v = (String) DB.execWithTransaction(db -> {
+        String v = DB.execWithTransaction(db -> {
             SysConfigManager mgr = new SysConfigManager(db, "key.");
             return mgr.get(keyId.toString(), null);
         });
@@ -305,9 +304,9 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         return cipher.doFinal(cryptogram);
     }
 
-    private byte[] randomIV() {
+    private byte[] randomIV() throws NoSuchAlgorithmException {
         final byte[] b = new byte[16];
-        rnd.nextBytes(b);
+        SecureRandom.getInstanceStrong().nextBytes(b);
         return b;
     }
 

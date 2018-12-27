@@ -42,6 +42,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
@@ -79,6 +80,9 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     private long ttl;
     private long duration;
     private Supplier<String> unlock;
+    private volatile Random rnd = new SecureRandom();
+    private AtomicInteger rndCounter = new AtomicInteger();
+    private int maxRandomOperations = 100000;
 
     /**
      * Encrypts data using the current key
@@ -228,6 +232,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         waitTimeout = cfg.getLong("timeout", 30000L);
         ttl = cfg.getLong("ttl", 3600000L);
         duration = cfg.getLong("duration", 86400000L);
+        maxRandomOperations = cfg.getInt("max-random-operations", 100000);
         String unlockPassword = cfg.get("unlock-password", null);
         if (unlockPassword != null) {
             try {
@@ -304,9 +309,13 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         return cipher.doFinal(cryptogram);
     }
 
-    private byte[] randomIV() throws NoSuchAlgorithmException {
+    private byte[] randomIV() {
         final byte[] b = new byte[16];
-        SecureRandom.getInstanceStrong().nextBytes(b);
+        rnd.nextBytes(b);
+        if (rndCounter.incrementAndGet() == maxRandomOperations) {
+            rnd = new SecureRandom();
+            rndCounter.set(0);
+        }
         return b;
     }
 

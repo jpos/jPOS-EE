@@ -26,10 +26,7 @@ import org.jpos.ee.SysConfigManager;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.space.Space;
 import org.jpos.space.TSpace;
-import org.jpos.util.LogEvent;
-import org.jpos.util.Logger;
-import org.jpos.util.NameRegistrar;
-import org.jpos.util.PGPHelper;
+import org.jpos.util.*;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -80,8 +77,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     private long ttl;
     private long duration;
     private Supplier<String> unlock;
-    private volatile Random rnd = new SecureRandom();
-    private AtomicInteger rndCounter = new AtomicInteger();
+    private Recyclable<Random> rnd;
     private int maxRandomOperations = 100000;
 
     /**
@@ -204,6 +200,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
 
     @Override
     protected void initService() {
+        rnd = new Recyclable<>(SecureRandom::new, maxRandomOperations);
         if (!lazy.get())
             new Thread(this, getName()).start();
         NameRegistrar.register(getName(), this);
@@ -311,11 +308,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
 
     private byte[] randomIV() {
         final byte[] b = new byte[16];
-        rnd.nextBytes(b);
-        if (rndCounter.incrementAndGet() == maxRandomOperations) {
-            rnd = new SecureRandom();
-            rndCounter.set(0);
-        }
+        rnd.get().nextBytes(b);
         return b;
     }
 

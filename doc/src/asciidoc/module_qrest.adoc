@@ -6,8 +6,8 @@
 | *When*         | Implemented during 2.2.5
 | *Who*          | The jPOS Software team.
 | *Where*        | Directory modules/qrest
-| *Why*          | Used by local Q2 nodes as audit trail or to SAF its transactions
-| *Status*       | Experimental
+| *Why*          | Useful in situations where a full blown Jetty/Jersey is overkill
+| *Status*       | Used in production
 | *License*      | <<appendix_license,GNU Affero General Public License version 3>>
 |=================================================================
 

@@ -1,0 +1,23 @@
+<http-client-txnmgr class="org.jpos.transaction.TransactionManager" logger="Q2" realm='http-client-txnmgr'>
+  <property name="queue" value="HTTPTXNMGR"/>
+  <property name="sessions" value="2"/>
+  <property name="max-sessions" value="128"/>
+  <property name="debug" value="true"/>
+
+  <participant class="org.jpos.http.client.HttpQuery">
+    <!-- properties below can be removed as they are
+         currently set with their defaults. Shown here
+         just as handy reminder of the available options. -->
+
+    <property name="contentType" value="application/json" />
+
+    <property name="urlName" value="HTTP_URL" />
+    <property name="methodName" value="HTTP_METHOD" />
+    <property name="paramsName" value="HTTP_PARAMS" />
+    <property name="requestName" value="HTTP_REQUEST" />
+    <property name="responseName" value="HTTP_RESPONSE" />
+    <property name="responseStatusName" value="HTTP_STATUS" />
+    <property name="contentTypeName" value="HTTP_CONTENT_TYPE" />
+  </participant>
+
+</http-client-txnmgr>

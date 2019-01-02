@@ -1,0 +1,72 @@
+=== HttpClient
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | HttpQuery participant
+| *When*         | Implemented during 2.2.6
+| *Who*          | The jPOS Software team.
+| *Where*        | Directory modules/http-client
+| *Why*          | Lightweight asynchronous Http Participant
+| *Status*       | Experimental
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-http-client</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+The HttpQuery participant picks a few configurable entries from the `Context`:
+
+* `HTTP_URL`: with the remote host's URL
+* `HTTP_METHOD`: currently one of `GET`, `POST`, `PUT`
+* `HTTP_REQUEST`: a request payload (i.e. JSON String)
+
+and replies:
+
+* `HTTP_STATUS`: integer with the HTTP status code.
+* `HTTP_RESPONSE`: response body.
+
+Here is a sample configuration taking all the defauts:
+
+[source,xml]
+------------
+  <participant class="org.jpos.http.client.HttpQuery" />
+------------
+
+The default names used above can be overriden, e.g.:
+
+[source,xml]
+------------
+<participant class="org.jpos.http.client.HttpQuery">
+    <property name="urlName" value="MY_HTTP_URL" />
+    <property name="methodName" value="MY_HTTP_METHOD" />
+    <property name="paramsName" value="MY_HTTP_PARAMS" />
+    <property name="requestName" value="MY_HTTP_REQUEST" />
+    <property name="responseName" value="MY_HTTP_RESPONSE" />
+    <property name="responseStatusName" value="MY_HTTP_STATUS" />
+    <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
+    <property name="contentType" value="application/json" />          <2>
+  </participant>
+------------
+<1> Name of the Context variable where user can override the default content type.
+<2> Content-Type defaults to `application/json`
+
+Here is a sample use:
+
+[source,java]
+-------------
+    Context ctx = new Context();
+    ctx.put("HTTP_URL", "http://localhost/q2/version");
+    ctx.put("HTTP_METHOD", "GET");
+    mgr.queue(ctx);
+    Integer sc = ctx.get ("HTTP_STATUS", 10000L); <1>
+    String response = ctx.get ("HTTP_RESPONSE");
+-------------
+<1> Wait up to 10 seconds for a response
+

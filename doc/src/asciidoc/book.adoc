@@ -37,6 +37,7 @@ include::module_binlog.adoc[]
 
 == Rest Support
 include::module_qrest.adoc[]
+include::module_http_client.adoc[]
 
 == Tools
 

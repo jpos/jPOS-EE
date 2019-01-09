@@ -1,0 +1,6 @@
+<module name="seqno">
+    <mappings>
+        <mapping class="org.jpos.ee.SeqNo"/>
+    </mappings>
+</module>
+

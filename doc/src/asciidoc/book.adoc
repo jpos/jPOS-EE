@@ -83,6 +83,7 @@ include::module_fsdmsgX.adoc[]
 include::entities/sysconfig.adoc[]
 include::entities/syslog.adoc[]
 include::entities/eeuser.adoc[]
+include::entities/seqno.adoc[]
 
 = Appendices
 

@@ -43,6 +43,8 @@ public class SeqNoManager {
     }
 
 
+    /* Synchronous methods */
+
     /**
      * Synchronous 'next'
      * @param id sequencer id
@@ -62,6 +64,43 @@ public class SeqNoManager {
         getOrCreate(id).setValue(value);
     }
 
+
+    /* Asynchronous methods */
+
+    /**
+     * Asynchronous 'lock'
+     *
+     * @param id sequencer ID
+     * @param lockedBy unique client identifier (any long, has to be system-wide unique)
+     * @param lockTimeout once lock is obtained, keep it fo 'lockTimeout' millis (if not 'released' earlier)
+     * @param timeout time (in millis) to wait for this lock
+     * @return action's lambda value
+     * @throws LockTimeoutException if lock can't be obtained after 'timeout' has elapsed
+     */
+    public long lock (String id, long lockedBy, long lockTimeout, long timeout, SeqNoAction action) {
+        long until = System.currentTimeMillis() + timeout;
+        if (db.session != null && db.session.isOpen())
+            throw new IllegalStateException("DB should not be open");
+        while (System.currentTimeMillis() < until) {
+            try (DB db1 = db) {
+                db1.open();
+                db1.beginTransaction();
+                SeqNo seq = getOrCreate(id);
+                long now = System.currentTimeMillis();
+                if (seq.getLockedBy() == 0 || seq.getLockedBy() == lockedBy || seq.getLockUntil() < now) {
+                    seq.setLockedBy(lockedBy);
+                    seq.setLockUntil(now + lockTimeout);
+                    long l = action.apply(seq);
+                    db1.commit();
+                    return l;
+                }
+                db1.commit();
+                ISOUtil.sleep(500L);
+            }
+        }
+        throw new LockTimeoutException("Unable to lock " + id + " in less than " + timeout + " millis");
+    }
+
     /**
      * Asynchronous 'next'
      *
@@ -74,27 +113,24 @@ public class SeqNoManager {
      * @throws LockTimeoutException if lock can't be obtained after 'timeout' has elapsed
      */
     public long next (String id, long lockedBy, long lockTimeout, long timeout, long wrapAt) {
-        long until = System.currentTimeMillis() + timeout;
-        if (db.session != null && db.session.isOpen())
-            throw new IllegalStateException("DB should not be open");
-        while (System.currentTimeMillis() < until) {
-            try (DB db1 = db) {
-                db1.open();
-                db1.beginTransaction();
-                SeqNo seq = getOrCreate(id);
-                long now = System.currentTimeMillis();
-                if (seq.getLockedBy() == 0 || seq.getLockUntil() < now) {
-                    seq.setLockedBy(lockedBy);
-                    seq.setLockUntil(now + lockTimeout);
-                    long stan = seq.next(wrapAt);
-                    db1.commit();
-                    return stan;
-                }
-                db1.commit();
-                ISOUtil.sleep(500L);
-            }
-        }
-        throw new LockTimeoutException("Unable to lock " + id + " in less than " + timeout + " millis");
+        return lock (id, lockedBy, lockTimeout, timeout, seq -> seq.next(wrapAt));
+    }
+
+    /**
+     * Reset an async lock
+     * @param id lock ID
+     * @param lockedBy  unique client identifier
+     * @param value new sequencer value
+     * @param release if true, lock is released after reset
+     * @throws LockTimeoutException if lock can't be obtained after 'timeout' has elapsed
+     */
+    public void reset (String id, long lockedBy, long value, boolean release) {
+        lock(id, lockedBy, 0L, 1000L, seq -> {
+            seq.setValue(0L);
+            if (release)
+                seq.setLockedBy(0L);
+            return 0L;
+        });
     }
 
     /**
@@ -102,19 +138,24 @@ public class SeqNoManager {
      * @param id lock ID
      * @param lockedBy  unique client identifier
      */
-    public void release (String id, long lockedBy) {
+    public boolean release (String id, long lockedBy) {
         if (db.session != null && db.session.isOpen())
             throw new IllegalStateException("DB should not be open");
         try (DB db1 = db) {
             db1.open();
             db1.beginTransaction();
             SeqNo seq = getOrCreate(id);
-            if (seq.getLockedBy() == lockedBy) {
+            if (seq.getLockedBy() == lockedBy && seq.getLockUntil() > System.currentTimeMillis()) {
                 seq.setLockedBy(0L);
                 db1.commit();
+                return true;
             }
         }
+        return false;
     }
+
+
+
 
     private SeqNo getOrCreate(String id) {
         SeqNo seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);

@@ -215,7 +215,9 @@ public class Util {
      *
      * For example, if the <code>Date d</code> represents "Mon Jan 21 20:34:46 UYT 2019",
      * then, <code>Util.nextFloor(d, Calendar.HOUR_OF_DAY)</code> will advance to the beginning
-     * of next minute, i.e. "Mon Jan 21 21:00:00 UYT 2019".
+     * of next hour, i.e. "Mon Jan 21 21:00:00 UYT 2019". (notice that  the next hour could very well be
+     * on the next day, year, etc...)
+     *
      * @param d date
      * @param precision is one of the Calendar constants: DATE, HOUR, HOUR_OF_DAY, MINUTE, SECOND
      *                   (behavior for other values is undefined)

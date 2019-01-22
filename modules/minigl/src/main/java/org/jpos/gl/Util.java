@@ -192,9 +192,10 @@ public class Util {
             cal.set (Calendar.YEAR, 1970);
         }
 
+        // keep in sync with nextFloor(Date, int)!
         switch (precision) {
             case Calendar.DATE:
-                cal.set (Calendar.HOUR, 0);         // nobreak
+                cal.set (Calendar.HOUR_OF_DAY, 0);  // nobreak
             case Calendar.HOUR:
             case Calendar.HOUR_OF_DAY:
                 cal.set (Calendar.MINUTE, 0);       // nobreak
@@ -208,6 +209,44 @@ public class Util {
         }
         return cal.getTime();
     }
+
+    /**
+     * Increment the given precision unit, and set the next lower unit to ZERO.
+     *
+     * For example, if the <code>Date d</code> represents "Mon Jan 21 20:34:46 UYT 2019",
+     * then, <code>Util.nextFloor(d, Calendar.HOUR_OF_DAY)</code> will advance to the beginning
+     * of next hour, i.e. "Mon Jan 21 21:00:00 UYT 2019". (notice that  the next hour could very well be
+     * on the next day, year, etc...)
+     *
+     * @param d date
+     * @param precision is one of the Calendar constants: DATE, HOUR, HOUR_OF_DAY, MINUTE, SECOND
+     *                   (behavior for other values is undefined)
+     * @return converted date
+     * @throws NullPointerException if d is null
+     */
+    public static Date nextFloor (Date d, int precision) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime (d);
+        cal.add (precision, 1);
+
+        // floor it! (basically what floor(Date, int) does, keep in sync!
+        switch (precision) {
+            case Calendar.DATE:
+                cal.set (Calendar.HOUR_OF_DAY, 0);  // nobreak
+            case Calendar.HOUR:
+            case Calendar.HOUR_OF_DAY:
+                cal.set (Calendar.MINUTE, 0);       // nobreak
+            case Calendar.MINUTE:
+                cal.set (Calendar.SECOND, 0);       // nobreak
+            case Calendar.SECOND:
+                cal.set (Calendar.MILLISECOND, 0);  // nobreak
+            // case Calendar.MILLISECOND: ???
+            default:
+                // nothing? throw error?
+        }
+        return cal.getTime();
+    }
+
 
     /**
      * Force date to tomorrow at 00:00:00.000
@@ -226,4 +265,3 @@ public class Util {
         return cal.getTime();
     }
 }
-

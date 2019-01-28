@@ -40,7 +40,6 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
         Objects.requireNonNull(path);
         Objects.requireNonNull(method);
         Objects.requireNonNull(supplier);
-
         this.path = path;
         this.pathPattern = buildPathPattern(path);
         this.method = method;

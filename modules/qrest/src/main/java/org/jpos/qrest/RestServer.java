@@ -22,20 +22,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
+import java.net.URI;
 import java.security.*;
-import java.util.Arrays;
+import java.util.*;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.jdom2.Element;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.XmlConfigurable;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.space.Space;
@@ -47,7 +52,11 @@ import org.jpos.util.NameRegistrar;
 
 import javax.net.ssl.*;
 
-public class RestServer extends QBeanSupport implements Runnable {
+import static org.jpos.qrest.Constants.PATHPARAMS;
+import static org.jpos.qrest.Constants.QUERYPARAMS;
+import static org.jpos.qrest.Constants.REQUEST;
+
+public class RestServer extends QBeanSupport implements Runnable, XmlConfigurable {
     private ServerBootstrap serverBootstrap;
     private ChannelFuture cf;
     private EventLoopGroup bossGroup;
@@ -64,6 +73,9 @@ public class RestServer extends QBeanSupport implements Runnable {
     private boolean clientAuthNeeded=false;
     private String[] enabledCipherSuites;
     private String[] enabledProtocols;
+    private String queue;
+    private Map<String,List<Route<String>>> routes = new HashMap<>();
+
 
     @Override
     protected void initService() throws GeneralSecurityException, IOException {
@@ -144,8 +156,9 @@ public class RestServer extends QBeanSupport implements Runnable {
         }
     }
 
-    public void queue (Context ctx) {
-        sp.out(cfg.get("queue"), ctx, 60000L);
+    @SuppressWarnings("unchecked")
+    public void queue (FullHttpRequest request, Context ctx) {
+        sp.out(getQueue(request), ctx, 60000L);
     }
 
     @Override
@@ -159,6 +172,25 @@ public class RestServer extends QBeanSupport implements Runnable {
         serverAuthNeeded = cfg.getBoolean("server-auth", false);
         enabledCipherSuites = cfg.getAll("enabled-cipher");
         enabledProtocols = cfg.getAll("enable-protocol");
+        queue = cfg.get("queue");
+    }
+
+    @Override
+    public void setConfiguration(Element e) throws ConfigurationException {
+        try {
+            for (Element r : e.getChildren("route")) {
+                routes.computeIfAbsent(
+                  r.getAttributeValue("method"),
+                  k -> new ArrayList<>()).add(
+                  new Route<>(
+                    r.getAttributeValue("path"),
+                    r.getAttributeValue("method"),
+                    (t, s) -> r.getAttributeValue("queue"))
+                );
+            }
+        } catch (Throwable t) {
+            throw new ConfigurationException(t);
+        }
     }
 
     private SSLEngine getSSLEngine(SSLContext sslContext) throws IOException {
@@ -233,5 +265,19 @@ public class RestServer extends QBeanSupport implements Runnable {
 
     protected String getKeyPassword() {
         return System.getProperty("jpos.ssl.keypass", null);
+    }
+
+    private String getQueue(FullHttpRequest request) {
+        List<Route<String>> routesByMethod = routes.get(request.method().name());
+        QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
+
+        if (routesByMethod != null) {
+            Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.uri())).findFirst();
+            String path = URI.create(decoder.uri()).getPath();
+            if (route.isPresent()) {
+                return route.get().apply(route.get(), path);
+            }
+        }
+        return cfg.get("queue");
     }
 }

@@ -48,7 +48,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             ctx.put(Constants.REQUEST, request);
             if (contentKey != null)
                 ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
-            server.queue(ctx);
+            server.queue(request, ctx);
         } else {
             super.channelRead(ch, msg);
         }

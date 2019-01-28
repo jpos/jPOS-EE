@@ -28,4 +28,6 @@
     <property name="enabled-cipher" value="TLS_DHE_RSA_WITH_AES_128_CBC_SHA256" />
     <property name="enabled-cipher" value="TLS_DHE_RSA_WITH_AES_256_CBC_SHA256" />
     -->
+    <route path="/v2/**" method="GET" queue="TXNMGR.2"/>
+    <route path="/v2/**" method="POST" queue="TXNMGR.2"/>
 </qrest>

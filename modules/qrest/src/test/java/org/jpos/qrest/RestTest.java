@@ -88,4 +88,16 @@ public class RestTest  {
             )
           ));
     }
+
+    @Test
+    public void testMultiplesTMs()  {
+        given().log().all()
+          .get("/q2/txnmgr/name").then().statusCode(200).assertThat()
+          .body("name", equalTo("txnmgr")
+        );
+        given().log().all()
+          .get("/v2/q2/txnmgr/name").then().statusCode(200).assertThat()
+          .body("name", equalTo("txnmgr2")
+          );
+    }
 }

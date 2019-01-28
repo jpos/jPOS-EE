@@ -35,7 +35,6 @@ import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.transaction.TransactionParticipant;
-import org.jpos.util.Caller;
 import org.jpos.util.NameRegistrar;
 
 import static org.jpos.qrest.Constants.REQUEST;
@@ -47,7 +46,9 @@ public class Q2Info implements TransactionParticipant, Configurable {
     private List<Route<Map<String,Object>>> routes = new ArrayList<>();
     private String prefix;
 
-    public Q2Info() { }
+    public Q2Info() {
+        initInternalRoutes();
+    }
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -92,7 +93,6 @@ public class Q2Info implements TransactionParticipant, Configurable {
     @Override
     public void setConfiguration(Configuration cfg) {
         this.prefix = cfg.get("prefix");
-        initInternalRoutes();
     }
 
     private Map<String, Object> muxes () {

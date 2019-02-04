@@ -57,7 +57,7 @@ public class UsersView extends QIEntityView<User> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof User) {
             User u = (User) entity;
-            return u.getNick() != null ? u.getId() + " - " + u.getNick() : "New";
+            return u.getNick() != null ? u.getNick() : "New";
         } else {
             return null;
         }
@@ -172,9 +172,9 @@ public class UsersView extends QIEntityView<User> {
     @Override
     public void setGridGetters() {
         Grid<User> g = getGrid();
-        g.addColumn(User::getId).setId("id");
-        g.addColumn(User::getName).setId("name");
+//        g.addColumn(User::getId).setId("id");
         g.addColumn(User::getNick).setId("nick");
+        g.addColumn(User::getName).setId("name");
         g.addColumn(User::getEmail).setId("email");
         g.addColumn(User::isActive).setId("active");
         g.addColumn(User::isDeleted).setId("deleted");

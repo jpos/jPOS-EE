@@ -10,6 +10,7 @@ vaadinAddon {
 }
 
 vaadinCompile.gwtSdkFirstInClasspath=true
+vaadinThemeCompile.themesDirectory = "${webAppDir}/../resources/VAADIN/themes"
 
 apply plugin: 'maven-publish'
 
@@ -83,6 +84,7 @@ jar {
     exclude '**/gwt-unitCache'
 }
 
+jar.dependsOn("vaadinThemeCompile")
 jar.dependsOn("vaadinCompile")
 install.dependsOn("publishToMavenLocal")
 uploadArchives.dependsOn("jar", "publishMavenJavaPublicationToMavenRepository")

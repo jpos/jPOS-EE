@@ -1,5 +1,5 @@
 plugins {
-   id 'com.devsoap.plugin.vaadin' version '1.4.1'
+   id 'com.devsoap.plugin.vaadin' version '2.0.0.beta1'
 }
 vaadin {
     version=vaadinVersion
@@ -59,7 +59,7 @@ dependencies {
     compile "com.vaadin:vaadin-push:${vaadinVersion}"
     compile 'org.vaadin.addons:d3Gauge:1.0.1'
     compile 'org.vaadin.addons:dcharts-widget:1.7.0'
-    compile 'com.vaadin:vaadin-context-menu:2.0.0'
+    compile 'com.vaadin:vaadin-context-menu:3.0.0'
     compile 'com.byteowls:vaadin-chartjs:0.3.0'
     compile 'org.vaadin.addons:vaadin-sliderpanel:2.0.0'
     compile "com.vaadin:vaadin-themes:${vaadin.version}"

@@ -64,6 +64,7 @@ dependencies {
     compile 'com.byteowls:vaadin-chartjs:0.3.0'
     compile 'org.vaadin.addons:vaadin-sliderpanel:2.0.0'
     compile "com.vaadin:vaadin-themes:${vaadin.version}"
+    compile 'com.vaadin:vaadin-sass-compiler:0.9.13'
 
     providedCompile project(':modules:core')
     providedCompile project(':modules:visitor')

@@ -72,7 +72,7 @@ public class QI extends UI {
         qiLayout = new QILayout();
         views = new HashMap<>();
         try {
-            q2 = (Q2) NameRegistrar.get("Q2");
+            q2 = NameRegistrar.get("Q2");
         } catch (NameRegistrar.NotFoundException e) {
             throw new IllegalStateException ("Q2 not available");
         }

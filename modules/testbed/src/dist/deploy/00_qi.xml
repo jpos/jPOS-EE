@@ -139,6 +139,10 @@
     <view caption="Deploy" route="deploy" class="org.jpos.qi.system.CommandRunner" perm="sysadmin" clearScreen="true">
       <command>deploy:list</command>
     </view>
+    <view caption="MarkdownTest" class="org.jpos.qi.system.MarkdownView" perm="sysadmin"
+          clearScreen="true">
+      <object class="org.jpos.testbed.MarkdownLorem"/>
+    </view>
   </view>
   <view route="revision_history" class="org.jpos.qi.system.RevisionsView" perm="login" sidebar="system">
     <property name="entityName" value="revision"/>

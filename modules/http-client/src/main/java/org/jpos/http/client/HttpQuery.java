@@ -20,10 +20,9 @@ package org.jpos.http.client;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.*;
 
-import org.apache.http.Consts;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
+import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -34,7 +33,9 @@ import org.apache.http.entity.StringEntity;
 
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.util.Destroyable;
 import org.jpos.util.Log;
@@ -48,15 +49,18 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private Configuration cfg;
     private String url;
     private String contentType;
+    private Header[] httpHeaders;
 
     // Context variable names
     private String urlName;
     private String paramsName;
+    private String headersName;
     private String methodName;
     private String requestName;
     private String responseName;
     private String statusName;
     private String contentTypeName;
+
 
     private CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
 
@@ -70,6 +74,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         String url = getURL (ctx);
 
         HttpUriRequest httpRequest = getHttpUriRequest(ctx);
+        addHeaders(ctx, httpRequest);
 
         client.execute(httpRequest, new FutureCallback<HttpResponse>() {
             @Override
@@ -105,7 +110,9 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             return prepare (id, o);
         return PREPARED;
     }
-    public void setConfiguration (Configuration cfg) {
+
+    @Override
+    public void setConfiguration (Configuration cfg) throws ConfigurationException {
         this.cfg = cfg;
         url = cfg.get("url");
         contentType = cfg.get("contentType", "application/json");
@@ -116,7 +123,25 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         responseName = cfg.get("responseName", "HTTP_RESPONSE");
         statusName = cfg.get("responseStatusName", "HTTP_STATUS");
         contentTypeName = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
+
+        // ctx name under which extra http headers could exist at runtime
+        // the object could be a List<String> or String[] (in the "name:value" format)
+        // or a Map<String,String>
+        headersName = cfg.get("headersName", "HTTP_HEADERS");
+
+        // hardcoded headers configured for this participant (in the "name:value" format)
+        String[] headers= cfg.getAll("httpHeader");
+        httpHeaders= new Header[headers.length];
+        for (int i= 0; i < headers.length; i++) {
+            int colonPos= headers[i].indexOf(':');
+            if (colonPos < 0)
+                throw new ConfigurationException("Bad HTTP header '"+headers[i]+"' (needs a colon)");
+
+            httpHeaders[i]= new BasicHeader(headers[i].substring(0, colonPos),      // header name
+                                            headers[i].substring(colonPos+1));      // header value
+        }
     }
+
     private String getURL (Context ctx) {
         StringBuilder sb = new StringBuilder (
             ctx.getString (urlName, url)
@@ -150,6 +175,50 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private ContentType getContentType (Context ctx) {
         return ContentType.create(ctx.get(contentTypeName, contentType), Consts.UTF_8);
     }
+
+
+    @SuppressWarnings("unchecked")
+    private void addHeaders(Context ctx, HttpUriRequest req) {
+        // first add the ones from the cfg
+        req.setHeaders(httpHeaders);
+
+        // now the ones in the ctx (possibly overwriting some of the above)
+        Object hObj= ctx.get(headersName);
+        if (hObj != null) {
+
+            // case Map<String,String>
+            if (hObj instanceof Map) {
+                for (Map.Entry<String,Object> ent : ((Map<String,Object>)hObj).entrySet()) {
+                    req.setHeader(ent.getKey(), ent.getValue().toString());
+                }
+                return;
+            }
+
+            // cases List<String> and String[]
+            List<String> hList;
+            if (hObj instanceof String[])
+                hList= Arrays.asList((String[])hObj);
+            else if (hObj instanceof List)
+                hList= (List<String>)hObj;
+            else {
+                hList= new ArrayList<>(0);  // dummy
+                ctx.log("Wrong class for Context entry HTTP_HEADERS ("+headersName+"): "+hObj.getClass().getName()+". "+
+                        "(one of these expected: String[], List<String>, Map<String,String>)" );
+            }
+
+            for (String hStr : hList) {
+                int colonPos= hStr.indexOf(':');
+                if (colonPos < 0) {
+                    ctx.log("Bad HTTP header '"+hStr+"' (needs colon; ignoring)");
+                    continue;   // ignoring this bad header
+                }
+
+                req.setHeader(hStr.substring(0, colonPos),      // header name
+                              hStr.substring(colonPos+1));      // header value
+            }
+        }
+    } // addHeaders
+
 
     @Override
     public void destroy() {

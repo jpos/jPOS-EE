@@ -116,13 +116,14 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         this.cfg = cfg;
         url = cfg.get("url");
         contentType = cfg.get("contentType", "application/json");
+
         urlName = cfg.get("urlName", "HTTP_URL");
         methodName = cfg.get("methodName", "HTTP_METHOD");
         paramsName = cfg.get ("paramsName", "HTTP_PARAMS");
         requestName = cfg.get ("requestName", "HTTP_REQUEST");
+        contentTypeName = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
         responseName = cfg.get("responseName", "HTTP_RESPONSE");
         statusName = cfg.get("responseStatusName", "HTTP_STATUS");
-        contentTypeName = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
 
         // ctx name under which extra http headers could exist at runtime
         // the object could be a List<String> or String[] (in the "name:value" format)

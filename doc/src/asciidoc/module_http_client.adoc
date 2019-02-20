@@ -21,13 +21,31 @@
         </dependency>
 ----
 
-The HttpQuery participant picks a few configurable entries from the `Context`:
+The `HttpQuery` participant has the following configuration properties:
+
+* `url`: a _hardcoded_ url for the request (it will be used as is, so it must be valid as per `java.net.URI`
+* `contentType`: defaults to `"application/json"`
+* `httpHeader`: a _repeatable_ configuration property representing an HTTP request header, where the value is
+   of the form `header_name:header_value`
+
+In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
 
 * `HTTP_URL`: with the remote host's URL
 * `HTTP_METHOD`: currently one of `GET`, `POST`, `PUT`
+* `HTTP_PARAMS`: the _query string_ (must be correctly encoded), and it's appended to the previously
+   computed URL, with a `?` separating both parts
 * `HTTP_REQUEST`: a request payload (i.e. JSON String)
+* `HTTP_CONTENT_TYPE`: overrides the one given with the `contentType` configuration property
+* `HTTP_HEADERS`: HTTP request headers that will be dynamically added to whatever was configured by the
+   set of `httpHeader` properties.  The value of the `HTTP_HEADERS` entry in the `Context` can be of three different
+   types:
+   ** a `String[]` where each item follows the `header_name:header_value` syntax
+   ** a `List<String>` where each item follows the `header_name:header_value` syntax
+   ** a `Map<String,String>` where the keys represent _header names_, and the values the corresponding _header values_
 
-and replies:
+
+After successful completion (which may include normal HTTP errors such as `404` or `500`), `HttpQuery` stores the result
+back into the `Context`:
 
 * `HTTP_STATUS`: integer with the HTTP status code.
 * `HTTP_RESPONSE`: response body.
@@ -50,6 +68,7 @@ The default names used above can be overriden, e.g.:
     <property name="requestName" value="MY_HTTP_REQUEST" />
     <property name="responseName" value="MY_HTTP_RESPONSE" />
     <property name="responseStatusName" value="MY_HTTP_STATUS" />
+    <property name="headersName" value="MY_HTTP_HEADERS" />
     <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
     <property name="contentType" value="application/json" />          <2>
   </participant>

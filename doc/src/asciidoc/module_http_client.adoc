@@ -27,6 +27,8 @@ The `HttpQuery` participant has the following configuration properties:
 * `contentType`: defaults to `"application/json"`
 * `httpHeader`: a _repeatable_ configuration property representing an HTTP request header, where the value is
    of the form `header_name:header_value`
+* `responseBodyOnError`: should an HTTP response body be included for responses with error
+   status code? (`boolean`, default `false`);
 
 In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
 

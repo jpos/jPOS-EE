@@ -50,6 +50,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String url;
     private String contentType;
     private Header[] httpHeaders;
+    private boolean responseOnError;
 
     // Context variable names
     private String urlName;
@@ -74,21 +75,29 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         String url = getURL (ctx);
 
         HttpUriRequest httpRequest = getHttpUriRequest(ctx);
+        if (httpRequest == null)
+            return FAIL;            // probably wrong http method; abort early and avoid NPEs later
+
         addHeaders(ctx, httpRequest);
 
         client.execute(httpRequest, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse result) {
                 ctx.log (result.getStatusLine());
+
                 int sc = result.getStatusLine().getStatusCode();
-                if (sc == HttpStatus.SC_CREATED || sc == HttpStatus.SC_OK) {
+                ctx.put (statusName, sc);
+
+                // we always include the response body on success and check responseOnError for failed requests
+                boolean includeResponse= (sc == HttpStatus.SC_CREATED) || (sc == HttpStatus.SC_OK) || responseOnError;
+                if (includeResponse) {
                     try {
                         ctx.put (responseName, EntityUtils.toString(result.getEntity()));
                     } catch (IOException e) {
                         ctx.log (e);
                     }
                 }
-                ctx.put (statusName, sc);
+
                 ctx.resume();
             }
 
@@ -116,6 +125,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         this.cfg = cfg;
         url = cfg.get("url");
         contentType = cfg.get("contentType", "application/json");
+        responseOnError= cfg.getBoolean("responseBodyOnError", false);    // do we include a response body for failed requests? default: false
 
         urlName = cfg.get("urlName", "HTTP_URL");
         methodName = cfg.get("methodName", "HTTP_METHOD");

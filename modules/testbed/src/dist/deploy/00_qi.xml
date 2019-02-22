@@ -5,6 +5,7 @@
         <!ENTITY TEXT_EXTENDED_PATTERN "^[\w\s.,\-\'():]*$">
         <!ENTITY WORD_PATTERN "^[\w.\-]*$">
         <!ENTITY ACCT_CODE_PATTERN "^[\w.]*$">
+        <!ENTITY SYSCONFIG_ID_PATTERN "^[\w\s.\-\/\?\=\:]{0,255}$">
         ]>
 
 <xml-config name="QI" logger="Q2">
@@ -64,7 +65,7 @@
   </view>
   <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="sysconfig"/>
-    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" expand-ratio="1" />
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" />
     <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
   </view>
   <!--<view route="permissions" class="org.jpos.qi.sysconfig.PermissionView" perm="sysadmin" sidebar="system">-->
@@ -77,7 +78,7 @@
     <property name="entityName" value="permission"/>
     <property name="prefix" value="perm." />
     <property name="title" value="Permissions" />
-    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" expand-ratio="1" />
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" />
     <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
   </view>
 

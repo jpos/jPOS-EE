@@ -113,6 +113,7 @@ public class QINavigator extends Navigator {
                 }
             } else {
                 QI.getQI().displayNotification(result.getErrorMessage());
+                QI.getQI().getLog().error(result.getErrorMessage());
                 super.navigateTo("/home");
             }
         }

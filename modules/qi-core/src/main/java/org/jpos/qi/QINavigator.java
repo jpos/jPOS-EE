@@ -70,11 +70,7 @@ public class QINavigator extends Navigator {
                 }
                 perms.put(route, perm);
                 e.getChildren("property").stream().filter(p -> "entityName".equals(p.getAttributeValue("name"))).forEach(
-                        p -> {
-                            if (routes.get(p.getAttributeValue("value")) == null ) {
-                                routes.put(p.getAttributeValue("value"), route);
-                            }
-                        });
+                        p -> routes.putIfAbsent(p.getAttributeValue("value"), route));
             } catch (ClassNotFoundException ex) {
                 app.getLog().error(ex);
             }
@@ -105,7 +101,7 @@ public class QINavigator extends Navigator {
                     }
                     super.navigateTo(navigationState);
                     if (app.sidebar() != null) {
-                        app.sidebar().markAsSelected(navigationState.substring(1).split("/|,|\\?")[0]);
+                        app.sidebar().markAsSelected(navigationState.substring(1).split("[/,?]")[0]);
                     }
                 } catch( IllegalArgumentException e) {
                     QI.getQI().displayNotification(e.getMessage());

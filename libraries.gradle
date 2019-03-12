@@ -4,7 +4,7 @@ ext {
     logbackVersion = '1.2.3'
     hibernateVersion = '5.4.1.Final'
     geronimoVersion = '1.1.1'
-    jettyVersion = '9.4.5.v20170502'
+    jettyVersion = '9.4.15.v20190215'
     servletApiVersion = '3.1.0'
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.0.16.Final'

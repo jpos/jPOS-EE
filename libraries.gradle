@@ -16,6 +16,7 @@ ext {
     vaadinVersion = '8.7.0'
     nettyVersion = '4.1.24.Final'
     httpAsyncClientVersion = '4.1.4'
+    mysqlJDBCVersion = '8.0.15'
 
     libraries = [
             //jUnit (Tests)
@@ -48,7 +49,7 @@ ext {
 
             //Supported Databases
             jdbcH2: 'com.h2database:h2:1.4.189',
-            jdbcMysql: 'mysql:mysql-connector-java:5.1.36',
+            jdbcMysql: "mysql:mysql-connector-java:${mysqlJDBCVersion}",
             jdbcPostgresql: 'org.postgresql:postgresql:42.1.1',
             jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8',
 

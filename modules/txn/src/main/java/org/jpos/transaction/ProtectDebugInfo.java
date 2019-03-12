@@ -20,7 +20,6 @@ package org.jpos.transaction;
 
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
-import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.FSDMsg;
@@ -59,20 +58,20 @@ import java.io.Serializable;
  public class ProtectDebugInfo extends TxnSupport implements AbortParticipant {
      private String[] protectedEntrys;
      private String[] wipedEntrys;
-     private String[] protectISO;
-     private String[] wipeISO;
      private String[] protectFSD;
+     private int[] protectISO;
+     private int[] wipeISO;
 
-    public int prepare (long id, Serializable o) {
+     public int prepare (long id, Serializable o) {
          return PREPARED | READONLY;
      }
      public int prepareForAbort (long id, Serializable o) {
          return PREPARED | READONLY;
      }
-     public void commit (long id, Serializable o) { 
+     public void commit (long id, Serializable o) {
          protect ((Context) o);
      }
-     public void abort  (long id, Serializable o) { 
+     public void abort  (long id, Serializable o) {
          protect ((Context) o);
      }
      private void protect (Context ctx) {
@@ -80,29 +79,28 @@ import java.io.Serializable;
          for (String s: wipedEntrys)
              ctx.remove(s);
          /* Protect entry items */           
-         for (String s: protectedEntrys)
-         {
+         for (String s: protectedEntrys) {
              Object o = ctx.get (s);
              if (o instanceof ISOMsg){
-                 ISOMsg m = (ISOMsg) ctx.get (s);
+                 ISOMsg m = ctx.get (s);
                  if (m != null) {
                      m = (ISOMsg) m.clone();
                      ctx.put (s, m);   // place a clone in the context
-                     for (String p: protectISO)
-                         protectField(m,Integer.parseInt(p));
-                     for (String p: wipeISO)
-                         wipeField(m,Integer.parseInt(p));
+                     for (int p: protectISO)
+                         protectField(m,p);
+                     for (int p: wipeISO)
+                         wipeField(m,p);
                  }
              }
              if (o instanceof FSDMsg){
-                 FSDMsg m = (FSDMsg) ctx.get (s);
+                 FSDMsg m = ctx.get (s);
                  if (m != null) {
                      for (String p: protectFSD)
                          protectField(m,p);
                  }
              }
              if (o instanceof String){
-                 String p = (String) ctx.get(s);
+                 String p = ctx.get(s);
                  if (p != null){
                      ctx.put(s, protect (p));    
                  }
@@ -147,8 +145,21 @@ import java.io.Serializable;
          super.setConfiguration (cfg);
          this.protectedEntrys = cfg.getAll("protect-entry");
          this.wipedEntrys = cfg.getAll("wipe-entry");
-         this.protectISO = cfg.getAll("protect-ISOMsg");
-         this.wipeISO = cfg.getAll("wipe-ISOMsg");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
+
+         try {
+             this.protectISO = parseInt(cfg.getAll("protect-ISOMsg"));
+             this.wipeISO = parseInt(cfg.getAll("wipe-ISOMsg"));
+         } catch (NumberFormatException e) {
+             throw new ConfigurationException (e);
+         }
+     }
+     
+     private int[] parseInt(String[] ss) throws NumberFormatException {
+         int[] ii = new int[ss.length];
+         for (int i=0; i<ii.length; i++) {
+             ii[i] = Integer.parseInt(ss[i]);
+         }
+         return ii;
      }
  }

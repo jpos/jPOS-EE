@@ -5,6 +5,7 @@ dependencies {
     compile project(':modules:txn')
     compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
     compile libraries.jsonSchemaValidator
+    compile 'com.google.guava:guava:27.1-jre' // force newer Guava
     compile libraries.commons_lang
 }
 

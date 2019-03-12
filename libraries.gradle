@@ -9,7 +9,7 @@ ext {
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.0.16.Final'
     jaxrsVersion = '2.0.1'
-    jsonSchemaVersion = '2.2.6'
+    jsonSchemaVersion = '2.2.10'
     jacksonVersion = '2.9.8'
     groovyVersion = '2.4.12'
     restAssuredVersion = '2.9.0'

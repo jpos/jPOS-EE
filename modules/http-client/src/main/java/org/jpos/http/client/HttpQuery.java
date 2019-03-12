@@ -86,7 +86,6 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 ctx.log (result.getStatusLine());
 
                 int sc = result.getStatusLine().getStatusCode();
-                ctx.put (statusName, sc);
 
                 // we always include the response body on success and check responseOnError for failed requests
                 boolean includeResponse= (sc == HttpStatus.SC_CREATED) || (sc == HttpStatus.SC_OK) || responseOnError;
@@ -98,6 +97,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                     }
                 }
 
+                ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
                 ctx.resume();
             }
 

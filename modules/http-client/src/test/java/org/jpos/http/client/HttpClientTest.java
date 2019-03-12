@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class HttpClientTest {
     private static final String BASE_URL = "http://localhost:8081";
@@ -60,6 +61,7 @@ public class HttpClientTest {
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals ("Status code should be 200", Integer.valueOf(HttpStatus.SC_OK), sc);
+        assertNotNull("Response should not bee null", ctx.getString("HTTP_RESPONSE"));
         assertFalse ("Response is not empty", ctx.getString("HTTP_RESPONSE").isEmpty());
     }
 
@@ -85,5 +87,4 @@ public class HttpClientTest {
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals ("Status code should be 404", Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc);
     }
-
 }

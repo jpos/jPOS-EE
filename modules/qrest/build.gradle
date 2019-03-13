@@ -5,7 +5,7 @@ dependencies {
     compile libraries.jacksonDatabind
     compile libraries.nettyHandler
     compile libraries.nettyCodecHttp
-    compile libraries.jsonSchemaValidator
+    compile jsonSchemaValidatorLibs
     testCompile libraries.junit
     testCompile libraries.restAssured
 }

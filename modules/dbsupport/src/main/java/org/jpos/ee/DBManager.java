@@ -21,8 +21,8 @@ package org.jpos.ee;
 import org.hibernate.query.criteria.internal.OrderImpl;
 
 import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import javax.persistence.criteria.*;
+import org.hibernate.query.Query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,11 @@ public class DBManager<T> {
     public DBManager(DB db, Class<T> clazz) {
         this.db = db;
         this.clazz = clazz;
+    }
+
+    /** Convenience method */
+    public T byId(Long id) {
+        return db.session().get(clazz, id);
     }
 
     public int getItemCount()  {
@@ -65,7 +70,7 @@ public class DBManager<T> {
             query.where(predicates);
         query.select(root);
         query.orderBy(orderList);
-        Query queryImp = db.session().createQuery(query);
+        Query<T> queryImp = db.session().createQuery(query);
         if (limit != -1) {
             queryImp.setMaxResults(limit);
         }

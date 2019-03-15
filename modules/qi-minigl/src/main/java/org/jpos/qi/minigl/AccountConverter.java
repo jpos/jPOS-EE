@@ -60,7 +60,7 @@ public class AccountConverter implements Converter<String, Account> {
     public Result<Account> convertToModel(String value, ValueContext valueContext) {
         if (value != null && !value.isEmpty()) {
             try {
-                Account acct = (Account) DB.exec(db -> {
+                Account acct = DB.exec(db -> {
                     GLSession session = new GLSession(db);
                     Account res = session.getAccount("jcard",value);
                     if (res == null && createNew) {

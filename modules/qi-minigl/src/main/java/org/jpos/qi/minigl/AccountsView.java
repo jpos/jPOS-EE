@@ -407,11 +407,11 @@ public class AccountsView extends QIEntityView<Account> {
     }
 
     private void expand(Account a) {
-        TreeGrid tree = (TreeGrid) getGrid();
-        if (a.getParent() != null) {
+        if (a != null && a.getParent() != null) {
+            TreeGrid tree = (TreeGrid) getGrid();
             expand(a.getParent());
+            tree.expand(a);
         }
-        tree.expand(a);
     }
 
     @Override

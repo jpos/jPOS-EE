@@ -285,7 +285,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                             HasValue field = binder.getBinding(fieldId).get().getField();
                             if ((field != null && !field.isEmpty()) || !field.isRequiredIndicatorVisible()) {
                                 field.setReadOnly(true);
-                                binder.bind(field, fieldId);
                             }
                         }
 
@@ -366,8 +365,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return profileLayout;
     }
     protected void cancelClick(Button.ClickEvent event, Layout formLayout) {
-        binder.readBean(bean); //this discards the changes
         binder.setReadOnly(true);
+        binder.readBean(bean); //this discards the changes
         event.getButton().setVisible(false);
         saveBtn.setVisible(false);
         editBtn.setVisible(true);

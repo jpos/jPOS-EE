@@ -78,13 +78,13 @@ public class Sidebar extends CssLayout {
             if (id == eid || (eid != null && eid.equals(id))) {
                 for (Element e : sb.getChildren()) {
                     if ("section".equals(e.getName())) {
-                        Label l = new Label(e.getAttributeValue("name"));
+                        Label l = new Label(app.getMessage(e.getAttributeValue("name")));
                         l.setStyleName(ValoTheme.MENU_SUBTITLE);
                         l.setSizeUndefined();
                         menuItems.addComponent(l);
                     } else if ("option".equals (e.getName())) {
                         if (((QINavigator)QI.getQI().getNavigator()).hasAccessToRoute(e.getAttributeValue("action"))) {
-                            Button b = new Button(e.getAttributeValue("name"));
+                            Button b = new Button(app.getMessage(e.getAttributeValue("name")));
                             b.setPrimaryStyleName(ValoTheme.MENU_ITEM);
                             String iconName = e.getAttributeValue("icon");
                             if (iconName != null) {

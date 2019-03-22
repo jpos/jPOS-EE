@@ -1,9 +1,20 @@
 apply from: 'libraries.gradle'
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.owasp:dependency-check-gradle:5.0.0-M2'
+    }
+}
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
     apply plugin: 'maven'
+    apply plugin: 'org.owasp.dependencycheck'
 
     group = 'org.jpos.ee'
     version = '2.2.6-SNAPSHOT'

@@ -110,11 +110,11 @@ public class Header extends HorizontalLayout {
         }
         userMenuItem = mb.addItem(app.getUser().getNick(), null);
         userMenuItem.setIcon(VaadinIcons.USER);
-        userMenuItem.addItem("Profile", selectedItem -> {
+        userMenuItem.addItem(app.getMessage("profile"), selectedItem -> {
             removeSelected();
             app.navigateTo("/profile");
         });
-        userMenuItem.addItem("Log Out", selectedItem -> app.logout());
+        userMenuItem.addItem(app.getMessage("logout"), selectedItem -> app.logout());
         return mb;
     }
 
@@ -124,7 +124,7 @@ public class Header extends HorizontalLayout {
             boolean allowed = perm == null || QI.getQI().getUser().hasPermission(perm);
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
-                        e.getAttributeValue("name"),
+                        app.getMessage(e.getAttributeValue("name")),
                         selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);
@@ -142,7 +142,7 @@ public class Header extends HorizontalLayout {
             boolean allowed = perm == null || QI.getQI().getUser().hasPermission(perm);
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
-                        e.getAttributeValue("name"),
+                        app.getMessage(e.getAttributeValue("name")),
                         selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);

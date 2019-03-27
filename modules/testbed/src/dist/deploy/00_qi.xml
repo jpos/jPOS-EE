@@ -13,7 +13,7 @@
   <!--first one is default locale-->
   <locale>en-US</locale>
   <!--additional locales-->
-  <!--<locale>es-UY</locale>-->
+  <!--<locale>es-ES</locale>-->
 
   <messages>qi-core-messages</messages>
   <messages>qi-eeuser-messages</messages>

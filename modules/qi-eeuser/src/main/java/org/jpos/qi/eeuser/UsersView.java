@@ -57,7 +57,7 @@ public class UsersView extends QIEntityView<User> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof User) {
             User u = (User) entity;
-            return u.getNick() != null ? u.getNick() : "New";
+            return u.getNick() != null ? u.getNick() : getApp().getMessage("new");
         } else {
             return null;
         }

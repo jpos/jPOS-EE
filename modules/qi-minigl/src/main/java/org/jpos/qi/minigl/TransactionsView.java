@@ -206,7 +206,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     @Override
     public String getHeaderSpecificTitle(Object entity) {
         GLTransaction transaction = (GLTransaction)entity;
-        return transaction.getId() != 0 ? String.valueOf(transaction.getId()) : "New";
+        return transaction.getId() != 0 ? String.valueOf(transaction.getId()) : getApp().getMessage("new");
     }
 
     @Override

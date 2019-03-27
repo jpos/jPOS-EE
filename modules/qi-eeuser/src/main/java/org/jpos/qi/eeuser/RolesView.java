@@ -42,7 +42,7 @@ public class RolesView extends QIEntityView {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Role) {
             Role r = (Role) entity;
-            return r.getName() != null ? r.getName() : "New";
+            return r.getName() != null ? r.getName() : getApp().getMessage("new");
         } else {
             return null;
         }

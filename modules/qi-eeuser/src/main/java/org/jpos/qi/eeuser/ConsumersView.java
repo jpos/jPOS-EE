@@ -154,7 +154,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Consumer) {
             Consumer u = (Consumer) entity;
-            return u.getId() != null ? u.getId() : "New";
+            return u.getId() != null ? u.getId() : getApp().getMessage("new");
         } else {
             return null;
         }

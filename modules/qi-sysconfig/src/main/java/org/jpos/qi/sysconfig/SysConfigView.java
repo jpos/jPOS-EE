@@ -54,7 +54,7 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof SysConfig) {
             SysConfig s = (SysConfig) entity;
-            return s.getId() != null ? s.getId() : "New";
+            return s.getId() != null ? s.getId() : getApp().getMessage("new");
         } else {
             return null;
         }

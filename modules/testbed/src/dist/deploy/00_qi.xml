@@ -12,7 +12,6 @@
   <title>jPOS QI</title>
   <!--first one is default locale-->
   <locale>en-US</locale>
-  <!--<locale>es-UY</locale>-->
   <!--additional locales-->
   <!--<locale>es-ES</locale>-->
 

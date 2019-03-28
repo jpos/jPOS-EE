@@ -33,6 +33,7 @@ import com.vaadin.ui.components.grid.HeaderCell;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.themes.ValoTheme;
+import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.gl.*;
 import org.jpos.qi.components.DateRange;
@@ -215,7 +216,12 @@ public class AccountsView extends QIEntityView<Account> {
         }
         if ("entries".equalsIgnoreCase(propertyId)) {
             //todo: should bind?
-            return createEntriesPanel();
+            try {
+                return createEntriesPanel();
+            } catch (BLException e) {
+                getApp().displayError(getApp().getMessage(e.getMessage()), getApp().getMessage(e.getDetail()));
+                return null;
+            }
         }
         return null;
     }
@@ -345,7 +351,7 @@ public class AccountsView extends QIEntityView<Account> {
         return shorts;
     }
 
-    private Panel createEntriesPanel() {
+    private Panel createEntriesPanel() throws BLException {
         Panel entriesPanel = new Panel(getCaptionFromId("entries"));
         entriesPanel.setIcon(VaadinIcons.EXCHANGE);
         entriesPanel.addStyleName("color1");

@@ -107,12 +107,17 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     private HorizontalLayout createFilters() {
         HorizontalLayout controls = new HorizontalLayout();
         controls.setWidth("100%");
-        journals = new JournalsCombo(true);
-        journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
-        controls.addComponents(journals, dateRangeComponent);
+        try {
+            journals = new JournalsCombo(true);
+            journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
+            controls.addComponent(journals);
+            controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
+            controls.setExpandRatio(journals, 0f);
+        } catch (BLException e) {
+            getApp().displayError(getApp().getMessage(e.getMessage()), getApp().getMessage(e.getDetail()));
+        }
+        controls.addComponent(dateRangeComponent);
         controls.setComponentAlignment(dateRangeComponent, Alignment.MIDDLE_LEFT);
-        controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
-        controls.setExpandRatio(journals, 0f);
         controls.setExpandRatio(dateRangeComponent, 1f);
         controls.setMargin(new MarginInfo(false,true,true,true));
         controls.setSpacing(true);
@@ -131,9 +136,14 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
                 return getFieldFactory().buildAndBindDateField(propertyId);
             }
             case ("journal"): {
-                ComboBox<Journal> field = new JournalsCombo(true);
-                field.setCaption(getCaptionFromId(propertyId));
-                formatField(propertyId, field).bind(propertyId);
+                ComboBox<Journal> field = null;
+                try {
+                    field = new JournalsCombo(true);
+                    field.setCaption(getCaptionFromId(propertyId));
+                    formatField(propertyId, field).bind(propertyId);
+                } catch (BLException e) {
+                    getApp().displayError(getApp().getMessage(e.getMessage()), getApp().getMessage(e.getDetail()));
+                }
                 return field;
             }
             case ("entries"): {
@@ -272,7 +282,8 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     }
 
     public void setReadOnly (boolean readOnly) {
-        newEntryForm.setReadOnly(readOnly);
+        if (newEntryForm != null)
+            newEntryForm.setReadOnly(readOnly);
         entryGrid.setReadOnly(readOnly);
         if (readOnly) {
             shouldReverse=false;

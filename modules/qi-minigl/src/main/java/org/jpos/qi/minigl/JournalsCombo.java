@@ -20,6 +20,7 @@ package org.jpos.qi.minigl;
 
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.themes.ValoTheme;
+import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysConfigManager;
 import org.jpos.gl.GLSession;
@@ -32,19 +33,20 @@ public class JournalsCombo extends ComboBox<Journal> {
     /**
      * Create and fill journals combo
      */
-    public JournalsCombo (boolean required) {
+    public JournalsCombo (boolean required) throws BLException {
         super(QI.getQI().getMessage("journal"));
         setItemCaptionGenerator(Journal::getName);
         setStyleName(ValoTheme.COMBOBOX_SMALL);
         setEmptySelectionAllowed(!required);
 
         List<Journal> journals = getJournals();
-        if (journals != null) {
+        if (journals != null && journals.size() > 0) {
             setItems(journals);
-
             String defJournalName= getDefaultJournalName();
             Journal defJournal= journals.stream().filter(j -> defJournalName.equals(j.getName())).findFirst().orElse(null);
             setSelectedItem(defJournal);
+        } else {
+            throw new BLException("errorMessage.noJournal", "errorMessage.noJournal.detail");
         }
     }
 

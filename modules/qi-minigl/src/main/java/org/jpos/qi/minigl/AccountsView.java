@@ -118,9 +118,7 @@ public class AccountsView extends QIEntityView<Account> {
           }
         });
 
-        Iterator<Grid.Column<Account, ?>> it = grid.getColumns().iterator();
-        while (it.hasNext()) {
-            Grid.Column c  = it.next();
+        for (Grid.Column<Account, ?> c : grid.getColumns()) {
             String columnId = c.getId();
             if (!Arrays.asList(getVisibleColumns()).contains(columnId)) {
                 grid.removeColumn(columnId);
@@ -161,10 +159,8 @@ public class AccountsView extends QIEntityView<Account> {
             refCredit.setStyleName("credit-color");
             refDebit.addStyleName(ValoTheme.LABEL_SMALL);
             refCredit.addStyleName(ValoTheme.LABEL_SMALL);
-            Button collapse = new Button(getApp().getMessage("collapseAll"), event -> {
-                ((TreeGrid) getGrid()).collapse(expandedItems.toArray());
-
-            });
+            Button collapse = new Button(getApp().getMessage("collapseAll"),
+                    event -> ((TreeGrid) getGrid()).collapse(expandedItems.toArray()));
             collapse.setStyleName(ValoTheme.BUTTON_LINK);
             collapse.addStyleName(ValoTheme.BUTTON_SMALL);
             HorizontalLayout l = new HorizontalLayout(refDebit, refCredit, collapse);
@@ -363,9 +359,7 @@ public class AccountsView extends QIEntityView<Account> {
         dateRangeComponent = new DateRangeComponent(DateRange.ALL_TIME, true) {
             @Override
             protected Button.ClickListener createRefreshListener() {
-                return event -> {
-                    refreshDetails();
-                };
+                return event -> refreshDetails();
             }
         };
         VerticalLayout detailsLayout = new VerticalLayout();

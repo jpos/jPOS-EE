@@ -126,8 +126,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         Object o = null;
         String[] params = parameter.split("/|\\?");
         if (params.length > 0) {
-            if ("new".equals(params[0]) && canAdd()) {
-                o =  createNewEntity();
+            if ("new".equals(params[0])) {
+                if (canAdd())
+                    o =  createNewEntity();
                 newView = true;
             } else {
                 o = getEntityByParam(params[0]);

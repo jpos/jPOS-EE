@@ -18,35 +18,47 @@
 
 package org.jpos.qi.minigl;
 
+import com.vaadin.server.UserError;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.themes.ValoTheme;
-import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysConfigManager;
 import org.jpos.gl.GLSession;
 import org.jpos.gl.Journal;
 import org.jpos.qi.QI;
 
+import java.util.Collections;
 import java.util.List;
 
 public class JournalsCombo extends ComboBox<Journal> {
     /**
      * Create and fill journals combo
      */
-    public JournalsCombo (boolean required) throws BLException {
+    public JournalsCombo (boolean required) {
         super(QI.getQI().getMessage("journal"));
-        setItemCaptionGenerator(Journal::getName);
+        setItemCaptionGenerator((ItemCaptionGenerator<Journal>) item -> item != null ? item.getName() : "No Journals");
         setStyleName(ValoTheme.COMBOBOX_SMALL);
         setEmptySelectionAllowed(!required);
-
         List<Journal> journals = getJournals();
         if (journals != null && journals.size() > 0) {
             setItems(journals);
             String defJournalName= getDefaultJournalName();
-            Journal defJournal= journals.stream().filter(j -> defJournalName.equals(j.getName())).findFirst().orElse(null);
-            setSelectedItem(defJournal);
+            if (defJournalName != null) {
+                Journal defJournal= journals.stream().filter(j ->
+                        defJournalName.equals(j.getName())).findFirst().orElse(null);
+                setSelectedItem(defJournal);
+            }
         } else {
-            throw new BLException("errorMessage.noJournal", "errorMessage.noJournal.detail");
+            setItems((Collections.EMPTY_LIST));
+            setComponentError(new UserError(QI.getQI().getMessage("errorMessage.noJournal")));
+        }
+    }
+
+    @Override
+    public void setValue (Journal value) {
+        if (!isEmpty()) {
+            super.setValue(value);
         }
     }
 

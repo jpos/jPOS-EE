@@ -25,7 +25,6 @@ import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.ee.BLException;
 import org.jpos.gl.*;
 import org.jpos.qi.*;
@@ -107,15 +106,11 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     private HorizontalLayout createFilters() {
         HorizontalLayout controls = new HorizontalLayout();
         controls.setWidth("100%");
-        try {
-            journals = new JournalsCombo(true);
-            journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
-            controls.addComponent(journals);
-            controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
-            controls.setExpandRatio(journals, 0f);
-        } catch (BLException e) {
-            getApp().displayError(getApp().getMessage(e.getMessage()), getApp().getMessage(e.getDetail()));
-        }
+        journals = new JournalsCombo(true);
+        journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
+        controls.addComponent(journals);
+        controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
+        controls.setExpandRatio(journals, 0f);
         controls.addComponent(dateRangeComponent);
         controls.setComponentAlignment(dateRangeComponent, Alignment.MIDDLE_LEFT);
         controls.setExpandRatio(dateRangeComponent, 1f);
@@ -136,14 +131,9 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
                 return getFieldFactory().buildAndBindDateField(propertyId);
             }
             case ("journal"): {
-                ComboBox<Journal> field = null;
-                try {
-                    field = new JournalsCombo(true);
-                    field.setCaption(getCaptionFromId(propertyId));
-                    formatField(propertyId, field).bind(propertyId);
-                } catch (BLException e) {
-                    getApp().displayError(getApp().getMessage(e.getMessage()), getApp().getMessage(e.getDetail()));
-                }
+                ComboBox<Journal> field = new JournalsCombo(true);
+                field.setCaption(getCaptionFromId(propertyId));
+                formatField(propertyId, field).bind(propertyId);
                 return field;
             }
             case ("entries"): {
@@ -220,7 +210,16 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     }
 
     @Override
-    public boolean canAdd() { return true; }
+    public boolean canAdd() {
+        TransactionsHelper helper = (TransactionsHelper) getHelper();
+        List journals = helper.getJournals();
+        if (journals != null && journals.size() > 0) {
+            return true;
+        } else {
+            getApp().displayError("errorMessage.noJournal", "errorMessage.noJournal.detail");
+            return false;
+        }
+    }
 
     @Override
     public boolean canRemove() {
@@ -233,12 +232,6 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
             getApp().displayNotification(getApp().getMessage("created", getEntityName().toUpperCase()));
             getApp().getNavigator().navigateTo(getGeneralRoute());
         }
-    }
-
-    @Override
-    protected void editClick(Button.ClickEvent event, Layout formLayout) {
-        super.editClick(event,formLayout);
-        setReadOnly(false);
     }
 
     @Override

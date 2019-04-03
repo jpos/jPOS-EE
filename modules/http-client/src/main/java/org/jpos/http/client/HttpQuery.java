@@ -23,10 +23,8 @@ import java.io.Serializable;
 import java.util.*;
 
 import org.apache.http.*;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.*;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -46,11 +44,16 @@ import org.jpos.transaction.Context;
 
 @SuppressWarnings("unused")
 public class HttpQuery extends Log implements AbortParticipant, Configurable, Destroyable {
+    private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
+    private static final int DEFAULT_TIMEOUT = 15000;
+
     private Configuration cfg;
     private String url;
     private String contentType;
     private Header[] httpHeaders;
     private boolean responseOnError;
+    private int connectTimeout;                     // timeout waiting for connection
+    private int timeout;                            // timeout waiting for HTTP response on socket
 
     // Context variable names
     private String urlName;
@@ -74,11 +77,16 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         Context ctx = (Context) o;
         String url = getURL (ctx);
 
-        HttpUriRequest httpRequest = getHttpUriRequest(ctx);
+        HttpRequestBase httpRequest = getHttpRequest(ctx);
         if (httpRequest == null)
             return FAIL;            // probably wrong http method; abort early and avoid NPEs later
 
         addHeaders(ctx, httpRequest);
+
+        httpRequest.setConfig(RequestConfig.custom().
+            setConnectTimeout(connectTimeout).
+            setSocketTimeout(timeout).
+            build());
 
         client.execute(httpRequest, new FutureCallback<HttpResponse>() {
             @Override
@@ -103,8 +111,13 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
 
             @Override
             public void failed(Exception ex) {
-                 ctx.log(ex);
-                 ctx.resume();
+                // Common cases with current Apache impl; just logged but not handled here:
+                //      java.net.UnknownHostException: mydomain.com: nodename nor servname provided, or not known
+                //      java.net.ConnectException: Connection refused
+                //      java.net.ConnectException: Timeout connecting to [mydomain.com/xxx.xxx.xxx.xxx:ppp]
+                //      java.net.SocketTimeoutException: ... (when no HTTP response)
+                ctx.log(ex);
+                ctx.resume();
             }
 
             @Override
@@ -126,6 +139,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         url = cfg.get("url");
         contentType = cfg.get("contentType", "application/json");
         responseOnError= cfg.getBoolean("responseBodyOnError", false);    // do we include a response body for failed requests? default: false
+        connectTimeout= cfg.getInt("connect-timeout", DEFAULT_CONNECT_TIMEOUT);
+        timeout= cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
         urlName = cfg.get("urlName", "HTTP_URL");
         methodName = cfg.get("methodName", "HTTP_METHOD");
@@ -165,7 +180,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         return sb.toString();
     }
 
-    private HttpUriRequest getHttpUriRequest (Context ctx) {
+    private HttpRequestBase getHttpRequest(Context ctx) {
         String url = getURL(ctx);
         switch (ctx.getString(methodName)) {
             case "POST":

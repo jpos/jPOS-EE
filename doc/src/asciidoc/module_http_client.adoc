@@ -23,7 +23,9 @@
 
 The `HttpQuery` participant has the following configuration properties:
 
-* `url`: a _hardcoded_ url for the request (it will be used as is, so it must be valid as per `java.net.URI`
+* `url`: a _hardcoded_ url for the request (it will be used as is, so it must be valid as per `java.net.URI`)
+* `connect-timeout`: milliseconds to wait for connection (default 10000)
+* `timeout`: milliseconds to wait for an HTTP response (based on socket activity; default 15000)
 * `contentType`: defaults to `"application/json"`
 * `httpHeader`: a _repeatable_ configuration property representing an HTTP request header, where the value is
    of the form `header_name:header_value`

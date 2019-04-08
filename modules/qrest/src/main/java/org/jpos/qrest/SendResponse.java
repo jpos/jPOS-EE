@@ -18,8 +18,10 @@
 
 package org.jpos.qrest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
@@ -39,6 +41,7 @@ import static org.jpos.qrest.Constants.*;
 public class SendResponse implements AbortParticipant, Configurable {
     private static ObjectMapper mapper = Mapper.getMapper();
     private String contentType;
+    private boolean jsonIncludeNulls= true;
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -96,7 +99,8 @@ public class SendResponse implements AbortParticipant, Configurable {
                 if (response.body() instanceof String)
                     responseBody = String.valueOf(response.body()).getBytes();
                 else {
-                    responseBody = mapper.writeValueAsBytes(response.body());
+                    ObjectMapper m= jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
+                    responseBody = m.writeValueAsBytes(response.body());
                     isJson = true;
                 }
                 httpResponse = new DefaultFullHttpResponse(
@@ -123,5 +127,6 @@ public class SendResponse implements AbortParticipant, Configurable {
 
     public void setConfiguration (Configuration cfg) {
         this.contentType = cfg.get("content-type", null);
+        this.jsonIncludeNulls = cfg.getBoolean("json-include-nulls", true);
     }
 }

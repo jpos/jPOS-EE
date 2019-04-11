@@ -72,7 +72,7 @@ public class RolesView extends QIEntityView {
     protected Component buildAndBindCustomComponent(String propertyId) {
         List<Validator> validators = getFieldFactory().getValidators(propertyId);
         if ("permissions".equals(propertyId)) {
-            CheckBoxGroup<Permission> f = new CheckBoxGroup("Permissions");
+            CheckBoxGroup<Permission> f = new CheckBoxGroup(getApp().getMessage("permissions"));
             List<SysConfig> sysconfigs = ((RolesHelper)getHelper()).getPermissions();
             List<Permission> allPermissions = new ArrayList<>();
             //convert SysConfigs to Permissions

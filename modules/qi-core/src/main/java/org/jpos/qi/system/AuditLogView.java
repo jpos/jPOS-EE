@@ -50,7 +50,7 @@ public class AuditLogView extends QIEntityView<SysLog> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof SysLog) {
             SysLog s = (SysLog) entity;
-            return s.getId() != 0 ? s.getId().toString() : "New";
+            return s.getId() != 0 ? s.getId().toString() : getApp().getMessage("new");
         } else {
             return null;
         }

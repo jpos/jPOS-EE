@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 
 public class QINavigator extends Navigator {
     private static String URL_PATTERN_STRING = "^[\\w\\s.\\-\\/\\?\\=\\:]{0,255}$";
-    private static Pattern ROUTE_PATTERN = Pattern.compile("^\\/(\\w+)\\/*.*");
+    private static Pattern ROUTE_PATTERN = Pattern.compile("^/(\\w+)/*.*");
     public Validator validator;
     QI app;
     Map<String,String> perms = new HashMap<>();
@@ -49,7 +49,7 @@ public class QINavigator extends Navigator {
     public QINavigator(QI app, Layout layout) {
         super(app, layout);
         this.app = app;
-        validator = new RegexpValidator("Invalid URL",URL_PATTERN_STRING);
+        validator = new RegexpValidator(app.getMessage("errorMessage.invalidURL"),URL_PATTERN_STRING);
         qfactory = app.getQ2().getFactory();
         initNavigator();
     }

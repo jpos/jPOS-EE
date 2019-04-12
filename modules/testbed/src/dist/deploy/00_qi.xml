@@ -12,6 +12,7 @@
   <title>jPOS QI</title>
   <!--first one is default locale-->
   <locale>en-US</locale>
+  <!--<locale>es-UY</locale>-->
   <!--additional locales-->
   <!--<locale>es-ES</locale>-->
 
@@ -21,7 +22,7 @@
   <messages>qi-minigl-messages</messages>
 
   <menubar>
-    <menu name="System" icon="COG" style="icon-cog" action="system" />
+    <menu name="system" icon="COG" style="icon-cog" action="system" />
   </menubar>
 
   <!-- sidebar view definition -->
@@ -32,20 +33,20 @@
   </sidebar>
 
   <sidebar id="system">
-    <section name="System"/>
+    <section name="system"/>
     <option name="Info" action="info"/>
     <option name="Log" action="log"/>
-    <option name="Exception log" action="exceptions"/>
-    <option name="Users" action="users"/>
-    <option name="Consumers" action="consumers"/>
-    <option name="Roles" action="roles"/>
-    <option name="Permissions" action="permissions"/>
-    <option name="SysConfig" action="sysconfig"/>
-    <option name="Audit Log" action="syslog"/>
-    <option name="Revision History" action="revision_history"/>
-    <section name="MiniGL"/>
-    <option name="Accounts" action="accounts"/>
-    <option name="Transactions" action="transactions"/>
+    <option name="exceptionlog" action="exceptions"/>
+    <option name="users" action="users"/>
+    <option name="consumers" action="consumers"/>
+    <option name="roles" action="roles"/>
+    <option name="permissions" action="permissions"/>
+    <option name="sysconfig" action="sysconfig"/>
+    <option name="syslog" action="syslog"/>
+    <option name="revision.history" action="revision_history"/>
+    <section name="minigl"/>
+    <option name="accounts" action="accounts"/>
+    <option name="transactions" action="transactions"/>
   </sidebar>
 
 

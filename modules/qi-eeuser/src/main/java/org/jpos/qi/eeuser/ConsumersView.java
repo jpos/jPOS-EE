@@ -74,7 +74,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
         if (params.length > 1) {
             String userId = params[1];
             try {
-                this.selectedUser = (User) DB.exec(db -> {
+                this.selectedUser = DB.exec(db -> {
                     UserManager mgr = new UserManager(db);
                     return mgr.getItemByParam("id",userId,false);
                 });
@@ -83,7 +83,8 @@ public class ConsumersView extends QIEntityView<Consumer> {
             }
             super.showSpecificView(parameter);
         } else if (parameter.contains("new")){
-            getApp().displayError("Invalid User","Must select a User");
+            getApp().displayError(getApp().getMessage("errorMessage.invalidUser"),
+                    getApp().getMessage("errorMessage.mustSelectUser"));
             getApp().getNavigator().navigateTo(getGeneralRoute());
         } else {
             super.showSpecificView(parameter);
@@ -124,7 +125,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     public void setGridGetters() {
         Grid<Consumer> g = getGrid();
         g.addColumn(Consumer::getId).setId("id");
-        g.addColumn(consumer -> consumer.getRolesAsString()).setId("roles");
+        g.addColumn(Consumer::getRolesAsString).setId("roles");
         g.addColumn(Consumer::getStartDate).setId("startDate");
         g.addColumn(Consumer::getEndDate).setId("endDate");
         g.addColumn(consumer -> consumer.getUser().getNickAndId()).setId("user");
@@ -154,7 +155,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Consumer) {
             Consumer u = (Consumer) entity;
-            return u.getId() != null ? u.getId() : "New";
+            return u.getId() != null ? u.getId() : getApp().getMessage("new");
         } else {
             return null;
         }

@@ -42,7 +42,7 @@ public class RolesView extends QIEntityView {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Role) {
             Role r = (Role) entity;
-            return r.getName() != null ? r.getName() : "New";
+            return r.getName() != null ? r.getName() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -72,7 +72,7 @@ public class RolesView extends QIEntityView {
     protected Component buildAndBindCustomComponent(String propertyId) {
         List<Validator> validators = getFieldFactory().getValidators(propertyId);
         if ("permissions".equals(propertyId)) {
-            CheckBoxGroup<Permission> f = new CheckBoxGroup("Permissions");
+            CheckBoxGroup<Permission> f = new CheckBoxGroup(getApp().getMessage("permissions"));
             List<SysConfig> sysconfigs = ((RolesHelper)getHelper()).getPermissions();
             List<Permission> allPermissions = new ArrayList<>();
             //convert SysConfigs to Permissions

@@ -75,7 +75,6 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     }
     public int prepare (long id, Serializable o) {
         Context ctx = (Context) o;
-        String url = getURL (ctx);
 
         HttpRequestBase httpRequest = getHttpRequest(ctx);
         if (httpRequest == null)

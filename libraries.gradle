@@ -54,7 +54,7 @@ ext {
             jdbcH2: 'com.h2database:h2:1.4.189',
             jdbcMysql: "mysql:mysql-connector-java:${mysqlJDBCVersion}",
             jdbcPostgresql: 'org.postgresql:postgresql:42.1.1',
-            jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8',
+            jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:7.2.2.jre8',
 
             //Freemarker
             freemarker: 'org.freemarker:freemarker:[2.3.20,2.4)',

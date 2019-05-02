@@ -21,6 +21,7 @@ package org.jpos.ee;
 import org.jdom2.Element;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jpos.core.SimpleConfiguration;
 import org.jpos.q2.ConfigurationFactory;
 
@@ -36,7 +37,7 @@ public class SysConfigConfigurationFactory implements ConfigurationFactory {
     private static final String PREFIX = "sysconfig:";
     private static final int PREFIX_LENGTH = PREFIX.length();
 
-    public Configuration getConfiguration(Element e) throws ConfigurationException {
+    public Configuration getConfiguration(Element e, Environment env) throws ConfigurationException {
         Properties props = new Properties();
         Iterator iter = e.getChildren ("property").iterator();
         while (iter.hasNext()) {
@@ -79,7 +80,7 @@ public class SysConfigConfigurationFactory implements ConfigurationFactory {
             }
         }
         close();
-        return new SimpleConfiguration(props);
+        return new SimpleConfiguration(props, env);
     }
     private void ensureOpen() {
         if (db == null) {

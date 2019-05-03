@@ -270,8 +270,14 @@ public class DB implements Closeable {
             }
             if (create)
                 targetTypes.add(TargetType.DATABASE);
-            if(targetTypes.size()>0)
-                export.create(EnumSet.copyOf(targetTypes), getMetadata());
+            if(targetTypes.size()>0) {
+                // First, drop everything, disregarding errors
+                export.setHaltOnError(false);
+                export.drop(EnumSet.copyOf(targetTypes), getMetadata());
+                // Now attempt schema creation, but halting on error
+                export.setHaltOnError(true);
+                export.createOnly(EnumSet.copyOf(targetTypes), getMetadata());
+            }
         }
         catch (IOException | ConfigurationException | InterruptedException e)
         {

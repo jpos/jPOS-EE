@@ -72,7 +72,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
                 dr.setStart(startDate);
             }
             if (datePickerTo.getValue() != null) {
-                Date endDate = Date.from(datePickerTo.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date endDate = Date.from(datePickerTo.getValue().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
                 dr.setEnd(endDate);
             }
         } else {

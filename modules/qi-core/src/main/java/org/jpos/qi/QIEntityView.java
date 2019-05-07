@@ -266,11 +266,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         profileLayout.setSpacing(true);
 
         //Add Back Button
-        if (params.length <= 1 || !"profile".equals(params[1])) {
+        if ((params.length <= 1 || !"profile".equals(params[1])) && ((QINavigator)app.getNavigator()).hasHistory()) {
             Button back = new Button(getApp().getMessage("back"));
-            back.addStyleName("borderless-colored");
+            back.setStyleName(ValoTheme.BUTTON_LINK);
             back.setIcon(VaadinIcons.ARROW_LEFT);
-            back.addClickListener(event -> app.getNavigator().navigateTo(getGeneralRoute()));
+            back.addClickListener(event -> ((QINavigator)app.getNavigator()).navigateBack());
             profileLayout.addComponent(back);
             profileLayout.setComponentAlignment(back, Alignment.MIDDLE_LEFT);
         }

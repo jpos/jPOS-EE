@@ -32,8 +32,7 @@ import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QFactory;
 import org.jpos.qi.views.DefaultView;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +44,7 @@ public class QINavigator extends Navigator {
     Map<String,String> perms = new HashMap<>();
     Map<String,String> routes = new HashMap<>();
     private QFactory qfactory;
+    private Stack<String> history;
 
     public QINavigator(QI app, Layout layout) {
         super(app, layout);
@@ -76,10 +76,12 @@ public class QINavigator extends Navigator {
             }
             app.addView(route, e);
         }
+        history = new Stack<>();
     }
 
     @Override
     public void navigateTo(String navigationState) {
+        addHistory(navigationState);
         if (app.getUser().isForcePasswordChange()) {
             super.navigateTo("/users/" + app.getUser().getId() + "/profile/password_change");
             return;
@@ -115,6 +117,15 @@ public class QINavigator extends Navigator {
         }
     }
 
+    public void navigateBack () {
+        if (hasHistory())
+            navigateTo(getPreviousView());
+    }
+
+    public boolean hasHistory () {
+        return history.size() > 1;
+    }
+
     public boolean hasAccessToRoute (String route) {
         String required = perms.get(route);
         required = "*".equals(required) ? null : required;
@@ -123,6 +134,17 @@ public class QINavigator extends Navigator {
 
     public String getRouteForEntity(String entityName) {
         return routes.get(entityName);
+    }
+
+    private void addHistory (String url) {
+        history.add(url);
+        while (history.size() > 10)
+            history.remove(0);
+    }
+
+    public String getPreviousView () {
+        history.pop(); // Remove current view.
+        return history.pop();
     }
 
     public class QIViewProvider implements ViewProvider {

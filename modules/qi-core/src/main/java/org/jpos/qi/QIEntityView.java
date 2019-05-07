@@ -139,7 +139,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 for (String queryParam : queryParams) {
                     String[] keyValue = queryParam.split("=");
                     if (keyValue.length > 0  && "back".equals(keyValue[0])) {
-                        setGeneralRoute("/"+keyValue[1].replace(".","/"));
+                        ((QINavigator)app.getNavigator()).setPreviousView("/" + keyValue[1].replace(".", "/"));
                     }
                 }
             }

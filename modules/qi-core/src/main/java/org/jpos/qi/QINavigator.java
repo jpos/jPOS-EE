@@ -142,6 +142,12 @@ public class QINavigator extends Navigator {
             history.remove(0);
     }
 
+    public void setPreviousView (String previousUrl) {
+        String current = history.peek() != null ? history.pop() : null;
+        history.push(previousUrl);
+        history.push(current);
+    }
+
     public String getPreviousView () {
         history.pop(); // Remove current view.
         return history.pop();

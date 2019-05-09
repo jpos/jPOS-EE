@@ -36,7 +36,6 @@ import com.vaadin.shared.ui.MarginInfo;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
-import org.jpos.ee.DB;
 import org.jpos.util.FieldFactory;
 
 import java.math.BigDecimal;
@@ -473,11 +472,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     private void loadRevisionHistory (Layout formLayout, String ref) {
-        DB db = new DB();
-        db.open();
-        revisionsPanel = new RevisionsPanel(ref, db);
-        formLayout.addComponent(revisionsPanel);
-        db.close();
+        try {
+            revisionsPanel = getHelper().createAndLoadRevisionHistoryPanel(ref);
+            if (revisionsPanel != null)
+                formLayout.addComponent(revisionsPanel);
+        } catch (Exception e) {
+            Label errorLabel = new Label(getApp().getMessage("errorMessage.revisionFailed"));
+            errorLabel.setStyleName(ValoTheme.LABEL_FAILURE);
+            formLayout.addComponent(errorLabel);
+        }
     }
 
     public Object createNewEntity (){

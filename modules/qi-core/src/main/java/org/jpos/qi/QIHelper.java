@@ -22,7 +22,6 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.provider.CallbackDataProvider;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.QuerySortOrder;
-import com.vaadin.data.provider.SortOrder;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
 import org.jpos.core.Configuration;
@@ -78,6 +77,10 @@ public abstract class QIHelper {
         } else {
             return false;
         }
+    }
+
+    public RevisionsPanel createAndLoadRevisionHistoryPanel (String ref) throws Exception {
+        return DB.exec(db -> new RevisionsPanel(ref, db));
     }
 
     public User getUser() {

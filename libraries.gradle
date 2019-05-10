@@ -40,7 +40,7 @@ ext {
             logback: "ch.qos.logback:logback-classic:${logbackVersion}",
 
             //JODA-Time
-            joda_time: 'joda-time:joda-time:2.10',
+            joda_time: 'joda-time:joda-time:2.10.2',
 
             //Hibernate
             hibernate_core: "org.hibernate:hibernate-core:${hibernateVersion}",

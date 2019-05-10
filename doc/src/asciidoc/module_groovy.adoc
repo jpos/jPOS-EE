@@ -137,7 +137,7 @@ only for requests of the MTI's given in the `whitelist` property.
 
 [source, xml]
 ----------------------------------------------------------------------------------------
-<request-listener class="org.jpos.transaction.participant.GroovyRequestListener"
+<request-listener class="org.jpos.groovy.GroovyRequestListener"
                   logger="Q2" realm="groovy-test-one">
   <property name="whitelist" value="0100, 0420" />
   <script>
@@ -153,7 +153,7 @@ will be interpreted and evaluated for each request. The script will be called fo
 
 [source, xml]
 ----------------------------------------------------------------------------------------
-<request-listener class="org.jpos.transaction.participant.GroovyRequestListener"
+<request-listener class="org.jpos.groovy.GroovyRequestListener"
                   logger="Q2" realm="groovy-test-two">
   <property name="compiled" value="false" />
   <script src="../cfg/reqlistener2.groovy" />

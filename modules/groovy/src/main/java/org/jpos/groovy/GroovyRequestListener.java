@@ -76,7 +76,7 @@ import groovy.lang.GroovyShell;
  * <p>A Groovy script given as embedded text in a {@code CDATA} section. The script will be pre-compiled, and called
  * only for requests of the MTI's given in the "whitelist" property.
  * <pre>
- *     &lt;request-listener class="org.jpos.transaction.participant.GroovyRequestListener" logger="Q2" realm="groovy-test-one"&gt;
+ *     &lt;request-listener class="org.jpos.groovy.GroovyRequestListener" logger="Q2" realm="groovy-test-one"&gt;
  *       &lt;property name="whitelist" value="0100, 0420" /&gt;
  *       &lt;script&gt;
  *         &lt;![CDATA[
@@ -89,7 +89,7 @@ import groovy.lang.GroovyShell;
  * <p>A Groovy script given in an external file. The "compiled" property is set to "false", so the script
  * will be interpreted and evaluated for each request. The script will be called for all MTI's.
  * <pre>
- *     &lt;request-listener class="org.jpos.transaction.participant.GroovyRequestListener" logger="Q2" realm="groovy-test-two"&gt;
+ *     &lt;request-listener class="org.jpos.groovy.GroovyRequestListener" logger="Q2" realm="groovy-test-two"&gt;
  *       &lt;property name="compiled" value="false" /&gt;
  *       &lt;script src="../cfg/reqlistener2.groovy" /&gt;
  *     &lt;/request-listener&gt;

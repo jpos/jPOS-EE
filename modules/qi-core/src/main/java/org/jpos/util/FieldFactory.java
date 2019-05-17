@@ -189,9 +189,9 @@ public class FieldFactory {
                 return null;
             }
             if (regex != null)
-                validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", propertyId),regex));
+                validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", getApp().getMessage(propertyId)),regex));
             if (length > 0)
-                validators.add(new StringLengthValidator(getApp().getMessage("errorMessage.invalidField", propertyId),0,length));
+                validators.add(new StringLengthValidator(getApp().getMessage("errorMessage.invalidField", getApp().getMessage(propertyId)),0,length));
         }
         return validators;
     }

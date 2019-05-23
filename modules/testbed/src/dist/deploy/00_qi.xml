@@ -12,7 +12,6 @@
   <title>jPOS QI</title>
   <!--first one is default locale-->
   <locale>en-US</locale>
-  <!--<locale>es-UY</locale>-->
   <!--additional locales-->
   <!--<locale>es-ES</locale>-->
 
@@ -132,13 +131,15 @@
       <script>uptime</script>
     </view>
     <view caption="Date" route="date" class="org.jpos.qi.system.ObjectView" perm="login" repeat="1000"
-          clearScreen="true">
+          viewStyle="marginView" clearScreen="true">
       <object class="java.util.Date"/>
     </view>
-    <view caption="PS" route="ps" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000" clearScreen="true">
+    <view caption="PS" route="ps" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000"
+          viewStyle="marginView" clearScreen="true">
       <command>deploy:ps</command>
     </view>
-    <view caption="Deploy" route="deploy" class="org.jpos.qi.system.CommandRunner" perm="sysadmin" clearScreen="true">
+    <view caption="Deploy" route="deploy" class="org.jpos.qi.system.CommandRunner" perm="sysadmin"
+          viewStyle="marginView" clearScreen="true">
       <command>deploy:list</command>
     </view>
     <view route="markdowntest" caption="MarkdownTest" class="org.jpos.qi.system.MarkdownView" perm="sysadmin"

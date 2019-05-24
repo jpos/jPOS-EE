@@ -20,10 +20,7 @@ package org.jpos.qi.sysconfig;
 
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
@@ -31,6 +28,7 @@ import org.jpos.ee.SysConfig;
 import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.qi.ViewConfig;
 
 import java.util.List;
 
@@ -105,6 +103,9 @@ public class SysConfigView extends QIEntityView<SysConfig> {
                                 , toPresentation -> removePrefix(toPresentation));
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);
+            ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
+            String width = config != null ? config.getWidth() : null;
+            id.setWidth(width);
             return id;
         }
         return null;

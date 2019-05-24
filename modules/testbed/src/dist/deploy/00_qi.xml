@@ -65,16 +65,17 @@
   </view>
   <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="sysconfig"/>
-    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" />
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;"
+               length="64" expand-ratio="1" width="40%"/>
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4" width="40%"/>
   </view>
   <view route="permissions" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysadmin" sidebar="system">
     <property name="name" value="permissions"/>
     <property name="entityName" value="permission"/>
     <property name="prefix" value="perm." />
     <property name="title" value="Permissions" />
-    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" />
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4"/>
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" width="40%" />
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4" width="40%"/>
   </view>
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
     <property name="entityName" value="user"/>

@@ -57,7 +57,8 @@ public abstract class APITestSupport {
             q2 = new Q2();
             q2.start();
         }
-        ISOUtil.sleep(5000);
+        if (!q2.ready(15000L))
+            throw new IllegalStateException("Q2 not running");
     }
 
     protected APICredential createAPICredential(String consumerId, String base64Key, String nonce, byte[] payLoad)

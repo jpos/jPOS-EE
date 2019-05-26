@@ -18,7 +18,11 @@
 
 package org.jpos.ee.usertype;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -31,11 +35,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 
 public class JsonType implements UserType {
-
     private static int[] TYPES = { Types.VARCHAR };
-    private static ObjectMapper mapper = new ObjectMapper();
+
+    private static ObjectMapper mapper =
+      new ObjectMapper()
+        .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+        .enable(SerializationFeature.WRITE_DATES_WITH_ZONE_ID)
+        .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
+        .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false)
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     @Override
     public int[] sqlTypes() {

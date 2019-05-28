@@ -20,8 +20,10 @@ package org.jpos.qi.eeuser;
 
 import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.data.provider.Query;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
@@ -129,7 +131,11 @@ public class ConsumersView extends QIEntityView<Consumer> {
         g.addColumn(Consumer::getStartDate).setId("startDate");
         g.addColumn(Consumer::getEndDate).setId("endDate");
         g.addColumn(consumer -> consumer.getUser().getNickAndId()).setId("user");
-        g.addColumn(Consumer::isActive).setId("active");
+        g.addColumn(consumer -> {
+            String active = VaadinIcons.CHECK.getHtml();
+            String inActive = VaadinIcons.CLOSE.getHtml();
+            return consumer.isActive() ? active : inActive;
+        }).setId("active").setRenderer(new HtmlRenderer());
         g.addColumn(Consumer::isDeleted).setId("deleted");
         //select first item on user combobox
         userComboBox.setValue(userComboBox.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));

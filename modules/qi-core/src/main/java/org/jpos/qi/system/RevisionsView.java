@@ -97,14 +97,13 @@ public class RevisionsView extends QIEntityView<Revision> {
     public void setGridGetters() {
         Grid<Revision> g = this.getGrid();
         g.addColumn(Revision::getId).setId("id");
-        g.addColumn(Revision::getInfo,new HtmlRenderer("")).setId("info");
+        g.addColumn(Revision::getDate).setId("date");
         g.addColumn(revision ->
                 ((RevisionsHelper)getHelper()).getLink(revision.getRef(),""), new HtmlRenderer("")).setId("ref");
         g.addColumn(revision ->
-            ((RevisionsHelper)getHelper()).getAuthorLink(revision.getAuthor().getNickAndId(),"")
-        ,new HtmlRenderer("")).setId("author");
-        g.addColumn(Revision::getDate).setId("date");
-
+                        ((RevisionsHelper)getHelper()).getAuthorLink(revision.getAuthor().getNickAndId(),"")
+                ,new HtmlRenderer("")).setId("author");
+        g.addColumn(Revision::getInfo,new HtmlRenderer("")).setId("info");
     }
 
 }

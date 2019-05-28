@@ -24,6 +24,7 @@ import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.*;
@@ -172,11 +173,14 @@ public class UsersView extends QIEntityView<User> {
     @Override
     public void setGridGetters() {
         Grid<User> g = getGrid();
-//        g.addColumn(User::getId).setId("id");
         g.addColumn(User::getNick).setId("nick");
         g.addColumn(User::getName).setId("name");
         g.addColumn(User::getEmail).setId("email");
-        g.addColumn(User::isActive).setId("active");
+        g.addColumn(user -> {
+            String active = VaadinIcons.CHECK.getHtml();
+            String inActive = VaadinIcons.CLOSE.getHtml();
+            return user.isActive() ? active : inActive;
+        }).setId("active").setRenderer(new HtmlRenderer());
         g.addColumn(User::isDeleted).setId("deleted");
         g.addColumn(User::isVerified).setId("verified");
         g.addColumn(User::getStartDate).setId("startDate");

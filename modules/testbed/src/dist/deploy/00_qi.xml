@@ -104,7 +104,7 @@
   <view route="consumers" class="org.jpos.qi.eeuser.ConsumersView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="consumer"/>
     <attribute name="id" field="false" required="true" read-only="true"/>
-    <attribute name="user" column="false" field = "false" read-only="true"/>
+    <attribute name="user" column="false" read-only="true" link="users"/>
     <attribute name="active" />
     <attribute name="roles" read-only="false"/>
     <attribute name="startDate" />

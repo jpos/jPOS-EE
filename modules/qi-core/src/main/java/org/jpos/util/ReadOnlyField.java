@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.qi;
+package org.jpos.util;
 
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Component;
@@ -42,7 +42,10 @@ public class ReadOnlyField extends CustomField<Object> {
 
     @Override
     protected Component initContent() {
-        return new VerticalLayout(label);
+        VerticalLayout vl = new VerticalLayout(label);
+        vl.setMargin(false);
+        vl.setSpacing(false);
+        return vl;
     }
 
     @Override

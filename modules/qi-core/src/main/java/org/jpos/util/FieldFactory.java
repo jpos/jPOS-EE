@@ -196,6 +196,11 @@ public class FieldFactory {
         return validators;
     }
 
+    public boolean isLinkField (String propertyId) {
+        return viewConfig != null && viewConfig.getFields().keySet().contains(propertyId) &&
+                viewConfig.getFields().get(propertyId).getLink() != null;
+    }
+
     public boolean isRequired(String propertyId) {
         return viewConfig.getFields().get(propertyId).isRequired();
     }

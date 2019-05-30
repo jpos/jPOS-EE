@@ -28,7 +28,7 @@ import org.jpos.ee.Revision;
 import org.jpos.ee.User;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.qi.ReadOnlyField;
+import org.jpos.util.ReadOnlyField;
 
 import java.util.List;
 

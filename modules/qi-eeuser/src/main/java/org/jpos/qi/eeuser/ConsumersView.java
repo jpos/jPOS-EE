@@ -32,12 +32,15 @@ import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.util.LinkField;
 import org.jpos.util.NameRegistrar;
 import org.jpos.util.QIUtils;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
+
+import static org.jpos.util.QIUtils.getCaptionFromId;
 
 
 /**
@@ -175,15 +178,15 @@ public class ConsumersView extends QIEntityView<Consumer> {
             formatField(propertyId,checkBoxGroup).bind(propertyId);
             return checkBoxGroup;
         }
-        if ("user".equalsIgnoreCase(propertyId)) {
-            ComboBox<User> box = createUserBox();
-            formatField(propertyId,box).bind(propertyId);
-            box.setEnabled(false);
-            box.setValue(this.selectedUser);
-            return box;
-        }
         if ("startdate".equalsIgnoreCase(propertyId) || "endDate".equalsIgnoreCase(propertyId)) {
             return getFieldFactory().buildAndBindDateField(propertyId);
+        }
+        if ("user".equalsIgnoreCase(propertyId) && getFieldFactory().isLinkField(propertyId)) {
+            String url = getViewConfig().getFields().get(propertyId).getLink();
+            UserLinkField field = new UserLinkField (url);
+            field.setCaption(getCaptionFromId("field." + propertyId));
+            formatField(propertyId, field).bind(propertyId);
+            return field;
         }
         return null;
     }

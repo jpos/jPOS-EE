@@ -29,12 +29,12 @@ import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.*;
 import org.jpos.qi.*;
-import org.jpos.util.FieldFactory;
-import org.jpos.util.PasswordGenerator;
+import org.jpos.qi.util.FieldFactory;
+import org.jpos.qi.util.PasswordGenerator;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 public class UsersView extends QIEntityView<User> {

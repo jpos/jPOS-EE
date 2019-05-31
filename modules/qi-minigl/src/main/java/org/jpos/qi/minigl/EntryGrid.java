@@ -33,8 +33,8 @@ import org.jpos.gl.GLTransaction;
 import java.util.Collection;
 import java.util.List;
 
-import static org.jpos.util.QIUtils.createAmountRenderer;
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.createAmountRenderer;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 /**
  * Created by jr on 8/1/17.

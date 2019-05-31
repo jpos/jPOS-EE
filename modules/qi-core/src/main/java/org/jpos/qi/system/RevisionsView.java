@@ -28,11 +28,11 @@ import org.jpos.ee.Revision;
 import org.jpos.ee.User;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.ReadOnlyField;
+import org.jpos.qi.util.ReadOnlyField;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 /**

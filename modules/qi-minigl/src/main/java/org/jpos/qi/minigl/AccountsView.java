@@ -39,15 +39,15 @@ import org.jpos.qi.components.DateRange;
 import org.jpos.qi.components.DateRangeComponent;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.FieldFactory;
+import org.jpos.qi.util.FieldFactory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.jpos.util.QIUtils.createAmountRenderer;
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.createAmountRenderer;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class AccountsView extends QIEntityView<Account> {
 

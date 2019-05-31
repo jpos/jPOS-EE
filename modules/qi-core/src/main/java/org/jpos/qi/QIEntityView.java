@@ -36,13 +36,13 @@ import com.vaadin.shared.ui.MarginInfo;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
-import org.jpos.util.FieldFactory;
+import org.jpos.qi.util.FieldFactory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable {

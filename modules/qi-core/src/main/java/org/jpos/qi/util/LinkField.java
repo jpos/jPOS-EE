@@ -1,4 +1,4 @@
-package org.jpos.util;
+package org.jpos.qi.util;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;

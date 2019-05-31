@@ -32,15 +32,14 @@ import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.LinkField;
 import org.jpos.util.NameRegistrar;
-import org.jpos.util.QIUtils;
+import org.jpos.qi.util.QIUtils;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 /**

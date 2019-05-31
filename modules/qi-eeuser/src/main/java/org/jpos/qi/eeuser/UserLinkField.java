@@ -3,7 +3,7 @@ package org.jpos.qi.eeuser;
 import com.vaadin.ui.Button;
 import org.jpos.ee.User;
 import org.jpos.qi.QI;
-import org.jpos.util.LinkField;
+import org.jpos.qi.util.LinkField;
 
 public class UserLinkField extends LinkField {
 

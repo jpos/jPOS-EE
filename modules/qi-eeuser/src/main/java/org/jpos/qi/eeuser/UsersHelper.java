@@ -22,10 +22,9 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
 import com.vaadin.ui.PasswordField;
-import org.hibernate.Criteria;
 import org.jpos.ee.*;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.PasswordGenerator;
+import org.jpos.qi.util.PasswordGenerator;
 
 import java.util.*;
 import java.util.List;

@@ -25,14 +25,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
-import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.qi.ViewConfig;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class SysConfigView extends QIEntityView<SysConfig> {
     private String prefix;

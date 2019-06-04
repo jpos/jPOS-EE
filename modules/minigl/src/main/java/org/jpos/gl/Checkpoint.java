@@ -26,9 +26,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
-/** 
+/**
  *      Journal level account Checkpoint.
- *     
+ *
 */
 public class Checkpoint implements Serializable {
     private Date date;

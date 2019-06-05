@@ -1,0 +1,6 @@
+q2:
+    node: testbed
+
+jdbc:
+    password: password
+

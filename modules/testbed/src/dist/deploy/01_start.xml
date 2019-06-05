@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<start-stop class="org.jpos.ee.info.StartStop">
+  <property name="source" value="${q2.node}" />
+</start-stop>
+

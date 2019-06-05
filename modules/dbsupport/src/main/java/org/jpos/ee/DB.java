@@ -36,6 +36,7 @@ import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jpos.ee.support.ModuleUtils;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
@@ -524,7 +525,7 @@ public class DB implements Closeable {
                 Properties dbProps = loadProperties(propFile);
                 if (dbProps != null) {
                     for (Map.Entry entry : dbProps.entrySet()) {
-                        ssrb.applySetting((String) entry.getKey(), entry.getValue());
+                        ssrb.applySetting((String) entry.getKey(), Environment.get((String) entry.getValue()));
                     }
                 }
 

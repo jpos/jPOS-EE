@@ -26,7 +26,10 @@ subprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
-    def isSnapshot = true; // version.contains("SNAPSHOT")
+    def isSnapshot = version.contains("SNAPSHOT")
+    def mavenCentralRepo = isSnapshot ?
+        'https://oss.sonatype.org/content/repositories/snapshots/' :
+        'https://oss.sonatype.org/service/local/staging/deploy/maven2';
 
     project.archivesBaseName="jposee-${project.name}"
     javadoc.failOnError = false
@@ -81,6 +84,11 @@ subprojects {
                 pom.project pomConfig
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                 repository(url: 'file:///opt/local/maven')
+                /*
+                repository(url: mavenCentralRepo) {
+                    authentication(userName: mavenCentralUsername, password: mavenCentralPassword)
+                }
+                */
             }
         }
     }

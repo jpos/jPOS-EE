@@ -46,9 +46,18 @@ public class ViewConfig {
         columns = new LinkedHashMap<>();
         readOnlyFields = new ArrayList<>();
     }
-    public void addField(String field, String perm, String regex, int length, boolean required, String width, String link) {
+    public void addField (String field, String perm, String regex, int length, boolean required, String width,
+                          String link, Position position, String[] options)
+    {
         if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
-            fields.put(field, new FieldConfig(perm, regex, length,required, width, link));
+            fields.put(field, new FieldConfig(perm, regex, length,required, width, link, position, options));
+    }
+
+    public void addField(String field, String perm, String regex, int length, boolean required, String width,
+                         String link, Position position)
+    {
+        if (perm == null || perm.isEmpty() || QI.getQI().getUser().hasPermission(perm))
+            fields.put(field, new FieldConfig(perm, regex, length,required, width, link, position));
     }
 
     public void addField(String field, String perm, String regex, int length, boolean required, String width) {
@@ -98,6 +107,8 @@ public class ViewConfig {
             String regex = f.getAttributeValue("regex");
             String width = f.getAttributeValue("width");
             String link  = f.getAttributeValue("link");
+            String positionStr  = f.getAttributeValue("position");
+            Position position = "right".equals(positionStr) ? Position.RIGHT : ("center".equals(positionStr)? Position.CENTER : Position.LEFT);
             String optionsStr = f.getAttributeValue("options");
             int length = f.getAttribute("length") != null ? f.getAttribute("length").getIntValue() : 0;
 
@@ -109,18 +120,17 @@ public class ViewConfig {
             if (addField) {
                 if (optionsStr != null) {
                     String[] options = optionsStr.split(",");
-                    addField(name,perm,options,length,isRequired);
-                }
-                addField(name, perm, regex, length,isRequired, width, link);
+                    addField(name,perm, regex, length, isRequired, width, link, position, options);
+                } else 
+                    addField(name, perm, regex, length,isRequired, width, link, position);
             }
             if (addColumn) {
                 addColumn(name, perm);
                 if (expandRatio != -1 && fields.get(name) != null)
                     fields.get(name).setExpandRatio(expandRatio);
             }
-            if (isReadOnly) {
+            if (isReadOnly)
                 addReadOnly(name);
-            }
         }
     }
 
@@ -138,17 +148,34 @@ public class ViewConfig {
         private String[] options;
         private String width;
         private String link;
+        private Position position;
         private int length;
         private int expandRatio = -1;
         private boolean required;
 
-        FieldConfig(String perm, String regex, int length, boolean required, String width, String link) {
+        FieldConfig(String perm, String regex, int length, boolean required, String width, String link,
+                    Position position, String[] options)
+        {
             this.perm = perm;
             this.regex = regex;
             this.length = length;
             this.required = required;
             this.width = width;
             this.link = link;
+            this.options = options;
+            this.position = position;
+        }
+
+        FieldConfig(String perm, String regex, int length, boolean required, String width, String link,
+                    Position position)
+        {
+            this.perm = perm;
+            this.regex = regex;
+            this.length = length;
+            this.required = required;
+            this.width = width;
+            this.link = link;
+            this.position = position;
         }
 
         FieldConfig(String perm, String regex, int length, boolean required, String width) {
@@ -217,5 +244,16 @@ public class ViewConfig {
         public void setLink(String link) {
             this.link = link;
         }
+        public Position getPosition() {
+            return position;
+        }
+
+        public void setPosition(Position position) {
+            this.position = position;
+        }
+    }
+
+    enum Position {
+        LEFT, RIGHT, CENTER;
     }
 }

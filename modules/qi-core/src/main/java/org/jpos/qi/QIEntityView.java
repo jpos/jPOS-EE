@@ -432,12 +432,57 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         layout.addStyleName("qi-form");
         layout.setMargin(new MarginInfo(false));
-        addFields(layout);
+        if (isTwoColumnLayout()) {
+            FormLayout leftLayout = new FormLayout();
+            leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            FormLayout rightLayout = new FormLayout();
+            rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            addFields(leftLayout, rightLayout);
+            HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
+            hl.setWidth("100%");
+            layout.addComponent(hl);
+        } else {
+            addFields(layout);
+        }
         return layout;
+    }
+
+    private boolean isTwoColumnLayout () {
+        ViewConfig config = getViewConfig();
+        for (String s : config.getFields().keySet()) {
+            ViewConfig.FieldConfig fieldConfig = config.getFields().get(s);
+            if (!fieldConfig.getPosition().equals(ViewConfig.Position.LEFT))
+                return true;
+        }
+        return false;
     }
 
     public FieldFactory createFieldFactory () {
         return new FieldFactory(getBean(), getViewConfig(), getBinder());
+    }
+
+    protected void addFields (Layout leftLayout, Layout rightLayout) {
+        fieldFactory = createFieldFactory();
+        for (String id : getVisibleFields()) {
+            Layout l = isRightLayoutField(id) ? rightLayout : leftLayout;
+            //Check if there's a custom builder
+            Component field = buildAndBindCustomComponent(id);
+            if (field == null) {
+                //if it wasn't built yet, build it now.
+                try {
+                    l.addComponent(fieldFactory.buildAndBindField(id));
+                } catch (NoSuchFieldException e) {
+                    getApp().getLog().error(e);
+                }
+            } else {
+                l.addComponent(field);
+            }
+        }
+    }
+
+    private boolean isRightLayoutField (String fieldId) {
+        ViewConfig.FieldConfig config = viewConfig.getFields().get(fieldId);
+        return config.getPosition().equals(ViewConfig.Position.RIGHT);
     }
 
     protected void addFields(Layout l) {
@@ -457,6 +502,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             }
         }
     }
+
     //Override on specific views to create a custom field for a certain property, or to add validators.
     // Do not forget to getValidators and add them.
     protected Component buildAndBindCustomComponent(String propertyId) {

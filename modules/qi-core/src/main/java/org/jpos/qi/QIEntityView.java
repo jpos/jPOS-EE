@@ -69,6 +69,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private ViewConfig viewConfig;
     private T bean;
     private FieldFactory fieldFactory;
+    private List<Layout> fieldsLayouts;
 
 
     public QIEntityView(Class<T> clazz, String name) {
@@ -97,6 +98,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             showGeneralView();
         } else {
             generalView = false;
+            fieldsLayouts = new ArrayList<>();
             showSpecificView (event.getParameters());
         }
     }
@@ -375,7 +377,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         removeBtn.setVisible(true);
         errorLabel.setVisible(false);
         errorLabel.setValue(null);
-        formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        for (Layout l : fieldsLayouts) {
+            l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        }
     }
 
     protected boolean saveClick(Button.ClickEvent event, Layout formLayout) {
@@ -398,7 +402,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 }
             }
             binder.setReadOnly(true);
-            formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            for (Layout l : fieldsLayouts) {
+                l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            }
             event.getButton().setVisible(false);
             cancelBtn.setVisible(false);
             editBtn.setVisible(true);
@@ -424,37 +430,81 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         removeBtn.setVisible(false);
         saveBtn.setVisible(true);
         cancelBtn.setVisible(true);
-        formLayout.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        for (Layout l : fieldsLayouts) {
+            l.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        }
     }
 
     protected Layout createLayout() {
-        FormLayout layout = new FormLayout();
-        layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        layout.addStyleName("qi-form");
-        layout.setMargin(new MarginInfo(false));
-        if (isTwoColumnLayout()) {
-            FormLayout leftLayout = new FormLayout();
-            leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-            FormLayout rightLayout = new FormLayout();
-            rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-            addFields(leftLayout, rightLayout);
-            HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
-            hl.setWidth("100%");
-            layout.addComponent(hl);
-        } else {
-            addFields(layout);
+        switch (getNumberOfColumnsOfLayout()) {
+            case 2:
+                return createTwoColumnLayout();
+            case 3:
+                return createThreeColumnLayout();
+            default:
+                return createOneColumnLayout();
         }
+    }
+
+    private Layout createOneColumnLayout () {
+        FormLayout layout = new FormLayout();
+        layout.setMargin(false);
+        layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        addFields(layout);
+        fieldsLayouts.add(layout);
         return layout;
     }
 
-    private boolean isTwoColumnLayout () {
+    private Layout createTwoColumnLayout () {
+        FormLayout layout = new FormLayout();
+        layout.setMargin(false);
+        FormLayout leftLayout = new FormLayout();
+        leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        FormLayout rightLayout = new FormLayout();
+        rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        addFields(leftLayout, rightLayout);
+        fieldsLayouts.add(leftLayout);
+        fieldsLayouts.add(rightLayout);
+        HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
+        hl.setWidth("100%");
+        hl.setMargin(false);
+        layout.addComponent(hl);
+        return layout;
+    }
+
+    private Layout createThreeColumnLayout () {
+        FormLayout layout = new FormLayout();
+        layout.setMargin(false);
+        FormLayout leftLayout = new FormLayout();
+        leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        FormLayout centerLayout = new FormLayout();
+        centerLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        FormLayout rightLayout = new FormLayout();
+        rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        addFields(leftLayout, centerLayout, rightLayout);
+        fieldsLayouts.add(leftLayout);
+        fieldsLayouts.add(centerLayout);
+        fieldsLayouts.add(rightLayout);
+        HorizontalLayout hl = new HorizontalLayout(leftLayout, centerLayout, rightLayout);
+        hl.setWidth("100%");
+        hl.setMargin(false);
+        layout.addComponent(hl);
+        return layout;
+    }
+
+    private int getNumberOfColumnsOfLayout () {
+        int n = 1;
         ViewConfig config = getViewConfig();
         for (String s : config.getFields().keySet()) {
             ViewConfig.FieldConfig fieldConfig = config.getFields().get(s);
-            if (!fieldConfig.getPosition().equals(ViewConfig.Position.LEFT))
-                return true;
+            if (!fieldConfig.getPosition().equals(ViewConfig.Position.LEFT)) {
+                if (fieldConfig.getPosition().equals(ViewConfig.Position.CENTER))
+                    return 3;
+                else if (fieldConfig.getPosition().equals(ViewConfig.Position.RIGHT))
+                    n = 2;
+            }
         }
-        return false;
+        return n;
     }
 
     public FieldFactory createFieldFactory () {
@@ -464,27 +514,56 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     protected void addFields (Layout leftLayout, Layout rightLayout) {
         fieldFactory = createFieldFactory();
         for (String id : getVisibleFields()) {
-            Layout l = isRightLayoutField(id) ? rightLayout : leftLayout;
+            ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
+            ViewConfig.Position position = fieldConfig.getPosition();
+            Layout layout = position.equals(ViewConfig.Position.RIGHT) ? rightLayout : leftLayout;
             //Check if there's a custom builder
             Component field = buildAndBindCustomComponent(id);
             if (field == null) {
                 //if it wasn't built yet, build it now.
                 try {
-                    l.addComponent(fieldFactory.buildAndBindField(id));
+                    layout.addComponent(fieldFactory.buildAndBindField(id));
                 } catch (NoSuchFieldException e) {
                     getApp().getLog().error(e);
                 }
             } else {
-                l.addComponent(field);
+                layout.addComponent(field);
             }
         }
     }
 
-    private boolean isRightLayoutField (String fieldId) {
-        ViewConfig.FieldConfig config = viewConfig.getFields().get(fieldId);
-        return config.getPosition().equals(ViewConfig.Position.RIGHT);
+    protected void addFields (Layout leftLayout, Layout centerLayout, Layout rightLayout) {
+        fieldFactory = createFieldFactory();
+        for (String id : getVisibleFields()) {
+            ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
+            ViewConfig.Position position = fieldConfig.getPosition();
+            Layout layout;
+            switch (position) {
+                case RIGHT:
+                    layout = rightLayout;
+                    break;
+                case CENTER:
+                    layout = centerLayout;
+                    break;
+                default:
+                    layout = leftLayout;
+                    break;
+            }
+            //Check if there's a custom builder
+            Component field = buildAndBindCustomComponent(id);
+            if (field == null) {
+                //if it wasn't built yet, build it now.
+                try {
+                    layout.addComponent(fieldFactory.buildAndBindField(id));
+                } catch (NoSuchFieldException e) {
+                    getApp().getLog().error(e);
+                }
+            } else {
+                layout.addComponent(field);
+            }
+        }
     }
-
+    
     protected void addFields(Layout l) {
         fieldFactory = createFieldFactory();
         for (String id : getVisibleFields()) {

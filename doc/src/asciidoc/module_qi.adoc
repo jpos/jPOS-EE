@@ -134,6 +134,8 @@ It has:
 
 * `link` (string, optional) The URL for which the link will be generated.
 
+* `position` (string, optional) left/center/right: Indicates if field is displayed on the left, center or right
+
 Example:
 
 

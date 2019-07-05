@@ -58,4 +58,9 @@ public class QIUtils {
         DateFormat dateFormat     = new SimpleDateFormat(QI.getQI().getMessage("timestampformat"));
         return new DateRenderer(dateFormat);
     }
+
+    public static Renderer createDateRenderer () {
+        DateFormat dateFormat     = new SimpleDateFormat(QI.getQI().getMessage("dateformat"));
+        return new DateRenderer(dateFormat);
+    }
 }

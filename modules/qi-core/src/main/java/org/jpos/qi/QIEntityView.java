@@ -377,7 +377,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         removeBtn.setVisible(true);
         errorLabel.setVisible(false);
         errorLabel.setValue(null);
-        for (Layout l : fieldsLayouts) {
+        for (Layout l : getFieldsLayouts()) {
             l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         }
     }
@@ -402,7 +402,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 }
             }
             binder.setReadOnly(true);
-            for (Layout l : fieldsLayouts) {
+            for (Layout l : getFieldsLayouts()) {
                 l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
             }
             event.getButton().setVisible(false);
@@ -430,7 +430,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         removeBtn.setVisible(false);
         saveBtn.setVisible(true);
         cancelBtn.setVisible(true);
-        for (Layout l : fieldsLayouts) {
+        for (Layout l : getFieldsLayouts()) {
             l.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         }
     }
@@ -451,7 +451,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         layout.setMargin(false);
         layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         addFields(layout);
-        fieldsLayouts.add(layout);
+        getFieldsLayouts().add(layout);
         return layout;
     }
 
@@ -463,8 +463,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         addFields(leftLayout, rightLayout);
-        fieldsLayouts.add(leftLayout);
-        fieldsLayouts.add(rightLayout);
+        getFieldsLayouts().add(leftLayout);
+        getFieldsLayouts().add(rightLayout);
         HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
         hl.setWidth("100%");
         hl.setMargin(false);
@@ -482,9 +482,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         addFields(leftLayout, centerLayout, rightLayout);
-        fieldsLayouts.add(leftLayout);
-        fieldsLayouts.add(centerLayout);
-        fieldsLayouts.add(rightLayout);
+        getFieldsLayouts().add(leftLayout);
+        getFieldsLayouts().add(centerLayout);
+        getFieldsLayouts().add(rightLayout);
         HorizontalLayout hl = new HorizontalLayout(leftLayout, centerLayout, rightLayout);
         hl.setWidth("100%");
         hl.setMargin(false);
@@ -828,5 +828,14 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setBean(T bean) {
         this.bean = bean;
+    }
+    public List<Layout> getFieldsLayouts() {
+        if (fieldsLayouts == null)
+            fieldsLayouts = new ArrayList<>();
+        return fieldsLayouts;
+    }
+
+    public void setFieldsLayouts(List<Layout> fieldsLayouts) {
+        this.fieldsLayouts = fieldsLayouts;
     }
 }

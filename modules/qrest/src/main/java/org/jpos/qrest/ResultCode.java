@@ -33,10 +33,12 @@ public enum ResultCode implements IRC {
     ACCEPTED (HttpResponseStatus.ACCEPTED.code(), true),
     NO_CONTENT (HttpResponseStatus.NO_CONTENT.code(), true, true),
     BAD_REQUEST (HttpResponseStatus.BAD_REQUEST.code(), false, true),
+    UNAUTHORIZED (HttpResponseStatus.UNAUTHORIZED.code(), false, true),
     FORBIDDEN (HttpResponseStatus.FORBIDDEN.code(), false, true),
     NOT_FOUND (HttpResponseStatus.NOT_FOUND.code(), false, true),
-    INTERNAL_SERVER_ERROR (HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), false, true),
     NOT_ACCEPTABLE (HttpResponseStatus.NOT_ACCEPTABLE.code(), false, true),
+    CONFLICT (HttpResponseStatus.CONFLICT.code(), false, true),
+    INTERNAL_SERVER_ERROR (HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), false, true),
     NOT_IMPLEMENTED (HttpResponseStatus.NOT_IMPLEMENTED.code(), false, true),
     SERVICE_UNAVAILABLE (HttpResponseStatus.SERVICE_UNAVAILABLE.code(), false, true),
     GATEWAY_TIMEOUT(HttpResponseStatus.GATEWAY_TIMEOUT.code(), false, true);

@@ -18,12 +18,16 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Random;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.Test;
 
 public class MoveTest extends TestBase {
+    @Test
     public void testMove () throws Exception {
         Journal j = gls.getJournal ("TestJournal");
         Journal h = gls.getJournal ("HistoryJournal");

@@ -18,10 +18,14 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Random;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SummarizeTest extends TestBase {
     Journal tj;
@@ -30,13 +34,14 @@ public class SummarizeTest extends TestBase {
     Date POSTDATE;
     BigDecimal A_0, A_858;  // A = account 111
     BigDecimal B_0, B_858;  // B = account 112
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         tj = gls.getJournal ("TestJournal");
         POSTDATE = Util.parseDateTime ("20050103120000");
         A = gls.getFinalAccount ("TestChart", "111");
         B = gls.getFinalAccount ("TestChart", "112");
     }
+    @Test
     public void testSummarize () throws Exception {
         // Create Transaction to be summarized
         Transaction tx = gls.beginTransaction();

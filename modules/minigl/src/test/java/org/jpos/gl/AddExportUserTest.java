@@ -18,18 +18,19 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.jpos.ee.DB;
-import org.jpos.gl.*;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class AddExportUserTest extends TestCase {
-    public void testAddExportUser() throws Exception {     
+public class AddExportUserTest {
+    @Test
+    public void testAddExportUser() throws Exception {
         Session sess = new DB().open();
         try {
             GLUser user = getUser(sess,System.getProperty("user.name"));

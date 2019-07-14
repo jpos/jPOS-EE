@@ -18,10 +18,11 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
 import org.jpos.gl.tools.Export;
+import org.junit.jupiter.api.Test;
 
-public class ExportTest extends TestCase {
+public class ExportTest {
+    @Test
     public void testExport() throws Exception {
         new Export().export(System.out);
     }

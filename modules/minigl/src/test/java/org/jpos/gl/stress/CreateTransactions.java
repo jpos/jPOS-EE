@@ -23,15 +23,18 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Random;
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CreateTransactions extends TestBase {
     Random r = new Random(0); // we wan't a consistent set 
     Date POSTDATE;
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         POSTDATE = Util.parseDateTime ("20050104120000");
     }
+    @Test
     public void testCreateTransactions () throws Exception {
         Journal j = gls.getJournal ("TestJournal");
         for (int i=0; i<100; i++){

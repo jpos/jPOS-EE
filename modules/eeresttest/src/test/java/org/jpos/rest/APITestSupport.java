@@ -27,7 +27,7 @@ import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -40,14 +40,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SuppressWarnings("unchecked")
 public abstract class APITestSupport {
     static Q2 q2;
     static Space sp;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = APITest.BASE_URL;
         RestAssured.requestSpecification = new RequestSpecBuilder().build().contentType(MediaType.APPLICATION_JSON);

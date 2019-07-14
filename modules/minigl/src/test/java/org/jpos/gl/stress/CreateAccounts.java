@@ -18,10 +18,14 @@
 
 package org.jpos.gl.stress;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.jpos.gl.*;
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.Test;
 
 public class CreateAccounts extends TestBase {
+    @Test
     public void testCreateComposites () throws Exception {
         start ("testCreateComposites");
         CompositeAccount cards = gls.getCompositeAccount ("TestChart", "23");
@@ -42,6 +46,7 @@ public class CreateAccounts extends TestBase {
             createFinals (i);
         }
     }
+    @Test
     private void createFinals (int n) throws Exception {
         CompositeAccount parent = 
             gls.getCompositeAccount ("TestChart", "23." + n);

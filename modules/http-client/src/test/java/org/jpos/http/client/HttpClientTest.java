@@ -24,20 +24,20 @@ import org.jpos.q2.Q2;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.util.NameRegistrar;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HttpClientTest {
     private static final String BASE_URL = "http://localhost:8081";
     private static Q2 q2;
     private static TransactionManager mgr;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws NameRegistrar.NotFoundException {
         if (q2 == null) {
             q2 = new Q2();
@@ -48,7 +48,7 @@ public class HttpClientTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         ISOUtil.sleep(1000L);
     }
@@ -60,9 +60,9 @@ public class HttpClientTest {
         ctx.put("HTTP_METHOD", "GET");
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
-        assertEquals ("Status code should be 200", Integer.valueOf(HttpStatus.SC_OK), sc);
-        assertNotNull("Response should not bee null", ctx.getString("HTTP_RESPONSE"));
-        assertFalse ("Response is not empty", ctx.getString("HTTP_RESPONSE").isEmpty());
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+        assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
+        assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class HttpClientTest {
         ctx.put("HTTP_METHOD", "GET");
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
-        assertEquals ("Status code should be 404", Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc);
+        assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
 
     }
 
@@ -85,6 +85,6 @@ public class HttpClientTest {
         ctx.put("HTTP_METHOD", "PUT");
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
-        assertEquals ("Status code should be 404", Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc);
+        assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
     }
 }

@@ -18,10 +18,11 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
 import org.jpos.gl.tools.Import;
+import org.junit.jupiter.api.Test;
 
-public class ImportTest extends TestCase {
+public class ImportTest {
+    @Test
     public void testImport() throws Exception {
         String userName = System.getProperty("user.name");
         System.setProperty("user.name", "travis");

@@ -92,6 +92,9 @@ subprojects {
             }
         }
     }
+    test {
+        useJUnitPlatform()
+    }
     task sourceJar(type: Jar) {
         from sourceSets.main.allSource
         classifier = 'sources'
@@ -112,7 +115,7 @@ subprojects {
     }
 
     dependencies {
-        testCompile libraries.junit
+        testImplementation libraries.junit
         //Java 10 support
         testCompile('com.sun.xml.bind:jaxb-impl:2.1.2')
         testCompile('com.sun.activation:javax.activation:1.2.0')

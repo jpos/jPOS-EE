@@ -18,18 +18,21 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-public abstract class TestBase extends TestCase {
+public abstract class TestBase {
     protected GLSession gls;
     protected long start;
     protected long checkpoint;
 
-    public void setUp () throws Exception {
+    @BeforeEach
+    public void setUpBase () throws Exception {
         gls = new GLSession("bob");
         start = checkpoint = System.currentTimeMillis();
     }
-    public void tearDown () throws Exception {
+    @AfterEach
+    public void tearDownBase () throws Exception {
         gls.close();
     }
     public void start () {

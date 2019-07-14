@@ -18,8 +18,12 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigDecimal;
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BalanceTest extends TestBase {
     Journal tj;
@@ -31,8 +35,8 @@ public class BalanceTest extends TestBase {
     Account assets;
     Account equity;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         gls.overrideSafeWindow(0L);
         tj = gls.getJournal ("TestJournal");
         cashUS      = gls.getFinalAccount ("TestChart", "111");
@@ -43,26 +47,32 @@ public class BalanceTest extends TestBase {
         equity      = gls.getAccount ("TestChart", "3");
         root        = assets.getRoot();
     }
+    @Test
     public void testCurrentBalances() throws Exception {
         checkCurrentBalances();
     }
+    @Test
     public void testBalancesByPostDate() throws Exception {
         checkBalancesByPostDate();
     }
+    @Test
     public void testCheckpoints() throws Exception {
         gls.createCheckpoint (tj, root, Util.parseDate ("20041231"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050101"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050102"), 1);
     }
+    @Test
     public void testBalancesAfterCheckpoint() throws Exception {
         checkBalancesByPostDate();
     }
+    @Test
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
         gls.createBalanceCache (tj, root, new short[] { 858 });
         tx1.commit ();
     }
+    @Test
     public void testBalanceCache2() throws Exception {
         // create a second set of cache, should erase first one
         final Transaction tx1 = gls.beginTransaction();
@@ -71,15 +81,18 @@ public class BalanceTest extends TestBase {
         tx1.commit ();
     }
 
+    @Test
     public void testCachedBalances() throws Exception {
         checkCurrentBalances();
     }
+    @Test
     public void testDeleteCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.deleteBalanceCache (tj, cashUS, GLSession.LAYER_ZERO);       
         tx1.commit ();
 
     }
+    @Test
     public void testAccountDetailCashUS() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
             tj, cashUS, 
@@ -97,6 +110,7 @@ public class BalanceTest extends TestBase {
             detail.getFinalBalance()
         );
     }
+    @Test
     public void testAccountDetailCashPesos() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
             tj, cashPesos, 
@@ -125,6 +139,7 @@ public class BalanceTest extends TestBase {
         );
     }
 
+    @Test
     public void testMiniStatementCashPesos() throws Exception {
         AccountDetail detail = gls.getMiniStatement (
                 tj, cashPesos,
@@ -141,6 +156,7 @@ public class BalanceTest extends TestBase {
         );
     }
 
+    @Test
     public void testGLTransactionImpact() {
         GLTransaction t = new GLTransaction("Test transaction");
         t.createDebit (cashUS, new BigDecimal("1000.00") , null, (short) 840);

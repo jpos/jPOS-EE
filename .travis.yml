@@ -11,9 +11,8 @@ before_script:
 - echo $JAVA_OPTS
 - export JAVA_OPTS=-Xmx1G
 install: true
-script:
-- sudo apt-get update && sudo apt-get install oracle-java8-installer
-- java -version
+services:
+  - redis-server
 script:
 - TERM=dumb ./gradlew assemble check --info --stacktrace
 after_success: ".travis/update-gh-pages.sh"

@@ -1,0 +1,5 @@
+<logger name="JEDISLOG" class="org.jpos.q2.qbean.LoggerAdaptor">
+    <log-listener class="org.jpos.util.JedisLogListener">
+        <property name="jedis-queue" value="jCardLog" />
+    </log-listener>
+</logger>

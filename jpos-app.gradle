@@ -54,11 +54,12 @@ def jposCopySpec = copySpec {
 
 // Create the jar's manifest
 jar.manifest {
-    attributes \
+    attributes(
         'Implementation-Title': project.name,
         'Implementation-Version': project.version,
         'Main-Class': 'org.jpos.q2.Q2',
         'Class-Path': configurations.runtime.collect { "lib/" + it.getName() }.join(' ')
+    )
 }
 
 processResources {

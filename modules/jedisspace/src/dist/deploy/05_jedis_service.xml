@@ -1,0 +1,6 @@
+<jedis-service class="org.jpos.jedis.JedisService" logger="Q2">
+    <property name="host" value="localhost" />
+    <property name="port" value="6379" />
+    <property name="timeout" value="120000" />
+    <property name="ping-every" value="60000" />
+</jedis-service>

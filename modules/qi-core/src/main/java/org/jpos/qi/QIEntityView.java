@@ -125,7 +125,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void showSpecificView (final String parameter) {
         Object o = null;
-        String[] params = parameter.split("/|\\?");
+        String[] params = parameter.split("[/?]");
         if (params.length > 0) {
             if ("new".equals(params[0])) {
                 if (canAdd())
@@ -450,8 +450,8 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         FormLayout layout = new FormLayout();
         layout.setMargin(false);
         layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        addFields(layout);
         getFieldsLayouts().add(layout);
+        addFields(layout);
         return layout;
     }
 
@@ -462,13 +462,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        addFields(leftLayout, rightLayout);
         getFieldsLayouts().add(leftLayout);
         getFieldsLayouts().add(rightLayout);
         HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
         hl.setWidth("100%");
         hl.setMargin(false);
         layout.addComponent(hl);
+        addFields(leftLayout, rightLayout, layout);
         return layout;
     }
 
@@ -481,7 +481,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         centerLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        addFields(leftLayout, centerLayout, rightLayout);
         getFieldsLayouts().add(leftLayout);
         getFieldsLayouts().add(centerLayout);
         getFieldsLayouts().add(rightLayout);
@@ -489,6 +488,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         hl.setWidth("100%");
         hl.setMargin(false);
         layout.addComponent(hl);
+        addFields(leftLayout, centerLayout, rightLayout, layout);
         return layout;
     }
 
@@ -511,28 +511,28 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return new FieldFactory(getBean(), getViewConfig(), getBinder());
     }
 
-    protected void addFields (Layout leftLayout, Layout rightLayout) {
+    protected void addFields (Layout leftLayout, Layout rightLayout, Layout formLayout) {
         fieldFactory = createFieldFactory();
         for (String id : getVisibleFields()) {
             ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
             ViewConfig.Position position = fieldConfig.getPosition();
-            Layout layout = position.equals(ViewConfig.Position.RIGHT) ? rightLayout : leftLayout;
-            //Check if there's a custom builder
-            Component field = buildAndBindCustomComponent(id);
-            if (field == null) {
-                //if it wasn't built yet, build it now.
-                try {
-                    layout.addComponent(fieldFactory.buildAndBindField(id));
-                } catch (NoSuchFieldException e) {
-                    getApp().getLog().error(e);
-                }
-            } else {
-                layout.addComponent(field);
+            Layout layout;
+            switch (position) {
+                case RIGHT:
+                    layout = rightLayout;
+                    break;
+                case BOTTOM:
+                    layout = formLayout;
+                    break;
+                case LEFT:
+                default:
+                    layout = leftLayout;
             }
+            addField (fieldFactory, id, layout);
         }
     }
 
-    protected void addFields (Layout leftLayout, Layout centerLayout, Layout rightLayout) {
+    protected void addFields (Layout leftLayout, Layout centerLayout, Layout rightLayout, Layout formLayout) {
         fieldFactory = createFieldFactory();
         for (String id : getVisibleFields()) {
             ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
@@ -545,40 +545,36 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 case CENTER:
                     layout = centerLayout;
                     break;
+                case BOTTOM:
+                    layout = formLayout;
+                    break;
+                case LEFT:
                 default:
                     layout = leftLayout;
-                    break;
             }
-            //Check if there's a custom builder
-            Component field = buildAndBindCustomComponent(id);
-            if (field == null) {
-                //if it wasn't built yet, build it now.
-                try {
-                    layout.addComponent(fieldFactory.buildAndBindField(id));
-                } catch (NoSuchFieldException e) {
-                    getApp().getLog().error(e);
-                }
-            } else {
-                layout.addComponent(field);
-            }
+            addField (fieldFactory, id, layout);
         }
     }
     
     protected void addFields(Layout l) {
         fieldFactory = createFieldFactory();
-        for (String id : getVisibleFields()) {
-            //Check if there's a custom builder
-            Component field = buildAndBindCustomComponent(id);
-            if (field == null) {
-                //if it wasn't built yet, build it now.
-                try {
-                    l.addComponent(fieldFactory.buildAndBindField(id));
-                } catch (NoSuchFieldException e) {
-                    getApp().getLog().error(e);
-                }
-            } else {
-                l.addComponent(field);
+        for (String id : getVisibleFields())
+            addField (fieldFactory, id, l);
+    }
+
+    private void addField (FieldFactory fieldFactory, String id, Layout l) {
+        //Check if there's a custom builder
+        Component field = buildAndBindCustomComponent(id);
+        if (field == null) {
+            //if it wasn't built yet, build it now.
+            try {
+                
+                l.addComponent(fieldFactory.buildAndBindField(id));
+            } catch (NoSuchFieldException e) {
+                getApp().getLog().error(e);
             }
+        } else {
+            l.addComponent(field);
         }
     }
 

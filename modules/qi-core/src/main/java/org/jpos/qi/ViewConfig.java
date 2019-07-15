@@ -108,7 +108,20 @@ public class ViewConfig {
             String width = f.getAttributeValue("width");
             String link  = f.getAttributeValue("link");
             String positionStr  = f.getAttributeValue("position");
-            Position position = "right".equals(positionStr) ? Position.RIGHT : ("center".equals(positionStr)? Position.CENTER : Position.LEFT);
+            Position position = Position.LEFT;
+            if (positionStr != null) {
+                switch (positionStr) {
+                    case "right":
+                        position = Position.RIGHT;
+                        break;
+                    case "center":
+                        position = Position.CENTER;
+                        break;
+                    case "bottom":
+                        position = Position.BOTTOM;
+                        break;
+                }
+            }
             String optionsStr = f.getAttributeValue("options");
             int length = f.getAttribute("length") != null ? f.getAttribute("length").getIntValue() : 0;
 
@@ -254,6 +267,6 @@ public class ViewConfig {
     }
 
     enum Position {
-        LEFT, RIGHT, CENTER;
+        LEFT, RIGHT, CENTER, BOTTOM;
     }
 }

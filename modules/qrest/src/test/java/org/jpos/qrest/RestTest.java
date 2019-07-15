@@ -22,8 +22,8 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import org.jpos.q2.Q2;
 import org.jpos.util.NameRegistrar;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
@@ -34,7 +34,7 @@ public class RestTest  {
     private static final String BASE_URL = "http://localhost:8081/";
     private static Q2 q2;
     
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws NameRegistrar.NotFoundException {
         RestAssured.baseURI = BASE_URL;
         RestAssured.useRelaxedHTTPSValidation();

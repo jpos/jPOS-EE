@@ -18,8 +18,8 @@
 
 package org.jpos.fsdpackager;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jpos.iso.AsciiInterpreter;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.LiteralInterpreter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BranchFieldPackagerTest {
 	

@@ -18,7 +18,13 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -26,24 +32,25 @@ import java.util.List;
 public class TransactionGroupTest extends TestBase {
     Journal tj;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         tj = gls.getJournal ("TestJournal");
     }
+    @Test
     public void testCreateTransactionGroupAndGetBalance () throws Exception {
         Date d = Util.parseDate ("20050101");
         Transaction tx = gls.beginTransaction();
         List<GLTransaction> l = gls.findTransactions (tj, null, d, null, true);
-        assertEquals ("List size for " + d + " should be 2", 2, l.size());
+        assertEquals (2, l.size(), "List size for " + d + " should be 2");
         gls.createGroup("Day01", l);
         tx.commit();
         GLTransactionGroup group = gls.findTransactionGroup("Day01");
-        assertNotNull("group should not be null", group);
-        assertEquals("Day01 group ID should be 1", 1L, group.getId());
+        assertNotNull(group, "group should not be null");
+        assertEquals(1L, group.getId(), "Day01 group ID should be 1");
 
         GLTransactionGroup group2 = gls.findTransactionGroup("Day01");
         Account cashUS = gls.getAccount ("TestChart", "111");
         BigDecimal balance = gls.getBalance(tj, cashUS, group2, GLSession.LAYER_ZERO);
-        assertEquals ("Balance should be 15000.00",  new BigDecimal("15000.00"), balance);
+        assertEquals (new BigDecimal("15000.00"), balance, "Balance should be 15000.00");
     }
 }

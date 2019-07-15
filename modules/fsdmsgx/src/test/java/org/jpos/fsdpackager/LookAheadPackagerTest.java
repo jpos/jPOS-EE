@@ -20,9 +20,9 @@ package org.jpos.fsdpackager;
 
 import org.jpos.iso.AsciiInterpreter;
 import org.jpos.iso.ISOException;
-import org.junit.Test;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LookAheadPackagerTest {
 

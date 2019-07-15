@@ -19,12 +19,14 @@
 package org.jpos.gl.stress;
 
 import org.jpos.gl.*;
-import java.math.BigDecimal;
+
 import java.util.Date;
-import java.util.Random;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.Test;
 
 public class SummarizeTransactions extends TestBase {
+    @Test
     public void testSummarize() throws Exception {
         Date POSTDATE = Util.parseDateTime ("20050104120000");
         Journal tj = gls.getJournal ("TestJournal");

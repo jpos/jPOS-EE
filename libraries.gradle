@@ -22,7 +22,7 @@ ext {
 
     libraries = [
             //jUnit (Tests)
-            junit: 'junit:junit:4.12',
+            junit: 'org.junit.jupiter:junit-jupiter:5.5.0',
 
             //jPOS
             jpos: "org.jpos:jpos:${jposVersion}",

@@ -18,15 +18,23 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PermissionTest extends TestBase {
     Journal journal;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         journal = gls.getJournal ("TestJournal");
     }
+    @Test
     public void testBasicGLPermissions() throws Exception {
         assertTrue  (gls.hasPermission (GLPermission.READ));
         assertFalse (gls.hasPermission (GLPermission.POST));
@@ -34,6 +42,7 @@ public class PermissionTest extends TestBase {
         assertTrue (gls.hasPermission (GLPermission.READ, journal));
         assertFalse(gls.hasPermission ("InvalidGLPermission", journal));
     }
+    @Test
     public void testNoPermAndGrant() throws Exception {
         // 'eve',  our no-permissions user
         GLSession sess = new GLSession ("eve"); 
@@ -41,6 +50,7 @@ public class PermissionTest extends TestBase {
         assertFalse(sess.hasPermission(GLPermission.POST, journal));
         sess.close();
     }
+    @Test
     public void testGrant() throws Exception {
         // Grant 'eve' READ permission
         Transaction tx = gls.beginTransaction();
@@ -58,6 +68,7 @@ public class PermissionTest extends TestBase {
         sess.close();
     }
     // ##FIXME - not working if placed after testGrant
+    @Test
     public void testRevoke() throws Exception {
         // Revoke READ permission from 'eve'
         Transaction tx = gls.beginTransaction();
@@ -68,6 +79,7 @@ public class PermissionTest extends TestBase {
         assertFalse (sess.hasPermission (GLPermission.READ));
         sess.close();
     }
+    @Test
     public void testAnon() throws Exception {
         // 'anonymous', a non-existent user
         try {

@@ -18,28 +18,30 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import java.math.BigDecimal;
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AccountLockTest extends TestBase {
     Journal tj;
     Account cash;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         tj = gls.getJournal ("TestJournal");
         cash = gls.getAccount ("TestChart", "111");
     }
+    @Test
     public void testLock () throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.lock (tj, cash);
         tx1.commit();
     }
+    @Test
     public void testDeadLock () throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.lock (tj, cash);
@@ -71,8 +73,8 @@ public class AccountLockTest extends TestBase {
         {
         }
         long end = System.currentTimeMillis();
-        assertTrue("Elapsed is " + (end - start), end - start >= 5000);
-        assertTrue ("Elapsed is "+(end - start),end - start < 7000);
+        assertTrue(end - start >= 5000, "Elapsed is " + (end - start));
+        assertTrue (end - start < 7000, "Elapsed is " + (end - start));
         tx2.commit();
         gls2.close();
     }

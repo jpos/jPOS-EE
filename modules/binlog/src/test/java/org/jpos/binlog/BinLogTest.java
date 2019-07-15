@@ -20,31 +20,34 @@ package org.jpos.binlog;
 
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.TPS;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(OrderAnnotation.class)
 public class BinLogTest implements Runnable {
     public static File dir;
     private AtomicLong cnt = new AtomicLong();
 
-    @Before
+    @BeforeEach
     public void before () {
-        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+        Assumptions.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setup () throws IOException {
         dir = File.createTempFile("binlog-", "");
         dir.delete();
@@ -52,6 +55,7 @@ public class BinLogTest implements Runnable {
         // dir = new File("/tmp/binlog");
     }
     @Test
+    @Order(1)
     public void test000_Write() throws IOException {
         try (BinLogWriter w = new BinLogWriter(dir)) { }
         for (int i=0; i<10; i++) {
@@ -65,7 +69,7 @@ public class BinLogTest implements Runnable {
                 if ((i % 1000) == 0)
                     System.out.println(i + " " + new String(b));
             }
-            assertEquals("Invalid number of entries", 100000, i);
+            assertEquals(100000, i, "Invalid number of entries");
         }
     }
 
@@ -86,7 +90,7 @@ public class BinLogTest implements Runnable {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws IOException {
         if (dir.listFiles() != null) {
             for (File f : dir.listFiles()) {

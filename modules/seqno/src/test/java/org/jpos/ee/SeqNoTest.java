@@ -20,17 +20,17 @@ package org.jpos.ee;
 
 import org.dom4j.DocumentException;
 import org.jpos.iso.ISOUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SeqNoTest {
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws DocumentException {
         try (DB db = new DB()) {
             db.createSchema(null, true);
@@ -52,9 +52,9 @@ public class SeqNoTest {
         for (Thread t : tl) {
             t.join();
         }
-        assertEquals("seq value incorrect", ++runs, next(1L));
+        assertEquals(++runs, next(1L), "seq value incorrect");
         reset();
-        assertEquals("reset failed", 1L, next(1L));
+        assertEquals(1L, next(1L), "reset failed");
         reset();
     }
 
@@ -74,7 +74,7 @@ public class SeqNoTest {
         for (Thread t : tl) {
             t.join();
         }
-        assertEquals("seq value incorrect", ++runs, next(1L));
+        assertEquals(++runs, next(1L), "seq value incorrect");
     }
 
     private long next(long delay) {

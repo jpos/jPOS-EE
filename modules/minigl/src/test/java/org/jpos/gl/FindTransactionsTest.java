@@ -18,35 +18,44 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Date;
 
 public class FindTransactionsTest extends TestBase {
     Journal tj;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         tj = gls.getJournal ("TestJournal");
     }
+    @Test
     public void testFindTransactions () throws Exception {
         List l = gls.findTransactions (tj, null, null, null, true);
-        assertEquals ("List size should be 10", 10, l.size());
+        assertEquals (10, l.size(), "List size should be 10");
     }
+    @Test
     public void testFindTransactionsByPostDate_Day01 () throws Exception {
         Date d = Util.parseDate ("20050101");
         List l = gls.findTransactions (tj, null, d, null, true);
-        assertEquals ("List size for " + d + " should be 2", 2, l.size());
+        assertEquals (2, l.size(), "List size for " + d + " should be 2");
     }
+    @Test
     public void testFindTransactionsByPostDate_Day02 () throws Exception {
         Date d = Util.parseDate ("20050102");
         List l = gls.findTransactions (tj, d, d, null, true);
-        assertEquals ("List size for " + d + " should be 2", 2, l.size());
+        assertEquals (2, l.size(), "List size for " + d + " should be 2");
     }
+    @Test
     public void testFindTransactionsByPostDate_Day01_and_02 () throws Exception {
         Date d1 = Util.parseDate ("20050101");
         Date d2 = Util.parseDate ("20050102");
         List l = gls.findTransactions (tj, d1, d2, null, true);
-        assertEquals ("List size for " + d1 + " to " + d2 + " should be 4", 4, l.size());
+        assertEquals (4, l.size(), "List size for " + d1 + " to " + d2 + " should be 4");
     }
     /*
      * datetime changes from test to test

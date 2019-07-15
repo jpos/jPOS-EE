@@ -18,9 +18,9 @@
 
 package org.jpos.crypto;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SensitiveStringTest {
     @Test
@@ -28,7 +28,7 @@ public class SensitiveStringTest {
         String s = this.toString();
         for (int i=0; i<15; i++) {
             SensitiveString ss = new SensitiveString(s);
-            assertEquals("Should be equal", s, ss.get());
+            assertEquals(s, ss.get(), "Should be equal");
             s = s + System.lineSeparator() + s;
         }
     }
@@ -38,6 +38,6 @@ public class SensitiveStringTest {
         String s = "The quick brown fox jumps over the lazy dog";
         SensitiveString ss0 = new SensitiveString(s);
         SensitiveString ss1 = new SensitiveString(s);
-        assertEquals ("Equals should be true", ss0, ss1);
+        assertEquals (ss0, ss1, "Equals should be true");
     }
 }

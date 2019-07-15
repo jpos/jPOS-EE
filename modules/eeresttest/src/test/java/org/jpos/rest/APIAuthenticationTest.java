@@ -18,8 +18,8 @@
 
 package org.jpos.rest;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -27,13 +27,13 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("unused")
 public class APIAuthenticationTest {
     SecretKey secretKey;
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchAlgorithmException {
         KeyGenerator gen = KeyGenerator.getInstance(APIAuthentication.HASH_ALGORITHM);
         secretKey = gen.generateKey();
@@ -51,7 +51,7 @@ public class APIAuthenticationTest {
               secretKey, "".getBytes()
             );
         } catch (IllegalArgumentException e) {
-            assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.timestamp'", "invalid.timestamp".equals(e.getMessage()));
+            assertTrue ("invalid.timestamp".equals(e.getMessage()), "Returned " + e.getMessage() + " instead of 'invalid.timestamp'");
             return;
         }
         fail ("Validation failed to catch invalid.timestamp");
@@ -73,7 +73,7 @@ public class APIAuthenticationTest {
               badSecretKey, payLoad
             );
         } catch (IllegalArgumentException e) {
-            assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
+            assertTrue ("invalid.hash".equals(e.getMessage()), "Returned " + e.getMessage() + " instead of 'invalid.hash'");
             return;
         }
         fail ("Validation failed to catch invalid.hash");
@@ -96,7 +96,7 @@ public class APIAuthenticationTest {
                 .nonce(cred.getNonce())
                 .hash(APIAuthentication.computeHash(cred, secretKey, payLoad)).build(), secretKey, payLoad);
         } catch (IllegalArgumentException e) {
-            assertTrue ("Returned " + e.getMessage() + " instead of 'invalid.hash'", "invalid.hash".equals(e.getMessage()));
+            assertTrue ("invalid.hash".equals(e.getMessage()), "Returned " + e.getMessage() + " instead of 'invalid.hash'");
         }
     }
 }

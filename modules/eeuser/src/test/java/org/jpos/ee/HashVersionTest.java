@@ -18,18 +18,18 @@
 
 package org.jpos.ee;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HashVersionTest {
     @Test
     public void testV0() throws Exception {
         String hash = "31c1ffc755678596c7d76756b45b157f8dbda90a";
-        assertEquals ("version is ZERO", HashVersion.ZERO, HashVersion.getVersion(hash));
-        assertEquals("V0 hash", hash, HashVersion.ZERO.hash("17", "test", null));
-        assertTrue ("V0 check", HashVersion.ZERO.check ("17", "test", hash));
+        assertEquals (HashVersion.ZERO, HashVersion.getVersion(hash), "version is ZERO");
+        assertEquals(hash, HashVersion.ZERO.hash("17", "test", null), "V0 hash");
+        assertTrue (HashVersion.ZERO.check ("17", "test", hash), "V0 check");
     }
 
     @Test
@@ -38,12 +38,12 @@ public class HashVersionTest {
         String h1 = "ARQ4ElU1RyJ2gULoUhqJXYu8EYYM6bJa1FE0sGR2O3NpcWT65t925nCv2SUL11vnObEgS4ZsbQ/ZUQ6CO9G0VzkPaHOj2IE2q1oa+IAbFab+W81o6QdY9ejjkZaQXzAOOXABtO+1v/iOvRGsne9nUaNjsrBqma4oi9gKcECO9ekEi2rZ1cY3Rt6iL92GTI6YH2x4yyLfZ0KXXC469zl6Cc8R9MgncX7LqawpxRQlMv3JXgodnjUxVQG+o/d46TCNGEDW4s45vS3G73Zp+wr3cK9A9sm5DWsBotvI2inI2BTEBgJ1v5xbc2YPFx9KfGIVaERwgLefet85kcyWc83myFxiODAkcVhlyzxOAjHE5BFC";
         String h2 = "AQAAAAAAAAAAAAAAAAAAAACN+69cqNcdLS2Y2qJV7sCiDI+1C90wJm6OIgGjgKLDiOwmGLgjNTHwAvf8BBJ6Hv1vAfbiSKk7wWqatZZxugEKydBUgiHp5oB7hAAK5JsN72GZCwqbOPkgeaXLyNVBNEg8UUkhPV5RVkHcf4MpQ3UML59zepEcxY9Cfv0Dy1/q5vFvd5mbRzaTi0B8ayLRQN/zXerQuAryne4FPHaudODi6wes6dObTJXHUiwe9FR4yzCxp5D/4tTFpFKc6NTVz92x4DP+ZSXtCvQaTDgpr/zXqXkB3i3/6/Gnx8Kk8j2527wKIQhW92OwXVXHWflFUWs9deXLkuOoi6oqxXHDiJ3A";
 
-        assertEquals ("h0 version is ONE", HashVersion.ONE, HashVersion.getVersion(h0));
-        assertEquals ("h1 version is ONE", HashVersion.ONE, HashVersion.getVersion(h1));
-        assertEquals ("h2 version is ONE", HashVersion.ONE, HashVersion.getVersion(h2));
+        assertEquals (HashVersion.ONE, HashVersion.getVersion(h0), "h0 version is ONE");
+        assertEquals (HashVersion.ONE, HashVersion.getVersion(h1), "h1 version is ONE");
+        assertEquals (HashVersion.ONE, HashVersion.getVersion(h2), "h2 version is ONE");
 
-        assertTrue("V1 check (h0)", HashVersion.ONE.check ("", "test", h0));
-        assertTrue("V1 check (h1)", HashVersion.ONE.check ("", "test", h1));
-        assertTrue("V1 check (h2)", HashVersion.ONE.check ("", "test2", h2));
+        assertTrue(HashVersion.ONE.check ("", "test", h0), "V1 check (h0)");
+        assertTrue(HashVersion.ONE.check ("", "test", h1), "V1 check (h1)");
+        assertTrue(HashVersion.ONE.check ("", "test2", h2), "V1 check (h2)");
     }
 }

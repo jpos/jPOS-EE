@@ -18,10 +18,7 @@
 
 package org.jpos.fsdpackager;
 
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jpos.fsdpackager.compliance.TrackDataCompliance;
 import org.jpos.iso.AsciiInterpreter;
@@ -29,15 +26,9 @@ import org.jpos.iso.BCDInterpreter;
 import org.jpos.iso.EbcdicInterpreter;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOUtil;
-import org.jpos.iso.LiteralInterpreter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 public class FixedFieldPackagerTest {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void unpackTest01() throws ISOException {
@@ -76,19 +67,20 @@ public class FixedFieldPackagerTest {
 
 	@Test
 	public void unpackTest03() throws ISOException {
-		thrown.expect(ISOException.class);
-		thrown.expectMessage("Field [F1] at offset [0]:Expecting 5 bytes found 4");
+		Throwable exception = assertThrows(ISOException.class, () -> {
 
-		int size = 5;
-		FixedFieldPackager p = new FixedFieldPackager("F1", size, AsciiInterpreter.INSTANCE);
-		String s = "12AB";
-		FSDMsgX msg = new FSDMsgX("Test");
-		;
-		msg.add("F1", p);
+			int size = 5;
+			FixedFieldPackager p = new FixedFieldPackager("F1", size, AsciiInterpreter.INSTANCE);
+			String s = "12AB";
+			FSDMsgX msg = new FSDMsgX("Test");
+			;
+			msg.add("F1", p);
 
-		int offset = msg.unpack(s.getBytes());
-		assertEquals(size + 1, offset);
-		assertEquals("12ABC", msg.get("F1"));
+			int offset = msg.unpack(s.getBytes());
+			assertEquals(size + 1, offset);
+			assertEquals("12ABC", msg.get("F1"));
+		});
+		assertEquals("Field [F1] at offset [0]:Expecting 5 bytes found 4", exception.getMessage());
 
 	}
 
@@ -110,51 +102,54 @@ public class FixedFieldPackagerTest {
 	@Test
 	public void unpackTest05() throws ISOException {
 
-		thrown.expect(ISOException.class);
-		thrown.expectMessage("Expected 12345 but found 12346");
-		FixedFieldPackager p = new FixedFieldPackager("F1", "12345", AsciiInterpreter.INSTANCE);
-		String s = "12346";
-		FSDMsgX msg = new FSDMsgX("Test");
-		;
-		msg.add("F1", p);
+		Throwable exception = assertThrows(ISOException.class, () -> {
+			FixedFieldPackager p = new FixedFieldPackager("F1", "12345", AsciiInterpreter.INSTANCE);
+			String s = "12346";
+			FSDMsgX msg = new FSDMsgX("Test");
+			;
+			msg.add("F1", p);
 
-		int offset = msg.unpack(s.getBytes());
-		assertEquals(5 + 1, offset);
-		assertEquals("12345", msg.get("F1"));
+			int offset = msg.unpack(s.getBytes());
+			assertEquals(5 + 1, offset);
+			assertEquals("12345", msg.get("F1"));
+		});
+		assertEquals("Field [F1] at offset [0]:Expected 12345 but found 12346", exception.getMessage());
 
 	}
 
 	@Test
 	public void unpackTest06() throws ISOException {
 
-		thrown.expect(ISOException.class);
-		thrown.expectMessage("Expecting 5 bytes found 3");
+		Throwable exception = assertThrows(ISOException.class, () -> {
 
-		FixedFieldPackager p = new FixedFieldPackager("F1", "12345", AsciiInterpreter.INSTANCE);
-		String s = "ABC";
-		FSDMsgX msg = new FSDMsgX("Test");
-		;
-		msg.add("F1", p);
+			FixedFieldPackager p = new FixedFieldPackager("F1", "12345", AsciiInterpreter.INSTANCE);
+			String s = "ABC";
+			FSDMsgX msg = new FSDMsgX("Test");
+			;
+			msg.add("F1", p);
 
-		int offset = msg.unpack(s.getBytes());
-		assertEquals(5 + 1, offset);
-		assertEquals("12345", msg.get("F1"));
+			int offset = msg.unpack(s.getBytes());
+			assertEquals(5 + 1, offset);
+			assertEquals("12345", msg.get("F1"));
+		});
+		assertEquals("Field [F1] at offset [0]:Expecting 5 bytes found 3", exception.getMessage());
 
 	}
 
 	@Test
 	public void packTest01() throws ISOException {
-		thrown.expect(ISOException.class);
-		thrown.expectMessage("Cannot pack as data has size 7 and size needs to be 5");
+		Throwable exception = assertThrows(ISOException.class, () -> {
 
-		FixedFieldPackager p = new FixedFieldPackager("F1", 5, AsciiInterpreter.INSTANCE);
-		String s = "ABC1234";
-		FSDMsgX msg = new FSDMsgX("Test");
-		;
-		msg.add("F1", p);
-		msg.set("F1", s);
-		byte[] b = msg.pack();
-		assertEquals(null, b);
+			FixedFieldPackager p = new FixedFieldPackager("F1", 5, AsciiInterpreter.INSTANCE);
+			String s = "ABC1234";
+			FSDMsgX msg = new FSDMsgX("Test");
+			;
+			msg.add("F1", p);
+			msg.set("F1", s);
+			byte[] b = msg.pack();
+			assertEquals(null, b);
+		});
+		assertEquals("Field [F1]:Cannot pack as data has size 7 and size needs to be 5", exception.getMessage());
 
 	}
 

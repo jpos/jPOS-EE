@@ -18,19 +18,14 @@
 
 package org.jpos.fsdpackager;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jpos.iso.AsciiInterpreter;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOUtil;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 public class VariableFieldPackagerTest {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	/**
 	 * Happy day scenario where a variable field within the max size with a
@@ -164,15 +159,16 @@ public class VariableFieldPackagerTest {
 	@Test
 	public void unpackTest03() throws ISOException {
 
-		thrown.expect(ISOException.class);
-		thrown.expectMessage("Field [F1]: Delimiter 1c not present after max size 20");
+		Throwable exception = assertThrows(ISOException.class, () -> {
 
-		VariableFieldPackager p = new VariableFieldPackager("F1", 20, new Byte((byte) 0x1c), AsciiInterpreter.INSTANCE);
-		FSDMsgX msg = new FSDMsgX("Test");;
-		msg.add("F1", p);
+			VariableFieldPackager p = new VariableFieldPackager("F1", 20, new Byte((byte) 0x1c), AsciiInterpreter.INSTANCE);
+			FSDMsgX msg = new FSDMsgX("Test");;
+			msg.add("F1", p);
 
-		String inStream = ISOUtil.padleft("", 25, '1') + (char) 0x1c;
-		msg.unpack(inStream.getBytes());
+			String inStream = ISOUtil.padleft("", 25, '1') + (char) 0x1c;
+			msg.unpack(inStream.getBytes());
+		});
+		assertEquals("Field [F1]: Delimiter 1c not present after max size 20", exception.getMessage());
 
 	}
 

@@ -70,7 +70,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private T bean;
     private FieldFactory fieldFactory;
     private List<Layout> fieldsLayouts;
-
+    private Layout formLayout;
 
     public QIEntityView(Class<T> clazz, String name) {
         super();
@@ -87,7 +87,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         setSpacing(false);
         showRevisionHistoryButton=true;
     }
-
 
     @Override
     public void enter (ViewChangeListener.ViewChangeEvent event) {
@@ -156,7 +155,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         Panel panel = new Panel();
         panel.setSizeFull();
         addComponent(panel);
-        final Layout formLayout = createForm(o, params, "new".equals(params[0]));
+        formLayout = createForm(o, params, "new".equals(params[0]));
         panel.setContent(formLayout);
         setExpandRatio(panel, 1);
         if (!"new".equals(params[0]) && isShowRevisionHistoryButton()) {
@@ -568,7 +567,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (field == null) {
             //if it wasn't built yet, build it now.
             try {
-                
                 l.addComponent(fieldFactory.buildAndBindField(id));
             } catch (NoSuchFieldException e) {
                 getApp().getLog().error(e);
@@ -772,8 +770,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public void setCancelBtn(Button cancelBtn) {
         this.cancelBtn = cancelBtn;
     }
-
-
+    
     public T getInstance() {
         return bean;
     }
@@ -833,5 +830,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setFieldsLayouts(List<Layout> fieldsLayouts) {
         this.fieldsLayouts = fieldsLayouts;
+    }
+
+    public Layout getFormLayout() {
+        return formLayout;
+    }
+
+    public void setFormLayout(Layout formLayout) {
+        this.formLayout = formLayout;
     }
 }

@@ -154,4 +154,8 @@
         margin-right: 8px;
         margin-left: 8px;
     }
+
+    .no-stripes .v-grid-row-stripe > td {
+        background-color: $v-grid-row-background-color !important;
+    }
 }

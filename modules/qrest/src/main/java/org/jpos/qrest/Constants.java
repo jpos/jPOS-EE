@@ -25,4 +25,5 @@ public enum Constants {
     QUERYPARAMS,
     PATHPARAMS,
     RESPONSE,
+    RENDER_CONTEXT
 }

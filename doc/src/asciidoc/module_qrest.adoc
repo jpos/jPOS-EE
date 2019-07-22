@@ -300,4 +300,85 @@ Here is a copy of the internal Q2Info route configuration:
 
 If we just call `/q2`, it will output them all.
 
+==== Static and Dynamic HTML content
+
+QRest is by no means a full fledged web server, but it can still serve static and
+dynamic HTML pages using the `StaticContent` and `DynamicContent` participants.
+
+Our qrest TXNMGR configuration can include static content like this:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/welcome.html" method="GET" name="welcome" />
+ </participant>
+
+ <group name="welcome">
+   <participant class="org.jpos.qrest.participant.StaticContent">
+       <property name="documentRoot" value="html" />
+       <property name="content" value="welcome.html" />
+   </participant>
+ </group>
+------------
+
+So a call to `http://localhost:8080/welcome.html` will land in group named `welcome` that
+will serve the file `html/welcome.html`. If instead of hitting `welcome.html` the user
+tries anything else, it will fail with a 404 error.
+
+In order to serve _any_ file inside the `documentRoot`, one can omit the property
+`content`, i.e.:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/static/**" method="GET" name="static" />
+ </participant>
+
+ <group name="static">
+   <participant class="org.jpos.qrest.participant.StaticContent">
+     <property name="documentRoot" value="static" />
+   </participant>
+ </group>
+------------
+
+In this case, any file in the `static` directory will be served, if present.
+
+In addition to static files, QRest can render dynamic content using Freemarker.
+
+The configuration looks like this:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/dynamic" method="GET" name="dynamic" />
+ </participant>
+
+ <group name="dynamic">
+   <participant class="org.jpos.qrest.participant.DynamicContent">
+     <property name="documentRoot" value="templates" />
+     <property name="content" value="dynamic.html" />                 <1>
+     <property name="page.ctx.include" value="_include.html" />
+     <property name="page.ctx.myprop" value="myvalue" />
+   </participant>
+ </group>
+------------
+<1> For security, the template file has to be specified.
+
+The `DynamicContent` class uses a special qrest Constant `RENDER_CONTEXT` with a
+map to be passed to the Freemarker template engine. Properties starting with the
+prefix `page.ctx.` will be processed at participant initialization time and
+handed to the template engine at process time. In this example, a property called
+`include` and `myprop` will be available to the template engine, and can be used to write
+a template like this:
+
+[source,html]
+-------------
+<h1> Dynamic Content </h1>
+
+Processing transaction ${id}           <1>
+
+<#include include>
+-------------
+<1> The 'id' property is also provided by the `DynamicContent` participant using the
+    transaction id.
 

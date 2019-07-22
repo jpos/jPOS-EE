@@ -2,7 +2,7 @@ jPOS Extended Edition
 =====================
 :author: Alejandro Revilla
 :email: apr@jpos.org
-:jposee_version: 2.2.6-SNAPSHOT
+:jposee_version: 2.2.7-SNAPSHOT
 :revdate: {localdate}
 :revnumber: {jposee_version}
 :toc:

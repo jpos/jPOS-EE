@@ -459,8 +459,10 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         layout.setMargin(false);
         FormLayout leftLayout = new FormLayout();
         leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        leftLayout.setMargin(false);
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        rightLayout.setMargin(false);
         getFieldsLayouts().add(leftLayout);
         getFieldsLayouts().add(rightLayout);
         HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
@@ -476,10 +478,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         layout.setMargin(false);
         FormLayout leftLayout = new FormLayout();
         leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        leftLayout.setMargin(false);
         FormLayout centerLayout = new FormLayout();
         centerLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        centerLayout.setMargin(false);
         FormLayout rightLayout = new FormLayout();
         rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        rightLayout.setMargin(false);
         getFieldsLayouts().add(leftLayout);
         getFieldsLayouts().add(centerLayout);
         getFieldsLayouts().add(rightLayout);

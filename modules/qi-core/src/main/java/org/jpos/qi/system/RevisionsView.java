@@ -21,6 +21,7 @@ package org.jpos.qi.system;
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.server.SerializableFunction;
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.renderers.HtmlRenderer;
@@ -106,4 +107,9 @@ public class RevisionsView extends QIEntityView<Revision> {
         g.addColumn(Revision::getInfo,new HtmlRenderer("")).setId("info");
     }
 
+    @Override
+    public void formatGrid() {
+        super.formatGrid();
+        getGrid().sort(getGrid().getColumn("date"), SortDirection.ASCENDING);
+    }
 }

@@ -61,7 +61,7 @@ public class AccountsView extends QIEntityView<Account> {
     private List<Account> expandedItems;
 
     public AccountsView() {
-        super(Account.class, "accounts");
+        super(Account.class);
         expandedItems = new ArrayList<>();
     }
 

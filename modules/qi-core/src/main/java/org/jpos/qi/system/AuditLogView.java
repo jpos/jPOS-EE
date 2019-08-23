@@ -29,7 +29,7 @@ import org.jpos.qi.QIHelper;
 public class AuditLogView extends QIEntityView<SysLog> {
 
     public AuditLogView() {
-        super(SysLog.class,"syslog");
+        super(SysLog.class);
     }
     @Override
     public QIHelper createHelper() {

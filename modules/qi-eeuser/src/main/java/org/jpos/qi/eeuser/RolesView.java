@@ -35,7 +35,7 @@ import java.util.List;
 public class RolesView extends QIEntityView {
 
     public RolesView() {
-        super(Role.class, "roles");
+        super(Role.class);
     }
 
     @Override

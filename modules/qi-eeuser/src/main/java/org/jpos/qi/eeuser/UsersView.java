@@ -51,7 +51,7 @@ public class UsersView extends QIEntityView<User> {
     private boolean binderIsReadOnly;   //used while binder.isReadOnly not implemented by Vaadin
 
     public UsersView () {
-        super(User.class, "users");
+        super(User.class);
     }
 
     @Override

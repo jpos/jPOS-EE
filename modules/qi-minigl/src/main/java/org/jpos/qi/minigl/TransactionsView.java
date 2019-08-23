@@ -38,7 +38,6 @@ import java.util.List;
 import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class TransactionsView extends QIEntityView<GLTransaction> {
-    private static final String VIEW_NAME = "transactions";
     /**
      * combo to select the journal
      */
@@ -61,7 +60,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     private List<Object> addedEntriesIds;
 
     public TransactionsView() {
-        super(GLTransaction.class, VIEW_NAME);
+        super(GLTransaction.class);
         addedEntriesIds = new ArrayList<>();
     }
 

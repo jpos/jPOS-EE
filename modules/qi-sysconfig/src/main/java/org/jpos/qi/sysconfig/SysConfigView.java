@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
+import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.qi.ViewConfig;
@@ -149,9 +150,9 @@ public class SysConfigView extends QIEntityView<SysConfig> {
         String title = cfg.get("title", null);
         if (title != null)
             setTitle("<strong>" + title + "</strong>");
-        String name = cfg.get("name", null);
-        if (name != null) {
-            setGeneralRoute("/" + name);
-        }
+//        String name = cfg.get("name", null);
+//        if (name != null) {
+//            setGeneralRoute("/" + name);
+//        }
     }
 }

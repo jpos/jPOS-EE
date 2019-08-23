@@ -42,7 +42,7 @@ import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 public class RevisionsView extends QIEntityView<Revision> {
 
     public RevisionsView() {
-        super(Revision.class, "revision_history");
+        super(Revision.class);
         setShowRevisionHistoryButton(false);
     }
 

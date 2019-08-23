@@ -70,7 +70,6 @@
     <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4" width="40%"/>
   </view>
   <view route="permissions" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysadmin" sidebar="system">
-    <property name="name" value="permissions"/>
     <property name="entityName" value="permission"/>
     <property name="prefix" value="perm." />
     <property name="title" value="Permissions" />

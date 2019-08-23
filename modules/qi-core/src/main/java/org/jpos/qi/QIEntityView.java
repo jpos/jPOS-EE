@@ -33,8 +33,11 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 
+import org.jdom2.Attribute;
+import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
+import org.jpos.core.XmlConfigurable;
 import org.jpos.ee.BLException;
 import org.jpos.qi.util.FieldFactory;
 
@@ -45,10 +48,11 @@ import java.util.*;
 import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
-public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable {
+public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable, XmlConfigurable {
     private QI app;
     private Class<T> clazz;
     private boolean generalView;
+    private String name;
     private String title;
     private String generalRoute;
     private String[] visibleColumns;
@@ -73,15 +77,16 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private Layout formLayout;
 
     public QIEntityView(Class<T> clazz, String name) {
+        this(clazz);
+        this.name = name;
+        this.title = "<strong>" + app.getMessage(name) + "</strong>";
+        generalRoute = "/" + name;
+    }
+
+    public QIEntityView (Class<T> clazz) {
         super();
         app = (QI) UI.getCurrent();
         this.clazz = clazz;
-        this.title = "<strong>" + app.getMessage(name) + "</strong>";
-        generalRoute = "/" + name;
-        viewConfig = app.getView(name);
-        this.visibleColumns = viewConfig.getVisibleColumns();
-        this.visibleFields = viewConfig.getVisibleFields();
-        this.readOnlyFields = viewConfig.getReadOnlyFields();
         setSizeFull();
         setMargin(new MarginInfo(false, false, false, false));
         setSpacing(false);
@@ -794,9 +799,18 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setConfiguration (Configuration cfg) {
         this.cfg = cfg;
-        String name = cfg.get("name");
+    }
+
+    public void setConfiguration (Element element) {
+        Attribute routeAttribute = element.getAttribute("route");
+        name = routeAttribute != null ? routeAttribute.getValue() : name;
+        generalRoute = routeAttribute != null ? "/" + routeAttribute.getValue() : generalRoute;
         if (name != null && QI.getQI().getView(name)!= null)  {
             this.setViewConfig(QI.getQI().getView(name));
+            this.title = "<strong>" + app.getMessage(name) + "</strong>";
+            this.visibleColumns = getViewConfig().getVisibleColumns();
+            this.visibleFields = getViewConfig().getVisibleFields();
+            this.readOnlyFields = getViewConfig().getReadOnlyFields();
         }
     }
 
@@ -843,5 +857,13 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setFormLayout(Layout formLayout) {
         this.formLayout = formLayout;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

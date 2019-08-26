@@ -18,13 +18,12 @@
 
 package org.jpos.qrest;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import io.netty.util.ReferenceCountUtil;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.rc.Result;
@@ -69,16 +68,20 @@ public class SendResponse implements AbortParticipant, Configurable {
     private void sendResponse (Context ctx, ChannelHandlerContext ch, FullHttpRequest request, FullHttpResponse response) {
         boolean keepAlive = HttpUtil.isKeepAlive(request);
         HttpHeaders headers = response.headers();
-        if (keepAlive)
-            headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        try {
+            if (keepAlive)
+                headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-        if (contentType != null)
-            headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
-        headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        ChannelFuture cf = ch.writeAndFlush(response);
-        ctx.log(cf);
-        if (!keepAlive)
-            ch.close();
+            if (contentType != null)
+                headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
+            headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            ChannelFuture cf = ch.writeAndFlush(response);
+            ctx.log(cf);
+            if (!keepAlive)
+                ch.close();
+        } finally {
+            ReferenceCountUtil.release(request);
+        }
     }
 
     private FullHttpResponse error (HttpResponseStatus rc) {

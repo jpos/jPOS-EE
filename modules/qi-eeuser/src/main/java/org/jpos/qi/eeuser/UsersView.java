@@ -154,14 +154,6 @@ public class UsersView extends QIEntityView<User> {
         return new FieldFactory(getBean(), getViewConfig(), getBinder()) {
             public List<Validator> getValidators(String propertyId) {
                 List<Validator> list = super.getValidators(propertyId);
-                if ("email".equals(propertyId)) {
-                    list.add(new EmailValidator(getApp().getMessage("errorMessage.invalidEmail")) {
-                        @Override
-                        protected boolean isValid(String value) {
-                            return value == null || value.isEmpty() || super.isValid(value);
-                        }
-                    });
-                }
                 if ("nick".equals(propertyId)) {
                     list.add(((UsersHelper)getHelper()).getNickTakenValidator());
                 }

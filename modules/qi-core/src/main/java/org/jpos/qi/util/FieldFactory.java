@@ -23,6 +23,7 @@ import com.vaadin.data.HasValue;
 import com.vaadin.data.Validator;
 import com.vaadin.data.converter.LocalDateToDateConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.*;
@@ -192,6 +193,14 @@ public class FieldFactory {
                 validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", getApp().getMessage(propertyId)),regex));
             if (length > 0)
                 validators.add(new StringLengthValidator(getApp().getMessage("errorMessage.invalidField", getApp().getMessage(propertyId)),0,length));
+            if ("email".equals(propertyId)) {
+                validators.add(new EmailValidator(getApp().getMessage("errorMessage.invalidEmail")) {
+                    @Override
+                    protected boolean isValid(String value) {
+                        return value == null || value.isEmpty() || super.isValid(value);
+                    }
+                });
+            }
         }
         return validators;
     }

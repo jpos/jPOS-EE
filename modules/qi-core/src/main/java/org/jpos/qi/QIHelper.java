@@ -194,6 +194,48 @@ public abstract class QIHelper {
         return dataProvider;
     }
 
+    public DataProvider getSysConfigsDataProvider (String prefix) {
+        Map<String,Boolean> orders = new HashMap<>();
+        return DataProvider.fromCallbacks(
+                (CallbackDataProvider.FetchCallback) query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+                    Iterator it = query.getSortOrders().iterator();
+                    while (it.hasNext()) {
+                        QuerySortOrder order = (QuerySortOrder) it.next();
+                        orders.put(order.getSorted(),order.getDirection() == SortDirection.DESCENDING);
+                    }
+                    try {
+                        return getSysConfigs(offset,limit,orders, prefix);
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return null;
+                    }
+                },
+                (CallbackDataProvider.CountCallback<SysConfig, Void>) query -> {
+                    try {
+                        return getSysConfigsCount(prefix);
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return 0;
+                    }
+                });
+    }
+
+    private Stream getSysConfigs (int offset,int limit,Map<String,Boolean> orders, String prefix) throws Exception {
+        return ((List) DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db, prefix);
+            return mgr.getAll(offset,limit,orders);
+        })).stream();
+    }
+
+    private int getSysConfigsCount (String prefix) throws Exception {
+        return DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db, prefix);
+            return mgr.getItemCount();
+        });
+    }
+
     public abstract Stream getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception;
 
     public abstract int getItemCount() throws Exception;

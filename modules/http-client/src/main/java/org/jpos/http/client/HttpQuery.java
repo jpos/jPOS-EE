@@ -198,9 +198,10 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     }
 
     private ContentType getContentType (Context ctx) {
-        return ContentType.create(ctx.get(contentTypeName, contentType), Consts.UTF_8);
+        return cfg.getBoolean("no-charset") ?
+          ContentType.create(ctx.get(contentTypeName, contentType)) :
+          ContentType.create(ctx.get(contentTypeName, contentType), Consts.UTF_8);
     }
-
 
     @SuppressWarnings("unchecked")
     private void addHeaders(Context ctx, HttpUriRequest req) {

@@ -37,8 +37,10 @@ public class DECRYPT implements CLICommand {
         cs = NameRegistrar.getIfExists("crypto-service");
         if (args.length != 3) {
             usage(cli);
-            if (cs == null)
-                cli.println ("'crypto-service' not registered");
+            return;
+        }
+        if (cs == null) {
+            cli.println("'crypto-service' not registered");
             return;
         }
         try {

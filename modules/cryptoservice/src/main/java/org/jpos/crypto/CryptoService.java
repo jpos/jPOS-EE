@@ -19,11 +19,12 @@
 package org.jpos.crypto;
 
 import org.bouncycastle.openpgp.PGPException;
+import org.jdom2.Element;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
-import org.jpos.ee.DB;
-import org.jpos.ee.SysConfigManager;
+import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QBeanSupport;
+import org.jpos.q2.QFactory;
 import org.jpos.space.Space;
 import org.jpos.space.TSpace;
 import org.jpos.util.*;
@@ -39,7 +40,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
@@ -61,7 +61,7 @@ import java.util.function.Supplier;
  * and that requires the private key-ring's password.
  *
  */
-public final class CryptoService extends QBeanSupport implements Runnable {
+public final class CryptoService extends QBeanSupport implements Runnable, XmlConfigurable {
     private volatile UUID id;
     private volatile SecretKey sk;
     private volatile long timestamp;
@@ -79,6 +79,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     private Supplier<String> unlock;
     private Recyclable<Random> rnd;
     private int maxRandomOperations = 100000;
+    private CryptoServiceKeyStoreProvider ksProvider;
 
     /**
      * Encrypts data using the current key
@@ -199,7 +200,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     }
 
     @Override
-    protected void initService() {
+    protected void initService() throws ConfigurationException {
         rnd = new Recyclable<>(SecureRandom::new, maxRandomOperations);
         if (!lazy.get())
             new Thread(this, getName()).start();
@@ -265,11 +266,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
     }
 
     private void registerKey(String k, String v) throws Exception {
-        DB.execWithTransaction(db -> {
-            SysConfigManager mgr = new SysConfigManager(db, "key.");
-            mgr.put(k, v, "security.read", "security.write");
-            return true;
-        });
+        ksProvider.put(k, v);
         LogEvent evt = getLog().createLogEvent("security");
         evt.addMessage("<id>" + k + "</id>");
         evt.addMessage(System.lineSeparator() + v);
@@ -281,10 +278,7 @@ public final class CryptoService extends QBeanSupport implements Runnable {
             throw new SecurityException("Passphrase not available");
         passPhrase = passPhrase != null ? passPhrase : unlock.get().toCharArray();
 
-        String v = DB.execWithTransaction(db -> {
-            SysConfigManager mgr = new SysConfigManager(db, "key.");
-            return mgr.get(keyId.toString(), null);
-        });
+        String v = ksProvider.get(keyId.toString());
         if (v == null) {
             throw new SecurityException("Invalid key");
         }
@@ -320,5 +314,23 @@ public final class CryptoService extends QBeanSupport implements Runnable {
         return new UUID(
           a.getMostSignificantBits() ^ b.getMostSignificantBits(),
           a.getLeastSignificantBits() ^ b.getLeastSignificantBits());
+    }
+
+
+    @Override
+    public void setConfiguration(Element e) throws ConfigurationException {
+        Element kse = e.getChild("ks-provider");
+        if (kse != null) {
+            QFactory factory = getFactory();
+            Object obj = factory.newInstance(kse.getAttributeValue("class"));
+            if (obj instanceof CryptoServiceKeyStoreProvider) {
+                factory.setLogger(obj, kse);
+                factory.setConfiguration(obj, kse);
+                ksProvider = (CryptoServiceKeyStoreProvider) obj;
+            }
+        }
+        if (ksProvider == null) {
+            throw new ConfigurationException ("Unconfigured ks-provider");
+        }
     }
 }

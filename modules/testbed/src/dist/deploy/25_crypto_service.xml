@@ -5,4 +5,5 @@
     <property name="lazy" value="false" />
     <property name="keylength" value="256" />
     <property name="duration" value="86400000" />
+    <ks-provider class="org.jpos.crypto.SysConfigCryptoServiceKeyStoreProvider" />
 </crypto-service>

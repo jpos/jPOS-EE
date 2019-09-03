@@ -35,8 +35,10 @@ public class ENCRYPT implements CLICommand {
         cs = NameRegistrar.getIfExists("crypto-service");
         if (args.length != 2) {
             usage(cli);
-            if (cs == null)
-                cli.println ("'crypto-service' not registered");
+            return;
+        }
+        if (cs == null) {
+            cli.println("'crypto-service' not registered");
             return;
         }
         encrypt(cli, args[1]);

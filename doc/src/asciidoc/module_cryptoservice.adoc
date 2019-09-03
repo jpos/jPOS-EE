@@ -66,6 +66,8 @@ The crypto service can be configured using a QBean descriptor like this:
     <property name="duration" value="86400000" />                     <6>
     <property name="ttl" value="3600000" />                           <7>
     <property name="max-random-operations" value="1000000" />         <8>
+    <ks-provider 
+    class="org.jpos.crypto.SysConfigCryptoServiceKeyStoreProvider" /> <9>
 </crypto-service>
 ------------
 <1> custodian PGP id, there can be many `custodian` entries.
@@ -75,7 +77,14 @@ The crypto service can be configured using a QBean descriptor like this:
 <5> key length defaults to 256. Can be reduced if AES-256 is not supported by the JVM due to export restrictions.
 <6> key duration
 <7> internal key cache time-to-live (in millis).
-<8> after max-random-operations (default to 100000), SecureRandom object gets discarded
+<8> after max-random-operations (default to 100000), SecureRandom object gets discarded.
+<9> CryptoServiceKeyStoreProvider class configuration.
+
+[TIP]
+=====
+We currently support two CryptoServiceKeyStoreProvider classes:
+`SysConfigCryptoServiceKeyStoreProvider` and `JESpaceCryptoServiceKeyStoreProvider`
+=====
 
 This allows jPOS nodes to encrypt data securely without storing the encryption key to disk.
 

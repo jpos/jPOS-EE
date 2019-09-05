@@ -222,6 +222,18 @@ public abstract class QIHelper {
                 });
     }
 
+    public Collection<SysConfig> getSysConfigsByValue (String prefix) {
+        try {
+            return DB.exec(db -> {
+                SysConfigManager mgr = new SysConfigManager(db, prefix);
+                return mgr.getAllByValue();
+            });
+        } catch (Exception e) {
+            getApp().getLog().createError(e.getMessage());
+            return null;
+        }
+    }
+
     private Stream getSysConfigs (int offset,int limit,Map<String,Boolean> orders, String prefix) throws Exception {
         return ((List) DB.exec(db -> {
             SysConfigManager mgr = new SysConfigManager(db, prefix);

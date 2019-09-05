@@ -41,7 +41,7 @@ public class SysConfigConverter implements Converter<SysConfig, String> {
         if (value != null) {
             try {
                 return DB.exec( (db) -> {
-                    SysConfigManager mgr = new SysConfigManager(db);
+                    SysConfigManager mgr = new SysConfigManager(db, prefix);
                     return mgr.getObject(value);
                 });
             } catch (Exception e) {

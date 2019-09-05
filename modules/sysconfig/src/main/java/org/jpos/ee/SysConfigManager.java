@@ -128,6 +128,11 @@ public class SysConfigManager extends DBManager<SysConfig> {
         orders.put("id",true);
         return getAll(0,-1,orders);
     }
+    public List<SysConfig> getAllByValue () {
+        HashMap<String,Boolean> orders = new HashMap<>();
+        orders.put("value",true);
+        return getAll(0,-1,orders);
+    }
 
     @Override
     protected Predicate[] buildFilters(Root<SysConfig> root) {

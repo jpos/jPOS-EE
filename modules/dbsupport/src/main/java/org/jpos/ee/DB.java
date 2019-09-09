@@ -27,8 +27,10 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
@@ -65,6 +67,7 @@ public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
+    private Dialect dialect;
 
     private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Semaphore> mdSems = Collections.synchronizedMap(new HashMap<>());
@@ -152,6 +155,10 @@ public class DB implements Closeable {
         return sf;
     }
 
+    public Dialect getDialect() {
+        return dialect;
+    }
+
     public static synchronized void invalidateSessionFactories() {
         sessionFactories.clear();
     }
@@ -160,7 +167,11 @@ public class DB implements Closeable {
         Metadata md = getMetadata();
         try {
             newSessionSem.acquireUninterruptibly();
-            return md.buildSessionFactory();
+            SessionFactory sf = md.buildSessionFactory();
+            if (sf instanceof SessionFactoryImpl) {
+                dialect = ((SessionFactoryImpl) sf).getJdbcServices().getDialect();
+            }
+            return sf;
         } finally {
             newSessionSem.release();
         }

@@ -147,6 +147,9 @@ public class DB implements Closeable {
             sf = sessionFactories.get(cm);
             if (sf == null)
                 sessionFactories.put(cm, sf = newSessionFactory());
+            if (sf instanceof SessionFactoryImpl) {
+                dialect = ((SessionFactoryImpl) sf).getJdbcServices().getDialect();
+            }
         } catch (IOException | ConfigurationException | DocumentException | InterruptedException e) {
             throw new RuntimeException("Could not configure session factory", e);
         } finally {
@@ -167,11 +170,7 @@ public class DB implements Closeable {
         Metadata md = getMetadata();
         try {
             newSessionSem.acquireUninterruptibly();
-            SessionFactory sf = md.buildSessionFactory();
-            if (sf instanceof SessionFactoryImpl) {
-                dialect = ((SessionFactoryImpl) sf).getJdbcServices().getDialect();
-            }
-            return sf;
+            return md.buildSessionFactory();
         } finally {
             newSessionSem.release();
         }

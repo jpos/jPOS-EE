@@ -18,6 +18,7 @@
 
 package org.jpos.gl;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.math.BigDecimal;
 
@@ -26,7 +27,9 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.hibernate.type.LongType;
 
 
@@ -47,6 +50,17 @@ public class GLSession {
     public static final BigDecimal Z    = new BigDecimal ("0");
     private long SAFE_WINDOW = 1000L;
     private boolean ignoreBalanceCache = false;
+    private NativeDialect nativeDialect = NativeDialect.ORM;
+
+    private static String POSTGRESQL_GET_BALANCES =
+      "SELECT SUM(CASE WHEN entry.credit='N' THEN entry.amount ELSE -entry.amount end) AS balance,\n" +
+      " COUNT(entry.id) AS count\n" +
+      " FROM transentry AS entry\n";
+
+    private static String MYSQL_GET_BALANCES =
+      "SELECT SUM(if(entry.credit='N',entry.amount,-entry.amount)) AS balance,\n" +
+        "  COUNT(entry.id) AS count\n" +
+        "  from transentry as entry\n";
 
     /**
      * Construct a GLSession for a given user.
@@ -55,8 +69,8 @@ public class GLSession {
      * @see GLUser
      *
      * @param username the user name.
-     * @throws org.hibernate.HibernateException on database problems
-     * @throws GLException if user is not valid
+     * @throw org.hibernate.HibernateException on database problems
+     * @throw GLException if user is not valid
      */
     public GLSession (String username)
         throws HibernateException, GLException
@@ -64,6 +78,7 @@ public class GLSession {
         super();
         this.db = new DB();
         session = db.open();
+        setDialect();
         if (username != null) {
             user = getUser (username);
             if (user == null) {
@@ -76,8 +91,8 @@ public class GLSession {
      * Construct a GLSession using property <code>user.name</code>.
      * User has to exist in MiniGL gluser table.
      * @see GLUser
-     * @throws org.hibernate.HibernateException on database problems
-     * @throws GLException if user.name is not valid
+     * @throw org.hibernate.HibernateException on database problems
+     * @throw GLException if user.name is not valid
      */
     public GLSession () throws HibernateException, GLException {
         this (System.getProperty ("user.name"));
@@ -90,8 +105,8 @@ public class GLSession {
      *
      * @param db EE DB
      * @param username the user name.
-     * @throws HibernateException on database related issue
-     * @throws GLException if user is invalid
+     * @throw HibernateException on database related issue
+     * @throw GLException if user is invalid
      */
     public GLSession (DB db, String username)
         throws HibernateException, GLException
@@ -104,6 +119,7 @@ public class GLSession {
             autoClose = !autoClose;
         }
         session = db.session();
+        setDialect();
         if (username != null) {
             user = getUser (username);
             if (user == null) {
@@ -118,8 +134,8 @@ public class GLSession {
      * User has to exist in MiniGL gluser table.
      * @param db EE DB
      * @see GLUser
-     * @throws org.hibernate.HibernateException on hibernate exception
-     * @throws GLException on GL level exception
+     * @throw org.hibernate.HibernateException on hibernate exception
+     * @throw GLException on GL level exception
      */
     public GLSession (DB db) throws HibernateException, GLException {
         this (db, System.getProperty ("user.name"));
@@ -140,7 +156,7 @@ public class GLSession {
     }
     /**
      * @param action name
-     * @throws GLException if user doesn't have permission.
+     * @throw GLException if user doesn't have permission.
      * @see GLPermission
      */
     public void checkPermission (String action) throws GLException {
@@ -223,7 +239,7 @@ public class GLSession {
      * Check user's permission in a given journal.
      * @param action name
      * @param j journal
-     * @throws GLException if user doesn't have permission.
+     * @throw GLException if user doesn't have permission.
      * @see GLPermission
      * @see Journal
      */
@@ -239,8 +255,8 @@ public class GLSession {
     /**
      * @param code chart of account's code
      * @return top level chart with given code or null.
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public Account getChart (String code)
@@ -256,8 +272,8 @@ public class GLSession {
     }
     /**
      * @return List of charts of accounts.
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public List<Account> getCharts ()
@@ -275,8 +291,8 @@ public class GLSession {
      * @param code  account's code.
      * @return account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public Account getAccount (Account chart, String code)
@@ -298,8 +314,8 @@ public class GLSession {
      *
      * @param parent parent account
      * @param acct account to add
-     * @throws HibernateException on error
-     * @throws GLException if user doesn't have permissions, or type mismatch
+     * @throw HibernateException on error
+     * @throw GLException if user doesn't have permissions, or type mismatch
      */
     public void addAccount (CompositeAccount parent, Account acct)
         throws HibernateException, GLException
@@ -313,8 +329,8 @@ public class GLSession {
      * @param parent parent account
      * @param acct account to add
      * @param fast true if we want a fast add that do not eagerly load all childrens
-     * @throws HibernateException on error
-     * @throws GLException if user doesn't have permissions, type mismatch or Duplicate Code
+     * @throw HibernateException on error
+     * @throw GLException if user doesn't have permissions, type mismatch or Duplicate Code
      */
     @SuppressWarnings("unchecked")
     public void addAccount (CompositeAccount parent, Account acct, boolean fast)
@@ -356,8 +372,8 @@ public class GLSession {
      * Check permissions.
      *
      * @param acct chart to add
-     * @throws HibernateException on error
-     * @throws GLException if user doesn't have write permission
+     * @throw HibernateException on error
+     * @throw GLException if user doesn't have write permission
      */
     public void addChart (Account acct)
         throws HibernateException, GLException
@@ -371,8 +387,8 @@ public class GLSession {
      * @param code  account's code.
      * @return final account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public FinalAccount getFinalAccount (Account chart, String code)
@@ -390,8 +406,8 @@ public class GLSession {
     /**
      * @param chart chart of accounts.
      * @return list of final accounts
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public List<FinalAccount> getFinalAccounts (Account chart)
@@ -407,8 +423,8 @@ public class GLSession {
     /**
      * @param parent parent account.
      * @return list of composite accounts children of the parent account
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public List<CompositeAccount> getCompositeChildren (Account parent) throws HibernateException, GLException {
@@ -422,8 +438,8 @@ public class GLSession {
     /**
      * @param parent parent account.
      * @return list of final accounts children of the parent account
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public List<FinalAccount> getFinalChildren (Account parent) throws HibernateException, GLException {
@@ -437,8 +453,8 @@ public class GLSession {
     /**
      * @param chart chart of accounts.
      * @return list of all accounts
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public List<Account> getAllAccounts (Account chart)
@@ -457,8 +473,8 @@ public class GLSession {
      * @param code  account's code.
      * @return composite account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public CompositeAccount getCompositeAccount (Account chart, String code)
@@ -478,8 +494,8 @@ public class GLSession {
      * @param code  account's code.
      * @return account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public Account getAccount (String chartName, String code)
@@ -495,8 +511,8 @@ public class GLSession {
      * @param code  account's code.
      * @return final account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public FinalAccount getFinalAccount (String chartName, String code)
@@ -512,8 +528,8 @@ public class GLSession {
      * @param code  account's code.
      * @return composite account with given code in given chart, or null.
      *
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
     public CompositeAccount getCompositeAccount (String chartName, String code)
@@ -528,8 +544,8 @@ public class GLSession {
     /**
      * @param name journal's name.
      * @return journal or null.
-     * @throws GLException if users doesn't have global READ permission.
-     * @throws HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
      * @see GLPermission
      */
     public Journal getJournal (String name)
@@ -549,8 +565,8 @@ public class GLSession {
 
     /**
     * @return list of all journals
-    * @throws HibernateException on database errors.
-    * @throws GLException if users doesn't have global READ permission.
+    * @throw HibernateException on database errors.
+    * @throw GLException if users doesn't have global READ permission.
     * @see GLPermission
     */
     public List<Journal> getAllJournals ()
@@ -579,8 +595,8 @@ public class GLSession {
      *
      * @param journal the journal.
      * @param txn the transaction.
-     * @throws GLException if user doesn't have POST permission or any rule associated with this journal and/or account raises a GLException.
-     * @throws HibernateException on database errors.
+     * @throw GLException if user doesn't have POST permission or any rule associated with this journal and/or account raises a GLException.
+     * @throw HibernateException on database errors.
      * @see GLPermission
      * @see JournalRule
      */
@@ -603,8 +619,8 @@ public class GLSession {
      * Moves a transaction to a new journal
      * @param txn the Transaction
      * @param journal the New Journal
-     * @throws GLException if user doesn't have POST permission on the old and new journals.
-     * @throws HibernateException on database errors.
+     * @throw GLException if user doesn't have POST permission on the old and new journals.
+     * @throw HibernateException on database errors.
      */
     public void move (GLTransaction txn, Journal journal)
         throws GLException, HibernateException
@@ -626,8 +642,8 @@ public class GLSession {
      * @param end date (inclusive).
      * @param description summary transaction's description
      * @return GLTransaction a summary transaction
-     * @throws GLException if user doesn't have READ permission on this journal.
-     * @throws HibernateException on database/mapping errors
+     * @throw GLException if user doesn't have READ permission on this journal.
+     * @throw HibernateException on database/mapping errors
      */
     public GLTransaction summarize
         (Journal journal, Date start, Date end, String description, short[] layers)
@@ -682,7 +698,7 @@ public class GLSession {
      * @param journal the journal.
      * @param id txn id
      * @return GLTransaction or null
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public GLTransaction getTransaction (Journal journal, long id)
         throws HibernateException, GLException
@@ -711,7 +727,7 @@ public class GLSession {
      * @param pageNumber the page number
      * @param pageSize the page size
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public Criteria createFindTransactionsCriteria
         (Journal journal, Date start, Date end, String searchString,
@@ -736,7 +752,7 @@ public class GLSession {
      * @param firstResult the first result
      * @param pageSize the page size
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public Criteria createFindTransactionsCriteriaByRange
         (Journal journal, Date start, Date end, String searchString,
@@ -781,7 +797,7 @@ public class GLSession {
      * @param pageNumber the page number
      * @param pageSize the page size
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactions
         (Journal journal, Date start, Date end, String searchString,
@@ -799,7 +815,7 @@ public class GLSession {
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactions
         (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
@@ -815,7 +831,7 @@ public class GLSession {
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @return list of transactions' ids
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactionsIds
         (Journal journal, Date start, Date end, String searchString,
@@ -857,7 +873,7 @@ public class GLSession {
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @return number of transactions
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public Long findTransactionsRowCount
         (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
@@ -898,7 +914,7 @@ public class GLSession {
      * @param journal the journal.
      * @param acct the account.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throw GLException if user doesn't have READ permission on this jounral.
      */
     public BigDecimal getBalance (Journal journal, Account acct)
         throws HibernateException, GLException
@@ -911,7 +927,7 @@ public class GLSession {
      * @param acct the account.
      * @param layer the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short layer)
         throws HibernateException, GLException
@@ -924,7 +940,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers the layers.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
@@ -937,7 +953,7 @@ public class GLSession {
      * @param acct the account.
      * @param layers comma separated list of layers
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, String layers)
         throws HibernateException, GLException
@@ -950,7 +966,7 @@ public class GLSession {
      * @param acct the account.
      * @param date date (inclusive).
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date)
         throws HibernateException, GLException
@@ -964,7 +980,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layer layer
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short layer)
         throws HibernateException, GLException
@@ -978,7 +994,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layers layers
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short[] layers)
         throws HibernateException, GLException
@@ -992,7 +1008,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param layers comma separated list of layers
      * @return balance at given date.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, String layers)
         throws HibernateException, GLException
@@ -1006,7 +1022,7 @@ public class GLSession {
      * @param date date (inclusive).
      * @param inclusive either true or false
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances
         (Journal journal, Account acct, Date date, boolean inclusive)
@@ -1014,6 +1030,7 @@ public class GLSession {
     {
         return getBalances (journal, acct, date, inclusive, LAYER_ZERO, 0L);
     }
+
 
     /**
      * Get Both Balances at given date
@@ -1024,9 +1041,9 @@ public class GLSession {
      * @param layers the layers
      * @param maxId maximum GLEntry ID to be considered in the query (if greater than zero)
      * @return array of 2 BigDecimals with balance and entry count.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
-    public BigDecimal[] getBalances
+    public BigDecimal[] getBalancesORM
         (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
         throws HibernateException, GLException
     {
@@ -1041,7 +1058,7 @@ public class GLSession {
             Iterator iter = acct.getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
-                BigDecimal[] b = getBalances (journal, a, date, inclusive, layersCopy, maxId);
+                BigDecimal[] b = getBalancesORM (journal, a, date, inclusive, layersCopy, maxId);
                 balance[0] = balance[0].add (b[0]);
                 // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating a failed to lazily initialize a collection
             }
@@ -1082,23 +1099,131 @@ public class GLSession {
         return balance;
     }
 
+    public BigDecimal[] getBalances
+      (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
+      throws HibernateException, GLException
+    {
+        StringBuilder select;
+        switch (nativeDialect) {
+            case MYSQL:
+                select = new StringBuilder(MYSQL_GET_BALANCES);
+                break;
+            case POSTGRESQL:
+                select = new StringBuilder(POSTGRESQL_GET_BALANCES);
+                break;
+            default:
+                return getBalancesORM(journal, acct, date, inclusive, layers, maxId);
+        }
+
+        checkPermission (GLPermission.READ, journal);
+        BigDecimal balance[] = { ZERO, Z };
+        BalanceCache bcache = null;
+        if (date != null) {
+            select.append(", transacc as txn\n");
+        }
+        else {
+            bcache = getBalanceCache(journal, acct, layers);
+        }
+        if (!acct.isFinalAccount()) {
+            select.append(", acct as acct");
+        }
+        StringBuffer qs = new StringBuffer();
+        if (maxId > 0L) {
+            where(qs, "entry.id <= :maxId");
+        }
+        if (bcache != null) {
+            where(qs, "entry.id > :bcache_ref");
+        }
+        if (acct.isFinalAccount()) {
+            where(qs, "entry.account = :acctId");
+        }
+        else if (acct.isChart()) {
+            where(qs, "entry.account = acct.id");
+            where(qs, "acct.root = :acctId");
+        } else {
+            where(qs, "entry.account = acct.id");
+            where(qs, "acct.code like :code");
+        }
+        if  (date != null) {
+            where(qs, "entry.transaction = txn.id\n");
+            where(qs, "txn.postDate < :date");
+        }
+        where(qs, "entry.layer in");
+        qs.append("  (");
+        qs.append(layersToString(layers, ','));
+        qs.append(')');
+        select.append(qs);
+
+        Query q = session.createSQLQuery(select.toString());
+        q.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+        if (acct.isFinalAccount() || acct.isChart())
+            q.setParameter("acctId", acct.getId());
+        else {
+            q.setParameter("code", acct.getCode() + "%");
+        }
+        if (date != null) {
+            q.setParameter("date", inclusive ? Util.tomorrow(date) : date);
+        }
+        if (maxId > 0L)
+            q.setParameter("maxId", maxId);
+        if (bcache != null)
+            q.setParameter("bcache_ref", bcache.getRef());
+
+        List<Map<String,Object>> result = q.list();
+        if (result.size() == 1) {
+            Map m = result.get(0);
+            BigDecimal bd = (BigDecimal) m.get("balance");
+            if (bd != null) {
+                balance[0] = bd;
+                balance[1] = new BigDecimal((BigInteger) m.get("count"));
+                if (acct.isCredit())
+                    balance[0] = balance[0].negate();
+            }
+        }
+        if (bcache != null) {
+            balance[0] = balance[0].add(bcache.getBalance());
+        }
+        return balance;
+    }
+
     public List<FinalAccount> getDeepFinalChildren(Account acct) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
         return getDeepFinalChildren0(acct);
     }
 
+
+    private StringBuffer where (StringBuffer sb, String clausse) {
+        sb.append(sb.length() == 0 ? " WHERE " : " AND ");
+        sb.append(clausse);
+        sb.append('\n');
+        return sb;
+    }
+    private String layersToString (short[] layers, char sep) {
+        StringBuffer sb = new StringBuffer();
+        Arrays.sort (layers);
+        for (int i=0; i<layers.length; i++) {
+            if (i>0)
+                sb.append (sep);
+            sb.append (layers[i]);
+        }
+        return sb.toString();
+    }
+    private String layersToString (short[] layers) {
+        return layersToString(layers, '.');
+    }
+
     /**
-     * AccountDetail for date range
-     * @param journal the journal.
-     * @param acct the account.
-     * @param start date (inclusive).
-     * @param end date (inclusive).
-     * @param layers array of the layers included.
-     * @param ascendingOrder boolean.
-     * @param maxResults int.
-     * @return Account detail for given period.
-     * @throws GLException if user doesn't have READ permission on this journal.
-     */
+         * AccountDetail for date range
+         * @param journal the journal.
+         * @param acct the account.
+         * @param start date (inclusive).
+         * @param end date (inclusive).
+         * @param layers array of the layers included.
+         * @param ascendingOrder boolean.
+         * @param maxResults int.
+         * @return Account detail for given period.
+         * @throw GLException if user doesn't have READ permission on this journal.
+         */
     public AccountDetail getAccountDetail
         (Journal journal, Account acct, Date start, Date end, short[] layers, boolean ascendingOrder, int maxResults)
         throws HibernateException, GLException
@@ -1168,7 +1293,7 @@ public class GLSession {
      * @param start date (inclusive).
      * @param end date (inclusive).
      * @return Account detail for given period.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public AccountDetail getAccountDetail
     (Journal journal, Account acct, Date start, Date end, short[] layers)
@@ -1184,7 +1309,7 @@ public class GLSession {
      * @param layers layer set
      * @param maxResults number of entries in mini statement
      * @return Account detail for given period.
-     * @throws GLException if user doesn't have READ permission on this journal.
+     * @throw GLException if user doesn't have READ permission on this journal.
      */
     public AccountDetail getMiniStatement
     (Journal journal, Account acct, short[] layers, int maxResults)
@@ -1200,7 +1325,7 @@ public class GLSession {
      * @param date date (null for last checkpoint)
      * @param inclusive either true or false
      * @return Most recent check point for given date.
-     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
+     * @throw GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public Checkpoint getRecentCheckpoint
         (Journal journal, Account acct, Date date, boolean inclusive, short[] layers)
@@ -1252,7 +1377,7 @@ public class GLSession {
      * @param acct the account
      * @param date checkpoint date (inclusive)
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
+     * @throw GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint
         (Journal journal, Account acct, Date date, int threshold)
@@ -1266,7 +1391,7 @@ public class GLSession {
      * @param date checkpoint date (inclusive)
      * @param layers taken into account in this checkpoint
      * @param threshold minimum number of  GLEntries required to create a checkpoint
-     * @throws GLException if user doesn't have CHECKPOINT permission on this journal.
+     * @throw GLException if user doesn't have CHECKPOINT permission on this journal.
      */
     public void createCheckpoint
         (Journal journal, Account acct, Date date, int threshold, short[] layers)
@@ -1321,8 +1446,8 @@ public class GLSession {
     /**
      * Lock a journal.
      * @param journal the journal.
-     * @throws HibernateException on database errors.
-     * @throws GLException if user doesn't have POST permission on this journal.
+     * @throw HibernateException on database errors.
+     * @throw GLException if user doesn't have POST permission on this journal.
      */
     public void lock (Journal journal)
         throws HibernateException, GLException
@@ -1334,8 +1459,8 @@ public class GLSession {
      * Lock an account in a given journal.
      * @param journal the journal.
      * @param acct the account.
-     * @throws GLException if user doesn't have POST permission on this journal.
-     * @throws HibernateException on database errors.
+     * @throw GLException if user doesn't have POST permission on this journal.
+     * @throw HibernateException on database errors.
      */
     public void lock (Journal journal, Account acct)
         throws HibernateException, GLException
@@ -1346,14 +1471,14 @@ public class GLSession {
 
     /**
      * Open underlying Hibernate session.
-     * @throws HibernateException
+     * @throw HibernateException
      */
     public synchronized Session open () throws HibernateException {
         return db.open();
     }
     /**
      * Close underlying Hibernate session.
-     * @throws HibernateException
+     * @throw HibernateException
      */
     public synchronized void close () throws HibernateException {
         db.close();
@@ -1392,8 +1517,8 @@ public class GLSession {
      * set a journal's lockDate
      * @param journal the Journal
      * @param lockDate the lock date.
-     * @throws HibernateException on database errors.
-     * @throws GLException if users doesn't have global READ permission.
+     * @throw HibernateException on database errors.
+     * @throw GLException if users doesn't have global READ permission.
      */
     public void setLockDate (Journal journal, Date lockDate)
         throws GLException, HibernateException
@@ -1773,16 +1898,7 @@ public class GLSession {
             sa[j] = new Short(i[j]);
         return sa;
     }
-    private String layersToString (short[] layers) {
-        StringBuffer sb = new StringBuffer();
-        Arrays.sort (layers);
-        for (int i=0; i<layers.length; i++) {
-            if (i>0)
-                sb.append ('.');
-            sb.append (Short.toString(layers[i]));
-        }
-        return sb.toString();
-    }
+
     private long getMaxGLEntryId () {
         Criteria crit = session.createCriteria (GLEntry.class);
         crit.addOrder (Order.desc ("id"));
@@ -1834,4 +1950,15 @@ public class GLSession {
         }
     }
     */
+
+    private void setDialect() {
+        String ds = ("" + db.getDialect()).toLowerCase();
+        if (ds.contains("mysql"))
+            nativeDialect = NativeDialect.MYSQL;
+        else if (ds.contains("postgres"))
+            nativeDialect = NativeDialect.POSTGRESQL;
+    }
+    private enum NativeDialect {
+        MYSQL, POSTGRESQL, ORM
+    }
 }

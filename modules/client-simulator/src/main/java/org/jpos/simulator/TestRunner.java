@@ -195,7 +195,11 @@ public class TestRunner
                 fis.read (b);
                 m = new ISOMsg ();
                 m.setPackager (packager);
-                m.unpack (b);
+                try {
+                    m.unpack(b);
+                } catch (ISOException e) {
+                    throw new ISOException ("Error parsing '" + filename + "'", e);
+                }
             }
         }
         return m;

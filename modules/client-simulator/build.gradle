@@ -3,3 +3,5 @@ description = 'jPOS-EE :: Client Simulator'
 dependencies {
     compile project(':modules:core')
 }
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"

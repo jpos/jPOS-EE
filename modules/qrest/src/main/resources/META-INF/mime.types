@@ -1,459 +1,70 @@
-xgl/movie xmz
-xgl/drawing xgz
-x-world/x-vrt vrt
-x-world/x-vrml wrl vrml wrz
-x-world/x-svr svr
-x-world/x-3dmf qd3d qd3 3dmf 3dm
-x-music/x-midi midi mid
-x-conference/x-cooltalk ice
-www/mime mime
-windows/metafile wmf
-video/x-sgi-movie movie mv
-video/x-scm scm
-video/x-qtc qtc
+audio/aac aac
+application/x-abiword abw
+application/x-freearc arc
 video/x-msvideo avi
-video/x-ms-asf-plugin asx
-video/x-ms-asf asf asx
-video/x-mpeq2a mp2
-video/x-mpeg mp3 mp2
-video/x-motion-jpeg mjpg
-video/x-isvideo isu
-video/x-gl gl
-video/x-generic mp4 wmv swf dvd mov mpeg osp ogv
-video/x-fli fli
-video/x-dv dif dv
-video/x-dl dl
-video/x-atomic3d-feature fmf
-video/x-amt-showrun xsr
-video/x-amt-demorun xdr
-video/vosaic vos
-video/vnd.vivo viv vivo
-video/vnd.rn-realvideo rv
-video/vivo viv vivo
-video/vdo vdo
-video/quicktime qt mov moov
-video/msvideo avi
-video/mpeg m2v mp3 mpv m1v mpe mpg mpegv mpeg vbs mp2 mpa
-video/gl gl
-video/fli fli
-video/dl dl
-video/avs-video avs
-video/avi avi
-video/animaflex afl
-text/xml xml XML osm
-text/x-vcalendar vcs
-text/x-uuencode uu uue
-text/x-uil uil
-text/x-tex tex
-text/x-tcl tcl
-text/x-sql sql
-text/x-speech spc talk
-text/x-sgml sgml sgm
-text/x-setext etx
-text/x-server-parsed-html ssi shtml
-text/x-script.zsh zsh
-text/x-script.tcsh tcsh
-text/x-script.tcl tcl
-text/x-script.sh sh
-text/x-script.scheme scm
-text/x-script.rexx rexx
-text/x-script.phyton py
-text/x-script.perl-module pm
-text/x-script.perl pl
-text/x-script.lisp lsp
-text/x-script.ksh ksh
-text/x-script.guile scm
-text/x-script.elisp el
-text/x-script.csh csh
-text/x-script hlb
-text/x-python py
-text/x-po pot po
-text/x-pascal p pas
-text/x-m m
-text/x-log log
-text/x-la-asf lsx
-text/x-java-source java jav
-text/x-java java
-text/x-h hh h
-text/x-fortran f f77 for f90
-text/x-csrc c
-text/x-component htc
-text/x-c++src cpp c++
-text/x-c++hdr h
-text/x-c cc cpp c
-text/x-bibtex bib
-text/x-audiosoft-intra aip
-text/x-asm s asm
-text/webviewhtml htt
-text/vnd.wap.wmlscript wmls
-text/vnd.wap.wml wml
-text/vnd.rn-realtext rt
-text/vnd.fmi.flexstor flx
-text/vnd.abc abc
-text/uri-list uni uris unis uri
-text/tab-separated-values tab tsv
-text/sgml sgml sgm
-text/scriplet wsc
-text/rtf rtf
-text/richtext rt rtf rtx
-text/plain com hh c++ def log sdml for conf TEXT lst TXT java text jav mar cc cxx c f g h idc list m txt f90 pl
-text/pascal pas
-text/mcf mcf
-text/javascript js
-text/html htm HTM htmls acgi html HTML shtml htx
-text/ecmascript js
-text/csv csv
-text/css css
-text/asp asp
-paleovu/x-pv pvu
-music/x-karaoke kar
-music/crescendo midi mid
-multipart/x-zip zip
-multipart/x-ustar ustar
-multipart/x-gzip gzip
-model/x-pov pov
-model/vrml wrl vrml wrz
-model/vnd.dwf dwf
-model/iges igs iges
-message/rfc822 mime mht mhtml
-image/xpm xpm
-image/xbm xbm
-image/x-xwindowdump xwd
-image/x-xwd xwd
-image/x-xpixmap xpm pm
-image/x-xbm xbm
-image/x-xbitmap xbm
-image/x-windows-bmp bmp
-image/x-tiff tif tiff
-image/x-rgb rgb
-image/x-quicktime qtif qti qif
-image/x-portable-pixmap ppm
-image/x-portable-greymap pgm
-image/x-portable-graymap pgm
-image/x-portable-bitmap pbm
-image/x-portable-anymap pnm
-image/x-pict pct
-image/x-pcx pcx
-image/x-niff niff nif
-image/x-jps jps
-image/x-jg art
-image/x-icon ico
-image/x-generic jpg tif wmf tiff bmp xpm png jpeg emf
-image/x-eps eps
-image/x-dwg svf dxf dwg
-image/x-cmu-raster ras
-image/vnd.xiff xif
-image/vnd.wap.wbmp wbmp
-image/vnd.rn-realpix rp
-image/vnd.rn-realflash rf
-image/vnd.net-fpx fpx
-image/vnd.fpx fpx
-image/vnd.dwg svf dxf dwg
-image/vasa mcf
-image/tiff tif tiff
-image/svg+xml svgz svg
-image/png x-png png PNG
-image/pjpeg jpg jfif jpeg jpe
-image/pict pic pict
-image/naplps naplps nap
-image/jutvision jut
-image/jpeg jpg JPG jfif jpeg jfif-tbnl jpe
-image/ief iefs ief
-image/gif gif GIF
-image/g3fax g3
-image/florian flo turbot
-image/fif fif
-image/cmu-raster ras rast
-image/bmp bmp bm
-i-world/i-vrml ivr
-drawing/x-dwf dwf (old)
-chemical/x-pdb xyz pdb
-audio/xm xm
-audio/x-wav wav
-audio/x-voc voc
-audio/x-vnd.audioexplosion.mjuicemediafile mjf
-audio/x-twinvq-plugin vql vqe
-audio/x-twinvq vqf
-audio/x-realaudio ra
-audio/x-psid sid
-audio/x-pn-realaudio-plugin rmp rpm ra
-audio/x-pn-realaudio rmm rmp rm ra ram
-audio/x-nspaudio lma la
-audio/x-mpequrl m3u
-audio/x-mpeg-3 mp3
-audio/x-mpeg mpg mpeg mp2
-audio/x-mod mod
-audio/x-midi midi mid
-audio/x-mid midi mid
-audio/x-liveaudio lam
-audio/x-jam jam
-audio/x-gsm gsm gsd
-audio/x-generic mp3 wma wav ogg
-audio/x-au au
-audio/x-aiff aiff aifc aif
-audio/x-aifc aifc
-audio/x-adpcm snd
-audio/wav wav
-audio/voxware vox
-audio/voc voc
-audio/vnd.qcelp qcp
-audio/tsplayer tsp
-audio/tsp-audio tsi
-audio/s3m s3m
-audio/nspaudio lma la
-audio/mpeg3 mp3
-audio/mpeg mp3 mpg mpeg3 m2a mp2 mpga mpa
-audio/mod mod
-audio/midi midi mid kar
-audio/mid rmi
-audio/make.my.funk pfunk
-audio/make pfunk funk my
-audio/it it
-audio/basic au snd
-audio/aiff aiff aifc aif
-audio/ac3 ac3
-application/zip zip
-application/xml xml
-application/x-zip-compressed zip
-application/x-x509-user-cert crt
-application/x-x509-ca-cert der cer crt
-application/x-wri wri
-application/x-wpwin wpd
-application/x-world wrl svr
-application/x-wintalk wtk
-application/x-winhelp hlp
-application/x-wais-source src wsrc
-application/x-vrml vrml
-application/x-vnd.oasis.opendocument.spreadsheet ods
-application/x-vnd.ls-xpix xpix
-application/x-vnd.audioexplosion.mzz mzz
-application/x-visio vsd vst vsw
-application/x-ustar ustar
-application/x-troff-msvideo avi
-application/x-troff-ms ms
-application/x-troff-me me
-application/x-troff-man man
-application/x-troff t roff tr
-application/x-trash autosave
-application/x-texinfo texi texinfo
-application/x-tex tex
-application/x-tcl tcl
-application/x-tbook tbk sbk
-application/x-tar tar
-application/x-sv4crc sv4crc
-application/x-sv4cpio sv4cpio
-application/x-stuffit sit
-application/x-sprite spr sprite
-application/x-sit sit
-application/x-shockwave-flash swf
-application/x-shellscript sh
-application/x-sharedlib o
-application/x-shar shar sh
-application/x-sh sh
-application/x-seelogo sl
-application/x-sea sea
-application/x-sdp sdp
-application/x-rtf rtf
-application/x-rpm rpm
-application/x-qpro wb1
-application/x-project mpt mpc mpv mpx
-application/x-portable-anymap pnm
-application/x-pkcs7-signature p7a
-application/x-pkcs7-mime p7m p7c
-application/x-pkcs7-certreqresp p7r
-application/x-pkcs7-certificates spc
-application/x-pkcs12 p12
-application/x-pkcs10 p10
-application/x-pixclscript plx
-application/x-php php
-application/x-perl pl
-application/x-pcl pcl
-application/x-pagemaker pm4 pm5
-application/x-omcregerator omcr
-application/x-omcdatamaker omcd
-application/x-omc omc
-application/x-nokia-9000-communicator-add-on-software aos
-application/x-newton-compatible-pkg pkg
-application/x-netcdf cdf nc
-application/x-navistyle stl
-application/x-navimap map
-application/x-navidoc nvd
-application/x-navi-animation ani
-application/x-mspowerpoint ppt
-application/x-msexcel xlw xla xls
-application/x-ms-dos-executable msi exe
-application/x-mplayer2 asx
-application/x-mix-transfer nix
-application/x-mif mif
-application/x-midi midi mid
-application/x-meme mm
-application/x-mathcad mcd
-application/x-magic-cap-package-1.0 mc$
-application/x-macbinary bin
-application/x-mac-binhex40 hqx
-application/x-lzx lzx
-application/x-lzh lzh
-application/x-lotusscreencam scm
-application/x-lotus wq1
-application/x-livescreen ivy
-application/x-lisp lsp
-application/x-lha lha
-application/x-latex ltx latex
-application/x-ksh ksh
-application/x-koan skm skp skd skt
-application/x-javascript js
-application/x-java-commerce jcm
-application/x-java-class class
-application/x-java-archive jar
-application/x-java-applet class
-application/x-ip2 ip
-application/x-inventor iv
-application/x-internett-signup ins
-application/x-ima ima
-application/x-httpd-imap imap
-application/x-helpfile help hlp
-application/x-hdf hdf
-application/x-gzip gz gzip
-application/x-gtar gtar
-application/x-gss gss
-application/x-gsp gsp
-application/x-freelance pre
-application/x-frame mif
-application/x-font-ttf ttf TTF
-application/x-font-otf otf OTF
-application/x-excel xld xlt xlw xlv xlk xlm xll xla xlc xls xlb
-application/x-esrehber es
-application/x-envoy evy env
-application/x-elc elc
-application/x-dvi dvi
-application/x-director dcr dir dxr
-application/x-deepv deepv
-application/x-deb deb
-application/x-csh csh
-application/x-cpt cpt
-application/x-cpio cpio
-application/x-conference nsc
-application/x-compressed zip gz tgz z
-application/x-compress zip rar gz tar z
-application/x-compactpro cpt
-application/x-cocoa cco
-application/x-cmu-raster ras
-application/x-chat chat cha
-application/x-cdlink vcd
-application/x-cdf cdf
-application/x-cd-image iso
-application/x-bzip2 bz2 boz
+application/vnd.amazon.ebook azw
+application/octet-stream bin
+image/bmp bmp
 application/x-bzip bz
-application/x-bytecode.python pyc
-application/x-bytecode.elisp elisp) (compiled elc
-application/x-bsh shar sh bsh
-application/x-blender blend
-application/x-binhex40 hqx
-application/x-binary bin
-application/x-bcpio bcpio
-application/x-awk awk
-application/x-authorware-seg aas
-application/x-authorware-map aam
-application/x-authorware-bin aab
-application/x-aim aim
-application/x-123 wk1
-application/wordperfect6.1 w61
-application/wordperfect6.0 w60 wp5
-application/wordperfect wp wpd wp6 wp5
-application/vocaltec-media-file vmf
-application/vocaltec-media-desc vmd
-application/vnd.xara web
-application/vnd.wap.wmlscriptc wmlsc
-application/vnd.wap.wmlc wmlc
-application/vnd.rn-realplayer rnx
-application/vnd.rn-realmedia rm
+application/x-bzip2 bz2
+application/x-csh csh
+text/css css
+text/csv csv
+application/msword doc
 application/vnd.openxmlformats-officedocument.wordprocessingml.document docx
-application/vnd.openxmlformats-officedocument.spreadsheetml.sheet xlsx
-application/vnd.oasis.text odt
-application/vnd.oasis.spreadsheet ods
-application/vnd.oasis.presentation odp
+application/vnd.ms-fontobject eot
+application/epub+zip epub
+application/gzip gz
+image/gif gif
+text/html htm html
+image/vnd.microsoft.icon ico
+text/calendar ics
+application/java-archive jar
+image/jpeg jpg jpeg
+text/javascript js
+application/json json
+application/ld+json jsonld
+audio/midi mid midi
+text/javascript mjs
+audio/mpeg mp3
+video/mpeg mpeg
+application/vnd.apple.installer+xml mpkg
+application/vnd.oasis.opendocument.presentation odp
+application/vnd.oasis.opendocument.spreadsheet ods
 application/vnd.oasis.opendocument.text odt
-application/vnd.oasis.database odb
-application/vnd.nokia.ringing-tone rng
-application/vnd.nokia.configuration-message ncm
-application/vnd.ms-project mpp
-application/vnd.ms-powerpoint ppa pptx pps pwz pot ppt pptm
-application/vnd.ms-pki.stl stl
-application/vnd.ms-pki.seccat cat
-application/vnd.ms-pki.pko pko
-application/vnd.ms-pki.certstore sst
-application/vnd.ms-excel xlsx xlw xlsm xlm xll xlc xls XLS xlb
-application/vnd.hp-pcl pcl
-application/vnd.hp-hpgl hgl hpgl hpg
-application/vnd.fdf fdf
-application/vda vda
-application/toolbook tbk
-application/streamingmedia ssm
-application/step step stp
-application/sounder sdr
-application/solids sol
-application/smil smil smi
-application/sla stl
-application/set set
-application/sea sea
-application/sdp sdp
-application/rtf rtf rtx
-application/rss+xml rss
-application/ringing-tones rng
-application/pro_eng prt part
-application/powerpoint ppt
-application/postscript ps ai eps
-application/plain text
-application/pkix-crl crl
-application/pkix-cert cer crt
-application/pkcs7-signature p7s
-application/pkcs7-mime p7m p7c
-application/pkcs10 p10
-application/pkcs-crl crl
-application/pkcs-12 p12
+audio/ogg oga
+video/ogg ogv
+application/ogg ogx
+font/otf otf
+image/png png
 application/pdf pdf
-application/oda oda
-application/octet-stream com psd uu a lha bin lzx o arc exe arj dump lzh zoo lhx saveme
-application/netmc mcp
-application/mswrite wri
-application/msword dot doc w6w wiz docm word docx
-application/mspowerpoint pps pot ppt ppz
-application/mime aps
-application/mcad mcd
-application/mbedlet mbd
-application/marc mrc
-application/macbinary bin
-application/mac-compactpro cpt
-application/mac-binhex40 hqx
-application/mac-binhex hqx
-application/mac-binary bin
-application/lzx lzx
-application/lha lha
-application/javascript js
-application/java-byte-code class
-application/java class
-application/inf inf
-application/iges igs iges
-application/i-deas unv
-application/hta hta
-application/hlp hlp
-application/groupwise vew
-application/gnutar tgz
-application/futuresplash spl
-application/freeloader frl
-application/fractals fif
-application/excel xld xlt xlw xlv xl xlk xlm xll xla xlc xls xlb
-application/envoy evy
-application/ecmascript js
-application/dxf dxf
-application/dsptype tsp
-application/drafting drw
-application/commonground dp
-application/clariscad ccad
-application/cdf cdf
-application/book boo book
-application/binhex4 hqx
-application/binhex hqx
-application/base64 mm mme
-application/arj arj
-application/acad dwg
+appliction/php php
+application/vnd.ms-powerpoint ppt
+application/vnd.openxmlformats-officedocument.presentationml.presentation pptx
+application/x-rar-compressed rar
+application/rtf rtf
+application/x-sh sh
+image/svg+xml svg
+application/x-shockwave-flash swf
+application/x-tar tar
+image/tiff tif tiff
+video/mp2t ts
+font/ttf ttf
+text/plain txt
+application/vnd.visio vsd
+audio/wav wav
+audio/webm weba
+video/webm webm
+image/webp webp
+font/woff woff
+font/woff2 woff2
+application/xhtml+xml xhtml
+application/vnd.ms-excel xls
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet xlsx
+application/xml xml
+application/vnd.mozilla.xul+xml xul
+application/zip zip
+video/3gpp 3gp
+video/3gpp2 3g2
+application/x-7z-compressed 7z
+

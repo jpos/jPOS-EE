@@ -21,10 +21,14 @@ package org.jpos.gl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import org.hibernate.Transaction;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.Date;
+import java.util.List;
 
+import org.hibernate.Transaction;
+import org.jpos.gl.tools.Export;
+import org.junit.jupiter.api.*;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BalanceTest extends TestBase {
     Journal tj;
     Account root;
@@ -48,24 +52,29 @@ public class BalanceTest extends TestBase {
         root        = assets.getRoot();
     }
     @Test
+    @Order(1)
     public void testCurrentBalances() throws Exception {
         checkCurrentBalances();
     }
     @Test
+    @Order(2)
     public void testBalancesByPostDate() throws Exception {
         checkBalancesByPostDate();
     }
     @Test
+    @Order(3)
     public void testCheckpoints() throws Exception {
         gls.createCheckpoint (tj, root, Util.parseDate ("20041231"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050101"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050102"), 1);
     }
     @Test
+    @Order(4)
     public void testBalancesAfterCheckpoint() throws Exception {
         checkBalancesByPostDate();
     }
     @Test
+    @Order(5)
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
@@ -73,6 +82,7 @@ public class BalanceTest extends TestBase {
         tx1.commit ();
     }
     @Test
+    @Order(6)
     public void testBalanceCache2() throws Exception {
         // create a second set of cache, should erase first one
         final Transaction tx1 = gls.beginTransaction();
@@ -82,10 +92,12 @@ public class BalanceTest extends TestBase {
     }
 
     @Test
+    @Order(7)
     public void testCachedBalances() throws Exception {
         checkCurrentBalances();
     }
     @Test
+    @Order(8)
     public void testDeleteCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.deleteBalanceCache (tj, cashUS, GLSession.LAYER_ZERO);       
@@ -93,6 +105,7 @@ public class BalanceTest extends TestBase {
 
     }
     @Test
+    @Order(9)
     public void testAccountDetailCashUS() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
             tj, cashUS, 
@@ -111,6 +124,7 @@ public class BalanceTest extends TestBase {
         );
     }
     @Test
+    @Order(10)
     public void testAccountDetailCashPesos() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
             tj, cashPesos, 
@@ -140,6 +154,7 @@ public class BalanceTest extends TestBase {
     }
 
     @Test
+    @Order(11)
     public void testMiniStatementCashPesos() throws Exception {
         AccountDetail detail = gls.getMiniStatement (
                 tj, cashPesos,
@@ -157,6 +172,7 @@ public class BalanceTest extends TestBase {
     }
 
     @Test
+    @Order(12)
     public void testGLTransactionImpact() {
         GLTransaction t = new GLTransaction("Test transaction");
         t.createDebit (cashUS, new BigDecimal("1000.00") , null, (short) 840);
@@ -165,6 +181,92 @@ public class BalanceTest extends TestBase {
         assertEquals(new BigDecimal("1000.00"), t.getImpact(cashUS, new short[] { 840 }));
         assertEquals(new BigDecimal("-100.00"), t.getImpact(cashUS, new short[] { 1840 }));
     }
+
+    // formerly FindTransactionsTest
+    @Test
+    @Order(20)
+    public void testFindTransactions () throws Exception {
+        List l = gls.findTransactions (tj, null, null, null, true);
+        assertEquals (4, l.size(), "List size should be 4");
+    }
+    @Test
+    @Order(21)
+    public void testFindTransactionsByPostDate_Day01 () throws Exception {
+        Date d = Util.parseDate ("20050101");
+        List l = gls.findTransactions (tj, null, d, null, true);
+        assertEquals (2, l.size(), "List size for " + d + " should be 2");
+    }
+    @Test
+    @Order(22)
+    public void testFindTransactionsByPostDate_Day02 () throws Exception {
+        Date d = Util.parseDate ("20050102");
+        List l = gls.findTransactions (tj, d, d, null, true);
+        assertEquals (2, l.size(), "List size for " + d + " should be 2");
+    }
+    @Test
+    @Order(23)
+    public void testFindTransactionsByPostDate_Day01_and_02 () throws Exception {
+        Date d1 = Util.parseDate ("20050101");
+        Date d2 = Util.parseDate ("20050102");
+        List l = gls.findTransactions (tj, d1, d2, null, true);
+        assertEquals (4, l.size(), "List size for " + d1 + " to " + d2 + " should be 4");
+    }
+
+
+    // Formerly SummarizeTest
+    @Test
+    @Order(30)
+    public void testSummarize () throws Exception {
+        tj = gls.getJournal ("TestJournal");
+        Date postDate = Util.parseDateTime ("20050103120000");
+        FinalAccount A = gls.getFinalAccount ("TestChart", "111");
+        FinalAccount B = gls.getFinalAccount ("TestChart", "112");
+        // Create Transaction to be summarized
+        Transaction tx = gls.beginTransaction();
+        gls.post (tj, createTransaction ("Txn 1", postDate, A, B));
+        gls.post (tj, createTransaction ("Txn 2", postDate, A, B));
+        tx.commit();
+
+        // Fetch the balances
+        BigDecimal A_0   = gls.getBalance (tj, A);
+        BigDecimal A_858 = gls.getBalance (tj, A, (short) 858);
+        BigDecimal B_0   = gls.getBalance (tj, B);
+        BigDecimal B_858 = gls.getBalance (tj, B, (short) 858);
+        System.out.println ("--- pre-balances --- ");
+        System.out.println ("  A(0): " + A_0);
+        System.out.println ("A(858): " + A_858);
+        System.out.println ("  B(0): " + B_0);
+        System.out.println ("B(858): " + B_858);
+
+        // Summarize
+        tx = gls.beginTransaction();
+        gls.summarize (tj, postDate, postDate, "Summarized Txn", new short[] { 0, 858 });
+        tx.commit();
+
+        // Test post summarize balances
+        System.out.println ("--- post-balances ---");
+        System.out.println ("  A(0): " + gls.getBalance (tj, A));
+        System.out.println ("A(858): " + gls.getBalance (tj, A, (short) 858));
+        System.out.println ("  B(0): " + gls.getBalance (tj, B));
+        System.out.println ("B(858): " + gls.getBalance (tj, B, (short) 858));
+
+        assertEquals (A_0, gls.getBalance (tj, A));
+        assertEquals (A_858, gls.getBalance (tj, A, (short) 858));
+        assertEquals (B_0, gls.getBalance (tj, B));
+        assertEquals (B_858, gls.getBalance (tj, B, (short) 858));
+    }
+    private GLTransaction createTransaction (String desc, Date postDate, FinalAccount A, FinalAccount B) throws Exception {
+        GLTransaction txn = new GLTransaction (desc);
+        txn.setPostDate (postDate);
+        txn.createDebit (A, new BigDecimal ("1000.00"), null);
+        txn.createDebit (A, new BigDecimal ("200.00"), null, (short) 858);
+        txn.createCredit (B, new BigDecimal ("1000.00"), null);
+        // txn.createCredit (B, new BigDecimal ("200.00"), null, (short) 858);
+        return txn;
+    }
+
+
+
 
     // -----------------------------------------------------------------
     private void checkBalancesByPostDate () throws Exception {

@@ -1,10 +1,11 @@
+
 description = 'jPOS-EE :: MiniGL Module'
 
 dependencies {
     compile project(':modules:logback')
     compile project(':modules:dbsupport')
-    testCompile project(':modules:db-h2')
     compile libraries.commons_lang
+    testCompile project(':modules:db-h2')
 }
 
 ext {
@@ -25,8 +26,8 @@ task copyTestResources(dependsOn: 'jposeeSetup', type: Copy) {
 
 test {
     dependsOn 'copyTestResources'
-    include '**/AllTests.*'
-    include '**/StressTests.*'
-    scanForTestClasses false
+    include '**/*Test.class'
+    exclude '**/stress/*'
     workingDir testRuntimeDir
 }
+

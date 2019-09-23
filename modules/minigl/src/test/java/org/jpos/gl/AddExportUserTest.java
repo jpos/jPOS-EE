@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class AddExportUserTest {
+public class AddExportUserTest extends TestBase {
     @Test
     public void testAddExportUser() throws Exception {
         Session sess = new DB().open();

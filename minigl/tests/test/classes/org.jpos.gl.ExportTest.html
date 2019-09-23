@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.139s</div>
+<div class="counter">0.082s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">testExport()</td>
-<td class="success">0.139s</td>
+<td class="success">0.082s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -101,17 +101,17 @@
     &lt;!--id 2--&gt;
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
-    &lt;grant&gt;write&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;write&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
-    &lt;grant&gt;read&lt;/grant&gt;
-    &lt;grant&gt;write&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
+    &lt;grant&gt;write&lt;/grant&gt;
+    &lt;grant&gt;read&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 4--&gt;
@@ -132,62 +132,56 @@
   &lt;/currency&gt;
   &lt;chart-of-accounts code=&quot;TestChart&quot; created=&quot;20050101&quot;&gt;
     &lt;description&gt;Test Chart&lt;/description&gt;
-    &lt;tags /&gt;
     &lt;composite-account code=&quot;1&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
       &lt;description&gt;Assets&lt;/description&gt;
-      &lt;tags /&gt;
       &lt;composite-account code=&quot;11&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
         &lt;description&gt;Cash&lt;/description&gt;
-        &lt;tags /&gt;
         &lt;account code=&quot;111&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
           &lt;description&gt;Cash Dollars&lt;/description&gt;
-          &lt;tags /&gt;
         &lt;/account&gt;
         &lt;account code=&quot;112&quot; currency=&quot;858&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
           &lt;description&gt;Cash Pesos&lt;/description&gt;
-          &lt;tags /&gt;
         &lt;/account&gt;
         &lt;account code=&quot;113&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
           &lt;description&gt;Bank Account&lt;/description&gt;
-          &lt;tags /&gt;
         &lt;/account&gt;
         &lt;account code=&quot;120&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
           &lt;description&gt;Trip Fund&lt;/description&gt;
-          &lt;tags /&gt;
         &lt;/account&gt;
       &lt;/composite-account&gt;
     &lt;/composite-account&gt;
     &lt;composite-account code=&quot;2&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
       &lt;description&gt;Liabilities&lt;/description&gt;
-      &lt;tags /&gt;
       &lt;account code=&quot;21&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
         &lt;description&gt;Loan&lt;/description&gt;
-        &lt;tags /&gt;
       &lt;/account&gt;
       &lt;composite-account code=&quot;23&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
         &lt;description&gt;Cards&lt;/description&gt;
-        &lt;tags /&gt;
       &lt;/composite-account&gt;
     &lt;/composite-account&gt;
     &lt;composite-account code=&quot;3&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
       &lt;description&gt;Equity&lt;/description&gt;
-      &lt;tags /&gt;
       &lt;account code=&quot;31&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
         &lt;description&gt;Bob's equity&lt;/description&gt;
-        &lt;tags /&gt;
       &lt;/account&gt;
       &lt;account code=&quot;32&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
         &lt;description&gt;Alice's equity&lt;/description&gt;
-        &lt;tags /&gt;
       &lt;/account&gt;
     &lt;/composite-account&gt;
     &lt;composite-account code=&quot;4&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
       &lt;description&gt;Earnings&lt;/description&gt;
-      &lt;tags /&gt;
     &lt;/composite-account&gt;
     &lt;composite-account code=&quot;5&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
       &lt;description&gt;Losses&lt;/description&gt;
-      &lt;tags /&gt;
+    &lt;/composite-account&gt;
+    &lt;composite-account code=&quot;6&quot; created=&quot;20190923&quot;&gt;
+      &lt;description&gt;Order&lt;/description&gt;
+      &lt;composite-account code=&quot;61&quot; type=&quot;debit&quot; created=&quot;20190923&quot;&gt;
+        &lt;description&gt;Order debit&lt;/description&gt;
+      &lt;/composite-account&gt;
+      &lt;composite-account code=&quot;62&quot; type=&quot;credit&quot; created=&quot;20190923&quot;&gt;
+        &lt;description&gt;Order credit&lt;/description&gt;
+      &lt;/composite-account&gt;
     &lt;/composite-account&gt;
   &lt;/chart-of-accounts&gt;
   &lt;journal&gt;
@@ -196,10 +190,10 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
@@ -233,19 +227,19 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20190923005445&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20190923015356&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -269,7 +263,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20190923005445&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20190923015357&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -293,7 +287,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20190923005445&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20190923015357&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -307,7 +301,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20190923005445&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20190923015357&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -319,72 +313,6 @@
       &lt;detail&gt;Loan reference #4321&lt;/detail&gt;
       &lt;tags /&gt;
       &lt;amount&gt;20000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;5&quot; date=&quot;20190923005445&quot; post-date=&quot;20190923&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;Check ability to post&lt;/detail&gt;
-    &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
-      &lt;amount&gt;5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;112&quot; type=&quot;credit&quot;&gt;
-      &lt;amount&gt;5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;8&quot; date=&quot;20190923005453&quot; post-date=&quot;20050103&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;Summarized Txn&lt;/detail&gt;
-    &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
-      &lt;amount&gt;2000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;112&quot; type=&quot;credit&quot;&gt;
-      &lt;amount&gt;2000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;111&quot; type=&quot;debit&quot; layer=&quot;858&quot;&gt;
-      &lt;amount&gt;400.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;9&quot; date=&quot;20190923005453&quot; post-date=&quot;20190923&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;Single-post in layer two&lt;/detail&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;debit&quot; layer=&quot;2&quot;&gt;
-      &lt;amount&gt;1000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;10&quot; date=&quot;20190923005453&quot; post-date=&quot;20190923&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;(Single-post in layer two)&lt;/detail&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;debit&quot; layer=&quot;2&quot;&gt;
-      &lt;amount&gt;-1000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;11&quot; date=&quot;20190923005453&quot; post-date=&quot;20190923&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;Valid-post in layer one - no balance change&lt;/detail&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;debit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;10.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;credit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;credit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;12&quot; date=&quot;20190923005453&quot; post-date=&quot;20190923&quot; journal=&quot;TestJournal&quot;&gt;
-    &lt;detail&gt;(Valid-post in layer one - no balance change)&lt;/detail&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;debit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;-10.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;credit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;-5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;120&quot; type=&quot;credit&quot; layer=&quot;1&quot;&gt;
-      &lt;amount&gt;-5.00&lt;/amount&gt;
-    &lt;/entry&gt;
-  &lt;/transaction&gt;
-  &lt;transaction id=&quot;13&quot; date=&quot;20190923005453&quot; post-date=&quot;20190923&quot; journal=&quot;HistoryJournal&quot;&gt;
-    &lt;detail&gt;Test Move&lt;/detail&gt;
-    &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
-      &lt;amount&gt;1000.00&lt;/amount&gt;
-    &lt;/entry&gt;
-    &lt;entry account=&quot;112&quot; type=&quot;credit&quot;&gt;
-      &lt;amount&gt;1000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
 &lt;/minigl&gt;
@@ -399,7 +327,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.6.2</a> at Sep 23, 2019, 12:54:53 AM</p>
+<a href="http://www.gradle.org">Gradle 5.6.2</a> at Sep 23, 2019 1:54:17 AM</p>
 </div>
 </div>
 </body>

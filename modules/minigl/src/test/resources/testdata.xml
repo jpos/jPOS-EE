@@ -90,6 +90,15 @@
   <composite-account code="5" type="debit" >
    <description>Losses</description>
   </composite-account>
+  <composite-account code="6">
+   <description>Order</description>
+   <composite-account code="61" type="debit" >
+    <description>Order debit</description>
+   </composite-account>
+   <composite-account code="62" type="credit" >
+    <description>Order credit</description>
+   </composite-account>
+  </composite-account>
  </chart-of-accounts>
 
  <!--

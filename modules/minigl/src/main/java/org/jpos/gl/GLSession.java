@@ -1824,7 +1824,9 @@ public class GLSession {
                 balance[0] = balance[0].subtract (b[0]);
                 balance[1] = balance[1].subtract (b[1]);
             } else {
-                throw new GLException ("Account " + a + " has wrong type");
+                // We allow undefined type on composite accounts now (i.e. "order" accounts).
+                // We don't add children balances.
+                // throw new GLException ("Account " + a + " has wrong type");
             }
             // session.evict (a);  FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
         }

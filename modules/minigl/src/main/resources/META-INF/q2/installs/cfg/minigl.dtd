@@ -45,7 +45,7 @@
 <!ELEMENT composite-account (description?,(account|composite-account)*) >
 <!ATTLIST composite-account code CDATA #REQUIRED>
 <!ATTLIST composite-account created CDATA #IMPLIED>
-<!ATTLIST composite-account type (debit|credit) #REQUIRED>
+<!ATTLIST composite-account type (debit|credit) #IMPLIED>
 
 <!ELEMENT account (description?) >
 <!ATTLIST account code CDATA #REQUIRED>

@@ -41,9 +41,9 @@ import org.jpos.util.Tags;
 public abstract class Account implements Serializable, Comparable, Cloneable {
     private long id;
     /**
-     * 0 - type is undefined (used in top level [chart-of=]account)
+     * 0 - type is undefined (used in top level [chart-of=]accounts)
      */
-    public static final int CHART  = 0;
+    public static final int UNDEFINED = 0;
     /**
      * 1 - this is a debit type account
      */
@@ -274,7 +274,7 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
      * @return true if account's type is chart (neither DEBIT nor CREDIT)
      */
     public boolean isChart () {
-        return (type & (DEBIT|CREDIT)) == CHART;
+        return (type & (DEBIT|CREDIT)) == UNDEFINED;
     }
     public boolean isFinalAccount () {
         return false;
@@ -315,11 +315,10 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         if (getCurrencyCode() != null)
             elem.setAttribute ("currency", getCurrencyCode());
 
-        if (getTags () != null) {
+        if (getTags () != null && getTags().size() > 0) {
             Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }
-
 
         if (isDebit ())
             elem.setAttribute ("type", "debit");
@@ -355,10 +354,10 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
                 setType (DEBIT);
             else if ("credit".equals (at))
                 setType (CREDIT);
-            else 
+            else
                 throw new IllegalArgumentException ("Invalid type "+at);
         } else {
-            setType (0);
+            setType (UNDEFINED);
         }
         setTags (new Tags(elem.getChildTextTrim ("tags")));
         Account p = getParent();

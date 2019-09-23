@@ -18,24 +18,27 @@
 
 package org.jpos.gl;
 
+import org.jpos.gl.tools.Export;
 import org.jpos.gl.tools.Import;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class TestBase {
     protected GLSession gls;
     protected long start;
     protected long checkpoint;
-    static AtomicBoolean importRan = new AtomicBoolean();
 
     @BeforeEach
     public void setUpBase () throws Exception {
-        if (!importRan.getAndSet(true)) {
+        try {
             String userName = System.getProperty("user.name");
             System.setProperty("user.name", "travis");
             new Import().parse("../test-classes/testdata.xml");
             System.setProperty("user.name", userName);
+            new Export().export(System.out);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
         gls = new GLSession("bob");
         start = checkpoint = System.currentTimeMillis();
@@ -44,12 +47,12 @@ public abstract class TestBase {
     public void tearDownBase () throws Exception {
         gls.close();
     }
+
     public void start () {
         start = checkpoint = System.currentTimeMillis();
     }
     public void start (String s) {
-        long now = System.currentTimeMillis();
-        System.out.println ("     start: " + s + " (" 
+        System.out.println ("     start: " + s + " ("
             + Runtime.getRuntime().totalMemory() + ")"
         );
         start = checkpoint = System.currentTimeMillis();

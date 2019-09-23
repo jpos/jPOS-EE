@@ -204,7 +204,7 @@ public class AccountsView extends QIEntityView<Account> {
         }
         if ("type".equalsIgnoreCase(propertyId)) {
             ComboBox<Integer> typeCombo = new ComboBox<>(getCaptionFromId(propertyId));
-            typeCombo.setItems(Account.CHART,Account.DEBIT,Account.CREDIT);
+            typeCombo.setItems(Account.UNDEFINED,Account.DEBIT,Account.CREDIT);
             typeCombo.setItemCaptionGenerator(type -> getApp().getMessage("account." + type).toUpperCase());
             formatField(propertyId,typeCombo).bind(propertyId);
             return typeCombo;

@@ -18,16 +18,25 @@
 
 package org.jpos.gl;
 
+import org.jpos.gl.tools.Import;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class TestBase {
     protected GLSession gls;
     protected long start;
     protected long checkpoint;
+    static AtomicBoolean importRan = new AtomicBoolean();
 
     @BeforeEach
     public void setUpBase () throws Exception {
+        if (!importRan.getAndSet(true)) {
+            String userName = System.getProperty("user.name");
+            System.setProperty("user.name", "travis");
+            new Import().parse("../test-classes/testdata.xml");
+            System.setProperty("user.name", userName);
+        }
         gls = new GLSession("bob");
         start = checkpoint = System.currentTimeMillis();
     }

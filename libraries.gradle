@@ -19,6 +19,7 @@ ext {
     httpAsyncClientVersion = '4.1.4'
     mysqlJDBCVersion = '8.0.15'
     c3p0Version = '0.9.5.3'
+    flywaydbVersion = '6.0.4'
 
     libraries = [
             //jUnit (Tests)
@@ -111,9 +112,9 @@ ext {
 
             jsonSchemaValidator: "com.github.java-json-tools:json-schema-validator:${jsonSchemaVersion}",
             guava: "com.google.guava:guava:${guavaVersion}",
-            httpAsyncClient: "org.apache.httpcomponents:httpasyncclient:${httpAsyncClientVersion}"
+            httpAsyncClient: "org.apache.httpcomponents:httpasyncclient:${httpAsyncClientVersion}",
+            flywaydb: "org.flywaydb:flyway-core:${flywaydbVersion}"
     ]
-
 
     jsonSchemaValidatorLibs = [
         libraries.jsonSchemaValidator,

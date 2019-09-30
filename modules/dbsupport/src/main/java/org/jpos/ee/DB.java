@@ -77,6 +77,7 @@ public class DB implements Closeable {
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
     private static Map<String,SessionFactory> sessionFactories = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Metadata> metadatas = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Properties> properties = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates DB Object using default Hibernate instance
@@ -110,6 +111,7 @@ public class DB implements Closeable {
         this.configModifier = configModifier;
         sfSems.putIfAbsent(configModifier, new Semaphore(1));
         mdSems.putIfAbsent(configModifier, new Semaphore(1));
+        getSessionFactory();
     }
 
     /**
@@ -118,7 +120,7 @@ public class DB implements Closeable {
      * @param log Log object
      */
     public DB(Log log) {
-        super();
+        this();
         setLog(log);
     }
 
@@ -156,6 +158,11 @@ public class DB implements Closeable {
             sfSem.release();
         }
         return sf;
+    }
+
+    public Properties getProperties() {
+        String cm  = configModifier != null ? configModifier : "";
+        return properties.get(cm);
     }
 
     public Dialect getDialect() {
@@ -494,6 +501,7 @@ public class DB implements Closeable {
         }
     }
 
+
     @Override
     public String toString() {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
@@ -533,10 +541,11 @@ public class DB implements Closeable {
                 ssrb.configure(hibCfg);
                 propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
                 Properties dbProps = loadProperties(propFile);
-                if (dbProps != null) {
-                    for (Map.Entry entry : dbProps.entrySet()) {
-                        ssrb.applySetting((String) entry.getKey(), Environment.get((String) entry.getValue()));
-                    }
+                for (Map.Entry entry : dbProps.entrySet()) {
+                    String k = (String) entry.getKey();
+                    String v = Environment.get((String) entry.getValue());
+                    ssrb.applySetting(k,v);
+                    dbProps.setProperty(k,v);
                 }
 
                 // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
@@ -547,6 +556,7 @@ public class DB implements Closeable {
                     ssrb.applySetting("hibernate.connection.username", user);
                 if (pass != null)
                     ssrb.applySetting("hibernate.connection.password", pass);
+
 
                 MetadataSources mds = new MetadataSources(ssrb.build());
                 List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
@@ -560,6 +570,7 @@ public class DB implements Closeable {
                 }
                 md = mds.buildMetadata();
                 metadatas.put(cm, md);
+                properties.put(cm, dbProps);
             }
         } finally {
             mdSem.release();

@@ -42,7 +42,8 @@ include ':modules:core',
         ':modules:iso-http-server',
         ':modules:iso-http-servlet',
         ':modules:http-client',
-        ':modules:seqno'
+        ':modules:seqno',
+        ':modules:db-flyway'
 
 rootProject.name = 'jposee'
 

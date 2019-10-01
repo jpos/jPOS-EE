@@ -1,0 +1,29 @@
+=== FlyWay Support
+
+The `db-flyway` module can be used to run FlyWay migrations from the jPOS command line interface.
+
+It picks the DataSource configuration from the standard DB configuration used by jPOS (that can
+be defined in the `db.properties` file, or a target _Environment_.
+
+When running `q2 --cli` (or reaching a running Q2 server using SSH), there's a
+new `flyway` subsystem. Inside the `flyway` subsystem you can find the following
+commands:
+
+- `clean`
+- `info`
+- `baseline`
+- `migrate`
+- `validate`
+- `repair`
+
+All Flyway commands take into account possible environment variables, defined in `cfg/default.yml`, i.e.:
+
+[source,yaml]
+-------------
+flyway:
+    table: schema_version <1>
+-------------
+<1> Sets `flyway.table` property, in this example, we override the new default value `flyway_schema_history` for
+    backward compatibility.
+
+

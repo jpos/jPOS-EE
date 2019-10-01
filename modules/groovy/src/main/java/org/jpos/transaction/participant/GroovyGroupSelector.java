@@ -27,6 +27,11 @@ import org.jpos.util.Logger;
 
 import java.io.Serializable;
 
+/**
+ * GroovyGroupSelector
+ *
+*/
+
 
 public class GroovyGroupSelector extends GroovyParticipant implements GroupSelector {
 

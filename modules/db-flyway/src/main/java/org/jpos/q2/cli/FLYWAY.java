@@ -37,6 +37,7 @@ public class FLYWAY implements CLISubSystem {
         } else {
             ctx.getUserData().remove(PREFIX);
         }
+        new DB(prefix); // force DB initialization
         return  "flyway" + (prefix != null ? "[" + args[1] + "]" : "") + "> ";
     }
 

@@ -161,4 +161,39 @@ will be interpreted and evaluated for each request. The script will be called fo
 ----------------------------------------------------------------------------------------
 
 
+==== GroovyGroupSelector
+
+The module also provides a `org.jpos.transaction.participant.GroovyGroupSelector` class, which allows the writing of
+`GroupSelector`'s in Groovy.
+
+
+
+===== Examples:
+
+
+[source, xml]
+----------------------------------------------------------------------------------------
+<participant class="org.jpos.transaction.participant.GroovyGroupSelector" logger="Q2"
+    realm="groovy-select">
+
+        <select src="deploy/select.groovy" />
+        <property name="0800" value="network" />
+        <property name="0200" value="supported" />
+</participant>
+----------------------------------------------------------------------------------------
+
+A Groovy script given in an external file.
+
+[source, groovy]
+----------------------------------------------------------------------------------------
+import org.jpos.iso.ISOMsg;
+import org.jpos.transaction.Context;
+import org.jpos.transaction.ContextConstants;
+
+ISOMsg m = (ISOMsg) ((Context)ctx).get (ContextConstants.REQUEST.toString());
+String groups = cfg.get (m.getMTI(), null);
+return groups;
+----------------------------------------------------------------------------------------
+
+
 

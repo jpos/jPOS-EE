@@ -9,7 +9,12 @@ import org.jpos.q2.cli.FLYWAY;
 public class MIGRATE extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
-        Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
-        flyway.migrate();
+        try {
+            Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
+            int migrations = flyway.migrate();
+            cli.println ("Applied " + migrations + "migration(s)");
+        } catch (Exception e) {
+            cli.println(e.getMessage());
+        }
     }
 }

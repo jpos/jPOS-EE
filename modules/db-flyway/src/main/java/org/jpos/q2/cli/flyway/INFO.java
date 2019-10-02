@@ -12,15 +12,19 @@ import org.jpos.q2.cli.FLYWAY;
 
 public class INFO extends FlywaySupport implements CLICommand{
     @Override
-    public void exec(CLIContext cli, String[] args) throws Exception {
-        Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
-        MigrationInfoService info = flyway.info();
-        MigrationInfo current = info.current();
-        MigrationVersion currentSchemaVersion = current == null ? MigrationVersion.EMPTY : current.getVersion();
-        MigrationVersion schemaVersionToOutput = currentSchemaVersion == null ? MigrationVersion.EMPTY : currentSchemaVersion;
+    public void exec(CLIContext cli, String[] args) {
+        try {
+            Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
+            MigrationInfoService info = flyway.info();
+            MigrationInfo current = info.current();
+            MigrationVersion currentSchemaVersion = current == null ? MigrationVersion.EMPTY : current.getVersion();
+            MigrationVersion schemaVersionToOutput = currentSchemaVersion == null ? MigrationVersion.EMPTY : currentSchemaVersion;
 
-        cli.println ("Schema version: " + schemaVersionToOutput);
-        cli.println ("");
-        cli.println(MigrationInfoDumper.dumpToAsciiTable(info.all()));
+            cli.println("Schema version: " + schemaVersionToOutput);
+            cli.println("");
+            cli.println(MigrationInfoDumper.dumpToAsciiTable(info.all()));
+        } catch (Exception e) {
+            cli.println (e.getMessage());
+        }
     }
 }

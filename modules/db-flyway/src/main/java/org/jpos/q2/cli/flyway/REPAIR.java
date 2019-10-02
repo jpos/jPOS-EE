@@ -8,6 +8,10 @@ import org.jpos.q2.cli.FLYWAY;
 public class REPAIR extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
-        getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).repair();
+        try {
+            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).repair();
+        } catch (Exception e) {
+            cli.println(e.getMessage());
+        }
     }
 }

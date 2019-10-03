@@ -12,7 +12,7 @@ public class MIGRATE extends FlywaySupport implements CLICommand{
         try {
             Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
             int migrations = flyway.migrate();
-            cli.println ("Applied " + migrations + "migration(s)");
+            cli.println ("Applied " + migrations + " migration(s)");
         } catch (Exception e) {
             cli.println(e.getMessage());
         }

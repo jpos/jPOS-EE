@@ -19,6 +19,7 @@ ext {
     httpAsyncClientVersion = '4.1.4'
     mysqlJDBCVersion = '8.0.17'
     c3p0Version = '0.9.5.4'
+    postgresJDBCVersion = '42.2.8'
     flywaydbVersion = '6.0.4'
 
     libraries = [
@@ -54,7 +55,7 @@ ext {
             //Supported Databases
             jdbcH2: 'com.h2database:h2:1.4.199',
             jdbcMysql: "mysql:mysql-connector-java:${mysqlJDBCVersion}",
-            jdbcPostgresql: 'org.postgresql:postgresql:42.2.8',
+            jdbcPostgresql: "org.postgresql:postgresql:${postgresJDBCVersion}",
             jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre8',
 
             //Freemarker

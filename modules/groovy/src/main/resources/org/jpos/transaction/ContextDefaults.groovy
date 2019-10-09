@@ -33,4 +33,13 @@ ctxmc.setProperty= { String name, Object val ->
 }
 
 
+ctxmc.getAt= { Object key ->
+    return delegate.get(key)
+}
+
+ctxmc.putAt= { Object key, Object val ->
+    delegate.put(key, val)
+}
+
+
 return ctxmc

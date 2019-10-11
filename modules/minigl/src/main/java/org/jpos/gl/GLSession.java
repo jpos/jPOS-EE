@@ -1123,6 +1123,8 @@ public class GLSession {
         }
         else {
             bcache = getBalanceCache(journal, acct, layers);
+            if (maxId > 0 && maxId < bcache.getRef())
+                bcache = null; // ignore bcache 'in the future'
         }
         if (!acct.isFinalAccount()) {
             select.append(", acct as acct");

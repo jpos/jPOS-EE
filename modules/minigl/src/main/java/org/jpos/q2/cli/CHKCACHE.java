@@ -53,7 +53,7 @@ public class CHKCACHE implements CLICommand {
                 gls.setIgnoreBalanceCache(false);
 
                 if (cache.getBalance().equals(bd) && bd.equals(bd1)) {
-                    cli.println(String.format("%20s: %16s ref=%d OK", cache.getAccount().getCode(), bd.toBigInteger(), cache.getRef()));
+                    cli.println(String.format("%20s: %16s ref=%d (%s) OK", cache.getAccount().getCode(), bd.toBigInteger(), cache.getRef(), cache.getLayers()));
                     good++;
                 } else {
                     cli.println ("Balance cache mismatch: " + cache + "/" + bd + "/" + bd1);

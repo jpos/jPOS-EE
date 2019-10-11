@@ -1087,7 +1087,7 @@ public class GLSession {
                 }
             } else if (!ignoreBalanceCache) {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
-                if (bcache != null && bcache.getRef() <= maxId) {
+                if (bcache != null && (maxId == 0 || bcache.getRef() <= maxId)) {
                     balance[0] = bcache.getBalance();
                     entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }
@@ -1124,7 +1124,7 @@ public class GLSession {
         else if (!ignoreBalanceCache) {
             short[] layersCopy = Arrays.copyOf(layers,layers.length);
             bcache = getBalanceCache(journal, acct, layersCopy);
-            if (bcache.getRef() > maxId)
+            if (maxId > 0 && bcache.getRef() > maxId)
                 bcache = null; // ignore bcache 'in the future'
         }
         if (!acct.isFinalAccount()) {

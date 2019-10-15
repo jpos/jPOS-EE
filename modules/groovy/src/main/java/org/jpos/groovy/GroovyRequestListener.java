@@ -18,6 +18,8 @@
 
 package org.jpos.groovy;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.Configuration;
@@ -178,7 +180,7 @@ public class GroovyRequestListener extends Log
             }
             else // !compiled, evaluate it each time
             {
-                GroovyShell shell= new GroovyShell(binding);
+                GroovyShell shell= new GroovyShell(binding,newCompilerConfiguration());
                 if (script instanceof File)
                     ret= shell.evaluate((File)script);
                 else if (script instanceof String)
@@ -237,7 +239,7 @@ public class GroovyRequestListener extends Log
         // that will be instantiated for each invocation of the participant's method
         try
         {
-            gcl= new GroovyClassLoader();
+            gcl= new GroovyClassLoader(this.getClass().getClassLoader(),newCompilerConfiguration());
             // TODO: We can add CompilerConfiguration to set a JDK8 target
             // Also, using CompilationCustomizer's I think we can mandate a @CompileStatic
             // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
@@ -267,6 +269,14 @@ public class GroovyRequestListener extends Log
             throw new ConfigurationException(ex.getMessage(), ex.getCause());
         }
     }
-
+    protected CompilerConfiguration newCompilerConfiguration(){
+        CompilerConfiguration conf = new CompilerConfiguration();
+        ImportCustomizer customizer  = new ImportCustomizer();;
+        customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
+        customizer.addStaticStars("org.jpos.transaction.ContextConstants");
+        conf.addCompilationCustomizers(customizer);
+        return conf;
+    }
 }
+
 

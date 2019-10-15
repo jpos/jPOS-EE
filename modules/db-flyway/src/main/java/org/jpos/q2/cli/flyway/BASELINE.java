@@ -8,6 +8,11 @@ import org.jpos.q2.cli.FLYWAY;
 public class BASELINE extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
-        getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).baseline();
+        try {
+            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).baseline();
+        } catch (Exception e) {
+            cli.println(e.getMessage());
+        }
+
     }
 }

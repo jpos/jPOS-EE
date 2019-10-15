@@ -22,6 +22,7 @@
 
 <hibernate-mapping>
   <class name="org.jpos.ee.ResultCode" table="rc">
+    <cache usage="read-write" />    
     <id name="id" column="id" type="long">
       <generator class="assigned" />
     </id>

@@ -18,14 +18,14 @@
 
 package org.jpos.qrest;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import org.jpos.q2.Q2;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 
 import static org.hamcrest.Matchers.*;

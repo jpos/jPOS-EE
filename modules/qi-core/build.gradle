@@ -1,5 +1,5 @@
 plugins {
-   id 'com.devsoap.plugin.vaadin' version '2.0.0.beta1'
+   id 'com.devsoap.plugin.vaadin' version '2.0.0.beta2'
 }
 vaadin {
     version=vaadinVersion

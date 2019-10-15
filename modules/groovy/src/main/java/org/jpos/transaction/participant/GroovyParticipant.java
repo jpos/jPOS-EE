@@ -93,11 +93,11 @@ import groovy.lang.GroovyShell;
 public class GroovyParticipant extends Log
     implements TransactionParticipant, AbortParticipant, XmlConfigurable, Configurable
 {
-    private boolean compiled= true;
-    private GroovyClassLoader gcl;
+    protected boolean compiled= true;
+    protected GroovyClassLoader gcl;
 
     // map script part (prepare, abort...) to a name which can be a path, a realm or something to identify in error logs
-    private HashMap<String, String> scriptNames= new HashMap<>();
+    protected HashMap<String, String> scriptNames= new HashMap<>();
 
     // prepare, prepareForAbort, commit, and abort
     // can be instances of String, File, or Class<Script>
@@ -107,7 +107,7 @@ public class GroovyParticipant extends Log
     private Object abort;
 
     private TransactionManager tm;
-    private Configuration cfg;
+    protected Configuration cfg;
     private final String groovyShellKey  = ".groovy-" + Integer.toString(hashCode());
 
 
@@ -221,7 +221,7 @@ public class GroovyParticipant extends Log
 
     /** Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
     */
-    private Object getScript (Element e) throws ConfigurationException
+    protected Object getScript (Element e) throws ConfigurationException
     {
         if (e != null)
         {
@@ -277,7 +277,7 @@ public class GroovyParticipant extends Log
         return null;    // nothing to process
     }
 
-    private Object eval (GroovyShell shell, Object script, String name) throws IOException {
+    protected Object eval (GroovyShell shell, Object script, String name) throws IOException {
         if (script instanceof File)
             return shell.evaluate((File)script);
         else if (script instanceof String)
@@ -285,7 +285,7 @@ public class GroovyParticipant extends Log
         return null;
     }
 
-    private GroovyShell getShell (long id, Serializable context) {
+    protected GroovyShell getShell (long id, Serializable context) {
         GroovyShell shell;
         if (context instanceof Context) {
             Context ctx = (Context) context;
@@ -300,7 +300,7 @@ public class GroovyParticipant extends Log
         return shell;
     }
 
-    private Binding newBinding (long id, Serializable ctx) {
+    protected Binding newBinding (long id, Serializable ctx) {
         Binding binding = new Binding();
         binding.setVariable("id", id);
         binding.setVariable("ctx", ctx);

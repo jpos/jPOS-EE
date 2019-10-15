@@ -20,8 +20,8 @@ package org.jpos.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;

@@ -8,6 +8,10 @@ import org.jpos.q2.cli.FLYWAY;
 public class VALIDATE extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
-        getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).validate();
+        try {
+            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).validate();
+        } catch (Exception e) {
+            cli.println(e.getMessage());
+        }
     }
 }

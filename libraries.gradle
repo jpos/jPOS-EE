@@ -1,35 +1,36 @@
 ext {
     jposVersion = '2.1.4-SNAPSHOT'
-    slf4jVersion = '1.7.21'
+    slf4jVersion = '1.7.28'
     logbackVersion = '1.2.3'
-    hibernateVersion = '5.4.3.Final'
+    hibernateVersion = '5.4.6.Final'
     geronimoVersion = '1.1.1'
-    jettyVersion = '9.4.15.v20190215'
-    servletApiVersion = '3.1.0'
+    jettyVersion = '9.4.20.v20190813'
+    servletApiVersion = '4.0.1'
     websocketApiVersion = '1.1'
-    jgroupsVersion = '4.0.16.Final'
+    jgroupsVersion = '4.1.5.Final'
     jaxrsVersion = '2.0.1'
-    jsonSchemaVersion = '2.2.10'
-    guavaVersion = '27.1-jre'
-    jacksonVersion = '2.10.0.pr1'
-    groovyVersion = '2.5.6'
+    jsonSchemaVersion = '2.2.11'
+    guavaVersion = '28.1-jre'
+    jacksonVersion = '2.10.0.pr3'
+    groovyVersion = '2.5.8'
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.8.5'
-    nettyVersion = '4.1.24.Final'
+    nettyVersion = '4.1.42.Final'
     httpAsyncClientVersion = '4.1.4'
-    mysqlJDBCVersion = '8.0.15'
-    c3p0Version = '0.9.5.3'
+    mysqlJDBCVersion = '8.0.17'
+    c3p0Version = '0.9.5.4'
+    postgresJDBCVersion = '42.2.8'
     flywaydbVersion = '6.0.4'
 
     libraries = [
             //jUnit (Tests)
-            junit: 'org.junit.jupiter:junit-jupiter:5.5.0',
+            junit: 'org.junit.jupiter:junit-jupiter:5.5.2',
 
             //jPOS
             jpos: "org.jpos:jpos:${jposVersion}",
 
             //Apache Commons
-            commons_lang: 'org.apache.commons:commons-lang3:3.4',
+            commons_lang: 'org.apache.commons:commons-lang3:3.9',
             commons_logging: 'commons-logging:commons-logging:1.2',
 
             //SLF4J and logback Stuff
@@ -41,7 +42,7 @@ ext {
             logback: "ch.qos.logback:logback-classic:${logbackVersion}",
 
             //JODA-Time
-            joda_time: 'joda-time:joda-time:2.10.2',
+            joda_time: 'joda-time:joda-time:2.10.4',
 
             //Hibernate
             hibernate_core: "org.hibernate:hibernate-core:${hibernateVersion}",
@@ -52,19 +53,19 @@ ext {
             jta: "org.apache.geronimo.specs:geronimo-jta_1.1_spec:${geronimoVersion}",
 
             //Supported Databases
-            jdbcH2: 'com.h2database:h2:1.4.189',
+            jdbcH2: 'com.h2database:h2:1.4.199',
             jdbcMysql: "mysql:mysql-connector-java:${mysqlJDBCVersion}",
-            jdbcPostgresql: 'org.postgresql:postgresql:42.2.5',
-            jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:7.2.2.jre8',
+            jdbcPostgresql: "org.postgresql:postgresql:${postgresJDBCVersion}",
+            jdbcMssql: 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre8',
 
             //Freemarker
-            freemarker: 'org.freemarker:freemarker:[2.3.20,2.4)',
+            freemarker: 'org.freemarker:freemarker:[2.3.29,2.4)',
 
             //Mail
-            javax_mail: 'javax.mail:mail:1.4.7',
+            javax_mail: 'javax.mail:javax.mail-api:1.6.2',
 
             //SSHD
-            sshd: 'org.apache.sshd:sshd-core:0.14.0',
+            sshd: 'org.apache.sshd:sshd-core:2.3.0',
 
             //Servlet API
             servlet_api: "javax.servlet:javax.servlet-api:${servletApiVersion}",
@@ -90,7 +91,7 @@ ext {
             jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
 
             // Quartz Scheduler
-            quartz: 'org.quartz-scheduler:quartz:2.2.1',
+            quartz: 'org.quartz-scheduler:quartz:2.3.1',
 
             // JGroups
             jgroups: "org.jgroups:jgroups:${jgroupsVersion}",
@@ -108,7 +109,7 @@ ext {
             nettyCodecHttp: "io.netty:netty-codec-http:${nettyVersion}",
 
             // RestAssured
-            restAssured: "com.jayway.restassured:rest-assured:2.9.0",
+            restAssured: "io.rest-assured:rest-assured:4.1.1",
 
             jsonSchemaValidator: "com.github.java-json-tools:json-schema-validator:${jsonSchemaVersion}",
             guava: "com.google.guava:guava:${guavaVersion}",

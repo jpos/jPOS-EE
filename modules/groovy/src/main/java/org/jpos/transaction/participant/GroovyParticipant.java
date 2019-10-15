@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
@@ -200,7 +202,8 @@ public class GroovyParticipant extends Log
 
         compiled= cfg.getBoolean("compiled", true);
         if (compiled) {
-            gcl= new GroovyClassLoader();
+            gcl= new GroovyClassLoader(thisCL,newCompilerConfiguration());
+
             // TODO: We can add CompilerConfiguration to set a JDK8 target
             // Also, using CompilationCustomizer's I think we can mandate a @CompileStatic
             // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
@@ -291,11 +294,11 @@ public class GroovyParticipant extends Log
             Context ctx = (Context) context;
             shell = (GroovyShell) ctx.get(groovyShellKey);
             if (shell == null) {
-                shell = new GroovyShell(newBinding(id, ctx));
+                shell = new GroovyShell(newBinding(id, ctx), newCompilerConfiguration());
                 ctx.put (groovyShellKey, shell);
             }
         } else {
-            shell = new GroovyShell(newBinding(id, context));
+            shell = new GroovyShell(newBinding(id, context), newCompilerConfiguration());
         }
         return shell;
     }
@@ -308,5 +311,14 @@ public class GroovyParticipant extends Log
         binding.setVariable("tm", tm);
         binding.setVariable("cfg", cfg);
         return binding;
+    }
+
+    protected CompilerConfiguration newCompilerConfiguration(){
+        CompilerConfiguration conf = new CompilerConfiguration();
+        ImportCustomizer customizer  = new ImportCustomizer();;
+        customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
+        customizer.addStaticStars("org.jpos.transaction.ContextConstants");
+        conf.addCompilationCustomizers(customizer);
+        return conf;
     }
 }

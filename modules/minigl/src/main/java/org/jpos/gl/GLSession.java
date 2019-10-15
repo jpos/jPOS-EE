@@ -1124,7 +1124,7 @@ public class GLSession {
         else if (!ignoreBalanceCache) {
             short[] layersCopy = Arrays.copyOf(layers,layers.length);
             bcache = getBalanceCache(journal, acct, layersCopy);
-            if (maxId > 0 && bcache.getRef() > maxId)
+            if (maxId > 0 && bcache != null && bcache.getRef() > maxId)
                 bcache = null; // ignore bcache 'in the future'
         }
         if (!acct.isFinalAccount()) {

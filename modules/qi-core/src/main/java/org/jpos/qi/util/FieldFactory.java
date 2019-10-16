@@ -99,7 +99,7 @@ public class FieldFactory {
     protected TextField buildAndBindShortField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToIntegerConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToShortConverter());
         builder.bind(id);
         return field;
     }

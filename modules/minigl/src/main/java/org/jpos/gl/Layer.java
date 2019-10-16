@@ -29,7 +29,7 @@ import org.jdom2.Element;
 /** 
  * Journal level layer information.
 */
-public class Layer implements Serializable, Comparable {
+public class Layer extends org.jpos.ee.Cloneable implements Serializable, Comparable {
     private short id;
     private String name;
     private org.jpos.gl.Journal journal;

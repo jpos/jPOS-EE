@@ -46,6 +46,7 @@
     <section name="minigl"/>
     <option name="accounts" action="accounts"/>
     <option name="transactions" action="transactions"/>
+    <option name="layers" action="layers"/>
   </sidebar>
 
 
@@ -180,6 +181,12 @@
     <attribute name="postDate" />
     <attribute name="journal" column="false" read-only="true"/>
     <attribute name="entries" column="false" />
+  </view>
+  <view route="layers" class="org.jpos.qi.minigl.LayersView" perm="accounting" sidebar="system">
+    <property name="entityName" value="layer"/>
+    <attribute name="id"/>
+    <attribute name="journal" />
+    <attribute name="name" />
   </view>
 </xml-config>
 

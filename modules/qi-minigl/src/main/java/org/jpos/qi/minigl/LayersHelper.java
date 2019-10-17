@@ -48,7 +48,6 @@ public class LayersHelper extends QIHelper {
 
     @Override
     public boolean updateEntity (Binder binder) throws BLException {
-        System.out.println("----------> Will update entity");
         try {
             return DB.execWithTransaction((db) -> {
                 Layer oldLayer = (Layer) ((Layer) getOriginalEntity()).clone();

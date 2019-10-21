@@ -23,7 +23,7 @@ public class StringToShortConverter implements Converter<String,Short> {
 
     @Override
     public String convertToPresentation(Short value, ValueContext context) {
-        if (value != null)
+        if (value != null && value > 0)
             return value.toString();
         return "";
     }

@@ -1,16 +1,25 @@
 package org.jpos.qi.minigl;
 
 import com.vaadin.data.Binder;
+import com.vaadin.data.Validator;
 import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import org.apache.commons.lang3.StringUtils;
 import org.jpos.gl.Journal;
 import org.jpos.gl.Layer;
+import org.jpos.iso.Currency;
+import org.jpos.iso.ISOCurrency;
+import org.jpos.iso.ISOException;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.qi.ViewConfig;
+import org.jpos.qi.util.StringToShortConverter;
 
 import java.util.List;
+
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class LayersView extends QIEntityView {
     private Journal selectedJournal;
@@ -42,6 +51,18 @@ public class LayersView extends QIEntityView {
         g.addColumn(Layer::getJournal).setId("journal");
         g.addColumn(Layer::getId).setId("id");
         g.addColumn(Layer::getName).setId("name");
+        g.addColumn(layer -> {
+            try {
+                if (layer.getId() > 0) {
+                    Currency currency = ISOCurrency.getCurrency((int)layer.getId()%1000);
+                    return currency != null ? currency.getAlphaCode() : "";
+                }
+            } catch (ISOException e) {
+                getApp().getLog().error(e.getMessage());
+                return "";
+            }
+            return "";
+        }).setId("currencySymbol");
     }
 
     @Override
@@ -121,7 +142,6 @@ public class LayersView extends QIEntityView {
         } else {
             super.showSpecificView(parameter);
         }
-
     }
 
     protected Component buildAndBindCustomComponent(String propertyId) {
@@ -135,6 +155,20 @@ public class LayersView extends QIEntityView {
             builder.bind(propertyId);
             ((Layer)getInstance()).setJournal(this.selectedJournal);
             return comboBox;
+        }
+        if ("id".equals(propertyId)) {
+            TextField id = new TextField(getCaptionFromId(propertyId));
+            List<Validator> validators = getFieldFactory().getValidators(propertyId);
+            Binder<Layer> binder = getBinder();
+            Binder.BindingBuilder builder = binder.forField(id)
+                    .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(propertyId))))
+                    .withNullRepresentation("").withConverter(new StringToShortConverter());
+            validators.forEach(builder::withValidator);
+            builder.bind(propertyId);
+            ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
+            String width = config != null ? config.getWidth() : null;
+            id.setWidth(width);
+            return id;
         }
         return null;
     }

@@ -64,11 +64,12 @@ def jposCopySpec = copySpec {
 
 // Create the jar's manifest
 jar.manifest {
-    attributes \
+    attributes(
         'Implementation-Title': project.name,
         'Implementation-Version': project.version,
         'Main-Class': 'org.jpos.q2.Q2',
-        'Class-Path': configurations.runtime.collect { "lib/" + it.getName() }.join(' ')
+        'Class-Path': configurations.runtimeClasspath.files.collect { "lib/" + it.getName() }.join(' ')
+    )
 }
 
 processResources {
@@ -97,10 +98,10 @@ task version (type: JavaExec, dependsOn: classes) {
 
 task dist(type: Tar) {
     description 'Creates tar distribution'
-    into "$project.name-$version"
+    into "$project.name-$archiveVersion"
     with jposCopySpec
     compression = Compression.GZIP
-    extension "tar.gz"
+    archiveExtension = "tar.gz"
 }
 
 task installApp(type: Sync) {

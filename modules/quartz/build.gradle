@@ -1,8 +1,8 @@
 description = 'jPOS-EE :: Quartz integration'
 
-dependencies { 
-    compile libraries.jpos
-    compile (libraries.quartz) {
+dependencies {
+    api libraries.jpos
+    api (libraries.quartz) {
         exclude group: 'c3p0', module: 'c3p0'
     }
 }

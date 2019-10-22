@@ -6,7 +6,7 @@ configurations {
 }
 
 dependencies {
-    compile libraries.jpos
-    compile libraries.joda_time
+    api libraries.jpos
+    api libraries.joda_time
 }
 

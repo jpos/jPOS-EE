@@ -1,9 +1,9 @@
 description = 'jPOS-EE :: SeqNo'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    testCompile project(':modules:db-h2')
-    // compile project(':modules:db-mysql')
+    api project(':modules:dbsupport')
+    testImplementation project(':modules:db-h2')
+    // implementation project(':modules:db-mysql')
 }
 
 

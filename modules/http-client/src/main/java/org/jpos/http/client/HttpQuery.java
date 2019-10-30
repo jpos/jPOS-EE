@@ -202,14 +202,19 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
 
     private HttpRequestBase getHttpRequest(Context ctx) {
         String url = getURL(ctx);
+        String payload;
         switch (ctx.getString(methodName)) {
             case "POST":
                 HttpPost post = new HttpPost(url);
-                post.setEntity(new StringEntity(ctx.getString(requestName), getContentType(ctx)));
+                payload = ctx.getString(requestName);
+                if (payload != null)
+                    post.setEntity(new StringEntity(payload, getContentType(ctx)));
                 return post;
             case "PUT":
                 HttpPut put = new HttpPut(url);
-                put.setEntity(new StringEntity(ctx.getString(requestName), getContentType(ctx)));
+                payload = ctx.getString(requestName);
+                if (payload != null)
+                    put.setEntity(new StringEntity(payload, getContentType(ctx)));
                 return put;
             case "GET":
                 return new HttpGet(url);

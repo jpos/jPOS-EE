@@ -21,7 +21,7 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'signing'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -50,7 +50,7 @@ subprojects {
             url 'https://jpos.org/issues'
         }
         scm {
-            url "http://github.com/jpos/jPOS"
+            url "https://github.com/jpos/jPOS"
             connection "scm:git:https://github.com/jpos/jPOS-EE.git"
             developerConnection "scm:git:git@github.com:jpos/jPOS-EE.git"
         }
@@ -97,7 +97,7 @@ subprojects {
     }
     task sourceJar(type: Jar) {
         from sourceSets.main.allSource
-        classifier = 'sources'
+        archiveClassifier.set('sources')
     }
 
     artifacts {
@@ -106,9 +106,9 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url 'http://jpos.org/maven' }
-        maven { url 'http://download.oracle.com/maven' }
-        maven { url 'http://maven.vaadin.com/vaadin-addons' }
+        maven { url 'https://jpos.org/maven' }
+        maven { url 'https://download.oracle.com/maven' }
+        maven { url 'https://maven.vaadin.com/vaadin-addons' }
         maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
         jcenter()
         mavenLocal()
@@ -117,16 +117,16 @@ subprojects {
     dependencies {
         testImplementation libraries.junit
         //Java 10 support
-        testCompile('com.sun.xml.bind:jaxb-impl:2.1.2')
-        testCompile('com.sun.activation:javax.activation:1.2.0')
-        testCompile('javax.xml.bind:jaxb-api:2.3.0')
+        testImplementation('com.sun.xml.bind:jaxb-impl:2.1.2')
+        testImplementation('com.sun.activation:javax.activation:1.2.0')
+        testImplementation('javax.xml.bind:jaxb-api:2.3.0')
     }
 
     task allDeps(type: DependencyReportTask) {}
 }
 
 task allSources(type: Jar,dependsOn: subprojects.assemble) {
-    baseName = 'jposee-sources'
+    archiveBaseName = 'jposee-sources'
     from subprojects.collect { project ->
         project.sourceSets.main.allSource
     }

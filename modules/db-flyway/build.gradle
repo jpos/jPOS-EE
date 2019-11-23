@@ -1,10 +1,10 @@
 description = 'jPOS-EE :: flyWay support'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    compile project(':modules:db-postgresql')
-    compile project(':modules:logback')
-    compile libraries.flywaydb
+    api project(':modules:dbsupport')
+    api project(':modules:db-postgresql')
+    api project(':modules:logback')
+    api libraries.flywaydb
 }
 
 apply from: "${rootProject.projectDir}/jpos-app.gradle"

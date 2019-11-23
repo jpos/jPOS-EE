@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: H2 DB support'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    compile libraries.jdbcH2
+    api project(':modules:dbsupport')
+    api libraries.jdbcH2
 }

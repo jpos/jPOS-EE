@@ -3,10 +3,10 @@ description = 'jPOS-EE :: ISO over HTTP Client Code'
 apply plugin: 'war'
 
 dependencies {
-    compile libraries.jpos
-    compile libraries.servlet_api
-    compile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
-    compile project(':modules:iso-http-server')
+    api libraries.jpos
+    api libraries.servlet_api
+    api "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+    api project(':modules:iso-http-server')
     providedCompile project(':modules:jetty')
 }
 

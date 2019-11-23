@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: MySql support'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    compile libraries.jdbcMysql
+    api project(':modules:dbsupport')
+    api libraries.jdbcMysql
 }

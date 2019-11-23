@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: Microsoft SQL Server support'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    compile libraries.jdbcMssql
+    api project(':modules:dbsupport')
+    api libraries.jdbcMssql
 }

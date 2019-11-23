@@ -1,13 +1,13 @@
 description = 'jPOS-EE :: Database Support Module'
 
 dependencies {
-    compile project(':modules:core')
-    compile libraries.hibernate_core
-    compile libraries.hibernate_envers
-    compile libraries.hibernate_c3p0
-    compile libraries.c3p0 // force c3p0 version (temporary fix un Hibernate bumps up version)
-    compile libraries.hibernate_ehcache
-    compile libraries.jta
-    compile libraries.jacksonDatabind
+    api project(':modules:core')
+    api libraries.hibernate_core
+    implementation libraries.hibernate_envers
+    implementation libraries.hibernate_c3p0
+    implementation libraries.c3p0 // force c3p0 version (temporary fix un Hibernate bumps up version)
+    implementation libraries.hibernate_ehcache
+    implementation libraries.jta
+    api libraries.jacksonDatabind
 }
 

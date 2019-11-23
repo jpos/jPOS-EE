@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: FSDMsgX'
 
 dependencies {
-    compile libraries.jpos
+    api libraries.jpos
 }
 

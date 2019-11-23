@@ -1,8 +1,8 @@
 description = 'jPOS-EE :: CryptoService'
 
-dependencies { 
-    compile libraries.jpos
-    compile project(':modules:sysconfig')
+dependencies {
+    api libraries.jpos
+    api project(':modules:sysconfig')
 }
 
 

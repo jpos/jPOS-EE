@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: Store and Forward (SAF) Module'
 
 dependencies {
-    compile project(':modules:core')
+    api project(':modules:core')
 }
 

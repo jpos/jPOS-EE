@@ -56,15 +56,15 @@ install {
 uploadArchives.enabled = false
 
 dependencies {
-    implementation "com.vaadin:vaadin-server:${vaadinVersion}"
-    implementation "com.vaadin:vaadin-push:${vaadinVersion}"
-    implementation 'org.vaadin.addons:d3Gauge:1.0.1'
-    implementation 'org.vaadin.addons:dcharts-widget:1.7.0'
-    implementation 'com.vaadin:vaadin-context-menu:3.0.0'
-    implementation 'com.byteowls:vaadin-chartjs:0.3.0'
-    implementation 'org.vaadin.addons:vaadin-sliderpanel:2.0.0'
-    implementation "com.vaadin:vaadin-themes:${vaadin.version}"
-    implementation 'com.vaadin:vaadin-sass-compiler:0.9.13'
+    api "com.vaadin:vaadin-server:${vaadinVersion}"
+    api "com.vaadin:vaadin-push:${vaadinVersion}"
+    api 'org.vaadin.addons:d3Gauge:1.0.1'
+    api 'org.vaadin.addons:dcharts-widget:1.7.0'
+    api 'com.vaadin:vaadin-context-menu:3.0.0'
+    api 'com.byteowls:vaadin-chartjs:0.3.0'
+    api 'org.vaadin.addons:vaadin-sliderpanel:2.0.0'
+    api "com.vaadin:vaadin-themes:${vaadin.version}"
+    api 'com.vaadin:vaadin-sass-compiler:0.9.13'
 
     providedCompile project(':modules:core')
     providedCompile project(':modules:visitor')

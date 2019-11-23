@@ -2,5 +2,5 @@ description = 'jPOS-EE :: Things Module'
 
 dependencies {
     api project(':modules:dbsupport')
-    implementation libraries.commons_lang
+    api libraries.commons_lang
 }

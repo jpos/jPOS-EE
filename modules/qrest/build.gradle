@@ -2,11 +2,11 @@ description = 'jPOS-EE :: QRest'
 
 dependencies {
     api libraries.jpos
-    implementation libraries.jacksonDatabind
+    api libraries.jacksonDatabind
     api libraries.nettyHandler
     api libraries.nettyCodecHttp
-    implementation libraries.freemarker
-    implementation jsonSchemaValidatorLibs
+    api libraries.freemarker
+    api jsonSchemaValidatorLibs
     testImplementation libraries.junit
     testImplementation libraries.restAssured
 }

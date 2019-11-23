@@ -4,7 +4,7 @@ description = 'jPOS-EE :: MiniGL Module'
 dependencies {
     api project(':modules:logback')
     api project(':modules:dbsupport')
-    implementation libraries.commons_lang
+    api libraries.commons_lang
     testImplementation project(':modules:db-h2')
 }
 

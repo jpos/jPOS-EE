@@ -3,7 +3,7 @@ description = 'jPOS-EE :: SeqNo'
 dependencies {
     api project(':modules:dbsupport')
     testImplementation project(':modules:db-h2')
-    // implementation project(':modules:db-mysql')
+    // api project(':modules:db-mysql')
 }
 
 

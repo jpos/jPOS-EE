@@ -4,7 +4,7 @@ dependencies {
     api project(':modules:dbsupport')
     api project(':modules:db-postgresql')
     api project(':modules:logback')
-    implementation libraries.flywaydb
+    api libraries.flywaydb
 }
 
 apply from: "${rootProject.projectDir}/jpos-app.gradle"

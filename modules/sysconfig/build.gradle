@@ -2,5 +2,5 @@ description = 'jPOS-EE :: Sysconfig Module'
 
 dependencies {
     api project(':modules:dbsupport')
-    implementation libraries.commons_lang
+    api libraries.commons_lang
 }

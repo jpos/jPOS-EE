@@ -3,6 +3,6 @@ description = 'jPOS-EE :: User Module'
 dependencies {
     api project(':modules:dbsupport')
     api project(':modules:eeuser')
-    implementation libraries.servlet_api
+    api libraries.servlet_api
 }
 

@@ -10,7 +10,7 @@ dependencies {
     providedCompile 'com.google.guava:guava:27.1-jre' // force newer Guava
     providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
     providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
-    implementation libraries.commons_lang
+    api libraries.commons_lang
     testImplementation libraries.restAssured
     providedCompile "org.glassfish.jersey.containers:jersey-container-servlet:2.22.1"
 }

@@ -2,7 +2,7 @@ description = 'jPOS-EE :: QRest Client'
 
 dependencies {
     api libraries.jpos
-    implementation libraries.httpAsyncClient
+    api libraries.httpAsyncClient
     testImplementation project(':modules:qrest')
 }
 

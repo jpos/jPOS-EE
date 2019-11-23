@@ -4,8 +4,8 @@ apply plugin: 'war'
 
 dependencies {
     api libraries.jpos
-    implementation libraries.servlet_api
-    implementation "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+    api libraries.servlet_api
+    api "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
     api project(':modules:iso-http-server')
     providedCompile project(':modules:jetty')
 }

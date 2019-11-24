@@ -4,6 +4,7 @@ jPOS Extended Edition
 :revdate: {localdate}
 :revnumber: {jposee_version}
 :toc:
+:toclevels: 3
 :doctype: book
 :author: jPOS Software SRL
 :email: support@jpos.org
@@ -16,7 +17,7 @@ jPOS Extended Edition
 :pdf-theme: jposbook
 :pdf-themesdir: {docdir}
 :sectnums:
-:sectnumlevels: 3
+:sectnumlevels: 5
 
 = Introduction
 

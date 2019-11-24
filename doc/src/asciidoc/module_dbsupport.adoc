@@ -175,7 +175,7 @@ edit it.
 So to recap, the following diagram shows how a dynamic `hibernate.cfg.xml` configuration is created when
 we call `DB db = new DB()` with no arguments:
 
-image:images/DB_configuration.png[width="75%",alt="DB Configuration"]
+image:images/DB_configuration.png[alt="DB Configuration"]
 
 remember, the `mapping` files are taken from the special `META-INF/org/jpos/ee/modules/*.xml`.
 

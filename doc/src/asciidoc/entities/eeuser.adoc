@@ -3,7 +3,7 @@
 The `eeuser` module can be used to represent visitors and users of the system with their
 respective roles and permissions. Roles can be system-wide, or per-Resource (tenant).
 
-[graphviz, eeuser-module, svg, width=450]
+[graphviz, eeuser-module, svg, scaledwidth=90%]
 ----
 digraph eeuser {
     node [shape=box, width=2.0];  user; visitor; realm;
@@ -69,7 +69,7 @@ Because `user` is usually a reserved word in SQL, we use the name `eeuser`
 for the users table.
 =====
 
-[plantuml, user-entity, svg, width="90%"]
+[plantuml, user-entity, svg, scaledwidth="90%"]
 ----
 @startuml
 class User {

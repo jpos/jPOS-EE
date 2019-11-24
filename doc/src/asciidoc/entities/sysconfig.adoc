@@ -45,7 +45,7 @@ Most jPOS applications typically use a prefix, for example:
 
 When shown in the user interface, that `perm.` prefix is discarded, e.g.:
 
-image:images/permissions.png[width="35%",alt="Permissions"]
+image:images/permissions.png[width="500px",alt="Permissions"]
 
 This prefix is configured in `00_qi.xml` like this:
 

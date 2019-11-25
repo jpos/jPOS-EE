@@ -4,6 +4,7 @@ plugins {
 vaadin {
     version=vaadinVersion
     manageDependencies = true
+    manageRepositories = false
 }
 vaadinAddon {
     title='QI'
@@ -17,7 +18,6 @@ apply plugin: 'maven-publish'
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
             artifact (sourceJar) {
                 classifier = 'sources'
             }
@@ -44,16 +44,6 @@ publishing {
         }
     }
 }
-
-install { 
-    doFirst {
-        Configuration archivesConfig = project.getConfigurations().getByName('archives') 
-        archivesConfig.artifacts.removeAll { 
-            it.extension.equals('war')
-        } 
-    }
-}
-uploadArchives.enabled = false
 
 dependencies {
     api "com.vaadin:vaadin-server:${vaadinVersion}"
@@ -88,6 +78,4 @@ jar {
 
 jar.dependsOn("vaadinThemeCompile")
 jar.dependsOn("vaadinCompile")
-install.dependsOn("publishToMavenLocal")
-uploadArchives.dependsOn("jar", "publishMavenJavaPublicationToMavenRepository")
 

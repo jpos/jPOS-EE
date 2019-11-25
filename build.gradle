@@ -13,7 +13,7 @@ buildscript {
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     apply plugin: 'org.owasp.dependencycheck'
 
     group = 'org.jpos.ee'
@@ -34,63 +34,70 @@ subprojects {
     project.archivesBaseName="jposee-${project.name}"
     javadoc.failOnError = false
 
-    def pomConfig = {
-        name 'jPOS-EE Project'
-        description """
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    name = 'jPOS-EE Project'
+                    description = """
     jPOS Extended Edition
-  """
-        url 'http://jpos.org'
-        inceptionYear '1998'
-        organization {
-            name 'jPOS.org'
-            url 'http://jpos.org'
-        }
-        issueManagement {
-            system 'YouTrack'
-            url 'https://jpos.org/issues'
-        }
-        scm {
-            url "https://github.com/jpos/jPOS"
-            connection "scm:git:https://github.com/jpos/jPOS-EE.git"
-            developerConnection "scm:git:git@github.com:jpos/jPOS-EE.git"
-        }
-        licenses {
-            license {
-                name 'GNU AFFERO GENERAL PUBLIC LICENSE'
-                url 'http://www.gnu.org/licenses/agpl-v3.html'
-                comments 'See http://jpos.org/license for more details.'
-                distribution 'repo'
+    """
+                    url = 'http://jpos.org'
+                    inceptionYear = '1998'
+                    organization {
+                        name = 'jPOS.org'
+                        url = 'http://jpos.org'
+                    }
+                    issueManagement {
+                        system = 'YouTrack'
+                        url = 'https://jpos.org/issues'
+                    }
+                    scm {
+                        url = "https://github.com/jpos/jPOS"
+                        connection = "scm:git:https://github.com/jpos/jPOS-EE.git"
+                        developerConnection = "scm:git:git@github.com:jpos/jPOS-EE.git"
+                    }
+                    licenses {
+                        license {
+                            name = 'GNU AFFERO GENERAL PUBLIC LICENSE'
+                            url = 'http://www.gnu.org/licenses/agpl-v3.html'
+                            comments = 'See http://jpos.org/license for more details.'
+                            distribution = 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'jpos-team'
+                            name = 'jPOS Development Team'
+                            email = 'info@jpos.org'
+                        }
+                    }
+                }
+                groupId = 'org.jpos.ee'
+                artifactId = 'jpos.ee'
+                from components.java
             }
         }
-        developers {
-            developer {
-                id 'jpos-team'
-                name 'jPOS Development Team'
-                email 'info@jpos.org'
+        repositories {
+            maven {
+                def releasesRepoUrl = mavenCentralRepo
+                def snapshotsRepoUrl = 'file:///opt/local/maven'
+                url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+                if (!isSnapshot) {
+                    credentials {
+                        if (project.hasProperty("mavenCentralUsername"))
+                            username = mavenCentralUsername
+                        if (project.hasProperty("mavenCentralPassword"))
+                            password = mavenCentralPassword
+                    }
+                }
             }
         }
     }
 
-    configure(install.repositories.mavenInstaller) {
-        pom.project pomConfig
-    }
     signing {
         required { !isSnapshot }
-        sign configurations.archives
-    }
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                pom.project pomConfig
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                repository(url: 'file:///opt/local/maven')
-                /*
-                repository(url: mavenCentralRepo) {
-                    authentication(userName: mavenCentralUsername, password: mavenCentralPassword)
-                }
-                */
-            }
-        }
+        sign publishing.publications.mavenJava
     }
     test {
         useJUnitPlatform()

@@ -82,6 +82,7 @@ processResources {
             org.apache.tools.ant.filters.ReplaceTokens, 
             tokens: targetConfiguration
         )
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 }
 

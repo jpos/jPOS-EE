@@ -171,7 +171,9 @@ public class SysConfigView extends QIEntityView<SysConfig> {
         super.formatGrid();
         String idField = getPrefix() != null ? "column." + getPrefix() + "id" : "column.id";
         String valueField = getPrefix() != null ? "column." + getPrefix() + "value" : "column.value";
-        getGrid().getColumn("id").setCaption(getCaptionFromId(idField));
-        getGrid().getColumn("value").setCaption(getCaptionFromId(valueField));
+        if (getGrid() != null && getGrid().getColumn("id") != null)
+            getGrid().getColumn("id").setCaption(getCaptionFromId(idField));
+        if (getGrid() != null && getGrid().getColumn("value") != null)
+            getGrid().getColumn("value").setCaption(getCaptionFromId(valueField));
     }
 }

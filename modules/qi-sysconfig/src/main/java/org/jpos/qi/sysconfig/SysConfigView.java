@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
-import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.qi.ViewConfig;
@@ -92,21 +91,36 @@ public class SysConfigView extends QIEntityView<SysConfig> {
 
     @Override
     protected Component buildAndBindCustomComponent(String propertyId) {
+        String idField = getPrefix() != null ? "field." + getPrefix() + "id" : "field.id";
+        String valueField = getPrefix() != null ? "field." + getPrefix() + "value" : "field.value";
         if ("id".equals(propertyId)) {
-            TextField id = new TextField(getCaptionFromId(propertyId));
+            TextField id = new TextField(getCaptionFromId(idField));
             List<Validator> validators = getFieldFactory().getValidators(propertyId);
             Binder<SysConfig> binder = getBinder();
             Binder.BindingBuilder builder = binder.forField(id)
-                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(propertyId))))
+                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(idField))))
                 .withNullRepresentation("")
                 .withConverter(userInputValue -> userInputValue
-                                , toPresentation -> removePrefix(toPresentation));
+                                , this::removePrefix);
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);
             ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
             String width = config != null ? config.getWidth() : null;
             id.setWidth(width);
             return id;
+        } else if ("value".equals(propertyId)) {
+            TextField value = new TextField(getCaptionFromId(valueField));
+            List<Validator> validators = getFieldFactory().getValidators(propertyId);
+            Binder<SysConfig> binder = getBinder();
+            Binder.BindingBuilder builder = binder.forField(value)
+                    .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(valueField))))
+                    .withNullRepresentation("");
+            validators.forEach(builder::withValidator);
+            builder.bind(propertyId);
+            ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
+            String width = config != null ? config.getWidth() : null;
+            value.setWidth(width);
+            return value;
         }
         return null;
     }
@@ -150,9 +164,14 @@ public class SysConfigView extends QIEntityView<SysConfig> {
         String title = cfg.get("title", null);
         if (title != null)
             setTitle("<strong>" + title + "</strong>");
-//        String name = cfg.get("name", null);
-//        if (name != null) {
-//            setGeneralRoute("/" + name);
-//        }
+    }
+
+    @Override
+    public void formatGrid() {
+        super.formatGrid();
+        String idField = getPrefix() != null ? "column." + getPrefix() + "id" : "column.id";
+        String valueField = getPrefix() != null ? "column." + getPrefix() + "value" : "column.value";
+        getGrid().getColumn("id").setCaption(getCaptionFromId(idField));
+        getGrid().getColumn("value").setCaption(getCaptionFromId(valueField));
     }
 }

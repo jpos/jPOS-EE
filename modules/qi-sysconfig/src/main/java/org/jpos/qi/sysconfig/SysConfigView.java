@@ -91,14 +91,12 @@ public class SysConfigView extends QIEntityView<SysConfig> {
 
     @Override
     protected Component buildAndBindCustomComponent(String propertyId) {
-        String idField = getPrefix() != null ? "field." + getPrefix() + "id" : "field.id";
-        String valueField = getPrefix() != null ? "field." + getPrefix() + "value" : "field.value";
         if ("id".equals(propertyId)) {
-            TextField id = new TextField(getCaptionFromId(idField));
+            TextField id = new TextField(getFieldCaption("id"));
             List<Validator> validators = getFieldFactory().getValidators(propertyId);
             Binder<SysConfig> binder = getBinder();
             Binder.BindingBuilder builder = binder.forField(id)
-                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(idField))))
+                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getFieldCaption("id"))))
                 .withNullRepresentation("")
                 .withConverter(userInputValue -> userInputValue
                                 , this::removePrefix);
@@ -109,11 +107,11 @@ public class SysConfigView extends QIEntityView<SysConfig> {
             id.setWidth(width);
             return id;
         } else if ("value".equals(propertyId)) {
-            TextField value = new TextField(getCaptionFromId(valueField));
+            TextField value = new TextField(getFieldCaption("value"));
             List<Validator> validators = getFieldFactory().getValidators(propertyId);
             Binder<SysConfig> binder = getBinder();
             Binder.BindingBuilder builder = binder.forField(value)
-                    .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(valueField))))
+                    .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getFieldCaption("value"))))
                     .withNullRepresentation("");
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);
@@ -169,11 +167,33 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     @Override
     public void formatGrid() {
         super.formatGrid();
-        String idField = getPrefix() != null ? "column." + getPrefix() + "id" : "column.id";
-        String valueField = getPrefix() != null ? "column." + getPrefix() + "value" : "column.value";
         if (getGrid() != null && getGrid().getColumn("id") != null)
-            getGrid().getColumn("id").setCaption(getCaptionFromId(idField));
+            getGrid().getColumn("id").setCaption(getColumnCaption("id"));
         if (getGrid() != null && getGrid().getColumn("value") != null)
-            getGrid().getColumn("value").setCaption(getCaptionFromId(valueField));
+            getGrid().getColumn("value").setCaption(getColumnCaption("value"));
+    }
+
+    private String getColumnCaption (String propertyId) {
+        String caption = propertyId;
+        String propertyIdWithPrefix;
+        if (propertyId != null) {
+            propertyIdWithPrefix = getPrefix() != null ? getPrefix() + propertyId : propertyId;
+            caption = getCaptionFromId("column." + propertyIdWithPrefix);
+            if (caption != null && caption.replaceAll("\\s+", "").equals(propertyIdWithPrefix))
+                caption = getCaptionFromId("column." + propertyId);
+        }
+        return caption;
+    }
+
+    private String getFieldCaption (String propertyId) {
+        String caption = propertyId;
+        String propertyIdWithPrefix;
+        if (propertyId != null) {
+            propertyIdWithPrefix = getPrefix() != null ? getPrefix() + propertyId : propertyId;
+            caption = getCaptionFromId("field." + propertyIdWithPrefix);
+            if (caption != null && caption.replaceAll("\\s+", "").equals(propertyIdWithPrefix))
+                caption = getCaptionFromId("field." + propertyId);
+        }
+        return caption;
     }
 }

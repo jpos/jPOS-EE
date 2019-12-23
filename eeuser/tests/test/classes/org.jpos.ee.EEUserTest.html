@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">16.035s</div>
+<div class="counter">15.320s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">tests()</td>
-<td class="success">16.035s</td>
+<td class="success">15.320s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -87,51 +87,51 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Dec 23, 2019 8:38:47 PM org.hibernate.Version logVersion
+<pre>Dec 23, 2019 8:38:45 PM org.hibernate.Version logVersion
 INFO: HHH000412: Hibernate Core {5.4.6.Final}
-Dec 23, 2019 8:38:49 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory &lt;init&gt;
+Dec 23, 2019 8:38:47 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory &lt;init&gt;
 WARN: HHH020100: The Ehcache second-level cache provider for Hibernate is deprecated.  See https://hibernate.atlassian.net/browse/HHH-12441 for details.
-Dec 23, 2019 8:38:49 PM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
+Dec 23, 2019 8:38:47 PM org.hibernate.annotations.common.reflection.java.JavaReflectionManager &lt;clinit&gt;
 INFO: HCANN000001: Hibernate Commons Annotations {5.1.0.Final}
-Dec 23, 2019 8:38:49 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Dec 23, 2019 8:38:47 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH010002: C3P0 using driver: org.h2.Driver at URL: jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000
-Dec 23, 2019 8:38:49 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Dec 23, 2019 8:38:47 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH10001001: Connection properties: {user=sa, password=****}
-Dec 23, 2019 8:38:49 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Dec 23, 2019 8:38:47 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH10001003: Autocommit mode: false
 SLF4J: Failed to load class &quot;org.slf4j.impl.StaticLoggerBinder&quot;.
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
 MLog initialization issue: slf4j found no binding or threatened to use its (dangerously silent) NOPLogger. We consider the slf4j library not found.
-Dec 23, 2019 8:38:49 PM com.mchange.v2.log.MLog 
+Dec 23, 2019 8:38:47 PM com.mchange.v2.log.MLog 
 INFO: MLog clients using java 1.4+ standard logging.
-Dec 23, 2019 8:38:49 PM com.mchange.v2.c3p0.C3P0Registry 
+Dec 23, 2019 8:38:47 PM com.mchange.v2.c3p0.C3P0Registry 
 INFO: Initializing c3p0-0.9.5.4 [built 23-March-2019 23:00:48 -0700; debug? true; trace: 10]
-Dec 23, 2019 8:38:49 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
+Dec 23, 2019 8:38:47 PM org.hibernate.c3p0.internal.C3P0ConnectionProvider configure
 INFO: HHH10001007: JDBC isolation level: READ_COMMITTED
-Dec 23, 2019 8:38:49 PM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource 
-INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@e82cf691 [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@cdebe0db [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -&gt; caller, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, forceSynchronousCheckins -&gt; false, identityToken -&gt; z8kflta7ek8uq8o3usqe|7bea5580, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 100, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@72452df5 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, forceUseNamedDriverClass -&gt; false, identityToken -&gt; z8kflta7ek8uq8o3usqe|7082275b, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, privilegeSpawnedThreads -&gt; false, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, extensions -&gt; {}, factoryClassLocation -&gt; null, identityToken -&gt; z8kflta7ek8uq8o3usqe|7c865dc3, numHelperThreads -&gt; 3 ]
-Dec 23, 2019 8:38:49 PM org.hibernate.dialect.Dialect &lt;init&gt;
+Dec 23, 2019 8:38:47 PM com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource 
+INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@39d4c57c [ connectionPoolDataSource -&gt; com.mchange.v2.c3p0.WrapperConnectionPoolDataSource@1fc05ba2 [ acquireIncrement -&gt; 3, acquireRetryAttempts -&gt; 30, acquireRetryDelay -&gt; 1000, autoCommitOnClose -&gt; false, automaticTestTable -&gt; null, breakAfterAcquireFailure -&gt; false, checkoutTimeout -&gt; 0, connectionCustomizerClassName -&gt; null, connectionTesterClassName -&gt; com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -&gt; caller, debugUnreturnedConnectionStackTraces -&gt; false, factoryClassLocation -&gt; null, forceIgnoreUnresolvedTransactions -&gt; false, forceSynchronousCheckins -&gt; false, identityToken -&gt; z8kflta7ek8tbnt7031t|1c337466, idleConnectionTestPeriod -&gt; 3000, initialPoolSize -&gt; 2, maxAdministrativeTaskTime -&gt; 0, maxConnectionAge -&gt; 0, maxIdleTime -&gt; 300, maxIdleTimeExcessConnections -&gt; 0, maxPoolSize -&gt; 100, maxStatements -&gt; 300, maxStatementsPerConnection -&gt; 0, minPoolSize -&gt; 2, nestedDataSource -&gt; com.mchange.v2.c3p0.DriverManagerDataSource@8b8cf012 [ description -&gt; null, driverClass -&gt; null, factoryClassLocation -&gt; null, forceUseNamedDriverClass -&gt; false, identityToken -&gt; z8kflta7ek8tbnt7031t|6deb46f8, jdbcUrl -&gt; jdbc:h2:./data/jposee;LOCK_TIMEOUT=5000, properties -&gt; {user=******, password=******} ], preferredTestQuery -&gt; null, privilegeSpawnedThreads -&gt; false, propertyCycle -&gt; 0, statementCacheNumDeferredCloseThreads -&gt; 0, testConnectionOnCheckin -&gt; false, testConnectionOnCheckout -&gt; false, unreturnedConnectionTimeout -&gt; 0, usesTraditionalReflectiveProxies -&gt; false; userOverrides: {} ], dataSourceName -&gt; null, extensions -&gt; {}, factoryClassLocation -&gt; null, identityToken -&gt; z8kflta7ek8tbnt7031t|6227b336, numHelperThreads -&gt; 3 ]
+Dec 23, 2019 8:38:48 PM org.hibernate.dialect.Dialect &lt;init&gt;
 INFO: HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
-Dec 23, 2019 8:38:50 PM org.hibernate.envers.boot.internal.EnversServiceImpl configure
+Dec 23, 2019 8:38:48 PM org.hibernate.envers.boot.internal.EnversServiceImpl configure
 INFO: Envers integration enabled? : true
-Dec 23, 2019 8:38:50 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
+Dec 23, 2019 8:38:48 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
 WARN: HHH90001006: Missing cache[default-update-timestamps-region] was created on-the-fly. The created cache will use a provider-specific default configuration: make sure you defined one. You can disable this warning by setting 'hibernate.cache.ehcache.missing_cache_strategy' to 'create'.
-Dec 23, 2019 8:38:50 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
+Dec 23, 2019 8:38:49 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
 WARN: HHH90001006: Missing cache[default-query-results-region] was created on-the-fly. The created cache will use a provider-specific default configuration: make sure you defined one. You can disable this warning by setting 'hibernate.cache.ehcache.missing_cache_strategy' to 'create'.
-Dec 23, 2019 8:38:50 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
+Dec 23, 2019 8:38:49 PM org.hibernate.cache.ehcache.internal.EhcacheRegionFactory createCache
 WARN: HHH90001006: Missing cache[org.jpos.ee.Realm] was created on-the-fly. The created cache will use a provider-specific default configuration: make sure you defined one. You can disable this warning by setting 'hibernate.cache.ehcache.missing_cache_strategy' to 'create'.
-Dec 23, 2019 8:38:50 PM org.hibernate.tuple.PojoInstantiator &lt;init&gt;
+Dec 23, 2019 8:38:49 PM org.hibernate.tuple.PojoInstantiator &lt;init&gt;
 INFO: HHH000182: No default (no-argument) constructor for class: org.jpos.ee.Realm (class must be instantiated by Interceptor)
-Dec 23, 2019 8:38:51 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Dec 23, 2019 8:38:49 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000227: Running hbm2ddl schema export
-Dec 23, 2019 8:38:51 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@76c8fccc] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-Dec 23, 2019 8:38:51 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
+Dec 23, 2019 8:38:49 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
+INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@8d95358] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+Dec 23, 2019 8:38:49 PM org.hibernate.tool.hbm2ddl.SchemaExport execute
 INFO: HHH000227: Running hbm2ddl schema export
-Dec 23, 2019 8:38:51 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
-INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@271ed8f5] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
-Dec 23, 2019 8:38:51 PM org.hibernate.persister.entity.AbstractEntityPersister getTableUpdateNeeded
+Dec 23, 2019 8:38:49 PM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
+INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@188ed283] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+Dec 23, 2019 8:38:50 PM org.hibernate.persister.entity.AbstractEntityPersister getTableUpdateNeeded
 WARN: HHH000502: The [parent] property of the [org.jpos.ee.Role] entity was modified, but it won't be updated because the property is immutable.
 </pre>
 </span>
@@ -144,7 +144,7 @@ WARN: HHH000502: The [parent] property of the [org.jpos.ee.Role] entity was modi
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.0.1</a> at Dec 23, 2019 8:39:03 PM</p>
+<a href="http://www.gradle.org">Gradle 6.0.1</a> at Dec 23, 2019 8:39:01 PM</p>
 </div>
 </div>
 </body>

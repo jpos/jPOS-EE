@@ -74,11 +74,6 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                 .setCaption(getCaptionFromId("detail"))
                 .setSortable(true)
                 .setHidable(false);
-        this.addColumn(entry -> entry.getTags() != null ? entry.getTags().toString() : "")
-                .setId("tags")
-                .setCaption(getCaptionFromId("tags"))
-                .setSortable(true)
-                .setHidable(false);
         this.addColumn(entry -> entry.isDebit() ? entry.getAmount() : null)
                 .setId("debit")
                 .setStyleGenerator(cellStyle -> "align-right")
@@ -91,6 +86,11 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                 .setStyleGenerator(cellStyle -> "align-right")
                 .setRenderer(createAmountRenderer())
                 .setCaption(getCaptionFromId("credit"))
+                .setSortable(true)
+                .setHidable(false);
+        this.addColumn(entry -> entry.getTags() != null ? entry.getTags().toString() : "")
+                .setId("tags")
+                .setCaption(getCaptionFromId("tags"))
                 .setSortable(true)
                 .setHidable(false);
         //also align right header of credit & debit

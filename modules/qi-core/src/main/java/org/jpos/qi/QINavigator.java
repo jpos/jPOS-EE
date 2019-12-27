@@ -37,7 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QINavigator extends Navigator {
-    private static String URL_PATTERN_STRING = "^[\\w\\s.\\-\\/\\?\\=\\:]{0,255}$";
+    private static String URL_PATTERN_STRING = "^[\\w\\s.\\-\\/\\?\\=\\:\\&]{0,255}$";
     private static Pattern ROUTE_PATTERN = Pattern.compile("^/(\\w+)/*.*");
     public Validator validator;
     QI app;

@@ -182,7 +182,6 @@ public class ConsumersView extends QIEntityView<Consumer> {
         }
         if ("user".equalsIgnoreCase(propertyId) && getFieldFactory().isLinkField(propertyId)) {
             String url = getViewConfig().getFields().get(propertyId).getLink();
-            System.out.println("------> url: " + url);
             UserLinkField field = new UserLinkField (url);
             field.setCaption(getCaptionFromId("field." + propertyId));
             formatField(propertyId, field).bind(propertyId);

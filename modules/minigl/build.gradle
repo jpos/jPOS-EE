@@ -29,5 +29,7 @@ test {
     include '**/*Test.class'
     exclude '**/stress/*'
     workingDir testRuntimeDir
+
+    systemProperties(["user.name" : "travis" ])
 }
 

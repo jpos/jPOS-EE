@@ -1,16 +1,22 @@
-def archiveJarName="${project.name}-${project.version}.jar"
-def archiveWarName="${project.name}-${project.version}.war"
+String archiveJarName="${project.name}-${project.version}.jar"
+String archiveWarName="${project.name}-${project.version}.war"
+String installDir=file("${project.buildDir}/install/${project.name}")
+
 project.ext {
-    targetConfiguration = new Properties()
     def target = project.hasProperty('target') ? target : 'devel'
-    targetConfiguration.put('jarname', archiveJarName.toString())
-    targetConfiguration.put('warname', archiveWarName.toString())
-    targetConfiguration.put('target', target.toString())
-    targetConfiguration.put("buildTimestamp", new Date().format("yyyy-MM-dd HH:mm:ss z"));
-    File cfgFile = file("../../${target}.properties")
+    targetConfiguration = configure(new Properties()) {
+        put('jvm.options', '')                                  // empty default, so ReplaceTokens has something to work with
+        put('target', target)
+        jarname = archiveJarName
+        warname = archiveWarName
+        buildTimestamp = new Date().format("yyyy-MM-dd HH:mm:ss z")
+        rootProjectDir = this.rootProject.projectDir.toString()
+    }
+
+    File cfgFile = file("${rootProject.projectDir}/${target}.properties")
     if (cfgFile.exists()) {
         cfgFile.withInputStream{
-            targetConfiguration.load(it);   
+            targetConfiguration.load(it)
         }
     }
 }
@@ -18,11 +24,16 @@ project.ext {
 // We build a CopySpec for consistency
 def jposCopySpec = copySpec {
     from(file("src/dist")) {
+        exclude 'cfg/*.lmk'
         exclude 'cfg/*.jks'
+        exclude 'cfg/*.ks'
         exclude '**/*.jpg'
         exclude '**/*.gif'
         exclude '**/*.png'
         exclude '**/*.pdf'
+        exclude '**/*.ico'
+        exclude '**/*.war'
+        exclude '**/*.dat'
         exclude '**/*.ser'
         exclude '**/*.eot'
         exclude '**/*.svg'
@@ -30,16 +41,21 @@ def jposCopySpec = copySpec {
         exclude '**/*.woff'
         exclude '**/*.woff2'
         filter(
-            org.apache.tools.ant.filters.ReplaceTokens, 
+            org.apache.tools.ant.filters.ReplaceTokens,
             tokens: targetConfiguration
         )
     }
     from(file("src/dist")) {
+        include 'cfg/*.lmk'
         include 'cfg/*.jks'
+        include 'cfg/*.ks'
         include '**/*.jpg'
         include '**/*.gif'
         include '**/*.png'
         include '**/*.pdf'
+        include '**/*.ico'
+        include '**/*.war'
+        include '**/*.dat'
         include '**/*.ser'
         include '**/*.eot'
         include '**/*.svg'
@@ -52,7 +68,7 @@ def jposCopySpec = copySpec {
     }
     into("lib") {
         from(configurations.runtime) {
-            exclude "servlet-api*.jar"    // dependency hack 
+            exclude "servlet-api*.jar"    // dependency hack
         }
     }
     into("webapps") {
@@ -72,6 +88,7 @@ jar.manifest {
     )
 }
 
+
 processResources {
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.properties'
@@ -79,12 +96,13 @@ processResources {
         include '**/*.cfg'
         include '**/*.asc'
         filter(
-            org.apache.tools.ant.filters.ReplaceTokens, 
+            org.apache.tools.ant.filters.ReplaceTokens,
             tokens: targetConfiguration
         )
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 }
+
 
 //--------------------------------------------------
 // TASKS
@@ -94,7 +112,7 @@ task version (type: JavaExec, dependsOn: classes) {
     description = "Shows jPOS Version"
     main = 'org.jpos.q2.Q2'
     args = ['--version']
-    classpath configurations.runtime 
+    classpath configurations.runtime
 }
 
 task dist(type: Tar) {
@@ -107,13 +125,13 @@ task dist(type: Tar) {
 
 task installApp(type: Sync) {
     description 'Installs jPOS based application'
-    into { file("${project.buildDir}/install/${project.name}") }
+    into { installDir }
     with jposCopySpec
 }
 
 task wrapper( type: Wrapper ) {
     description = "Generate gradlew[.bat]"
-    gradleVersion = '1.5'
+    gradleVersion = '6.0.1'
 }
 
 task installResources(dependsOn: 'classes', type: JavaExec) {
@@ -126,6 +144,6 @@ task viewTests (description: 'Open Test Reports') {
     doLast {
         Class.forName("java.awt.Desktop").newInstance().browse(
             new File("${buildDir}/reports/tests/test", 'index.html').toURI())
-   }
+    }
 }
 

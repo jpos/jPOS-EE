@@ -116,7 +116,7 @@ public class GroovyParticipant extends Log
     @SuppressWarnings("unchecked")
     public int prepare (long id, Serializable ctx) {
         if (prepare == null)  {
-            return PREPARED | NO_JOIN | READONLY; // nothing to do
+            return PREPARED | READONLY; // nothing to do
         }
         try {
             if (compiled) {
@@ -135,7 +135,7 @@ public class GroovyParticipant extends Log
     @SuppressWarnings("unchecked")
     public int prepareForAbort (long id, Serializable ctx) {
         if (prepareForAbort == null) {
-            return PREPARED | NO_JOIN | READONLY; // nothing to do
+            return PREPARED | READONLY; // nothing to do
         }
         try {
             if (compiled) {

@@ -165,6 +165,7 @@ public class UsersView extends QIEntityView<User> {
     @Override
     public void setGridGetters() {
         Grid<User> g = getGrid();
+        g.addColumn(User::getId).setId("id");
         g.addColumn(User::getNick).setId("nick");
         g.addColumn(User::getName).setId("name");
         g.addColumn(User::getEmail).setId("email");

@@ -79,7 +79,7 @@
   </view>
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
     <property name="entityName" value="user"/>
-    <attribute name="id" field="false" required="true"/>
+    <attribute name="id" field="false" required="true" column="false"/>
     <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true" expand-ratio="1"/>
     <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="2" width="40%"/>
     <attribute name="email" length="128" expand-ratio="2" width="40%"/>

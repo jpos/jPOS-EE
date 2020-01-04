@@ -50,7 +50,14 @@ public class FieldFactory {
         this.binder = binder;
     }
 
-    public AbstractField buildAndBindField (String id) throws NoSuchFieldException {
+    public HasValue buildAndBindField (String id) throws NoSuchFieldException {
+        ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
+        if (config != null && config.getOptions() != null) {
+            String[] options = config.getOptions();
+            HasValue optionsField = buildAndBindOptionsField(id, options);
+            if (optionsField != null)
+                return optionsField;
+        }
         Class dataType = getDataType(id);
         if (dataType.equals(Date.class)) {
             return buildAndBindTimestampField(id);
@@ -155,9 +162,18 @@ public class FieldFactory {
         return field;
     }
 
+    protected ComboBox buildAndBindOptionsField(String id, String[] options) {
+        if (options != null) {
+            ComboBox field = new ComboBox(getCaptionFromId("field." + id), Arrays.asList(options));
+            Binder.BindingBuilder builder = formatField(id, field);
+            builder.bind(id);
+            return field;
+        }
+        return null;
+    }
+
     public Binder.BindingBuilder formatField(String id, HasValue field) {
         Binder.BindingBuilder builder = getBinder().forField(field);
-        builder = builder.withNullRepresentation("");
         if (viewConfig == null)
             return builder;
         List<Validator> v = getValidators(id);
@@ -182,13 +198,6 @@ public class FieldFactory {
         if (config != null) {
             String regex = config.getRegex();
             int length = config.getLength();
-            String[] options = config.getOptions();
-            if (options != null) {
-                //Change the field to a Combo loaded with the options
-                ComboBox combo = new ComboBox(getCaptionFromId("field."+propertyId),Arrays.asList(options));
-                getBinder().bind(combo,propertyId);
-                return null;
-            }
             if (regex != null)
                 validators.add(new RegexpValidator(getApp().getMessage("errorMessage.invalidField", getApp().getMessage("field." + propertyId)),regex));
             if (length > 0)

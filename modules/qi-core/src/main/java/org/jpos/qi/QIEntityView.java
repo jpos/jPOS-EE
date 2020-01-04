@@ -578,7 +578,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         if (field == null) {
             //if it wasn't built yet, build it now.
             try {
-                l.addComponent(fieldFactory.buildAndBindField(id));
+                l.addComponent((Component) fieldFactory.buildAndBindField(id));
             } catch (NoSuchFieldException e) {
                 getApp().getLog().error(e);
             }

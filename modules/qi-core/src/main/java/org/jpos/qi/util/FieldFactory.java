@@ -174,6 +174,8 @@ public class FieldFactory {
 
     public Binder.BindingBuilder formatField(String id, HasValue field) {
         Binder.BindingBuilder builder = getBinder().forField(field);
+        if (!(field instanceof ComboBox))
+            builder = builder.withNullRepresentation("");
         if (viewConfig == null)
             return builder;
         List<Validator> v = getValidators(id);

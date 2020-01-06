@@ -254,7 +254,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             }
 
         }
-        grid.setColumnOrder(getVisibleColumns());
+        try {
+            grid.setColumnOrder(getVisibleColumns());
+        } catch (IllegalStateException exc) {
+            getApp().displayNotification(exc.getMessage());
+        }
         //fix for when a manual resize is done, the last column takes the empty space.
         grid.addColumnResizeListener(event -> {
             int lastColumnIndex = grid.getColumns().size()-1;

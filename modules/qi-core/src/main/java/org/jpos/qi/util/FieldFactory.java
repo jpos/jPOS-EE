@@ -51,12 +51,14 @@ public class FieldFactory {
     }
 
     public HasValue buildAndBindField (String id) throws NoSuchFieldException {
-        ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
-        if (config != null && config.getOptions() != null) {
-            String[] options = config.getOptions();
-            HasValue optionsField = buildAndBindOptionsField(id, options);
-            if (optionsField != null)
-                return optionsField;
+        if (viewConfig != null) {
+            ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
+            if (config != null && config.getOptions() != null) {
+                String[] options = config.getOptions();
+                HasValue optionsField = buildAndBindOptionsField(id, options);
+                if (optionsField != null)
+                    return optionsField;
+            }
         }
         Class dataType = getDataType(id);
         if (dataType.equals(Date.class)) {

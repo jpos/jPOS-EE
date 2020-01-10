@@ -110,6 +110,22 @@ public class DBManager<T> {
         }
     }
 
+    public List<T> getItemsByParam(int offset, int limit, String param, Object value, boolean withFilter) {
+        try {
+            CriteriaQuery<T> query = createQueryByParam(param, value, withFilter);
+            Query<T> queryImp = db.session().createQuery(query);
+            if (limit != -1) {
+                queryImp.setMaxResults(limit);
+            }
+            List<T> list = queryImp
+                    .setFirstResult(offset)
+                    .getResultList();
+            return list;
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
     private CriteriaQuery<T> createQueryByParam(String param, Object value, boolean withFilter) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(clazz);

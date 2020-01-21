@@ -622,5 +622,9 @@ public class ReplicatedSpace
         }
         return obj;
     }
+
+    public JChannel getChannel() {
+        return channel;
+    }
 }
 

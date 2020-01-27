@@ -54,7 +54,16 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
         if (caption != null)
             this.setCaption(caption);
         this.addStyleName("v-grid");
-        this.addColumn(entry ->"<label>" + entry.getAccount().getCode() + "</label>&nbsp;<label class='v-label-light'>" + entry.getAccount().getDescription() + "</label>").setId("account")
+        this.addColumn(entry -> {
+            String lbl = "<label>";
+            lbl += entry.getAccount() != null && entry.getAccount().getCode() != null ?
+                    entry.getAccount().getCode() : "";
+            lbl += "</label>&nbsp;<label class='v-label-light'>";
+            lbl += entry.getAccount() != null && entry.getAccount().getDescription() != null ?
+                    entry.getAccount().getDescription() : "";
+            lbl += "</label>";
+            return lbl;
+        }).setId("account")
                 .setCaption(getCaptionFromId("account"))
                 .setSortable(true)
                 .setHidable(false)

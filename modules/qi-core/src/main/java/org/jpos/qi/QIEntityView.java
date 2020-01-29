@@ -358,12 +358,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
         if (canEdit()) {
             footer.addComponent(editBtn);
-            footer.addComponent(saveBtn);
-            footer.addComponent(cancelBtn);
             footer.setComponentAlignment(editBtn, Alignment.MIDDLE_RIGHT);
-            footer.setComponentAlignment(saveBtn, Alignment.MIDDLE_RIGHT);
-            footer.setComponentAlignment(cancelBtn, Alignment.MIDDLE_RIGHT);
         }
+        footer.addComponent(saveBtn);
+        footer.addComponent(cancelBtn);
+        footer.setComponentAlignment(saveBtn, Alignment.MIDDLE_RIGHT);
+        footer.setComponentAlignment(cancelBtn, Alignment.MIDDLE_RIGHT);
         if (canRemove()) {
             footer.addComponent(removeBtn);
             footer.setComponentAlignment(removeBtn, Alignment.MIDDLE_RIGHT);

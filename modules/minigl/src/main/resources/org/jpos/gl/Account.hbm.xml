@@ -47,7 +47,7 @@
     </property>
     <many-to-one name="parent" not-null="false" cascade="evict" foreign-key="FKAccountParent" lazy="false"/>
     <subclass name="org.jpos.gl.CompositeAccount" discriminator-value="C">
-      <set name="children" cascade="all-delete-orphan,evict" sort="natural" lazy="extra" inverse="true" batch-size="0">
+      <set name="children" cascade="all-delete-orphan,evict" sort="natural" lazy="true" inverse="true" batch-size="0">
         <key column="parent" />
         <!-- index column="posn" / -->
         <one-to-many class="org.jpos.gl.Account" />

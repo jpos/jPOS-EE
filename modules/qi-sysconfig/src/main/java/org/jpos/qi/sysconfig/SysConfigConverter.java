@@ -46,7 +46,7 @@ public class SysConfigConverter implements Converter<SysConfig, String> {
     @Override
     public Result<String> convertToModel(SysConfig value, ValueContext context) {
         if (value == null)
-            return Result.error("NULL value");
+            return Result.ok("");
         else {
             String id = prefix != null ? value.getId().substring(prefix.length()) : value.getId();
             String modelToSave = useValue ? value.getValue() : id;

@@ -58,6 +58,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
     private int connectTimeout;                     // timeout waiting for connection
     private int timeout;                            // timeout waiting for HTTP response on socket
 
+    private String httpClientKey;                   // a key into the Context to store a reference to the HTTP Client
+
     // Context variable names
     private String urlName;
     private String paramsName;
@@ -102,6 +104,9 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
         } else {
             client = HttpAsyncClients.createDefault();
         }
+
+        ctx.put(httpClientKey, client);     // store reference, that should be closed in abort() or commit()
+
         client.start();
         client.execute(httpRequest, new FutureCallback<HttpResponse>() {
             @Override
@@ -121,7 +126,6 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
                 }
 
                 ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
-                close (ctx, client);
                 ctx.resume();
             }
 
@@ -133,22 +137,38 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
                 //      java.net.ConnectException: Timeout connecting to [mydomain.com/xxx.xxx.xxx.xxx:ppp]
                 //      java.net.SocketTimeoutException: ... (when no HTTP response)
                 ctx.log(ex);
-                close (ctx, client);
                 ctx.resume();
             }
 
             @Override
             public void cancelled() {
-                close (ctx, client);
                 ctx.resume();
             }
         });
-        return PREPARED | PAUSE | NO_JOIN | READONLY;
+
+        return PREPARED | PAUSE | READONLY;
     }
+
     public int prepareForAbort (long id, Serializable o) {
         if (cfg.getBoolean ("on-abort", false))
             return prepare (id, o);
         return PREPARED;
+    }
+
+    @Override
+    public void commit(long id, Serializable context) {
+        Context ctx= (Context)context;
+        CloseableHttpAsyncClient c= ctx.get(httpClientKey);
+        if (c != null)
+            closeClient(ctx, c);
+    }
+
+    @Override
+    public void abort(long id, Serializable context) {
+        Context ctx= (Context)context;
+        CloseableHttpAsyncClient c= ctx.get(httpClientKey);
+        if (c != null)
+            closeClient(ctx, c);
     }
 
     @Override
@@ -186,6 +206,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
             httpHeaders[i]= new BasicHeader(headers[i].substring(0, colonPos),      // header name
                                             headers[i].substring(colonPos+1));      // header value
         }
+
+        // Other instances of HttpQuery in this TransactionManager will have a different this.toString.
+        // All transactions going through *this* instance of HttpQuery will have the same key, but
+        // they will be stored in different Context objects. No collisions or overwrites should happen.
+        httpClientKey= "HTTP_CLIENT_REF_"+this.toString();
     }
 
     private String getURL (Context ctx) {
@@ -271,7 +296,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
         }
     } // addHeaders
 
-    private void close (Context ctx, CloseableHttpAsyncClient client) {
+    private void closeClient(Context ctx, CloseableHttpAsyncClient client) {
         try {
             client.close();
         } catch (IOException e) {

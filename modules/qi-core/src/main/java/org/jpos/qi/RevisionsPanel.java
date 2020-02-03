@@ -64,7 +64,6 @@ public class RevisionsPanel extends Panel {
         Layout content = (Layout) getContent();
         content.addComponent(hl);
         content.addComponent(info);
-        content.addComponent(new Label("<hr/>", ContentMode.HTML));
     }
 
     public String getRef() {

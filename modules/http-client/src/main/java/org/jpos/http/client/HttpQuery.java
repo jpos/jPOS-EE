@@ -28,6 +28,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -37,8 +38,10 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+
 import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.AbortParticipant;
+import org.jpos.util.Destroyable;
 import org.jpos.util.Log;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
@@ -46,7 +49,7 @@ import org.jpos.transaction.Context;
 
 
 @SuppressWarnings("unused")
-public class HttpQuery extends Log implements AbortParticipant, Configurable {
+public class HttpQuery extends Log implements AbortParticipant, Configurable, Destroyable {
     private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     private static final int DEFAULT_TIMEOUT = 15000;
 
@@ -67,20 +70,22 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
     private String responseName;
     private String statusName;
     private String contentTypeName;
-
     private String basicAuthenticationName;
+
+    // A shared client for the instance. Will be destroyed when this participant is destroyed.
+    private CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
 
     public HttpQuery () {
         super();
-
+        client.start();
     }
+
     public int prepare (long id, Serializable o) {
         Context ctx = (Context) o;
 
         HttpRequestBase httpRequest = getHttpRequest(ctx);
         if (httpRequest == null)
             return FAIL;            // probably wrong http method; abort early and avoid NPEs later
-
 
         addHeaders(ctx, httpRequest);
 
@@ -89,21 +94,25 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
             setSocketTimeout(timeout).
             build());
 
+        HttpClientContext httpCtx= HttpClientContext.create();                              // per-request http context
 
-        CloseableHttpAsyncClient client;
         String basicAuth = ctx.get(basicAuthenticationName);
         if (basicAuth != null && basicAuth.contains(":")) {
-            CredentialsProvider credsProvider = null;
             String[] credentials = basicAuth.split(":");
-            credsProvider = new BasicCredentialsProvider();
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(AuthScope.ANY,
-              new UsernamePasswordCredentials(credentials[0], credentials[1]));
-            client = HttpAsyncClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-        } else {
-            client = HttpAsyncClients.createDefault();
+                                         new UsernamePasswordCredentials(credentials[0], credentials[1]));
+            httpCtx.setCredentialsProvider(credsProvider);
+
+            // NOTE: The Apache HTTP client does not do preemptive authentication out of the box.
+            // Therefore, it will normally send a non-authenticated request first, and if the server
+            // requires authentication (status code 401, etc) then it will send a second request with
+            // the credentials.
+            // For preemptive authentication, an AuthCache needs to be configured.
+            // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
         }
-        client.start();
-        client.execute(httpRequest, new FutureCallback<HttpResponse>() {
+
+        client.execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse result) {
                 ctx.log (result.getStatusLine());
@@ -121,7 +130,6 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
                 }
 
                 ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
-                close (ctx, client);
                 ctx.resume();
             }
 
@@ -133,18 +141,18 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
                 //      java.net.ConnectException: Timeout connecting to [mydomain.com/xxx.xxx.xxx.xxx:ppp]
                 //      java.net.SocketTimeoutException: ... (when no HTTP response)
                 ctx.log(ex);
-                close (ctx, client);
                 ctx.resume();
             }
 
             @Override
             public void cancelled() {
-                close (ctx, client);
                 ctx.resume();
             }
         });
+
         return PREPARED | PAUSE | NO_JOIN | READONLY;
     }
+
     public int prepareForAbort (long id, Serializable o) {
         if (cfg.getBoolean ("on-abort", false))
             return prepare (id, o);
@@ -271,11 +279,15 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable {
         }
     } // addHeaders
 
-    private void close (Context ctx, CloseableHttpAsyncClient client) {
-        try {
-            client.close();
-        } catch (IOException e) {
-            ctx.log(e);
+
+    @Override
+    public void destroy() {
+        if (client.isRunning()) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                warn(e);
+            }
         }
     }
 }

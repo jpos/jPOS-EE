@@ -46,7 +46,8 @@ In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
    ** a `String[]` where each item follows the `header_name:header_value` syntax
    ** a `List<String>` where each item follows the `header_name:header_value` syntax
    ** a `Map<String,String>` where the keys represent _header names_, and the values the corresponding _header values_
-
+* `.HTTP_BASIC_AUTHENTICATION`: A String of the form `<username>:<password>` used for HTTP Basic Authentication.
+   NOTE: The default `Context` name starts with a period (`.`), meaning it will be hidden in the logs during a context dump.
 
 After successful completion (which may include normal HTTP errors such as `404` or `500`), `HttpQuery` stores the result
 back into the `Context`:
@@ -75,10 +76,12 @@ The default names used above can be overriden, e.g.:
     <property name="headersName" value="MY_HTTP_HEADERS" />
     <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
     <property name="contentType" value="application/json" />          <2>
+    <property name="basicAuthenticationdName" value=".MY_BASIC_CREDENTIALS" /> <3>
   </participant>
 ------------
 <1> Name of the Context variable where user can override the default content type.
 <2> Content-Type defaults to `application/json`
+<3> We recommend that the context key starts with a period, so it will be a hidden entry during a context dump in the logs.
 
 Here is a sample use:
 

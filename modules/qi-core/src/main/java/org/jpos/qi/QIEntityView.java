@@ -300,7 +300,6 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                                 field.setReadOnly(true);
                             }
                         }
-
                     }
                 }
             }
@@ -576,7 +575,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             addField (fieldFactory, id, l);
     }
 
-    private void addField (FieldFactory fieldFactory, String id, Layout l) {
+    public void addField (FieldFactory fieldFactory, String id, Layout l) {
         //Check if there's a custom builder
         Component field = buildAndBindCustomComponent(id);
         if (field == null) {

@@ -45,7 +45,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     /**
      * field to select transactions in a certain date range
      */
-    DateRangeComponent dateRangeComponent = new DateRangeComponent(DateRange.ALL_TIME, true) {
+    DateRangeComponent dateRangeComponent = new DateRangeComponent(DateRange.TODAY, true) {
         @Override
         protected Button.ClickListener createRefreshListener() {
             return event -> refreshGrid();
@@ -159,7 +159,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     /**
      * Refreshes the grid when a search parameter changes
      */
-    private void refreshGrid() {
+    public void refreshGrid() {
         DateRange range = dateRangeComponent.getValue();
         Journal selectedJournal = journals.getValue();
         ((TransactionsHelper) getHelper()).setDefaultJournalId(selectedJournal.getId());

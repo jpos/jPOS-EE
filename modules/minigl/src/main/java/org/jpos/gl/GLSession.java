@@ -320,7 +320,7 @@ public class GLSession {
     public void addAccount (CompositeAccount parent, Account acct)
         throws HibernateException, GLException
     {
-        addAccount (parent, acct, false);
+        addAccount (parent, acct, true);
     }
     /**
      * Add account to parent.

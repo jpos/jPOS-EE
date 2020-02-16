@@ -1,3 +1,5 @@
 src/main/resources/org/jpos/AppWidgetset.gwt.xml
 src/main/webapp/VAADIN
+src/main/resources/VAADIN/themes/jpos/styles.css
+src/main/resources/VAADIN/themes/jpos/styles.css.gz
 

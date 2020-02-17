@@ -176,8 +176,6 @@ public class FieldFactory {
 
     public Binder.BindingBuilder formatField(String id, HasValue field) {
         Binder.BindingBuilder builder = getBinder().forField(field);
-        if (!(field instanceof ComboBox))
-            builder = builder.withNullRepresentation("");
         if (viewConfig == null)
             return builder;
         List<Validator> v = getValidators(id);
@@ -185,6 +183,8 @@ public class FieldFactory {
             builder.withValidator(val);
         if (isRequired(id))
             builder.asRequired(getApp().getMessage("errorMessage.req",StringUtils.capitalize(getCaptionFromId("field."+id))));
+        if (!(field instanceof ComboBox))
+            builder = builder.withNullRepresentation("");
         ViewConfig.FieldConfig config = viewConfig.getFields().get(id);
         String width = config != null ? config.getWidth() : null;
         if (field instanceof AbstractComponent)

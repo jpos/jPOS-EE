@@ -84,11 +84,11 @@ public class RevisionsView extends QIEntityView<Revision> {
                     (SerializableFunction<User,String>) toPresentation ->
                             ((RevisionsHelper)getHelper()).getAuthorLink(toPresentation.getNickAndId(), String.valueOf(getInstance().getId())));
         }
-        if ("ref".equals(propertyId)) {
-            builder = builder.withConverter(userInput -> userInput,
-                    (SerializableFunction<String,String>) toPresentation ->
-                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getInstance().getId())));
-        }
+//        if ("ref".equals(propertyId)) {
+//            builder = builder.withConverter(userInput -> userInput,
+//                    (SerializableFunction<String,String>) toPresentation ->
+//                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getInstance().getId())));
+//        }
         validators.forEach(builder::withValidator);
         builder.bind(propertyId);
         return field;
@@ -99,12 +99,16 @@ public class RevisionsView extends QIEntityView<Revision> {
         Grid<Revision> g = this.getGrid();
         g.addColumn(Revision::getId).setId("id");
         g.addColumn(Revision::getDate).setId("date");
-        g.addColumn(revision ->
-                ((RevisionsHelper)getHelper()).getLink(revision.getRef(),""), new HtmlRenderer("")).setId("ref");
+        g.addColumn(Revision::getRef).setId("ref");
+        //g.addColumn(revision ->
+        //        ((RevisionsHelper)getHelper()).getLink(revision.getRef(),""), new HtmlRenderer("")).setId("ref");
         g.addColumn(revision ->
                         ((RevisionsHelper)getHelper()).getAuthorLink(revision.getAuthor().getNickAndId(),"")
                 ,new HtmlRenderer("")).setId("author");
-        g.addColumn(Revision::getInfo,new HtmlRenderer("")).setId("info");
+        g.addColumn(revision -> {
+            String info = revision.getInfo();
+            return info.length() > 40 ? info.substring(0, 40) + "..." : info;
+        },new HtmlRenderer("")).setId("info");
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.jpos.transaction;
 
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.FSDMsg;
@@ -59,8 +60,8 @@ import java.io.Serializable;
      private String[] protectedEntrys;
      private String[] wipedEntrys;
      private String[] protectFSD;
-     private int[] protectISO;
-     private int[] wipeISO;
+     private String[] protectISO;
+     private String[] wipeISO;
 
      public int prepare (long id, Serializable o) {
          return PREPARED | READONLY;
@@ -86,9 +87,9 @@ import java.io.Serializable;
                  if (m != null) {
                      m = (ISOMsg) m.clone();
                      ctx.put (s, m);   // place a clone in the context
-                     for (int p: protectISO)
+                     for (String p: protectISO)
                          protectField(m,p);
-                     for (int p: wipeISO)
+                     for (String p: wipeISO)
                          wipeField(m,p);
                  }
              }
@@ -107,19 +108,25 @@ import java.io.Serializable;
              }  
          }
      }
-     private void protectField (ISOMsg m, int f) {
+     private void protectField (ISOMsg m, String f) {
          if (m != null) {
              m.set (f, protect (m.getString (f)));
          }
      }
-    private void wipeField (ISOMsg m, int f) {
+    private void wipeField (ISOMsg m, String f) {
         if (m != null) {
-            Object v = m.getValue(f);
-            if (v != null) {
-                if (v instanceof String)
-                    m.set(f, ProtectedLogListener.WIPED);
-                else
-                    m.set(f, ProtectedLogListener.BINARY_WIPED);
+            Object v = null;
+            try {
+                v = m.getValue(f);
+                if (v != null) {
+                    if (v instanceof String)
+                        m.set(f, ProtectedLogListener.WIPED);
+                    else
+                        m.set(f, ProtectedLogListener.BINARY_WIPED);
+                }
+            } catch (ISOException ignored) {
+                //ignore, valid routes for some messages in the context may not be vaild for others
+                //e.g. in transaction switches with protocol conversion
             }
         }
     }
@@ -147,19 +154,8 @@ import java.io.Serializable;
          this.wipedEntrys = cfg.getAll("wipe-entry");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
 
-         try {
-             this.protectISO = parseInt(cfg.getAll("protect-ISOMsg"));
-             this.wipeISO = parseInt(cfg.getAll("wipe-ISOMsg"));
-         } catch (NumberFormatException e) {
-             throw new ConfigurationException (e);
-         }
+         this.protectISO = cfg.getAll("protect-ISOMsg");
+         this.wipeISO = cfg.getAll("wipe-ISOMsg");
      }
      
-     private int[] parseInt(String[] ss) throws NumberFormatException {
-         int[] ii = new int[ss.length];
-         for (int i=0; i<ii.length; i++) {
-             ii[i] = Integer.parseInt(ss[i]);
-         }
-         return ii;
-     }
  }

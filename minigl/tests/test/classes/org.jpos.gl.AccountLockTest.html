@@ -29,7 +29,7 @@
 </td>
 <td>
 <div class="infoBox" id="failures">
-<div class="counter">1</div>
+<div class="counter">0</div>
 <p>failures</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">5.695s</div>
+<div class="counter">5.760s</div>
 <p>duration</p>
 </div>
 </td>
@@ -50,8 +50,8 @@
 </div>
 </td>
 <td>
-<div class="infoBox failures" id="successRate">
-<div class="percent">50%</div>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
 <p>successful</p>
 </div>
 </td>
@@ -61,132 +61,13 @@
 <div id="tabs">
 <ul class="tabLinks">
 <li>
-<a href="#tab0">Failed tests</a>
+<a href="#tab0">Tests</a>
 </li>
 <li>
-<a href="#tab1">Tests</a>
-</li>
-<li>
-<a href="#tab2">Standard output</a>
+<a href="#tab1">Standard output</a>
 </li>
 </ul>
 <div id="tab0" class="tab">
-<h2>Failed tests</h2>
-<div class="test">
-<a name="testDeadLock()"></a>
-<h3 class="failures">testDeadLock()</h3>
-<span class="code">
-<pre>java.lang.NullPointerException
-	at org.hibernate.c3p0.internal.C3P0ConnectionProvider.closeConnection(C3P0ConnectionProvider.java:84)
-	at org.hibernate.internal.NonContextualJdbcConnectionAccess.releaseConnection(NonContextualJdbcConnectionAccess.java:49)
-	at org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl.releaseConnection(LogicalConnectionManagedImpl.java:192)
-	at org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl.close(LogicalConnectionManagedImpl.java:235)
-	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.close(JdbcCoordinatorImpl.java:175)
-	at org.hibernate.internal.AbstractSharedSessionContract.close(AbstractSharedSessionContract.java:338)
-	at org.hibernate.internal.SessionImpl.closeWithoutOpenChecks(SessionImpl.java:368)
-	at org.hibernate.internal.SessionImpl.close(SessionImpl.java:344)
-	at org.jpos.ee.DB.close(DB.java:330)
-	at org.jpos.gl.GLSession.close(GLSession.java:1487)
-	at org.jpos.gl.TestBase.tearDownBase(TestBase.java:48)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:564)
-	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:675)
-	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:125)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:132)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptLifecycleMethod(TimeoutExtension.java:111)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptAfterEachMethod(TimeoutExtension.java:95)
-	at org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(ExecutableInvoker.java:115)
-	at org.junit.jupiter.engine.execution.ExecutableInvoker.lambda$invoke$0(ExecutableInvoker.java:105)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:104)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:62)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:43)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:35)
-	at org.junit.jupiter.engine.execution.ExecutableInvoker.invoke(ExecutableInvoker.java:104)
-	at org.junit.jupiter.engine.execution.ExecutableInvoker.invoke(ExecutableInvoker.java:98)
-	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeMethodInExtensionContext(ClassBasedTestDescriptor.java:464)
-	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$synthesizeAfterEachMethodAdapter$17(ClassBasedTestDescriptor.java:454)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAfterEachMethods$9(TestMethodTestDescriptor.java:228)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$12(TestMethodTestDescriptor.java:256)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeAllAfterMethodsOrCallbacks$13(TestMethodTestDescriptor.java:256)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1380)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAllAfterMethodsOrCallbacks(TestMethodTestDescriptor.java:255)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeAfterEachMethods(TestMethodTestDescriptor.java:226)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$5(NodeTestTask.java:135)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$7(NodeTestTask.java:125)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:135)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:123)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:122)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:80)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1380)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:38)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$5(NodeTestTask.java:139)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$7(NodeTestTask.java:125)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:135)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:123)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:122)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:80)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1380)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:38)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$5(NodeTestTask.java:139)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$7(NodeTestTask.java:125)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:135)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:123)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:122)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:80)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:32)
-	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
-	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:51)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220)
-	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188)
-	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128)
-	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:99)
-	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:79)
-	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:75)
-	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:564)
-	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
-	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
-	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
-	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
-	at com.sun.proxy.$Proxy2.stop(Unknown Source)
-	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:564)
-	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
-	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
-	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:182)
-	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:164)
-	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:412)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:48)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
-	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:56)
-	at java.base/java.lang.Thread.run(Thread.java:844)
-</pre>
-</span>
-</div>
-</div>
-<div id="tab1" class="tab">
 <h2>Tests</h2>
 <table>
 <thead>
@@ -197,18 +78,18 @@
 </tr>
 </thead>
 <tr>
-<td class="failures">testDeadLock()</td>
-<td class="failures">5.360s</td>
-<td class="failures">failed</td>
+<td class="success">testDeadLock()</td>
+<td class="success">5.384s</td>
+<td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testLock()</td>
-<td class="success">0.335s</td>
+<td class="success">0.376s</td>
 <td class="success">passed</td>
 </tr>
 </table>
 </div>
-<div id="tab2" class="tab">
+<div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
 <pre>1 Bob's initial deposit
@@ -318,12 +199,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -355,19 +236,19 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200220203647&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200220203750&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -391,7 +272,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200220203647&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200220203750&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -415,7 +296,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200220203647&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200220203750&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -429,7 +310,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200220203647&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200220203750&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -462,17 +343,17 @@
     &lt;!--id 2--&gt;
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
-    &lt;grant&gt;read&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
+    &lt;grant&gt;read&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
     &lt;grant&gt;write&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 4--&gt;
@@ -551,12 +432,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -588,11 +469,11 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
@@ -600,7 +481,7 @@
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200220203647&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200220203750&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -624,7 +505,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200220203647&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200220203750&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -648,7 +529,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200220203647&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200220203750&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -662,7 +543,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200220203647&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200220203750&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -688,7 +569,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.1.1</a> at Feb 20, 2020, 8:37:01 PM</p>
+<a href="http://www.gradle.org">Gradle 6.1.1</a> at Feb 20, 2020, 8:38:09 PM</p>
 </div>
 </div>
 </body>

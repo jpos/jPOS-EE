@@ -36,9 +36,16 @@ import java.util.stream.Stream;
  * Created by alcarraz on 09/10/15.
  */
 public class AccountsHelper extends QIHelper {
+    public static int MAX_LEVEL = 2;
+    private boolean isOnlyComposites;
 
     protected AccountsHelper() {
         super(Account.class);
+    }
+
+    protected AccountsHelper(boolean isOnlyComposites) {
+        super(Account.class);
+        this.isOnlyComposites = isOnlyComposites;
     }
 
     @Override
@@ -69,31 +76,44 @@ public class AccountsHelper extends QIHelper {
 
     @Override
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
-        List<Account> agents = DB.exec(db -> {
+        List accounts = DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
+            if (isOnlyComposites)
+                return mgr.getCompositeAccounts(offset, limit, orders);
             return mgr.getAll(offset,limit,orders);
 
         });
-        return agents.stream();
+        return accounts.stream();
     }
 
     private Stream getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
-        List<Account> accounts = DB.exec(db -> {
+        List accounts = DB.exec(db -> {
             AccountManager mgr = new AccountManager(db);
+            if (isOnlyComposites)
+                return mgr.getAllCompositeChildren(offset, limit, orders, parent);
             return  mgr.getAllChildren(offset,limit,orders,parent);
         });
         return accounts.stream();
     }
 
     private boolean hasChildrenAccounts(Account parent) throws Exception {
+        if (parent.getLevel() >= MAX_LEVEL)
+            return false;
         return DB.exec(db -> {
-            db.session().refresh(parent);
+            if (isOnlyComposites) {
+                AccountManager mgr = new AccountManager(db);
+                return mgr.getCompositeChildrenCount(parent) > 0;
+            }
             return parent.getChildren() != null && parent.getChildren().size() > 0;
         });
     }
 
     private int getChildrenCount(Account parent) throws Exception {
         return DB.exec(db -> {
+            if (isOnlyComposites) {
+                AccountManager mgr = new AccountManager(db);
+                return mgr.getCompositeChildrenCount(parent);
+            }
             db.session().refresh(parent);
             return parent.getChildren().size();
         });
@@ -210,5 +230,13 @@ public class AccountsHelper extends QIHelper {
             getApp().getLog().error(e);
             return null;
         }
+    }
+
+    public boolean isOnlyComposites() {
+        return isOnlyComposites;
+    }
+
+    public void setOnlyComposites(boolean onlyComposites) {
+        isOnlyComposites = onlyComposites;
     }
 }

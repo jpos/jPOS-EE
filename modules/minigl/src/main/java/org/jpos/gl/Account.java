@@ -301,6 +301,23 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         }
         return false;
     }
+
+    public int getLevel () {
+        System.out.println("Account: " + getCode());
+        return getParent() == null ? 0 : getLevel(0);
+    }
+
+    public int getLevel (int level) {
+        System.out.println("Account: " + getCode());
+        level++;
+        if (getParent() == null)
+            return level;
+        if (getParent().equals(getRoot()))
+            return level;
+        else
+            return getParent().getLevel(level);
+    }
+
     /**
      * Helper method used to create a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>

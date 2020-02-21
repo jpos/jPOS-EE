@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2017 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-// Groovy initialization to spice up Context object
+package org.jpos.groovy
 
 import org.jpos.transaction.*
+
+// Groovy initialization to spice up Context object
 
 
 def ctxmc= Context.metaClass
@@ -42,4 +43,3 @@ ctxmc.putAt= { Object key, Object val ->
 }
 
 
-return ctxmc

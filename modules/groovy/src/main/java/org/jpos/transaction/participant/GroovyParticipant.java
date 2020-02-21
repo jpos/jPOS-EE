@@ -110,7 +110,7 @@ public class GroovyParticipant extends Log
 
     private TransactionManager tm;
     protected Configuration cfg;
-    private final String groovyShellKey  = ".groovy-" + Integer.toString(hashCode());
+    private final String groovyShellKey  = ".groovy-" + hashCode();
 
 
     @SuppressWarnings("unchecked")
@@ -197,7 +197,7 @@ public class GroovyParticipant extends Log
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         ClassLoader thisCL= this.getClass().getClassLoader();
-        URL scriptURL= thisCL.getResource("org/jpos/transaction/ContextDefaults.groovy");
+        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
         GroovySetup.runScriptOnce(scriptURL);
 
         compiled= cfg.getBoolean("compiled", true);

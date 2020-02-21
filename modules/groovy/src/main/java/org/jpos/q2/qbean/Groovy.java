@@ -21,9 +21,11 @@ package org.jpos.q2.qbean;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.jdom2.Element;
+import org.jpos.groovy.GroovySetup;
 import org.jpos.q2.QBeanSupport;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Groovy Interpreter QBean.
@@ -36,6 +38,10 @@ public class Groovy extends QBeanSupport implements Runnable {
 
     public void run() {
         try {
+            ClassLoader thisCL= this.getClass().getClassLoader();
+            URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
+            GroovySetup.runScriptOnce(scriptURL);
+
             Element e = getPersist();
             Binding binding = new Binding();
             binding.setVariable("qbean", this);

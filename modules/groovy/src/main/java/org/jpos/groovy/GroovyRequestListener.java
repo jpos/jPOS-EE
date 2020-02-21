@@ -31,6 +31,7 @@ import org.jpos.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -147,6 +148,10 @@ public class GroovyRequestListener extends Log
     @Override
     public void setConfiguration(Element e) throws ConfigurationException
     {
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         xmlCfg= e;
 
         script= getScript(e.getChild("script"));

@@ -54,7 +54,8 @@ ctxmc.putAt= { Object key, Object val ->
 // This list and the shouldExclude method are inspired by org.codehaus.groovy.runtime.StackTraceUtils.isApplicationClass()
 @Field static final List filter= [
                 "groovy.lang.", "org.codehaus.groovy.", "org.apache.groovy.", "gjdk.groovy.",
-                "sun.reflect.", "java.lang.reflect.",
+                "sun.reflect.", "java.lang.reflect.",           // in older JDKs such as JDK 8
+                "jdk.internal.reflect.",                        // in newer JDKs such as JDK 11
                 "org.jpos.groovy.JPOSGroovyDefaults." ]
 @CompileStatic
 private static boolean shouldExclude(String className)

@@ -37,6 +37,26 @@ public class GroovySetup
   // and the value will be what the script returned (which may be null)
   private static final HashMap<String,Object> initOnceScripts= new HashMap<>();
 
+  static {
+    // these are the default packages that will be sanitized in the stack trace
+    // by the methods in org.codehaus.groovy.runtime.StackTraceUtils
+    // I think it's convenient to leave some of Java's own packages in the stack trace
+    System.setProperty("groovy.sanitized.stacktraces",
+                    "groovy.," +
+                    "org.codehaus.groovy.," +
+                    "org.apache.groovy.," +
+                    "gjdk.groovy.," +
+
+                    "sun.reflect.," + "java.lang.reflect.," +   // in older JDKs such as JDK 8
+                    "jdk.internal.reflect.," +                  // in newer JDKs such as JDK 11
+
+                    "org.jpos.groovy.JPOSGroovyDefaults."
+
+                    // "java.," +
+                    // "javax.," +
+    );
+
+  }
 
   public static Object runScriptOnce(URL url)
   {
@@ -57,4 +77,5 @@ public class GroovySetup
       }
     } // synch
   }
+
 }

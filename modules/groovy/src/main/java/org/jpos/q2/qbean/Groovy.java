@@ -20,6 +20,7 @@ package org.jpos.q2.qbean;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jdom2.Element;
 import org.jpos.groovy.GroovySetup;
 import org.jpos.q2.QBeanSupport;
@@ -54,7 +55,7 @@ public class Groovy extends QBeanSupport implements Runnable {
             else
                 shell.evaluate(e.getText());
         } catch (Exception e) {
-            getLog().error(e);
+            getLog().error(StackTraceUtils.deepSanitize(e));
         }
     }
 }

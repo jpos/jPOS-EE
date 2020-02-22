@@ -20,6 +20,7 @@ package org.jpos.groovy;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.Configuration;
@@ -194,7 +195,7 @@ public class GroovyRequestListener extends Log
         }
         catch (Exception e)
         {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
 
         // any non-null and non-boolean value is considered "true-ish"

@@ -19,20 +19,21 @@
 package org.jpos.transaction.participant;
 
 import groovy.lang.Script;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
+import org.jpos.groovy.GroovySetup;
 import org.jpos.transaction.GroupSelector;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
 import java.io.Serializable;
+import java.net.URL;
 
 /**
  * GroovyGroupSelector
  *
 */
-
-
 public class GroovyGroupSelector extends GroovyParticipant implements GroupSelector {
 
     private Object select;
@@ -53,7 +54,7 @@ public class GroovyGroupSelector extends GroovyParticipant implements GroupSelec
             else
                 result = (String) eval(getShell(id, context), select, scriptNames.get("select"));
         } catch (Exception e) {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
         ev.addMessage("select", result);
         Logger.log(ev);
@@ -61,10 +62,15 @@ public class GroovyGroupSelector extends GroovyParticipant implements GroupSelec
     }
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
-
         super.setConfiguration(e);
+
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         select = getScript(e.getChild("select"));
     }
+
     public String defaultSelect(long id, Serializable context) {
         return "";
     }

@@ -26,6 +26,7 @@ import java.util.HashMap;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
@@ -127,7 +128,7 @@ public class GroovyParticipant extends Log
             else
                 return (int) eval(getShell(id, ctx), prepare, scriptNames.get("prepare"));
         } catch (Exception e) {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
         return ABORTED;
     }
@@ -146,7 +147,7 @@ public class GroovyParticipant extends Log
             else
                 return (int) eval(getShell(id, ctx), prepareForAbort, scriptNames.get("prepare-for-abort"));
         } catch (Exception e) {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
         return ABORTED;
     }
@@ -163,7 +164,7 @@ public class GroovyParticipant extends Log
                 else
                     eval(getShell(id, ctx), commit, scriptNames.get("commit"));
             } catch (Exception e) {
-                error(e);
+                error(StackTraceUtils.deepSanitize(e));
             }
         }
     }
@@ -180,7 +181,7 @@ public class GroovyParticipant extends Log
                 else
                     eval(getShell(id, ctx), abort, scriptNames.get("abort"));
             } catch (Exception e) {
-                error(e);
+                error(StackTraceUtils.deepSanitize(e));
             }
         }
     }

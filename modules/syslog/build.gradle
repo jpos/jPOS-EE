@@ -3,4 +3,5 @@ description = 'jPOS-EE :: Syslog Module'
 dependencies {
     api project(':modules:dbsupport')
     api libraries.commons_lang
+    implementation libraries.jpos
 }

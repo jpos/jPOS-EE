@@ -33,6 +33,7 @@ import com.vaadin.ui.components.grid.HeaderCell;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.themes.ValoTheme;
+import org.jpos.core.Configuration;
 import org.jpos.ee.DB;
 import org.jpos.gl.*;
 import org.jpos.qi.components.DateRange;
@@ -405,6 +406,11 @@ public class AccountsView extends QIEntityView<Account> {
             expand(a.getParent());
             tree.expand(a);
         }
+    }
+
+    protected int loadMaxLevelFromConfig() {
+        Configuration config = getViewConfig().getConfiguration();
+        return config.getInt("level", 2);
     }
 
     @Override

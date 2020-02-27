@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  * Created by alcarraz on 09/10/15.
  */
 public class AccountsHelper extends QIHelper {
-    public static int MAX_LEVEL = 2;
+    private int maxLevel;
     private boolean isOnlyComposites;
 
     protected AccountsHelper() {
@@ -44,8 +44,13 @@ public class AccountsHelper extends QIHelper {
     }
 
     protected AccountsHelper(boolean isOnlyComposites) {
+        this(isOnlyComposites, 2);
+    }
+
+    protected AccountsHelper(boolean isOnlyComposites, int maxLevel) {
         super(Account.class);
         this.isOnlyComposites = isOnlyComposites;
+        this.maxLevel = maxLevel;
     }
 
     @Override
@@ -97,7 +102,7 @@ public class AccountsHelper extends QIHelper {
     }
 
     private boolean hasChildrenAccounts(Account parent) throws Exception {
-        if (parent.getLevel() >= MAX_LEVEL)
+        if (parent.getLevel() >= maxLevel)
             return false;
         return DB.exec(db -> {
             if (isOnlyComposites) {

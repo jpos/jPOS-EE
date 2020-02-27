@@ -5,7 +5,7 @@ import org.jpos.qi.QIHelper;
 public class CompositeAccountsView extends AccountsView {
     @Override
     public QIHelper createHelper() {
-        return new AccountsHelper(true);
+        return new AccountsHelper(true, loadMaxLevelFromConfig());
     }
 
 }

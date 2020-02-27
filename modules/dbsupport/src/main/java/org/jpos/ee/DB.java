@@ -100,7 +100,7 @@ public class DB implements Closeable {
      *      <code>META-INF/org/jpos/ee/modules/v1-*</code> instead of just
      *      <code>META-INF/org/jpos/ee/modules/</code> </li>
      *
-     *  <li>finally, if the modifier ends with <code>.hbm.xml</code> (case insensitive), then all configuration
+     *  <li>finally, if the modifier ends with <code>.cfg.xml</code> (case insensitive), then all configuration
      *      is picked from that config file.</li>
      * </ul>
      *
@@ -520,9 +520,10 @@ public class DB implements Closeable {
                 String propFile;
                 String dbPropertiesPrefix = "";
                 String metadataPrefix = "";
+                boolean standardHibernateConfig = cm.endsWith(".cfg.xml");
 
                 String hibCfg = null;
-                if (cm.endsWith(".cfg.xml")) {
+                if (standardHibernateConfig) {
                     hibCfg = cm;
                 } else if (configModifier != null) {
                     String[] ss = configModifier.split(":");
@@ -539,26 +540,28 @@ public class DB implements Closeable {
                     hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
 
                 ssrb.configure(hibCfg);
-                propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
-                Properties dbProps = loadProperties(propFile);
-                for (Map.Entry entry : dbProps.entrySet()) {
-                    String k = (String) entry.getKey();
-                    String v = Environment.get((String) entry.getValue());
-                    ssrb.applySetting(k,v);
-                    dbProps.setProperty(k,v);
+                Properties dbProps = null;
+                if (!standardHibernateConfig) {
+                    propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
+                    dbProps = loadProperties(propFile);
+                    for (Map.Entry entry : dbProps.entrySet()) {
+                        String k = (String) entry.getKey();
+                        String v = Environment.get((String) entry.getValue());
+                        ssrb.applySetting(k,v);
+                        dbProps.setProperty(k,v);
+                    }
+
+                    // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
+                    Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+                    String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+                    String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+                    if (user != null)
+                        ssrb.applySetting("hibernate.connection.username", user);
+                    if (pass != null)
+                        ssrb.applySetting("hibernate.connection.password", pass);
                 }
-
-                // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
-                Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-                String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-                String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-                if (user != null)
-                    ssrb.applySetting("hibernate.connection.username", user);
-                if (pass != null)
-                    ssrb.applySetting("hibernate.connection.password", pass);
-
-
                 MetadataSources mds = new MetadataSources(ssrb.build());
+
                 List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
                 for (String moduleConfig : moduleConfigs) {
                     if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
@@ -570,7 +573,8 @@ public class DB implements Closeable {
                 }
                 md = mds.buildMetadata();
                 metadatas.put(cm, md);
-                properties.put(cm, dbProps);
+                if (dbProps != null)
+                    properties.put(cm, dbProps);
             }
         } finally {
             mdSem.release();

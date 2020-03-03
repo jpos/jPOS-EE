@@ -303,12 +303,10 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     }
 
     public int getLevel () {
-        System.out.println("Account: " + getCode());
         return getParent() == null ? 0 : getLevel(0);
     }
 
     public int getLevel (int level) {
-        System.out.println("Account: " + getCode());
         level++;
         if (getParent() == null)
             return level;

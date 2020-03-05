@@ -67,7 +67,7 @@ public class Heartbeat extends QBeanSupport implements Runnable {
             getLog().error (e);
         }
     }
-    private String getDetail (long start, int tick) {
+    protected String getDetail (long start, int tick) {
         Runtime r = Runtime.getRuntime();
         StringBuffer sb = new StringBuffer();
         sb.append ("memory=");

@@ -84,13 +84,13 @@ public class AccountsView extends QIEntityView<Account> {
         TreeGrid<Account> tree = new TreeGrid();
         tree.setSizeFull();
         tree.setSelectionMode(Grid.SelectionMode.SINGLE);
-        tree.addItemClickListener(event -> {
+//        tree.addItemClickListener(event -> {
             //do nothing if it's root
-            if (event.getItem().getRoot().getId() != event.getItem().getId()) {
-                String url = getGeneralRoute() + "/" + getHelper().getItemId(event.getItem());
-                getApp().getNavigator().navigateTo(url);
-            }
-        });
+//            if (event.getItem().getRoot().getId() != event.getItem().getId()) {
+//                String url = getGeneralRoute() + "/" + getHelper().getItemId(event.getItem());
+//                getApp().getNavigator().navigateTo(url);
+//            }
+//        });
         tree.setItemCollapseAllowedProvider(account -> account.getParent() != null);
         tree.addExpandListener(listener -> {
             if (listener.getExpandedItem().getParent() != null)

@@ -6,6 +6,7 @@ dependencies {
     api libraries.nettyHandler
     api libraries.nettyCodecHttp
     api libraries.freemarker
+    implementation libraries.jakarta_activation
     api jsonSchemaValidatorLibs
     testImplementation libraries.junit
     testImplementation libraries.restAssured

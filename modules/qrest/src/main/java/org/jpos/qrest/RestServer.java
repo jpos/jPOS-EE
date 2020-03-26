@@ -221,7 +221,7 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         KeyManager[] kma = km.getKeyManagers();
         TrustManager[] tma = getTrustManagers(ks);
         SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kma, tma, SecureRandom.getInstance("SHA1PRNG"));
+        sslContext.init(kma, tma, new SecureRandom());
 
         return sslContext;
     }

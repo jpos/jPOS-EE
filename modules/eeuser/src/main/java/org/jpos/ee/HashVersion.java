@@ -142,7 +142,7 @@ public enum HashVersion {
     }
 
     private byte[] genSalt(int len) throws NoSuchAlgorithmException {
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom sr = new SecureRandom();
         byte[] salt = new byte[len];
         sr.nextBytes(salt);
         return salt;

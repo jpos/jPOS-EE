@@ -77,9 +77,12 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     private long ttl;
     private long duration;
     private Supplier<String> unlock;
-    private Recyclable<Random> rnd;
-    private int maxRandomOperations = 100000;
+    private static SecureRandom rnd;
     private CryptoServiceKeyStoreProvider ksProvider;
+
+    static {
+        rnd = new SecureRandom();
+    }
 
     /**
      * Encrypts data using the current key
@@ -201,7 +204,6 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
 
     @Override
     protected void initService() throws ConfigurationException {
-        rnd = new Recyclable<>(SecureRandom::new, maxRandomOperations);
         if (!lazy.get())
             new Thread(this, getName()).start();
         NameRegistrar.register(getName(), this);
@@ -230,7 +232,6 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
         waitTimeout = cfg.getLong("timeout", 30000L);
         ttl = cfg.getLong("ttl", 3600000L);
         duration = cfg.getLong("duration", 86400000L);
-        maxRandomOperations = cfg.getInt("max-random-operations", 100000);
         String unlockPassword = cfg.get("unlock-password", null);
         if (unlockPassword != null) {
             try {
@@ -302,7 +303,7 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
 
     private byte[] randomIV() {
         final byte[] b = new byte[16];
-        rnd.get().nextBytes(b);
+        rnd.nextBytes(b);
         return b;
     }
 

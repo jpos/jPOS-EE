@@ -37,11 +37,7 @@ public class SensitiveString implements Supplier<String> {
     private static final String AES = "AES/CBC/PKCS5Padding";
 
     static {
-        try {
-            rnd = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        rnd = new SecureRandom();
     }
 
 

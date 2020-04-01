@@ -43,11 +43,17 @@ public class FieldFactory {
     private Object bean;
     private ViewConfig viewConfig;
     private Binder binder;
+    private Map<String, List<Validator>> validators;
 
     public FieldFactory(Object bean, ViewConfig viewConfig, Binder binder) {
         this.bean = bean;
         this.viewConfig = viewConfig;
         this.binder = binder;
+    }
+
+    public FieldFactory(Object bean, ViewConfig viewConfig, Binder binder, Map<String, List<Validator>> validators) {
+        this(bean, viewConfig, binder);
+        this.validators = validators;
     }
 
     public HasValue buildAndBindField (String id) throws NoSuchFieldException {
@@ -196,7 +202,7 @@ public class FieldFactory {
     //Override to add more customValidators
     public List<Validator> getValidators(String propertyId) {
         if (viewConfig == null)
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         List<Validator> validators = new ArrayList<>();
         ViewConfig.FieldConfig config = viewConfig.getFields().get(propertyId);
         if (config != null) {
@@ -215,6 +221,10 @@ public class FieldFactory {
                 });
             }
         }
+
+        if (this.validators != null)
+            validators.addAll(this.validators.getOrDefault(propertyId, Collections.emptyList()));
+
         return validators;
     }
 

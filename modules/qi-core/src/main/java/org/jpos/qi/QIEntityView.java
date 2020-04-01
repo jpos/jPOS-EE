@@ -521,7 +521,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     public FieldFactory createFieldFactory () {
-        return new FieldFactory(getBean(), getViewConfig(), getBinder());
+        return new FieldFactory(getBean(), getViewConfig(), getBinder(), helper.getValidators());
     }
 
     protected void addFields (Layout leftLayout, Layout rightLayout, Layout formLayout) {

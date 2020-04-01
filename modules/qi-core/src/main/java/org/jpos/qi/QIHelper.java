@@ -19,6 +19,7 @@
 package org.jpos.qi;
 
 import com.vaadin.data.Binder;
+import com.vaadin.data.Validator;
 import com.vaadin.data.provider.CallbackDataProvider;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.QuerySortOrder;
@@ -39,6 +40,7 @@ public abstract class QIHelper {
     protected Class clazz;
     private Configuration cfg;
     private Object originalEntity;
+    private Map<String, List<Validator>> validators = new HashMap<>();
 
 
     protected QIHelper(Class clazz) {
@@ -266,5 +268,19 @@ public abstract class QIHelper {
 
     public void setOriginalEntity(Object originalEntity) {
         this.originalEntity = originalEntity;
+    }
+
+
+    public void addValidators(String key, Validator ... validators){
+        List<Validator> v = this.validators.computeIfAbsent(key, k -> new LinkedList<>());
+        for (Validator validator: validators) v.add(validator);
+    }
+
+    public List<Validator> getValidators(String key) {
+        return validators.getOrDefault(key, Collections.emptyList());
+    }
+
+    public Map<String, List<Validator>> getValidators() {
+        return validators;
     }
 }

@@ -158,4 +158,19 @@
     .no-stripes .v-grid-row-stripe > td {
         background-color: $v-grid-row-background-color !important;
     }
+    
+    .borderless .v-grid-cell {
+        border: none !important;
+    }
+
+    .smallgrid .v-grid-body .v-grid-cell {
+      line-height: 34px;     // adjust to your needs
+      font-size: 12px;       // adjust to your needs
+      padding: 0 10px;
+    }
+
+    .smallgrid .v-grid-header .v-grid-cell {
+      font-size: 12px;       // adjust to your needs
+      padding: 0 10px;
+    }
 }

@@ -77,7 +77,7 @@ dependencies {
     providedCompile 'com.vaadin.external.slf4j:vaadin-slf4j-jdk14:1.6.1'
     providedCompile 'org.slf4j:jcl-over-slf4j:1.7.7'
     providedCompile 'org.slf4j:jul-to-slf4j:1.7.7'
-    providedCompile 'com.atlassian.commonmark:commonmark:0.12.1'
+    providedCompile 'com.atlassian.commonmark:commonmark:0.14.0'
 }
 
 jar {

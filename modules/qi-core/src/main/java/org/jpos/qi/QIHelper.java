@@ -27,6 +27,7 @@ import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
 import org.jpos.core.Configuration;
 import org.jpos.ee.*;
+import org.jpos.ee.Cloneable;
 import org.jpos.util.BeanDiff;
 
 import java.util.*;
@@ -165,7 +166,6 @@ public abstract class QIHelper {
     public abstract boolean updateEntity(Binder binder) throws
             BLException;
 
-
     @SuppressWarnings("unchecked")
     public DataProvider getDataProvider() {
         DataProvider dataProvider = DataProvider.fromCallbacks(
@@ -250,9 +250,20 @@ public abstract class QIHelper {
         });
     }
 
-    public abstract Stream getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception;
+    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+        List items = DB.exec(db -> {
+            DBManager mgr = new DBManager(db, clazz);
+            return mgr.getAll(offset,limit,orders);
+        });
+        return items.stream();
+    }
 
-    public abstract int getItemCount() throws Exception;
+    public int getItemCount() throws Exception {
+        return DB.exec(db -> {
+            DBManager mgr = new DBManager(db, clazz);
+            return mgr.getItemCount();
+        });
+    }
 
     public abstract String getItemId(Object item);
 

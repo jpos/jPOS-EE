@@ -72,7 +72,7 @@ public class FlywayService extends QBeanSupport implements XmlConfigurable {
                 }
             }
         } catch (Exception e) {
-            getLog().error(e.getMessage());
+            getLog().error(e);
         }
     }
 

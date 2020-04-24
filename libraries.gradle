@@ -92,7 +92,7 @@ ext {
             jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
 
             // Quartz Scheduler
-            quartz: 'org.quartz-scheduler:quartz:2.3.1',
+            quartz: 'org.quartz-scheduler:quartz:2.3.2',
 
             // JGroups
             jgroups: "org.jgroups:jgroups:${jgroupsVersion}",

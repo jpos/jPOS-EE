@@ -21,6 +21,7 @@ package org.jpos.transaction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,41 @@ public class TxnId {
            + (node % 1000) * NMUL
            + transactionId % 100000;
         return this;
+    }
+    /**
+     * Returns a file suitable to store contents of <i>this</i> transaction.
+     * File format is <i>yyyy/mm/dd/hh-mm-ss-node-id</i>
+     * @return file in said format
+     */
+    public File toFile () {
+        long l = id;
+        int yy = (int) (id / YMUL); l -= yy*YMUL;
+        int dd = (int) (l / DMUL);  l -= dd*DMUL;
+        int sod = (int) (l / SMUL); l -= sod*SMUL;
+        int node = (int) (l / NMUL); l -= node * NMUL;
+        int hh = sod/3600;
+        int mm = (sod-3600*hh) / 60;
+        int ss = sod % 60;
+
+        DateTime dt = new DateTime()
+          .withYear(2000+yy)
+          .withDayOfYear(dd)
+          .withHourOfDay(hh)
+          .withMinuteOfHour(mm)
+          .withSecondOfMinute(ss);
+
+        return new File(
+          String.format("%04d/%02d/%02d/%02d-%02d-%02d-%03d-%05d",
+            dt.year().get(),
+            dt.monthOfYear().get(),
+            dt.dayOfMonth().get(),
+            dt.hourOfDay().get(),
+            dt.minuteOfHour().get(),
+            dt.secondOfMinute().get(),
+            node,
+            l
+            )
+        );
     }
 
     @Override

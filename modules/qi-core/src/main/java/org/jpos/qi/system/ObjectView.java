@@ -26,6 +26,7 @@ import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
+import org.jpos.iso.ISOUtil;
 import org.jpos.q2.QFactory;
 import org.jpos.qi.QI;
 import org.jpos.server.ui.XLabel;
@@ -78,6 +79,7 @@ public class ObjectView extends CssLayout implements View, XmlConfigurable, Runn
             } catch (InterruptedException ignored) {
             } catch (Exception e) {
                 qi.getLog().warn (e);
+                ISOUtil.sleep(1000L); // relax
             }
         }
     }

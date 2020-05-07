@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.SystemUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -44,7 +46,12 @@ public class BinLogTest implements Runnable {
 
     @BeforeEach
     public void before () {
-        Assumptions.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+        /**
+         * Skip Tests for BinLog if on MS Windows due to file locking considerations
+         * Skip Binlog Tests for OSX on Java 9 and newer due to fcntl(fd, F_FULLSYNC) being slow
+         * Note: Java 8 does not properly flush buffers to disk on OSX
+         */
+        Assumptions.assumeFalse(IS_OS_WINDOWS || (IS_OS_MAC_OSX && isJavaVersionAtLeast(JAVA_9)));
     }
     
     @BeforeAll

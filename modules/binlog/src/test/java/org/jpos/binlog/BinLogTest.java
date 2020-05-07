@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -44,7 +46,8 @@ public class BinLogTest implements Runnable {
 
     @BeforeEach
     public void before () {
-        Assumptions.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+        // Skip Tests for BinLog if on MS Windows/OSX due to severe lock contention performance issues
+        Assumptions.assumeFalse(IS_OS_WINDOWS || IS_OS_MAC_OSX);
     }
     
     @BeforeAll

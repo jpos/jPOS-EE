@@ -234,7 +234,8 @@ public class FieldFactory {
     }
 
     public boolean isRequired(String propertyId) {
-        return viewConfig.getFields().get(propertyId).isRequired();
+        return viewConfig != null && viewConfig.getFields().keySet().contains(propertyId) &&
+          viewConfig.getFields().get(propertyId).isRequired();
     }
 
     public Binder getBinder() {

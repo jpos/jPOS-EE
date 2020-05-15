@@ -67,7 +67,7 @@ def jposCopySpec = copySpec {
         rename archiveJarName, "${targetConfiguration.jarname}"
     }
     into("lib") {
-        from(configurations.runtime) {
+        from(configurations.runtimeClasspath) {
             exclude "servlet-api*.jar"    // dependency hack
         }
     }

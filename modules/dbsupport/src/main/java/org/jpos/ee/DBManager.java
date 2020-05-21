@@ -24,6 +24,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.criteria.*;
 import org.hibernate.query.Query;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -97,9 +98,6 @@ public class DBManager<T> {
         }
     }
 
-    public List<T> getItemsByParam(String param, Object value) {
-        return getItemsByParam(param,value,false);
-    }
 
     public List<T> getItemsByParam(String param, Object value, boolean withFilter) {
         try {
@@ -124,6 +122,152 @@ public class DBManager<T> {
         } catch (NoResultException nre) {
             return null;
         }
+    }
+
+    public List<T> queryItems(int offset, int limit, DBFilter<T> filter) {
+        return queryItems(offset, limit, false, filter);
+    }
+
+    /**
+     * Paged version of {@link #queryItems(DBFilter[])}
+     * @param offset page start
+     * @param limit page size
+     * @param filters predicate creators
+     * @return items for which predicate created by filters are true
+     */
+    @SafeVarargs
+    public final List<T> queryItems(int offset, int limit, DBFilter<T>... filters) {
+        return queryItems(offset, limit, false, filters);
+    }
+
+    public List<T> queryItems(int offset, int limit, boolean internalFilters, DBFilter<T> filter) {
+        Query<T> q = createQuery(internalFilters, filter);
+        if (limit > 0) q.setMaxResults(limit);
+        if (offset > 0) q.setFirstResult(offset);
+        return q.getResultList();
+    }
+
+    /**
+     * Paged version of {@link #queryItems(boolean, DBFilter[])}
+     * @param offset page start
+     * @param limit page size
+     * @param internalFilters if true include manager's internal filter
+     * @param filters predicate creators
+     * @return items for which predicate created by filters are true
+     */
+    @SafeVarargs
+    public final List<T> queryItems(int offset, int limit, boolean internalFilters, DBFilter<T>... filters) {
+        Query<T> q = createQuery(internalFilters, filters);
+        if (limit > 0) q.setMaxResults(limit);
+        if (offset > 0) q.setFirstResult(offset);
+        return q.getResultList();
+    }
+
+    public List<T> queryItems(DBFilter<T> filter) {
+        return queryItems(false, filter);
+    }
+
+    /**
+     * Arbitrary query over the entity type (T) of this manager
+     * Example usage:
+     * <pre>
+     *     List&le;T&ge results = queryItems( (cb, root) ->
+     *          cb.or(
+     *              cb.greaterThanOrEqualTo(root.get("property"), value),
+     *              cb.isNotNull(root.get("otherProperty")
+     *          )
+     *     )
+     * </pre>
+     *
+     * @param filters predicate creators
+     * @return items for which predicate created by filters are true
+     */
+    @SafeVarargs
+    public final List<T> queryItems(DBFilter<T>... filters) {
+        return queryItems(false, filters);
+    }
+
+    public List<T> queryItems(boolean internalFilters, DBFilter<T> filter) {
+        return createQuery(internalFilters, filter).getResultList();
+    }
+
+    /**
+     * Version of {@link #queryItems(DBFilter[])} that adds the manager internal predicates
+     * @param internalFilters if true the manager's internal predicates are added
+     * @param filters predicate creators
+     * @return items for which predicate created by filters are true
+     */
+    @SafeVarargs
+    public final List<T> queryItems(boolean internalFilters, DBFilter<T>... filters) {
+        return createQuery(internalFilters, filters).getResultList();
+    }
+    public List<T> getItemsByParam(String param, Object value) {
+        return getItemsByParam(param,value,false);
+    }
+
+    public Query<T> createQuery(DBFilter<T> filter) {
+        return createQuery(false, filter);
+    }
+
+    /**
+     * Similar to {@link #queryItems(DBFilter[])} but returns the query to be modified prior execution
+     * @param filters predicate creators
+     * @return Hibernate Query ready to be executed or modified prior execution
+     */
+    @SafeVarargs
+    public final Query<T> createQuery(DBFilter<T>... filters) {
+        return createQuery(false, filters);
+    }
+
+    public Query<T> createQuery(boolean internalFilters, DBFilter<T> filter) {
+        return db.session().createQuery(createCriteriaQuery(internalFilters, filter));
+    }
+
+    /**
+     * Similar to {@link #createQuery(DBFilter[])} with ability of adding manager's internal predicates
+     * @param internalFilters include manager's internal predicates?
+     * @param filters predicate creators
+     * @return Hibernate Query Ready to be executed or modified prior execution
+     */
+    @SafeVarargs
+    public final Query<T> createQuery(boolean internalFilters, DBFilter<T>... filters) {
+        return db.session().createQuery(createCriteriaQuery(internalFilters, filters));
+    }
+
+    protected CriteriaQuery<T> createCriteriaQuery(DBFilter<T> filter) {
+        return createCriteriaQuery(false, filter);
+    }
+
+    @SafeVarargs
+    protected final CriteriaQuery<T> createCriteriaQuery(DBFilter<T>... filters) {
+        return createCriteriaQuery(false, filters);
+    }
+
+    protected CriteriaQuery<T> createCriteriaQuery(boolean internalFilters, DBFilter<T> filter) {
+
+        CriteriaBuilder cb = db.session().getCriteriaBuilder();
+
+        CriteriaQuery<T> query = cb.createQuery(clazz);
+        Root<T> root = query.from(clazz);
+        Predicate predicate = (filter != null) ? filter.createPredicate(cb, root) : null;
+        if (internalFilters){
+            Predicate[] predicates = buildFilters(root);
+            if (predicates != null && predicates.length > 0) {
+                predicate = (predicate != null) ? cb.and(predicate, cb.and(predicates)) : cb.and(predicates);
+            }
+        }
+        if (predicate != null) query = query.where(predicate);
+        return query.select(root);
+    }
+
+    @SafeVarargs
+    protected final CriteriaQuery<T> createCriteriaQuery(boolean internalFilters, DBFilter<T>... filters) {
+        CriteriaQuery<T> query = createCriteriaQuery(internalFilters, (DBFilter<T>) null);
+        CriteriaBuilder cb = db.session().getCriteriaBuilder();
+        Root<T> root = query.from(clazz);
+
+        return query.where(query.getRestriction()
+                , cb.and(Arrays.stream(filters).map(f -> f.createPredicate(cb, root)).toArray(Predicate[]::new)));
     }
 
     private CriteriaQuery<T> createQueryByParam(String param, Object value, boolean withFilter) {

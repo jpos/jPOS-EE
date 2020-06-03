@@ -87,12 +87,14 @@ Here is a sample use:
 
 [source,java]
 -------------
+    TransactionManager mgr = ... // somehow get a reference to a TransactionManager
     Context ctx = new Context();
     ctx.put("HTTP_URL", "http://localhost/q2/version");
     ctx.put("HTTP_METHOD", "GET");
-    mgr.queue(ctx);
-    Integer sc = ctx.get ("HTTP_STATUS", 10000L); <1>
+    mgr.queue(ctx); <1>
+    Integer sc = ctx.get ("HTTP_STATUS", 10000L); <2>
     String response = ctx.get ("HTTP_RESPONSE");
 -------------
-<1> Wait up to 10 seconds for a response
+<1> Enqueue `ctx` to be processed by `mgr` that has an `HttpQuery` in its list of participants.
+<2> Wait up to 10 seconds for a response
 

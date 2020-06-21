@@ -30,8 +30,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
@@ -41,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class BinLogTest implements Runnable {
-    public static File dir;
+    public static Path dir;
     private AtomicLong cnt = new AtomicLong();
 
     @BeforeEach
@@ -56,8 +57,8 @@ public class BinLogTest implements Runnable {
     
     @BeforeAll
     public static void setup () throws IOException {
-        dir = File.createTempFile("binlog-", "");
-        dir.delete();
+        dir = Files.createTempFile("binlog-", "");
+        Files.delete(dir);
         System.out.println ("TEMP=" + dir);
         // dir = new File("/tmp/binlog");
     }
@@ -99,15 +100,15 @@ public class BinLogTest implements Runnable {
 
     @AfterAll
     public static void cleanup() throws IOException {
-        if (dir.listFiles() != null) {
-            for (File f : dir.listFiles()) {
+        if (Files.list(dir) != null) {
+            for (Path f : Files.newDirectoryStream(dir)) {
                 if (f.toString().endsWith(".dat")) {
                     System.out.println ("Deleting " + f.toString());
-                    f.delete();
+                    Files.delete(f);
                 }
             }
         }
         System.out.println ("Deleting " + dir);
-        dir.delete();
+        Files.delete(dir);
     }
 }

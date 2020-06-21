@@ -51,13 +51,13 @@ public class Heartbeat extends QBeanSupport implements Runnable {
                 if (cfg.getBoolean ("check", true))
                     mgr.check ();
                 mgr.touch (statusId, Status.OK, getDetail (start, i));
-                Thread.sleep (interval);
             } catch (Throwable t) {
                 getLog().error (t);
                 ISOUtil.sleep (1000);
             } finally {
                 close();
             }
+            ISOUtil.sleep (interval);
         }
     }
     private void close() {

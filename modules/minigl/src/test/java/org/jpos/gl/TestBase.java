@@ -34,8 +34,8 @@ public abstract class TestBase {
             String userName = System.getProperty("user.name");
             System.setProperty("user.name", "travis");
             new Import().parse("../test-classes/testdata.xml");
-            System.setProperty("user.name", userName);
             new Export().export(System.out);
+            System.setProperty("user.name", userName);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

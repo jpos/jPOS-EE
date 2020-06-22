@@ -18,10 +18,13 @@
 
 package org.jpos.binlog;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Used to iterate over a binlog
@@ -39,7 +42,7 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
      * @param dir this Binlog's directory
      * @throws IOException on error
      */
-    public BinLogReader (File dir) throws IOException {
+    public BinLogReader (Path dir) throws IOException {
         super (dir, false);
         int first = getFileNumber(getFirst(dir));
         this.iteratorPos = FIRST_EVENT_OFFSET;
@@ -55,7 +58,7 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
      * @param ref reference to a given entry
      * @throws IOException on error
      */
-    public BinLogReader (File dir, BinLog.Ref ref) throws IOException {
+    public BinLogReader (Path dir, BinLog.Ref ref) throws IOException {
         super (dir, false);
         this.iteratorPos = ref.getOffset();
         raf = open (dir, fileNumber = ref.getFileNumber());
@@ -70,7 +73,7 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
      * @throws IOException on error
      */
     public BinLogReader(String dir) throws IOException {
-        this (new File(dir));
+        this (Paths.get(dir));
     }
 
     /**
@@ -83,7 +86,7 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
      * @throws IOException on error
      */
     public BinLogReader (String dir, BinLog.Ref ref) throws IOException {
-        this (new File(dir), ref);
+        this (Paths.get(dir), ref);
     }
 
     /**
@@ -157,7 +160,7 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
             long size = 0L;
             try {
                 actualTailOffset = readTailOffset(raf);
-                size = raf.getChannel().size();
+                size = raf.size();
             } catch (IOException ignored) {
             }
             throw new NoSuchElementException(
@@ -170,10 +173,33 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
     private byte[] read (long pos) throws IOException {
         int len = 0;
         try {
-            raf.seek(pos);
-            len = raf.readInt();
+            ByteBuffer lenbuf = ByteBuffer.allocate(4);
+            try {
+                int read = raf.read(lenbuf, pos).get();
+                if (read != 4) {
+                    throw new IOException ("Failed to read 4 byte data length, return: " + read);
+                }
+            } catch (InterruptedException e) {
+                throw new IOException (e.getMessage());
+            } catch (ExecutionException e) {
+                throw new IOException (e.getMessage());
+            }
+            lenbuf.flip();
+            len = lenbuf.getInt();
             byte[] buf = new byte[len];
-            raf.read(buf);
+            ByteBuffer bytebuf = ByteBuffer.allocate(len);
+            try {
+                int read = raf.read(bytebuf, pos + 4).get();
+                if (read != len) {
+                    throw new IOException ("Failed to read " + len + " byte data, return: " + read);
+                }
+            } catch (InterruptedException e) {
+                throw new IOException (e.getMessage());
+            } catch (ExecutionException e) {
+                throw new IOException (e.getMessage());
+            }
+            bytebuf.flip();
+            bytebuf.get(buf, 0, len);
             return buf;
         } catch (IOException e) {
             throw new IOException ("Error reading position " + pos + " length " + len, e);

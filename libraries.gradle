@@ -22,7 +22,6 @@ ext {
     c3p0Version = '0.9.5.4'
     postgresJDBCVersion = '42.2.11'
     flywaydbVersion = '6.0.4'
-    liquibaseVersion = '3.8.0'
 
     libraries = [
             //jUnit (Tests)
@@ -33,7 +32,6 @@ ext {
 
             //Apache Commons
             commons_lang: 'org.apache.commons:commons-lang3:3.9',
-            commons_logging: 'commons-logging:commons-logging:1.2',
 
             //SLF4J and logback Stuff
             slf4j_api: "org.slf4j:slf4j-api:${slf4jVersion}",
@@ -66,9 +64,6 @@ ext {
             //Mail
             javax_mail: 'javax.mail:javax.mail-api:1.6.2',
 
-            //SSHD
-            sshd: 'org.apache.sshd:sshd-core:2.3.0',
-
             //Servlet API
             servlet_api: "javax.servlet:javax.servlet-api:${servletApiVersion}",
 
@@ -77,18 +72,11 @@ ext {
             jetty_xml: "org.eclipse.jetty:jetty-xml:${jettyVersion}",
             jetty_webapp: "org.eclipse.jetty:jetty-webapp:${jettyVersion}",
             jetty_deploy: "org.eclipse.jetty:jetty-deploy:${jettyVersion}",
-            jetty_plus: "org.eclipse.jetty:jetty-plus:${jettyVersion}",
             jetty_jmx: "org.eclipse.jetty:jetty-jmx:${jettyVersion}",
-            jetty_jndi: "org.eclipse.jetty:jetty-jndi:${jettyVersion}",
             jetty_annotations: "org.eclipse.jetty:jetty-annotations:${jettyVersion}",
             jetty_security: "org.eclipse.jetty:jetty-security:${jettyVersion}",
-            jetty_policy: "org.eclipse.jetty:jetty-policy:${jettyVersion}",
             jetty_websocket: "org.eclipse.jetty.websocket:websocket-server:${jettyVersion}",
             jetty_websocket_jsr356: "org.eclipse.jetty.websocket:javax-websocket-server-impl:${jettyVersion}",
-            jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
-            jetty_util: "org.eclipse.jetty:jetty-util:${jettyVersion}",
-            jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
-            jetty_ajp: "org.eclipse.jetty:jetty-ajp:${jettyVersion}",
             jetty_continuation: "org.eclipse.jetty:jetty-continuation:${jettyVersion}",
             jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
 
@@ -119,8 +107,7 @@ ext {
             jsonSchemaValidator: "com.github.java-json-tools:json-schema-validator:${jsonSchemaVersion}",
             guava: "com.google.guava:guava:${guavaVersion}",
             httpAsyncClient: "org.apache.httpcomponents:httpasyncclient:${httpAsyncClientVersion}",
-            flywaydb: "org.flywaydb:flyway-core:${flywaydbVersion}",
-            liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}"
+            flywaydb: "org.flywaydb:flyway-core:${flywaydbVersion}"
     ]
 
     jsonSchemaValidatorLibs = [
@@ -141,14 +128,4 @@ ext {
             libraries.jetty_continuation,
             libraries.jetty_rewrite
     ]
-
-    /*
-            libraries.jetty_plus,
-            libraries.jetty_jndi,
-            libraries.jetty_annotations,
-            libraries.jetty_policy,
-
-            libraries.jetty_servlets,
-            libraries.jetty_ajp
-    */
 }

@@ -100,7 +100,7 @@ public class BinLogTest implements Runnable {
 
     @AfterAll
     public static void cleanup() throws IOException {
-        if (Files.list(dir) != null) {
+        if (Files.isDirectory(dir)) {
             for (Path f : Files.newDirectoryStream(dir)) {
                 if (f.toString().endsWith(".dat")) {
                     System.out.println ("Deleting " + f.toString());
@@ -109,6 +109,6 @@ public class BinLogTest implements Runnable {
             }
         }
         System.out.println ("Deleting " + dir);
-        Files.delete(dir);
+        Files.deleteIfExists(dir);
     }
 }

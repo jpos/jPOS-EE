@@ -12,7 +12,8 @@ ext {
     jsonSchemaVersion = '2.2.11'
     guavaVersion = '28.1-jre'
     jacksonVersion = '2.10.0'
-    groovyVersion = '2.5.8'
+    groovyVersion = '3.0.4'
+    jlineVersion = '2.14.6'
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.10.0'
     nettyVersion = '4.1.42.Final'
@@ -102,6 +103,9 @@ ext {
             groovysh: "org.codehaus.groovy:groovy-groovysh:${groovyVersion}",
             groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}",
 
+            // Jline
+            jline: "jline:jline:${jlineVersion}",
+
             // Jackson
             jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
 
@@ -110,7 +114,7 @@ ext {
             nettyCodecHttp: "io.netty:netty-codec-http:${nettyVersion}",
 
             // RestAssured
-            restAssured: "io.rest-assured:rest-assured:4.1.1",
+            restAssured: "io.rest-assured:rest-assured:4.3.0",
 
             jsonSchemaValidator: "com.github.java-json-tools:json-schema-validator:${jsonSchemaVersion}",
             guava: "com.google.guava:guava:${guavaVersion}",

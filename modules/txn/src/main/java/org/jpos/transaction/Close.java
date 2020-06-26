@@ -23,8 +23,6 @@ import org.jpos.ee.DB;
 
 import java.io.Serializable;
 
-import static org.jpos.transaction.TxnConstants.*;
-
 public class Close extends TxnSupport implements AbortParticipant {
     public int prepare (long id, Serializable o) {
         return PREPARED | READONLY;
@@ -40,16 +38,14 @@ public class Close extends TxnSupport implements AbortParticipant {
     }
     private void closeDB (Serializable o) {
         Context ctx = (Context) o;
-        DB db = (DB) ctx.get (DB);
+        DB db = ctx.get (DB);
         if (db != null) {
-            // ctx.checkPoint ("Closing");
-            Transaction tx = (Transaction) ctx.get (TX);
+            Transaction tx = ctx.get (TX);
             try {
                 if (tx != null) {
                     try {
                         tx.commit ();
                         ctx.remove (TX); 
-                        // ctx.checkPoint ("Close-Commit");
                     } catch (RuntimeException t) {
                         error (t);
                         try {
@@ -59,12 +55,12 @@ public class Close extends TxnSupport implements AbortParticipant {
                         }
                     }
                 }
-                db.close ();
             } catch (RuntimeException ex) {
                 error (ex);
+            } finally {
+                db.close ();
             }
         }
         checkPoint(ctx);
     }
 }
-

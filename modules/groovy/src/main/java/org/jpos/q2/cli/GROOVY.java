@@ -20,7 +20,7 @@ package org.jpos.q2.cli;
 
 
 import groovy.lang.Binding;
-import org.codehaus.groovy.tools.shell.Groovysh;
+import org.apache.groovy.groovysh.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;

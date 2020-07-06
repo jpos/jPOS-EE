@@ -1,0 +1,11 @@
+description = 'jPOS-EE :: Elastic search Support Module'
+group = 'org.jpos.elk'
+
+dependencies {
+    implementation libraries.orgJson
+    implementation libraries.jpos
+    implementation libraries.elk
+}
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+

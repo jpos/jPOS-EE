@@ -23,6 +23,8 @@ ext {
     postgresJDBCVersion = '42.2.11'
     flywaydbVersion = '6.0.4'
     liquibaseVersion = '3.8.0'
+    elkVersion = '7.8.0'
+    orgjsonVersion = '20200518'
 
     libraries = [
             //jUnit (Tests)
@@ -120,7 +122,10 @@ ext {
             guava: "com.google.guava:guava:${guavaVersion}",
             httpAsyncClient: "org.apache.httpcomponents:httpasyncclient:${httpAsyncClientVersion}",
             flywaydb: "org.flywaydb:flyway-core:${flywaydbVersion}",
-            liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}"
+            liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}",
+
+            elk: "org.elasticsearch.client:elasticsearch-rest-high-level-client:${elkVersion}",
+            orgJson: "org.json:json:${orgjsonVersion}"
     ]
 
     jsonSchemaValidatorLibs = [

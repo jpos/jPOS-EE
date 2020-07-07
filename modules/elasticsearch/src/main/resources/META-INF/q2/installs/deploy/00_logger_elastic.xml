@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<logger name="Q2" class="org.jpos.q2.qbean.LoggerAdaptor">
+  <!--
+  <log-listener class="org.jpos.util.SimpleLogListener" />
+  <log-listener class="org.jpos.util.BufferedLogListener">
+    <property name="max-size" value="100" />
+    <property name="name" value="logger.Q2.buffered" />
+  </log-listener>
+    -->
+  <log-listener class="org.jpos.elasticsearch.ElasticSearchLogListener">
+    <property name="queue" value="logger.elastic" />
+    <property name="space" value="tspace:elastic" />
+    <property name="index-name" value="jpos" />
+    <property name="frozen" value="true" />
+  </log-listener>
+</logger>
+

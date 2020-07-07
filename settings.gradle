@@ -43,7 +43,8 @@ include ':modules:core',
         ':modules:iso-http-servlet',
         ':modules:http-client',
         ':modules:seqno',
-        ':modules:db-flyway'
+        ':modules:db-flyway',
+        ':modules:elasticsearch'
 
 rootProject.name = 'jposee'
 

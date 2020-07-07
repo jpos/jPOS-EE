@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<logger name="DAEMON" class="org.jpos.q2.qbean.LoggerAdaptor">
+    <elastic class='org.jpos.elasticsearch.ElasticSearchService' logger='Q2'>
+        <property name="url" value="http://localhost:9200" />
+        <property name="queue" value="logger.elastic" />
+        <property name="space" value="tspace:elastic" />
+        <!--
+        <property name="user" value="user" />
+        <property name="password" value="password" />
+        <property name="index-name" value="jpos" />
+         -->
+    </elastic>
+</logger>

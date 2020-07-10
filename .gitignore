@@ -1,5 +1,7 @@
 *.swp
 .DS_Store
+modules/*/bin
+.vscode/
 # IDEA Ignores
 *.iml
 *.ipr

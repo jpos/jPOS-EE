@@ -23,6 +23,7 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
+import org.jpos.tlv.TLVList;
 import org.jpos.util.FSDMsg;
 import org.jpos.util.ProtectedLogListener;
 
@@ -41,6 +42,7 @@ import java.io.Serializable;
  *        &lt;property name="protect-entry" value="REQUEST" /&gt;
  *        &lt;property name="protect-entry" value="RESPONSE" /&gt;
  *        &lt;property name="protect-entry" value="PAN" /&gt;
+ *        &lt;property name="protect-entry" value="REQUEST_ICC_DATA" /&gt;
  *
  *        &lt;property name="wipe-entry" value="EXPDATE" /&gt;
  *   
@@ -49,6 +51,11 @@ import java.io.Serializable;
  *        &lt;property name="protect-ISOMsg" value="45" /&gt;
  *        &lt;property name="wipe-ISOMsg" value="52" /&gt;
  *        &lt;property name="wipe-ISOMsg" value="55" /&gt;
+ * 
+ *        &lt;property name="wipe-TLVList" value="0x56" /&gt;
+ *        &lt;property name="wipe-TLVList" value="0x57" /&gt;
+ *        &lt;property name="wipe-TLVList" value="0x5a" /&gt;
+ *        &lt;property name="wipe-TLVList" value="0x5f20" /&gt;
  *
  *        &lt;property name="protect-FSDMsg" value="account-number" /&gt;
  *        &lt;property name="protect-FSDMsg" value="track2-data" /&gt;
@@ -62,6 +69,7 @@ import java.io.Serializable;
      private String[] protectFSD;
      private String[] protectISO;
      private String[] wipeISO;
+     private String[] wipeTLV;
 
      public int prepare (long id, Serializable o) {
          return PREPARED | READONLY;
@@ -105,6 +113,13 @@ import java.io.Serializable;
                  if (p != null){
                      ctx.put(s, protect (p));    
                  }
+             }
+             if (o instanceof TLVList) {
+                 TLVList tlv = ctx.get(s);
+                 if (tlv != null) {
+                     for (String t: wipeTLV)
+                        wipeTag(tlv, t);
+                 }
              }  
          }
      }
@@ -131,6 +146,19 @@ import java.io.Serializable;
         }
     }
 
+    static void wipeTag(TLVList tlv, String tag) {
+        if (tlv == null)
+            return;
+        try {
+            int tagName = Integer.decode(tag);
+            if (tlv.hasTag(tagName)) {
+                tlv.deleteByTag(tagName);
+                tlv.append(tagName, ProtectedLogListener.BINARY_WIPED);
+            }                
+        }
+        catch (Throwable ignored) { }        
+    }
+
     private void protectField (FSDMsg m, String f) {
          if (f != null) {
              String s = m.get (f);
@@ -153,9 +181,8 @@ import java.io.Serializable;
          this.protectedEntrys = cfg.getAll("protect-entry");
          this.wipedEntrys = cfg.getAll("wipe-entry");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
-
          this.protectISO = cfg.getAll("protect-ISOMsg");
          this.wipeISO = cfg.getAll("wipe-ISOMsg");
+         this.wipeTLV = cfg.getAll("wipe-TLVList");
      }
-     
  }

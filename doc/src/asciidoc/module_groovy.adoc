@@ -74,17 +74,22 @@ The following variables will be bound to each Groovy script's `Binding`:
  - *ctx* - the transaction `Serializable ctx` passed to the participant's method
  - *log* - a reference to `this` instance (since this class extends `org.jpos.util.Log`)
  - *cfg* - this `TransactionParticipant`'s `Configuration` properties
- - *tm*- a reference to the `TransactionManager`'s executing this transaction
+ - *tm* - a reference to the `TransactionManager`'s executing this transaction
 
 
 By default, scripts are pre-compiled by a `GroovyClassLoader`. If you want the script
-to be evaluated each time, then set the `compiled` property to `false`.
+to be evaluated on each run, then set the `compiled` property to `false`.
+
+If your script depends on other scripts, you can add one or more `classpath` properties.
 
 Add a transaction participant like this:
 [source,xml]
 ----------------------------------------------------------------------------------------
 <participant class="org.jpos.transaction.participant.GroovyParticipant"
              logger="Q2" realm="groovy-test">
+
+  <property name="classpath" value="cfg/scripts" />
+
   <prepare src="deploy/prepare.groovy" />
   <commit src="deploy/commit.groovy" />
   <abort>

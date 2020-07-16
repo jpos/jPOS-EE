@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.HashMap;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -72,12 +74,15 @@ import groovy.lang.GroovyShell;
  * </ul>
  *
  * <p>By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
- * to be evaluated each time, then set the "compiled" property to "false".
+ * to be evaluated on each run, then set the "compiled" property to "false".
  *
- * Add a transaction participant like this:
+ * <p>If your script depends on other scripts, you can add one or more "classpath" properties.
+ *
+ * <p>Add a transaction participant like this:
  *
  * <pre>
  *     &lt;participant class="org.jpos.transaction.participant.GroovyParticipant" logger="Q2" realm="groovy-test"&gt;
+ *       &lt;property name="classpath" value="cfg/scripts" /&gt;
  *       &lt;prepare src="deploy/prepare.groovy" /&gt;
  *       &lt;commit src="deploy/commit.groovy" /&gt;
  *       &lt;abort&gt;
@@ -314,12 +319,20 @@ public class GroovyParticipant extends Log
         return binding;
     }
 
-    protected CompilerConfiguration newCompilerConfiguration(){
+    protected CompilerConfiguration newCompilerConfiguration() {
         CompilerConfiguration conf = new CompilerConfiguration();
-        ImportCustomizer customizer  = new ImportCustomizer();;
+        ImportCustomizer customizer  = new ImportCustomizer();
         customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
         customizer.addStaticStars("org.jpos.transaction.ContextConstants");
         conf.addCompilationCustomizers(customizer);
+
+        String[] paths= cfg.getAll("classpath");
+        if (paths.length > 0)
+        {
+            List<String> cpList= Arrays.asList(paths);
+            conf.setClasspathList(cpList);
+        }
+
         return conf;
     }
 }

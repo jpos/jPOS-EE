@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.778s</div>
+<div class="counter">0.562s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">testCurrency840()</td>
-<td class="success">0.372s</td>
+<td class="success">0.279s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testCurrency858()</td>
-<td class="success">0.406s</td>
+<td class="success">0.283s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -111,16 +111,16 @@
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
     &lt;grant&gt;read&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
     &lt;grant&gt;read&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 4--&gt;
@@ -199,12 +199,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -236,19 +236,19 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200717173355&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200717173419&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -272,7 +272,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200717173355&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200717173419&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -296,7 +296,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200717173356&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200717173419&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -310,7 +310,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200717173356&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200717173419&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -344,16 +344,16 @@
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
     &lt;grant&gt;read&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
     &lt;grant&gt;write&lt;/grant&gt;
-    &lt;grant&gt;read&lt;/grant&gt;
     &lt;grant&gt;grant&lt;/grant&gt;
+    &lt;grant&gt;read&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 4--&gt;
@@ -434,10 +434,10 @@
     &lt;chart&gt;TestChart&lt;/chart&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -470,18 +470,18 @@
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200717173356&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200717173420&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -505,7 +505,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200717173356&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200717173420&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -529,7 +529,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200717173356&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200717173420&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -543,7 +543,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200717173356&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200717173420&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -569,7 +569,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.5</a> at Jul 17, 2020, 5:34:16 PM</p>
+<a href="http://www.gradle.org">Gradle 6.5</a> at Jul 17, 2020, 5:34:33 PM</p>
 </div>
 </div>
 </body>

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.jdom2.Element;
 
@@ -277,12 +278,18 @@ public class GroovyRequestListener extends Log
     }
     protected CompilerConfiguration newCompilerConfiguration(){
         CompilerConfiguration conf = new CompilerConfiguration();
-        ImportCustomizer customizer  = new ImportCustomizer();;
+        ImportCustomizer customizer  = new ImportCustomizer();
         customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
         customizer.addStaticStars("org.jpos.transaction.ContextConstants");
         conf.addCompilationCustomizers(customizer);
+
+        String[] paths= cfg.getAll("classpath");
+        if (paths.length > 0)
+        {
+            List<String> cpList= Arrays.asList(paths);
+            conf.setClasspathList(cpList);
+        }
+
         return conf;
     }
 }
-
-

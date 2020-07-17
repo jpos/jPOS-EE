@@ -1412,7 +1412,8 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        return createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
+        createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
+        return getBalance  (journal, acct, layers);
     }
     private BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers, long maxId)
@@ -1478,7 +1479,7 @@ public class GLSession {
      */
     public synchronized Session open () throws HibernateException {
         return db.open();
-    }
+    }                                                           
     /**
      * Close underlying Hibernate session.
      * @throws HibernateException

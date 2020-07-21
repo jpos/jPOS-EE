@@ -27,6 +27,7 @@ import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.qi.QI;
 import org.jpos.qi.ViewConfig;
@@ -164,6 +165,7 @@ public class FieldFactory {
 
     protected TextField buildAndBindBigDecimalField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
+        field.addStyleName(ValoTheme.TEXTFIELD_ALIGN_RIGHT);
         Binder.BindingBuilder builder = formatField(id,field);
         builder = builder.withConverter(new AmountConverter(getApp().getMessage("errorMessage.NaN",id)));
         builder.withNullRepresentation(BigDecimal.ZERO).bind(id);

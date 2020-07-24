@@ -24,6 +24,7 @@ import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jdom2.Element;
 import org.jpos.groovy.GroovySetup;
 import org.jpos.q2.QBeanSupport;
+import org.jpos.q2.QFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -49,9 +50,12 @@ public class Groovy extends QBeanSupport implements Runnable {
             binding.setVariable("log", getLog());
             binding.setVariable("cfg", getConfiguration());
             GroovyShell shell = new GroovyShell(binding);
-            String scr = e.getAttributeValue("src");
-            if (scr != null)
-                shell.evaluate(new File(scr));
+            String src = e.getAttributeValue("src");
+            if (src != null)
+            {
+                src= QFactory.getAttributeValue(e, "src");
+                shell.evaluate(new File(src));
+            }
             else
                 shell.evaluate(e.getText());
         } catch (Exception e) {

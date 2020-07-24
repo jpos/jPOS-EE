@@ -34,6 +34,7 @@ import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.q2.QFactory;
 import org.jpos.transaction.TransactionParticipant;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
@@ -228,7 +229,9 @@ public class GroovyParticipant extends Log
     }
 
 
-    /** Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
+    /**
+    * Helper method to {@link #setConfiguration(Element)}
+    * Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
     */
     protected Object getScript (Element e) throws ConfigurationException
     {
@@ -241,7 +244,8 @@ public class GroovyParticipant extends Log
 
             if (src != null)
             {
-                scriptNames.put(elName, src);                   // the file path, as given
+                src= QFactory.getAttributeValue(e, "src");      // effective src, after ${} replacements
+                scriptNames.put(elName, src);                   // the resolved file path, as given
                 f= new File(src);
                 if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");

@@ -63,11 +63,6 @@ public class GroovyGroupSelector extends GroovyParticipant implements GroupSelec
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         super.setConfiguration(e);
-
-        ClassLoader thisCL= this.getClass().getClassLoader();
-        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
-        GroovySetup.runScriptOnce(scriptURL);
-
         select = getScript(e.getChild("select"));
     }
 

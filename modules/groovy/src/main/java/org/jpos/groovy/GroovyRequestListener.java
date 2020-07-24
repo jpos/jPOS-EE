@@ -28,6 +28,7 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISORequestListener;
 import org.jpos.iso.ISOSource;
+import org.jpos.q2.QFactory;
 import org.jpos.util.Log;
 
 import java.io.File;
@@ -213,11 +214,11 @@ public class GroovyRequestListener extends Log
     }
 
 
-    /** Helper method to {@link #setConfiguration(Element)}
-    *
+    /**
+    * Helper method to {@link #setConfiguration(Element)}
     * Returns a String, a File, or a fully parsed {@code Class&lt;groovy.lang.Script&gt;}.
     */
-    private Object getScript (Element e) throws ConfigurationException
+    protected Object getScript (Element e) throws ConfigurationException
     {
         compiled= cfg.getBoolean("compiled", true);
         String src=     e.getAttributeValue("src");
@@ -226,6 +227,7 @@ public class GroovyRequestListener extends Log
 
         if (src != null)
         {
+            src= QFactory.getAttributeValue(e, "src");          // effective src, after ${} replacements
             scriptName= src;                                    // should be a file path, will be output as file name part
             f= new File(src);
             if (!f.canRead())

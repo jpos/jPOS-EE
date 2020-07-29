@@ -162,6 +162,7 @@ public class UsersHelper extends QIHelper {
                 User user = db.session().get(User.class, t.getId());
                 if (user == null) return false;
                 t.setDeleted(true);
+                t.setNick("." + t.getNick() + "." + t.getId());
                 db.session().merge(t);
                 addRevisionRemoved(db, getEntityName(), String.valueOf(t.getId()));
                 return true;

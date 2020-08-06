@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.jpos.qi.util.QIUtils.getCaptionFromId;
@@ -160,6 +161,22 @@ public class FieldFactory {
             builder.asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId("field."+id))));
         if ("endDate".equals(id))
             dateField.addValueChangeListener((HasValue.ValueChangeListener<LocalDate>) event -> dateField.addStyleName("expired-date"));
+        return dateField;
+    }
+
+    public DateTimeField buildAndBindDateTimeField(String id) {
+        DateTimeField dateField = new DateTimeField(getCaptionFromId("field." + id));
+        Binder.BindingBuilder builder = getBinder().forField(dateField);
+        builder.withConverter(new LocalDateToDateConverter()).bind(id);
+        if (viewConfig == null)
+            return dateField;
+        List<Validator> v = getValidators(id);
+        for (Validator val : v)
+            builder.withValidator(val);
+        if (isRequired(id))
+            builder.asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId("field."+id))));
+        if ("endDate".equals(id))
+            dateField.addValueChangeListener((HasValue.ValueChangeListener<LocalDateTime>) event -> dateField.addStyleName("expired-date"));
         return dateField;
     }
 

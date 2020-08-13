@@ -19,11 +19,6 @@ else
         -XX:NumberOfGCLogFiles=5 \
         -Djava.net.preferIPv4Stack=true \
         -Dcom.sun.management.jmxremote \
-        -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses \
-        -XX:+UseConcMarkSweepGC  \
-        -XX:+AggressiveOpts \
-        -XX:+ParallelRefProcEnabled \
-        -XX:+TieredCompilation \
         -jar jposee-@jarname@ --pid-file='jpos.pid' "$@"
 fi
 

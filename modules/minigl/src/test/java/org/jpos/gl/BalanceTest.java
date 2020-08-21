@@ -280,6 +280,11 @@ public class BalanceTest extends TestBase {
             new BigDecimal("15000.00"),
             gls.getBalance (tj, cashUS, Util.parseDate ("20050101"))
         );
+        short[] zeroOnly = {0};
+        assertEquals (
+                new BigDecimal("25000.00"),
+                gls.getBalancesORM (tj, cashUS, Util.parseDate ("20050102"), true, zeroOnly, 0)[0]
+        );
         assertEquals (
             new BigDecimal("25000.00"),
             gls.getBalance (tj, cashUS, Util.parseDate ("20050102"))

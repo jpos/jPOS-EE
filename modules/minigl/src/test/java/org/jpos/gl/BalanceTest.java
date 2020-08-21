@@ -64,9 +64,11 @@ public class BalanceTest extends TestBase {
     @Test
     @Order(3)
     public void testCheckpoints() throws Exception {
+        final Transaction tx1 = gls.beginTransaction();
         gls.createCheckpoint (tj, root, Util.parseDate ("20041231"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050101"), 1);
         gls.createCheckpoint (tj, root, Util.parseDate ("20050102"), 1);
+        tx1.commit();
     }
     @Test
     @Order(4)

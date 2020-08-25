@@ -1083,7 +1083,7 @@ public class GLSession {
                 Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layersCopy);
                 if (chkp != null) {
                     balance[0] = chkp.getBalance();
-                    txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
+                    txnCrit.add (Restrictions.ge ("postDate", chkp.getDate()));
                 }
             } else if (!ignoreBalanceCache) {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);

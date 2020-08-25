@@ -86,6 +86,7 @@ public class Checkpoint implements Serializable {
             .append("layers", getLayers())
             .append("journal", getJournal())
             .append("account", getAccount())
+            .append("balance", getBalance())
             .toString();
     }
 

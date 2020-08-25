@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.675s</div>
+<div class="counter">0.906s</div>
 <p>duration</p>
 </div>
 </td>
@@ -84,67 +84,67 @@
 </tr>
 <tr>
 <td class="success">testAccountDetailCashUS()</td>
-<td class="success">0.012s</td>
+<td class="success">0.014s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testBalanceCache()</td>
-<td class="success">0.163s</td>
+<td class="success">0.191s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testBalanceCache2()</td>
-<td class="success">0.110s</td>
+<td class="success">0.114s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testBalancesAfterCheckpoint()</td>
-<td class="success">0.032s</td>
+<td class="success">0.074s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testBalancesByPostDate()</td>
-<td class="success">0.035s</td>
+<td class="success">0.069s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testCachedBalances()</td>
-<td class="success">0.023s</td>
+<td class="success">0.022s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testCheckpoints()</td>
-<td class="success">0.046s</td>
+<td class="success">0.086s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testCurrentBalances()</td>
-<td class="success">0.040s</td>
+<td class="success">0.064s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testDeleteCache()</td>
-<td class="success">0.015s</td>
+<td class="success">0.019s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testFindTransactions()</td>
-<td class="success">0.005s</td>
+<td class="success">0.004s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testFindTransactionsByPostDate_Day01()</td>
-<td class="success">0.023s</td>
+<td class="success">0.028s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testFindTransactionsByPostDate_Day01_and_02()</td>
-<td class="success">0.011s</td>
+<td class="success">0.005s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testFindTransactionsByPostDate_Day02()</td>
-<td class="success">0.005s</td>
+<td class="success">0.007s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -154,12 +154,12 @@
 </tr>
 <tr>
 <td class="success">testMiniStatementCashPesos()</td>
-<td class="success">0.009s</td>
+<td class="success">0.007s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testSummarize()</td>
-<td class="success">0.121s</td>
+<td class="success">0.177s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -185,9 +185,9 @@
     &lt;!--id 2--&gt;
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;write&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
@@ -274,11 +274,11 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
@@ -312,18 +312,18 @@
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200825012829&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200825012834&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -347,7 +347,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200825012830&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200825012834&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -371,7 +371,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200825012830&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200825012834&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -385,7 +385,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200825012830&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200825012834&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;
@@ -421,7 +421,7 @@ B(858): 12500.00
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.5</a> at Aug 25, 2020, 1:28:34 AM</p>
+<a href="http://www.gradle.org">Gradle 6.5</a> at Aug 25, 2020, 1:28:37 AM</p>
 </div>
 </div>
 </body>

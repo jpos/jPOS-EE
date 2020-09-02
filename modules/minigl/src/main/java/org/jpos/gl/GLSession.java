@@ -1964,7 +1964,10 @@ public class GLSession {
         else if (ds.contains("postgres"))
             nativeDialect = NativeDialect.POSTGRESQL;
     }
-    private enum NativeDialect {
+    public void forceDialect (NativeDialect dialect) {
+        nativeDialect = dialect;
+    }
+    public enum NativeDialect {
         MYSQL, POSTGRESQL, ORM
     }
 }

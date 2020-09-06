@@ -46,6 +46,13 @@ public class LoginView extends VerticalLayout {
     private Button loginBtn;
     private Binder<String> binder;  //just used to add validators to fields
 
+    protected TextField getUsernameField() {
+        return username;
+    }
+
+    protected PasswordField getPasswordField() {
+        return password;
+    }
 
     public static String USERNAME_PATTERN =  "^[\\w|#=@.-]{1,60}$";
     public static String PASSWORD_PATTERN = "^[\\w|#=@!\\_.-]{1,64}$";
@@ -64,7 +71,7 @@ public class LoginView extends VerticalLayout {
         );
     }
 
-    public void login () {
+    public void login() {
         String u = username.getValue();
         String p = password.getValue();
         if (u.length() > 0 && p.length() == 0) {
@@ -74,26 +81,41 @@ public class LoginView extends VerticalLayout {
         boolean failed = true;
         errorLabel.setValue("");
 
+        User user = null;
 
         try {
             if (binder.isValid()) {
-                final User user = helper.getUserByNick(u, p);
+                user = helper.getUserByNick(u, true);
                 if (user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"))) {
-                    helper.clearLoginAttempts(user);
-                    clearErrorMessages();
-                    buttonsLayout.removeAllComponents();
-                    helper.checkPasswordAge(user);
-                    loginOk(user, rememberMe.getValue());
-                    failed = false;
+                    if (processLogin(user, p)) {
+                        helper.clearLoginAttempts(user);
+                        clearErrorMessages();
+                        buttonsLayout.removeAllComponents();
+                        helper.checkPasswordAge(user);
+                        loginOk(user, rememberMe.getValue());
+                        failed = false;
+                    }
                 }
             }
+
         } catch (ParseException e) {
             app.displayNotification(e.getMessage());
         }
+
         if (failed) {
             username.focus();
-            loginFailed(u, helper.getUserByNick(u));
+            loginFailed(u, user);
         }
+    }
+
+    /*
+     processLogin can be inherited by derived LoginView,
+     Derived LoginView can implement custom login provider.
+     like LDAP etc.
+     */
+    protected boolean processLogin(User theUser, String password) throws ParseException {
+        User user = helper.getUserByNick(theUser.getNick(), password);
+        return user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"));
     }
 
     private void loginOk (User user, boolean rememberMe) {

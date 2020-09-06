@@ -164,10 +164,19 @@ public class LoginHelper {
     }
 
     protected User getUserByNick (String nick) {
+        return this.getUserByNick(nick, false);
+    }
+
+    protected User getUserByNick (String nick, boolean loadProperties) {
         try {
             return (User) DB.exec((db) -> {
                 UserManager umgr = new UserManager(db);
-                return umgr.getUserByNick(nick);
+                User user = umgr.getUserByNick(nick);
+                if (loadProperties && user != null) {
+                    //just to ensure lazy user properties are loaded by db session
+                    user.getProps().size();
+                }
+                return user;
             });
         } catch (Exception e) {
             QI.getQI().getLog().error(e);

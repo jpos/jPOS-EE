@@ -334,8 +334,12 @@ public class QI extends UI {
         return sidebar;
     }
 
-    private void createLoginView () {
-        qiLayout.getContentLayout().addComponent(loginView = new LoginView());
+    private void createLoginView() {
+        qiLayout.getContentLayout().addComponent(loginView = prepareLoginView());
+    }
+
+    protected LoginView prepareLoginView() {
+        return new LoginView();
     }
 
     private Visitor getVisitor(DB db) {

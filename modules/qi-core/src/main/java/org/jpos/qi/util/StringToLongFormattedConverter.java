@@ -19,6 +19,7 @@
 package org.jpos.qi.util;
 
 import com.vaadin.data.ErrorMessageProvider;
+import com.vaadin.data.Result;
 import com.vaadin.data.ValueContext;
 import com.vaadin.data.converter.StringToLongConverter;
 
@@ -59,5 +60,15 @@ public class StringToLongFormattedConverter extends StringToLongConverter {
         NumberFormat format = NumberFormat.getIntegerInstance(locale);
         format.setGroupingUsed(false);
         return format;
+    }
+
+    @Override
+    public Result<Long> convertToModel(String value, ValueContext context) {
+        Result<Number> n = convertToNumber(value, context);
+        return n.map(number -> {
+            if (number == null)
+                return 0L;
+            return number.longValue();
+        });
     }
 }

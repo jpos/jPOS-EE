@@ -100,7 +100,7 @@ public class FieldFactory {
     protected TextField buildAndBindLongField(String id) {
         TextField field = new TextField(getCaptionFromId("field." + id));
         Binder.BindingBuilder builder = formatField(id,field);
-        builder = builder.withConverter(new StringToLongFormattedConverter(getApp().getMessage("errorMessage.NaN",id)));
+        builder = builder.withConverter(new StringToLongFormattedConverter(0l,getApp().getMessage("errorMessage.NaN",id)));
         builder.bind(id);
         return field;
     }

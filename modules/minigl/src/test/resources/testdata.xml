@@ -60,7 +60,7 @@
     <account code="113" type="debit">
      <description>Bank Account</description>
     </account>
-    <account code="120" type="debit">
+    <account code="114" type="debit">
      <description>Trip Fund</description>
     </account>
    </composite-account>
@@ -186,12 +186,12 @@
    <amount>10000.00</amount>
   </entry>
   <!-- a Virtual entry in Layer 1 - trip fund -->
-  <entry account="120" type="debit" layer="1">
+  <entry account="114" type="debit" layer="1">
    <detail>Bob Check #001 20% to Trip Fund</detail>
    <amount>2000.00</amount>
   </entry>
   <!-- a Virtual entry in Layer 2 - trip budget -->
-  <entry account="120" type="credit" layer="2">
+  <entry account="114" type="credit" layer="2">
    <detail>Trip Budget 50000</detail>
    <amount>50000.00</amount>
   </entry>

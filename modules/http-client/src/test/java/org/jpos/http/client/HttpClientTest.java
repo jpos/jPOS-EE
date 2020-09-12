@@ -74,7 +74,19 @@ public class HttpClientTest {
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
+    }
 
+    @Test
+    public void test400() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", BASE_URL + "/bad");
+        ctx.put("HTTP_REQUEST", "");
+        ctx.put("HTTP_METHOD", "GET");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_BAD_REQUEST), sc, "Status code should be 400");
+        assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
+        assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
 
     @Test
@@ -86,5 +98,29 @@ public class HttpClientTest {
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
+    }
+
+    @Test
+    public void testBasicAuth() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "http://httpbin.org/basic-auth/user/passwd");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put(".HTTP_BASIC_AUTHENTICATION", "user:passwd");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+        assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
+        assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
+    }
+
+    @Test
+    public void testBasicAuthBadPasswd() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "http://httpbin.org/basic-auth/user/passwd");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put(".HTTP_BASIC_AUTHENTICATION", "user:passwdbad");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_UNAUTHORIZED), sc, "Status code should be 401");
     }
 }

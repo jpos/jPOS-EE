@@ -18,7 +18,6 @@
 
 package org.jpos.http.client;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.http.HttpStatus;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
@@ -27,6 +26,7 @@ import org.jpos.transaction.TransactionManager;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,7 +77,7 @@ public class HttpClientTest {
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
     }
 
-    @Test @Ignore
+    @Test @Disabled
     public void test400() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", BASE_URL + "/bad");

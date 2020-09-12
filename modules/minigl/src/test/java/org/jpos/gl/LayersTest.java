@@ -33,7 +33,7 @@ public class LayersTest extends TestBase {
     @BeforeEach
     public void setUp () throws Exception {
         tj = gls.getJournal ("TestJournal");
-        tripFund    = (FinalAccount) gls.getAccount ("TestChart", "120");
+        tripFund    = (FinalAccount) gls.getAccount ("TestChart", "114");
     }
     @Test
     public void testTripFundBalanceInLayerZero() throws Exception {

@@ -50,6 +50,7 @@ public class GLSession {
     public static final BigDecimal Z    = new BigDecimal ("0");
     private long SAFE_WINDOW = 1000L;
     private boolean ignoreBalanceCache = false;
+    private boolean strictAccountCodes = true;
     private NativeDialect nativeDialect = NativeDialect.ORM;
 
     private static String POSTGRESQL_GET_BALANCES =
@@ -322,6 +323,7 @@ public class GLSession {
     {
         addAccount (parent, acct, true);
     }
+
     /**
      * Add account to parent.
      * Check permissions, parent's type and optional currency.
@@ -337,6 +339,9 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.WRITE);
+        if (strictAccountCodes)
+            validateAccountCode(parent, acct);
+
         if (!parent.isChart() && !parent.equalsType (acct)) {
             StringBuffer sb = new StringBuffer ("Type mismatch ");
             sb.append (parent.getTypeAsString());
@@ -1099,6 +1104,34 @@ public class GLSession {
         return balance;
     }
 
+    /**
+     * Get Both Balances at given date.
+     *
+     * IMPORTANT NOTE: This function uses different implementations depending on the
+     * dialect of the SQL server in use.  By default, native queries are generated for
+     * the MySQL and PostgreSQL dialect, with other dialects using getBalancesORM instead.
+     *
+     * Regarding balances of composite accounts - getBalancesORM knows that a given account
+     * is a child of a given parent correctly using the acct.parent reference, whereas the
+     * native queries in getBalances cut some corners in order to take advantage of the
+     * database index, it assumes that the parent shares the acct.code prefix.
+     *
+     * In such cases, if MySQL or PostgreSQL native queries are used for balance calculations,
+     * accounts not following this convention are excluded from the results resulting in the
+     * wrong balance.  This was the reason for adding stricter checks of account codes to
+     * Import.createCharts and GLSession.addAccount.
+     *
+     * It's possible to force the use of getBalancesORM by calling `GLSession.forceDialect`
+     *
+     * @param journal the journal.
+     * @param acct the account.
+     * @param date date (inclusive).
+     * @param inclusive either true or false
+     * @param layers the layers
+     * @param maxId maximum GLEntry ID to be considered in the query (if greater than zero)
+     * @return array of 2 BigDecimals with balance and entry count.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
     public BigDecimal[] getBalances
       (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
       throws HibernateException, GLException
@@ -1602,6 +1635,12 @@ public class GLSession {
         this.ignoreBalanceCache = ignoreBalanceCache;
     }
 
+    public boolean isEnforcingStrictAccountCodes() { return strictAccountCodes; }
+
+    public void setEnforceStrictAccountCodes(boolean strictAccountCodes) {
+        this.strictAccountCodes = strictAccountCodes;
+    }
+
     // -----------------------------------------------------------------------
     // PUBLIC HELPERS
     // -----------------------------------------------------------------------
@@ -1941,6 +1980,14 @@ public class GLSession {
             list.add((FinalAccount) acct);
         }
         return list;
+    }
+
+    private void validateAccountCode(Account parent, Account child)
+            throws GLException
+    {
+        if (!parent.isChart() && !child.getCode().startsWith(parent.getCode())) {
+            throw new GLException("Child account code `"+child.getCode()+"` must start with parent account code `"+parent.getCode()+"`");
+        }
     }
 
     public String toString() {

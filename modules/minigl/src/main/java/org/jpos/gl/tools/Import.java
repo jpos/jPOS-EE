@@ -60,7 +60,7 @@ public class Import implements EntityResolver {
      * but may be set to false to import a legacy system that doesn't
      * use native queries.
      */
-    private Boolean strictAccountCodes = true;
+    private boolean strictAccountCodes = true;
 
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {

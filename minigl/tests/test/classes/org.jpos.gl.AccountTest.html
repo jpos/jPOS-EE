@@ -3,17 +3,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class org.jpos.gl.TransactionGroupTest</title>
+<title>Test results - Class org.jpos.gl.AccountTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class org.jpos.gl.TransactionGroupTest</h1>
+<h1>Class org.jpos.gl.AccountTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
-<a href="../packages/org.jpos.gl.html">org.jpos.gl</a> &gt; TransactionGroupTest</div>
+<a href="../packages/org.jpos.gl.html">org.jpos.gl</a> &gt; AccountTest</div>
 <div id="summary">
 <table>
 <tr>
@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">1</div>
+<div class="counter">2</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.018s</div>
+<div class="counter">0.027s</div>
 <p>duration</p>
 </div>
 </td>
@@ -78,8 +78,13 @@
 </tr>
 </thead>
 <tr>
-<td class="success">testCreateTransactionGroupAndGetBalance()</td>
-<td class="success">0.018s</td>
+<td class="success">errorThrownIfStrictChecksFail()</td>
+<td class="success">0.021s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">noErrorIfStrictChecksDisabled()</td>
+<td class="success">0.006s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -105,17 +110,17 @@
     &lt;!--id 2--&gt;
     &lt;nick&gt;travis&lt;/nick&gt;
     &lt;name&gt;Travis build&lt;/name&gt;
-    &lt;grant&gt;write&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
+    &lt;grant&gt;write&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 3--&gt;
     &lt;nick&gt;bob&lt;/nick&gt;
     &lt;name&gt;Bob Book Keeper&lt;/name&gt;
     &lt;grant&gt;write&lt;/grant&gt;
-    &lt;grant&gt;grant&lt;/grant&gt;
     &lt;grant&gt;read&lt;/grant&gt;
+    &lt;grant&gt;grant&lt;/grant&gt;
   &lt;/user&gt;
   &lt;user&gt;
     &lt;!--id 4--&gt;
@@ -194,12 +199,12 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verify permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
@@ -231,19 +236,19 @@
     &lt;start&gt;20010101&lt;/start&gt;
     &lt;end&gt;20201231&lt;/end&gt;
     &lt;chart&gt;TestChart&lt;/chart&gt;
-    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
-    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;travis&quot;&gt;post&lt;/grant&gt;
-    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;bob&quot;&gt;post&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;checkpoint&lt;/grant&gt;
     &lt;grant user=&quot;bob&quot;&gt;summarize&lt;/grant&gt;
+    &lt;grant user=&quot;travis&quot;&gt;summarize&lt;/grant&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.CanPost&quot;&gt;Verifies permissions, start/end dates, status, and chart&lt;/rule&gt;
     &lt;rule clazz=&quot;org.jpos.gl.rule.DoubleEntry&quot;&gt;
       Verify that credits equals debits
       &lt;layers&gt;0&lt;/layers&gt;
     &lt;/rule&gt;
   &lt;/journal&gt;
-  &lt;transaction id=&quot;1&quot; date=&quot;20200916185811&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;1&quot; date=&quot;20200916185808&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's initial deposit&lt;/detail&gt;
     &lt;tags&gt;tag1 tag2&lt;/tags&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -267,7 +272,7 @@
       &lt;amount&gt;50000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;2&quot; date=&quot;20200916185811&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;2&quot; date=&quot;20200916185808&quot; post-date=&quot;20050101&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Alice's initial deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -291,7 +296,7 @@
       &lt;amount&gt;12500.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;3&quot; date=&quot;20200916185811&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;3&quot; date=&quot;20200916185808&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Bob's second deposit&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;111&quot; type=&quot;debit&quot;&gt;
@@ -305,7 +310,7 @@
       &lt;amount&gt;10000.00&lt;/amount&gt;
     &lt;/entry&gt;
   &lt;/transaction&gt;
-  &lt;transaction id=&quot;4&quot; date=&quot;20200916185811&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
+  &lt;transaction id=&quot;4&quot; date=&quot;20200916185808&quot; post-date=&quot;20050102&quot; journal=&quot;TestJournal&quot;&gt;
     &lt;detail&gt;Loan&lt;/detail&gt;
     &lt;tags /&gt;
     &lt;entry account=&quot;113&quot; type=&quot;debit&quot;&gt;

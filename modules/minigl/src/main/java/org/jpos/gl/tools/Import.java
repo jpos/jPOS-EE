@@ -53,9 +53,25 @@ import java.util.Set;
 public class Import implements EntityResolver {
     Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
+    /**
+     * This setting controls whether to check that child account codes
+     * contain the parent account code as a prefix. Defaults to true
+     * for optimal compatibility with getBalances native queries,
+     * but may be set to false to import a legacy system that doesn't
+     * use native queries.
+     */
+    private Boolean strictAccountCodes = true;
+
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {
         super();
+    }
+
+    /**
+     * @param setting - new value for `strictAccountCodes`
+     */
+    public void setStrictAccountCodes(Boolean setting) {
+        strictAccountCodes = setting;
     }
 
     public static void usage () {
@@ -73,7 +89,7 @@ public class Import implements EntityResolver {
     }
     
     private void createCharts (Session sess, Iterator iter) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         Transaction txn = sess.beginTransaction();
         while (iter.hasNext()) {
@@ -145,7 +161,7 @@ public class Import implements EntityResolver {
     }
     private void processChartChildren 
         (Session sess, CompositeAccount parent, Iterator iter) 
-            throws SQLException, HibernateException, ParseException
+            throws SQLException, HibernateException, ParseException, GLException
     {
         while (iter.hasNext ()) {
             Element e = (Element) iter.next ();
@@ -157,10 +173,20 @@ public class Import implements EntityResolver {
         }
     }
 
+    private void validateAccountCode(Account parent, Account child)
+            throws GLException
+    {
+        if (!parent.isChart() && !child.getCode().startsWith(parent.getCode())) {
+            throw new GLException("Child account code `"+child.getCode()+"`must start with parent account code `"+parent.getCode()+"`");
+        }
+    }
     private void createComposite (Session sess, CompositeAccount parent, Element elem) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         CompositeAccount acct = new CompositeAccount (elem, parent);
+        if (strictAccountCodes)
+            validateAccountCode(parent, acct);
+
         acct.setRoot (parent.getRoot ());
         sess.save (acct);
         acct.setParent (parent);
@@ -170,9 +196,12 @@ public class Import implements EntityResolver {
     }
 
     private void createFinal (Session sess, CompositeAccount parent, Element elem) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         FinalAccount acct = new FinalAccount (elem, parent);
+        if (strictAccountCodes)
+            validateAccountCode(parent, acct);
+
         acct.setRoot (parent.getRoot ());
         sess.save (acct);
         acct.setParent (parent);

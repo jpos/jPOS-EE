@@ -177,7 +177,7 @@ public class Import implements EntityResolver {
             throws GLException
     {
         if (!parent.isChart() && !child.getCode().startsWith(parent.getCode())) {
-            throw new GLException("Child account code `"+child.getCode()+"`must start with parent account code `"+parent.getCode()+"`");
+            throw new GLException("Child account code `"+child.getCode()+"` must start with parent account code `"+parent.getCode()+"`");
         }
     }
     private void createComposite (Session sess, CompositeAccount parent, Element elem) 

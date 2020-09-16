@@ -1986,7 +1986,7 @@ public class GLSession {
             throws GLException
     {
         if (!parent.isChart() && !child.getCode().startsWith(parent.getCode())) {
-            throw new GLException("Child account code `"+child.getCode()+"`must start with parent account code `"+parent.getCode()+"`");
+            throw new GLException("Child account code `"+child.getCode()+"` must start with parent account code `"+parent.getCode()+"`");
         }
     }
 

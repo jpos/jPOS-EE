@@ -94,6 +94,7 @@ subprojects {
     }
     test {
         useJUnitPlatform()
+        maxParallelForks = Runtime.runtime.availableProcessors()
     }
     task sourceJar(type: Jar) {
         from sourceSets.main.allSource

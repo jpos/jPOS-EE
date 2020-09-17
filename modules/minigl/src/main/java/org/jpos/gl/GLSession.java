@@ -1151,10 +1151,9 @@ public class GLSession {
         checkPermission (GLPermission.READ, journal);
         BigDecimal balance[] = { ZERO, Z };
         BalanceCache bcache = null;
-        if (date != null) {
-            select.append(", transacc as txn\n");
-        }
-        else if (!ignoreBalanceCache) {
+        select.append(", transacc as txn\n");
+
+        if (!ignoreBalanceCache) {
             short[] layersCopy = Arrays.copyOf(layers,layers.length);
             bcache = getBalanceCache(journal, acct, layersCopy);
             if (maxId > 0 && bcache != null && bcache.getRef() > maxId)
@@ -1180,8 +1179,8 @@ public class GLSession {
             where(qs, "entry.account = acct.id");
             where(qs, "acct.code like :code");
         }
+        where(qs, "(entry.transaction = txn.id and txn.journal = :journal)\n");
         if  (date != null) {
-            where(qs, "entry.transaction = txn.id\n");
             where(qs, "txn.postDate < :date");
         }
         where(qs, "entry.layer in");
@@ -1197,6 +1196,7 @@ public class GLSession {
         else {
             q.setParameter("code", acct.getCode() + "%");
         }
+        q.setParameter("journal", journal.getId());
         if (date != null) {
             q.setParameter("date", inclusive ? Util.tomorrow(date) : date);
         }

@@ -24,7 +24,6 @@ import org.jpos.ee.DB;
 import org.jpos.ee.SysLog;
 import org.jpos.ee.SysLogManager;
 import org.jpos.qi.QIHelper;
-
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -39,7 +38,7 @@ public class AuditLogHelper extends QIHelper {
 
     @Override
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
-        List<SysLog> list = (List<SysLog>) DB.exec(db -> {
+        List<SysLog> list = DB.exec(db -> {
             SysLogManager mgr = new SysLogManager(db);
             return mgr.getAll(offset,limit,orders);
         });
@@ -48,7 +47,7 @@ public class AuditLogHelper extends QIHelper {
 
     @Override
     public int getItemCount() throws Exception {
-        return (int) DB.exec(db -> {
+        return DB.exec(db -> {
             SysLogManager mgr = new SysLogManager(db);
             return mgr.getItemCount();
         });

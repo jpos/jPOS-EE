@@ -18,6 +18,7 @@
 
 package org.jpos.qi.system;
 
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.Grid;
 import org.jpos.ee.SysLog;
 import org.jpos.qi.QIEntityView;
@@ -60,6 +61,7 @@ public class AuditLogView extends QIEntityView<SysLog> {
     public void formatGrid() {
         super.formatGrid();
         getGrid().getColumn("summary").setExpandRatio(3);
+        getGrid().sort(getGrid().getColumn("date"), SortDirection.ASCENDING);
     }
 
     @Override

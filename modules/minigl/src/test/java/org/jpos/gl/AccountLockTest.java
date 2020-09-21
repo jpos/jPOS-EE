@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
+import org.jpos.ee.DB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +47,7 @@ public class AccountLockTest extends TestBase {
         final Transaction tx1 = gls.beginTransaction();
         gls.lock (tj, cash);
 
-        GLSession gls2 = new GLSession("bob");
+        GLSession gls2 = new GLSession(new DB(configModifier), "bob");
         Transaction tx2 = gls2.beginTransaction();
 
         Journal tj2 = gls2.getJournal ("TestJournal");

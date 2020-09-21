@@ -53,6 +53,7 @@ import java.util.Set;
 public class Import implements EntityResolver {
     Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
+    private String configModifier;
     /**
      * This setting controls whether to check that child account codes
      * contain the parent account code as a prefix. Defaults to true
@@ -62,11 +63,16 @@ public class Import implements EntityResolver {
      */
     private boolean strictAccountCodes = true;
 
+    public Import (String configModifier) throws HibernateException, GLException, IOException, ConfigurationException
+    {
+        super();
+        this.configModifier = configModifier;
+    }
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {
         super();
+        this.configModifier = null;
     }
-
     /**
      * @param setting - new value for `strictAccountCodes`
      */
@@ -80,7 +86,7 @@ public class Import implements EntityResolver {
     }
 
     private void createSchema () throws HibernateException, DocumentException {
-        DB db = new DB();
+        DB db = new DB(configModifier);
         db.open();
         db.beginTransaction();
         db.createSchema(null, true);
@@ -378,7 +384,7 @@ public class Import implements EntityResolver {
         if (root.getChild ("create-schema") != null)
             createSchema ();
 
-        try (DB db = new DB()) {
+        try (DB db = new DB(configModifier)) {
             Session sess = db.open();
             createUsers(sess, root.getChildren("user").iterator());
             createCurrencies(sess, root.getChildren("currency").iterator());

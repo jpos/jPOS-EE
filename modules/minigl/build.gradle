@@ -6,6 +6,9 @@ dependencies {
     api project(':modules:dbsupport')
     api libraries.commons_lang
     testImplementation project(':modules:db-h2')
+    testImplementation project(':modules:db-postgresql')
+    testImplementation libraries.postgresql_embedded
+    testImplementation libraries.postgresql_bin
 }
 
 ext {
@@ -29,7 +32,7 @@ test {
     include '**/*Test.class'
     exclude '**/stress/*'
     workingDir testRuntimeDir
-
+    systemProperty "test.minigl_db_driver", System.getProperty("test.minigl_db_driver")
     systemProperties(["user.name" : "travis" ])
 }
 

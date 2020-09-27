@@ -76,8 +76,8 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
     @Override
     public String toString() {
         return "Route{" +
-          ", path='" + path + '\'' +
-          ", method='" + method + '\'' +
+          "path='" + path + "'" +
+          ", method='" + method + "'" +
           '}';
     }
 

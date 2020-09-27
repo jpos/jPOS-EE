@@ -36,22 +36,22 @@ import java.io.Serializable;
 
 /**
  *Sample Usage:
- *
+ *<pre>
  *    &lt;participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug"&gt;
- *    
+ *
  *        &lt;property name="protect-entry" value="REQUEST" /&gt;
  *        &lt;property name="protect-entry" value="RESPONSE" /&gt;
  *        &lt;property name="protect-entry" value="PAN" /&gt;
  *        &lt;property name="protect-entry" value="REQUEST_ICC_DATA" /&gt;
  *
  *        &lt;property name="wipe-entry" value="EXPDATE" /&gt;
- *   
+ *
  *        &lt;property name="protect-ISOMsg" value="2" /&gt;
  *        &lt;property name="protect-ISOMsg" value="35" /&gt;
  *        &lt;property name="protect-ISOMsg" value="45" /&gt;
  *        &lt;property name="wipe-ISOMsg" value="52" /&gt;
  *        &lt;property name="wipe-ISOMsg" value="55" /&gt;
- * 
+ *
  *        &lt;property name="wipe-TLVList" value="0x56" /&gt;
  *        &lt;property name="wipe-TLVList" value="0x57" /&gt;
  *        &lt;property name="wipe-TLVList" value="0x5a" /&gt;
@@ -59,10 +59,11 @@ import java.io.Serializable;
  *
  *        &lt;property name="protect-FSDMsg" value="account-number" /&gt;
  *        &lt;property name="protect-FSDMsg" value="track2-data" /&gt;
- *   
+ *
  *        &lt;/participant&gt;
+ *</pre>
  **/
- 
+
  public class ProtectDebugInfo extends TxnSupport implements AbortParticipant {
      private String[] protectedEntrys;
      private String[] wipedEntrys;
@@ -87,7 +88,7 @@ import java.io.Serializable;
          /* wipe by removing entries from the context  */
          for (String s: wipedEntrys)
              ctx.remove(s);
-         /* Protect entry items */           
+         /* Protect entry items */
          for (String s: protectedEntrys) {
              Object o = ctx.get (s);
              if (o instanceof ISOMsg){
@@ -111,7 +112,7 @@ import java.io.Serializable;
              if (o instanceof String){
                  String p = ctx.get(s);
                  if (p != null){
-                     ctx.put(s, protect (p));    
+                     ctx.put(s, protect (p));
                  }
              }
              if (o instanceof TLVList) {
@@ -120,7 +121,7 @@ import java.io.Serializable;
                      for (String t: wipeTLV)
                         wipeTag(tlv, t);
                  }
-             }  
+             }
          }
      }
      private void protectField (ISOMsg m, String f) {
@@ -154,15 +155,15 @@ import java.io.Serializable;
             if (tlv.hasTag(tagName)) {
                 tlv.deleteByTag(tagName);
                 tlv.append(tagName, ProtectedLogListener.BINARY_WIPED);
-            }                
+            }
         }
-        catch (Throwable ignored) { }        
+        catch (Throwable ignored) { }
     }
 
     private void protectField (FSDMsg m, String f) {
          if (f != null) {
              String s = m.get (f);
-             if (s != null) 
+             if (s != null)
                  m.set (f, ISOUtil.protect (s));
          }
      }
@@ -174,7 +175,7 @@ import java.io.Serializable;
      private String protect (String s) {
          return s != null ? ISOUtil.protect (s) : s;
      }
-     public void setConfiguration (Configuration cfg) 
+     public void setConfiguration (Configuration cfg)
          throws ConfigurationException
      {
          super.setConfiguration (cfg);

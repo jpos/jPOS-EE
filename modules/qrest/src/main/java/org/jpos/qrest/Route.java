@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// RFC 6570 implementation, based on http://bitworking.org/projects/URI-Templates
+// RFC 6570 implementation, based on https://tools.ietf.org/html/rfc6570
 public class Route<T> implements BiFunction<Route<T>, String,T> {
     private Pattern pathPattern;
     private String path;
@@ -76,8 +76,8 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
     @Override
     public String toString() {
         return "Route{" +
-          ", path='" + path + '\'' +
-          ", method='" + method + '\'' +
+          "path='" + path + "'" +
+          ", method='" + method + "'" +
           '}';
     }
 

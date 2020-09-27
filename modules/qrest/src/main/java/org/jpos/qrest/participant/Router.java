@@ -58,10 +58,13 @@ public class Router implements GroupSelector, XmlConfigurable {
             Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.uri())).findFirst();
             String path = URI.create(decoder.uri()).getPath();
             if (route.isPresent()) {
-                Map m = route.get().parameters(path);
+                Route<String> r = route.get();
+                Map m = r.parameters(path);
                 if (m != null)
                     ctx.put(PATHPARAMS, m);
-                return route.get().apply(route.get(), path);
+
+                ctx.log("Matched Route: "+r);
+                return r.apply(r, path);
             }
         }
         return null;

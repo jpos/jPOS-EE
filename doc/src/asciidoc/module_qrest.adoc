@@ -138,8 +138,8 @@ be used to simplify a lot of Jetty/Server/Jersey boilerplate.
 =====
 
 The `Router` participant is actually a `GroupSelector` (from the TransactionManager's standpoint)
-and takes care of parsing and placing in the Context both _Path Parameters_ as well as 
-_Query Parameters_ (under the `PATHPARAMS` and `QUERYPARAMS` contants).
+and takes care of parsing and placing in the Context both _Path Parameters_ as well as
+_Query Parameters_ (under the `PATHPARAMS` and `QUERYPARAMS` constants).
 
 So if we define a route like this:
 
@@ -287,7 +287,7 @@ Here is a copy of the internal Q2Info route configuration:
         routes.add(new Route<>("/q2/uptime**", "GET",
             (t,s) -> mapOf("uptime", q2.getUptime())));
         routes.add(new Route<>("/q2/started**", "GET",
-            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - 
+            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() -
             q2.getUptime()))));
         routes.add(new Route<>("/q2/diskspace**", "GET",
             (t,s) -> diskspace()));

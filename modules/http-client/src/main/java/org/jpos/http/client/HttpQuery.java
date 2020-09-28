@@ -41,7 +41,6 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 
 import org.jpos.core.ConfigurationException;
@@ -76,11 +75,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String statusName;
     private String contentTypeName;
     private String basicAuthenticationName;
-    private DefaultRedirectStrategy redirectStrategy;
+    private RedirectStrategy redirectStrategy;
 
     // A shared client for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
-    private CloseableHttpAsyncClient client = null;
+    private CloseableHttpAsyncClient httpClient = null;
 
     public HttpQuery () {
         super();
@@ -210,16 +209,20 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
     }
 
-    protected HttpAsyncClientBuilder getClientBuilder() {
-        return HttpAsyncClients.custom().useSystemProperties().setRedirectStrategy(redirectStrategy);
+    public CloseableHttpAsyncClient getHttpClient() {
+        if (httpClient == null) {
+            setHttpClient(getClientBuilder().build());
+            httpClient.start();
+        }
+        return httpClient;
     }
 
-    protected HttpAsyncClient getHttpClient() {
-        if (client == null) {
-            client = getClientBuilder().build();
-            client.start();
-        }
-        return client;
+    public void setHttpClient(CloseableHttpAsyncClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    protected HttpAsyncClientBuilder getClientBuilder() {
+        return HttpAsyncClients.custom().useSystemProperties().setRedirectStrategy(redirectStrategy);
     }
 
     private String getURL (Context ctx) {
@@ -308,9 +311,9 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
 
     @Override
     public void destroy() {
-        if (client != null && client.isRunning()) {
+        if (httpClient != null && httpClient.isRunning()) {
             try {
-                client.close();
+                httpClient.close();
             } catch (IOException e) {
                 warn(e);
             }

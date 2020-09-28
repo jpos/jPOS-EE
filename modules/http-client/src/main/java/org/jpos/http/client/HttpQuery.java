@@ -199,10 +199,13 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                                             headers[i].substring(colonPos+1));      // header value
         }
 
-        buildClient(cfg);
+        client = buildClient(cfg);
+        if (!client.isRunning()) {
+            client.start();
+        }
     }
 
-    protected void buildClient(Configuration cfg) throws ConfigurationException {
+    protected CloseableHttpAsyncClient buildClient(Configuration cfg) throws ConfigurationException {
         String redirProp = cfg.get("redirect-strategy", "default");
         RedirectStrategy redirectStrategy;
         if ("default".equals(redirProp))
@@ -216,8 +219,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             .useSystemProperties()
             .setRedirectStrategy(redirectStrategy);
 
-        client = builder.build();
-        client.start();
+        return builder.build();
     }
 
     private String getURL (Context ctx) {

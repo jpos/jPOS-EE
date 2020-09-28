@@ -75,10 +75,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String statusName;
     private String contentTypeName;
     private String basicAuthenticationName;
+    private RedirectStrategy redirectStrategy;
 
     // A shared client for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
-    private CloseableHttpAsyncClient client = null;
+    private CloseableHttpAsyncClient httpClient = null;
 
     public HttpQuery () {
         super();
@@ -116,7 +117,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
         }
 
-        client.execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
+        getHttpClient().execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse result) {
                 ctx.log (result.getStatusLine());
@@ -199,25 +200,29 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                                             headers[i].substring(colonPos+1));      // header value
         }
 
-        buildClient(cfg);
-    }
-
-    protected void buildClient(Configuration cfg) throws ConfigurationException {
         String redirProp = cfg.get("redirect-strategy", "default");
-        RedirectStrategy redirectStrategy;
         if ("default".equals(redirProp))
             redirectStrategy= DefaultRedirectStrategy.INSTANCE;
         else if ("lax".equals(redirProp))
             redirectStrategy= LaxRedirectStrategy.INSTANCE;
         else
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
+    }
 
-        HttpAsyncClientBuilder builder = HttpAsyncClients.custom()
-            .useSystemProperties()
-            .setRedirectStrategy(redirectStrategy);
+    public CloseableHttpAsyncClient getHttpClient() {
+        if (httpClient == null) {
+            setHttpClient(getClientBuilder().build());
+            httpClient.start();
+        }
+        return httpClient;
+    }
 
-        client = builder.build();
-        client.start();
+    public void setHttpClient(CloseableHttpAsyncClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    protected HttpAsyncClientBuilder getClientBuilder() {
+        return HttpAsyncClients.custom().useSystemProperties().setRedirectStrategy(redirectStrategy);
     }
 
     private String getURL (Context ctx) {
@@ -306,9 +311,9 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
 
     @Override
     public void destroy() {
-        if (client != null && client.isRunning()) {
+        if (httpClient != null && httpClient.isRunning()) {
             try {
-                client.close();
+                httpClient.close();
             } catch (IOException e) {
                 warn(e);
             }

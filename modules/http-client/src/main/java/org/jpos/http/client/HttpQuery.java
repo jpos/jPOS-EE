@@ -41,6 +41,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 
 import org.jpos.core.ConfigurationException;
@@ -75,6 +76,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String statusName;
     private String contentTypeName;
     private String basicAuthenticationName;
+    private DefaultRedirectStrategy redirectStrategy;
 
     // A shared client for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
@@ -116,7 +118,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
         }
 
-        client.execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
+        getHttpClient().execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse result) {
                 ctx.log (result.getStatusLine());
@@ -199,27 +201,25 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                                             headers[i].substring(colonPos+1));      // header value
         }
 
-        client = buildClient(cfg);
-        if (!client.isRunning()) {
-            client.start();
-        }
-    }
-
-    protected CloseableHttpAsyncClient buildClient(Configuration cfg) throws ConfigurationException {
         String redirProp = cfg.get("redirect-strategy", "default");
-        RedirectStrategy redirectStrategy;
         if ("default".equals(redirProp))
             redirectStrategy= DefaultRedirectStrategy.INSTANCE;
         else if ("lax".equals(redirProp))
             redirectStrategy= LaxRedirectStrategy.INSTANCE;
         else
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
+    }
 
-        HttpAsyncClientBuilder builder = HttpAsyncClients.custom()
-            .useSystemProperties()
-            .setRedirectStrategy(redirectStrategy);
+    protected HttpAsyncClientBuilder getClientBuilder() {
+        return HttpAsyncClients.custom().useSystemProperties().setRedirectStrategy(redirectStrategy);
+    }
 
-        return builder.build();
+    protected HttpAsyncClient getHttpClient() {
+        if (client == null) {
+            client = getClientBuilder().build();
+            client.start();
+        }
+        return client;
     }
 
     private String getURL (Context ctx) {

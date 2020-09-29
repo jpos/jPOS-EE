@@ -251,10 +251,12 @@ public class QI extends UI {
         qiLayout.getContentLayout().removeComponent(loginView);
         createMainView();
         String fragment = UI.getCurrent().getPage().getUriFragment();
-        if (fragment != null && !fragment.isEmpty() && fragment.startsWith("!"))
+        if (fragment == null || fragment.isEmpty()) {
+            navigateTo("/home");
+        } else if (fragment.startsWith("!")) {
             navigateTo(fragment.substring(1));
+        }
     }
-
 
     void logout() {
         qiLayout.removeAllComponents();

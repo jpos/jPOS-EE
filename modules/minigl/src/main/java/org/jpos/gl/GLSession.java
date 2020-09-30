@@ -1153,7 +1153,7 @@ public class GLSession {
         BalanceCache bcache = null;
         select.append(", transacc as txn\n");
 
-        if (!ignoreBalanceCache) {
+        if (date == null && !ignoreBalanceCache) {
             short[] layersCopy = Arrays.copyOf(layers,layers.length);
             bcache = getBalanceCache(journal, acct, layersCopy);
             if (maxId > 0 && bcache != null && bcache.getRef() > maxId)

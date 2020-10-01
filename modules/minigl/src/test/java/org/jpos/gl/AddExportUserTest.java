@@ -31,7 +31,7 @@ import java.util.List;
 public class AddExportUserTest extends TestBase {
     @Test
     public void testAddExportUser() throws Exception {
-        Session sess = new DB().open();
+        Session sess = new DB(configModifier).open();
         try {
             GLUser user = getUser(sess,System.getProperty("user.name"));
         } catch (IllegalArgumentException e) {

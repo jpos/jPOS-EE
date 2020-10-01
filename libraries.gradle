@@ -25,6 +25,8 @@ ext {
     liquibaseVersion = '3.8.0'
     elkVersion = '7.8.0'
     orgjsonVersion = '20200518'
+    postgresqlEmbeddedVersion = '1.2.8'
+    postgresqlBinVersion = '12.3.0'
 
     libraries = [
             //jUnit (Tests)
@@ -45,6 +47,11 @@ ext {
 
             logback: "ch.qos.logback:logback-classic:${logbackVersion}",
 
+            // Postgresql embedded for tests
+            postgresql_embedded: "io.zonky.test:embedded-postgres:${postgresqlEmbeddedVersion}",
+
+            // Postgresql embedded binary version
+            postgresql_bin: "io.zonky.test.postgres:embedded-postgres-binaries-bom:${postgresqlBinVersion}",
             //JODA-Time
             joda_time: 'joda-time:joda-time:2.10.4',
 

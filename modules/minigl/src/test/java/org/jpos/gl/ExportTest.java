@@ -24,6 +24,6 @@ import org.junit.jupiter.api.Test;
 public class ExportTest extends TestBase {
     @Test
     public void testExport() throws Exception {
-        new Export().export(System.out);
+        new Export(configModifier).export(System.out);
     }
 }

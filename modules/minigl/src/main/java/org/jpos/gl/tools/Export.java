@@ -35,6 +35,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.HibernateException;
 
+import org.jpos.ee.DB;
 import org.jpos.gl.GLUser;
 import org.jpos.gl.Journal;
 import org.jpos.gl.RuleInfo;
@@ -56,6 +57,10 @@ public class Export {
     public Export () throws HibernateException, GLException {
         super();
         gls = new GLSession (System.getProperty ("user.name"));
+    }
+    public Export (String configModifier) throws HibernateException, GLException {
+        super();
+        gls = new GLSession (new DB(configModifier), System.getProperty ("user.name"));
     }
 
     public Document getDocument ()

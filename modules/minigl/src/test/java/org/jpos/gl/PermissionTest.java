@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.hibernate.Transaction;
+import org.jpos.ee.DB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +46,7 @@ public class PermissionTest extends TestBase {
     @Test
     public void testNoPermAndGrant() throws Exception {
         // 'eve',  our no-permissions user
-        GLSession sess = new GLSession ("eve"); 
+        GLSession sess = new GLSession (new DB(configModifier),"eve");
         assertFalse (sess.hasPermission (GLPermission.READ));
         assertFalse(sess.hasPermission(GLPermission.POST, journal));
         sess.close();
@@ -56,14 +57,14 @@ public class PermissionTest extends TestBase {
         Transaction tx = gls.beginTransaction();
         gls.grant  ("eve", GLPermission.READ);
         tx.commit();
-        GLSession sess = new GLSession ("eve"); 
+        GLSession sess = new GLSession (new DB(configModifier), "eve");
         assertTrue (sess.hasPermission (GLPermission.READ));
         sess.close();
          // OK, now take it away
         tx = gls.beginTransaction();
         gls.revoke("eve", GLPermission.READ);
         tx.commit();
-        sess = new GLSession ("eve");
+        sess = new GLSession (new DB(configModifier), "eve");
         assertFalse(sess.hasPermission(GLPermission.READ));
         sess.close();
     }
@@ -75,7 +76,7 @@ public class PermissionTest extends TestBase {
         gls.revoke ("eve", GLPermission.READ);
         tx.commit();
 
-        GLSession sess = new GLSession ("eve"); 
+        GLSession sess = new GLSession (new DB(configModifier), "eve");
         assertFalse (sess.hasPermission (GLPermission.READ));
         sess.close();
     }
@@ -83,7 +84,7 @@ public class PermissionTest extends TestBase {
     public void testAnon() throws Exception {
         // 'anonymous', a non-existent user
         try {
-            new GLSession ("anonymous");
+            new GLSession (new DB(configModifier),"anonymous");
         } catch (GLException e) {
             assertEquals (e.getMessage(), "Invalid user 'anonymous'");
             return;

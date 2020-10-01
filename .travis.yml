@@ -19,6 +19,7 @@ script:
 - java -version
 script:
 - TERM=dumb ./gradlew assemble check --info --stacktrace
+- cd modules/minigl && TERM=dumb ../../gradlew clean test --rerun-tasks -Dtest.minigl_db_driver=postgres
 after_success: ".travis/update-gh-pages.sh"
 after_failure: ".travis/update-gh-pages.sh"
 env:

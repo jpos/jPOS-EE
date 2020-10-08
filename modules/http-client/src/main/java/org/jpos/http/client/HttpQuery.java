@@ -20,11 +20,13 @@ package org.jpos.http.client;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.*;
 
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.config.RequestConfig;
@@ -34,6 +36,8 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -62,6 +66,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String contentType;
     private Header[] httpHeaders;
     private boolean responseOnError;
+    private boolean preemptiveAuth= false;          // Preemptive Basic Authentication (send on first request, false by default)
     private int connectTimeout;                     // timeout waiting for connection
     private int timeout;                            // timeout waiting for HTTP response on socket
 
@@ -115,6 +120,12 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             // the credentials.
             // For preemptive authentication, an AuthCache needs to be configured.
             // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
+            if (preemptiveAuth) {
+                URI uri= httpRequest.getURI();
+                AuthCache authCache= new BasicAuthCache();
+                authCache.put(new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme()), new BasicScheme());
+                httpCtx.setAuthCache(authCache);
+            }
         }
 
         getHttpClient().execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
@@ -181,7 +192,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         responseName = cfg.get("responseName", "HTTP_RESPONSE");
         statusName = cfg.get("responseStatusName", "HTTP_STATUS");
 
-        basicAuthenticationName  = cfg.get("basicAuthenticationdName", ".HTTP_BASIC_AUTHENTICATION");
+        preemptiveAuth = cfg.getBoolean("preemptiveAuth", preemptiveAuth);
+        basicAuthenticationName = cfg.get("basicAuthenticationName", ".HTTP_BASIC_AUTHENTICATION");
 
         // ctx name under which extra http headers could exist at runtime
         // the object could be a List<String> or String[] (in the "name:value" format)

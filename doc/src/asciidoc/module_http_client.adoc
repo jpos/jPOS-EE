@@ -32,6 +32,7 @@ The `HttpQuery` participant has the following configuration properties:
 * `redirect-strategy`: Sets the strategy to use when the remote HTTP server returns a redirect.
    If the property is undefined, or has the "default" value, it will use Apache's `DefaultRedirectStrategy`.
    If the value is `lax` it will use `LaxRedirectStrategy` (see: https://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html)
+* `preemptiveAuth`: if doing Basic Authentication (by presence of context value), do it on the first request (default `false`)
 * `responseBodyOnError`: should an HTTP response body be included for responses with error
    status code? (`boolean`, default `false`);
 
@@ -79,7 +80,7 @@ The default names used above can be overriden, e.g.:
     <property name="headersName" value="MY_HTTP_HEADERS" />
     <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
     <property name="contentType" value="application/json" />          <2>
-    <property name="basicAuthenticationdName" value=".MY_BASIC_CREDENTIALS" /> <3>
+    <property name="basicAuthenticationName" value=".MY_BASIC_CREDENTIALS" /> <3>
   </participant>
 ------------
 <1> Name of the Context variable where user can override the default content type.

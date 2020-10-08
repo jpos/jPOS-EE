@@ -181,7 +181,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         responseName = cfg.get("responseName", "HTTP_RESPONSE");
         statusName = cfg.get("responseStatusName", "HTTP_STATUS");
 
-        basicAuthenticationName  = cfg.get("basicAuthenticationdName", ".HTTP_BASIC_AUTHENTICATION");
+        basicAuthenticationName = cfg.get("basicAuthenticationName", ".HTTP_BASIC_AUTHENTICATION");
 
         // ctx name under which extra http headers could exist at runtime
         // the object could be a List<String> or String[] (in the "name:value" format)

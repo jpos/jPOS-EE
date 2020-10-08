@@ -79,7 +79,7 @@ The default names used above can be overriden, e.g.:
     <property name="headersName" value="MY_HTTP_HEADERS" />
     <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
     <property name="contentType" value="application/json" />          <2>
-    <property name="basicAuthenticationdName" value=".MY_BASIC_CREDENTIALS" /> <3>
+    <property name="basicAuthenticationName" value=".MY_BASIC_CREDENTIALS" /> <3>
   </participant>
 ------------
 <1> Name of the Context variable where user can override the default content type.

@@ -32,6 +32,7 @@ The `HttpQuery` participant has the following configuration properties:
 * `redirect-strategy`: Sets the strategy to use when the remote HTTP server returns a redirect.
    If the property is undefined, or has the "default" value, it will use Apache's `DefaultRedirectStrategy`.
    If the value is `lax` it will use `LaxRedirectStrategy` (see: https://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html)
+* `preemptiveAuth`: if doing Basic Authentication (by presence of context value), do it on the first request (default `false`)
 * `responseBodyOnError`: should an HTTP response body be included for responses with error
    status code? (`boolean`, default `false`);
 

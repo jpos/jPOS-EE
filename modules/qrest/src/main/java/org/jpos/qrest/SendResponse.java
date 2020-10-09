@@ -31,6 +31,7 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -41,6 +42,7 @@ public class SendResponse implements AbortParticipant, Configurable {
     private static ObjectMapper mapper = Mapper.getMapper();
     private String contentType;
     private boolean jsonIncludeNulls= true;
+    private String corsHeader;
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -111,9 +113,11 @@ public class SendResponse implements AbortParticipant, Configurable {
                   response.status(),
                   copiedBuffer(responseBody));
 
+                HttpHeaders httpHeaders = httpResponse.headers();
                 if (isJson)
                     httpResponse.headers().set(CONTENT_TYPE, APPLICATION_JSON);
-
+                if (corsHeader != null)
+                    httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
             } catch (JsonProcessingException e) {
                 ctx.log(e);
                 httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -131,5 +135,6 @@ public class SendResponse implements AbortParticipant, Configurable {
     public void setConfiguration (Configuration cfg) {
         this.contentType = cfg.get("content-type", null);
         this.jsonIncludeNulls = cfg.getBoolean("json-include-nulls", true);
+        this.corsHeader = cfg.get("Access-Control-Allow-Origin", null);
     }
 }

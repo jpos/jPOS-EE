@@ -43,5 +43,6 @@
 
   <participant class="org.jpos.qrest.SendResponse" logger="Q2">
     <!--<property name="content-type" value="application/json" />-->
+    <property name="Access-Control-Allow-Origin" value="*" />
   </participant>
 </txnmgr>

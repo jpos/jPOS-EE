@@ -81,6 +81,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String contentTypeName;
     private String basicAuthenticationName;
     private RedirectStrategy redirectStrategy;
+    private boolean ignoreNullRequest;
 
     // A shared client for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
@@ -95,7 +96,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
 
         HttpRequestBase httpRequest = getHttpRequest(ctx);
         if (httpRequest == null)
-            return FAIL;            // probably wrong http method; abort early and avoid NPEs later
+            return ignoreNullRequest ? PREPARED | NO_JOIN | READONLY : FAIL;
 
         addHeaders(ctx, httpRequest);
 
@@ -191,6 +192,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         contentTypeName = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
         responseName = cfg.get("responseName", "HTTP_RESPONSE");
         statusName = cfg.get("responseStatusName", "HTTP_STATUS");
+        ignoreNullRequest = cfg.getBoolean("ignoreNullRequest", false);
 
         preemptiveAuth = cfg.getBoolean("preemptiveAuth", preemptiveAuth);
         basicAuthenticationName = cfg.get("basicAuthenticationName", ".HTTP_BASIC_AUTHENTICATION");

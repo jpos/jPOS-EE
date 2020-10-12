@@ -360,7 +360,7 @@ public class QI extends UI {
         return v;
     }
 
-    public void createMainView() {
+    protected void createMainView() {
         setNavigator(new QINavigator(this, qiLayout.getContentLayout()));
         if (qiLayout.getHeaderLayout() != null) {
             header = new Header(this);

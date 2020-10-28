@@ -331,16 +331,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         saveBtn.setStyleName("icon-ok");
         saveBtn.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
-        removeBtn.addClickListener(event -> app.addWindow(new ConfirmDialog(
-                        app.getMessage("confirmTitle"),
-                        app.getMessage("removeConfirmationMessage"),
-                        confirm -> {
-                            if (confirm) {
-                                removeEntity();
-                            }
-                        }
-        )
-        ));
+        removeBtn.addClickListener(event -> removeClick());
         removeBtn.addStyleName("icon-trash");
 
         cancelBtn.addClickListener(event -> {
@@ -441,6 +432,19 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         for (Layout l : getFieldsLayouts()) {
             l.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         }
+    }
+
+    protected void removeClick() {
+        app.addWindow(new ConfirmDialog(
+            app.getMessage("confirmTitle"),
+            app.getMessage("removeConfirmationMessage"),
+            confirm -> {
+                if (confirm) {
+                    removeEntity();
+                }
+            }
+          )
+        );
     }
 
     protected Layout createLayout() {

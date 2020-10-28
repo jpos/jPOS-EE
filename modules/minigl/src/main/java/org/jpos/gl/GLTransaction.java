@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom2.Element;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -317,6 +318,34 @@ public class GLTransaction extends Cloneable {
         }
         return glt;
     }
+
+        /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param keepEntryTags if true entries tags are copied to the reversal entries
+     * @param layer entries with layer <code>layer</code> are selected
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(boolean keepEntryTags, short... layers) {
+        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        glt.setJournal (getJournal());
+        for (GLEntry e : getEntries()) {
+            if (ArrayUtils.contains(layers,e.getLayer())) {
+                GLEntry reversalEntry = glt.createGLEntry(
+                  e.getAccount(),
+                  negate(e.getAmount()),
+                  e.getDetail(),
+                  e.isCredit(),
+                  e.getLayer()
+                );
+                if (keepEntryTags) reversalEntry.setTags(e.getTags());
+            }
+        }
+        return glt;
+    }
+
+
 
     /**
      *

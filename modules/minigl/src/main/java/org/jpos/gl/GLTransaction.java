@@ -318,6 +318,34 @@ public class GLTransaction extends Cloneable {
         return glt;
     }
 
+        /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param layer entries with layer <code>layer</code> are selected
+     * @param keepEntryTags if true entries tags are copied to the reversal entries
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(short layer, boolean keepEntryTags) {
+        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        glt.setJournal (getJournal());
+        for (GLEntry e : getEntries()) {
+            if (layer == e.getLayer()) {
+                GLEntry reversalEntry = glt.createGLEntry(
+                  e.getAccount(),
+                  negate(e.getAmount()),
+                  e.getDetail(),
+                  e.isCredit(),
+                  e.getLayer()
+                );
+                if (keepEntryTags) reversalEntry.setTags(e.getTags());
+            }
+        }
+        return glt;
+    }
+
+
+
     /**
      *
      * Create a reverse transaction based on this one

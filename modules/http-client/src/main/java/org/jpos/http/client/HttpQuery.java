@@ -248,15 +248,17 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     }
 
     public CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
-        if (httpClient == null) {
+        if (trustAllCerts) {
+            if (unsecureHttpClient == null) {
+                setUnsecureHttpClient(getClientBuilder(true).build());
+                unsecureHttpClient.start();
+            }
+            return unsecureHttpClient;
+        } else if (httpClient == null) {
             setHttpClient(getClientBuilder(false).build());
             httpClient.start();
         }
-        if (unsecureHttpClient == null) {
-            setUnsecureHttpClient(getClientBuilder(true).build());
-            unsecureHttpClient.start();
-        }
-        return trustAllCerts ? unsecureHttpClient: httpClient;
+        return httpClient;
     }
 
     public void setHttpClient(CloseableHttpAsyncClient httpClient) {
@@ -388,15 +390,20 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         }
     } // addHeaders
 
-
     @Override
     public void destroy() {
-        if (httpClient != null && httpClient.isRunning()) {
+        httpClient = destroyClient(httpClient);
+        unsecureHttpClient = destroyClient(unsecureHttpClient);
+    }
+
+    private CloseableHttpAsyncClient destroyClient (CloseableHttpAsyncClient client) {
+        if (client != null && client.isRunning()) {
             try {
-                httpClient.close();
+                client.close();
             } catch (IOException e) {
                 warn(e);
             }
         }
+        return null;
     }
 }

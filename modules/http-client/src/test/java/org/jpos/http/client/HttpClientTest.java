@@ -23,6 +23,8 @@ import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
+import org.jpos.transaction.TransactionStatusEvent;
+import org.jpos.transaction.TransactionStatusListener;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -123,5 +125,71 @@ public class HttpClientTest {
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals (Integer.valueOf(HttpStatus.SC_UNAUTHORIZED), sc, "Status code should be 401");
+    }
+
+    @Test
+    public void testTrustRevokedCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://revoked.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testTrustPinnedKeyNotInCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://pinning-test.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testTrustSelfSignedCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://self-signed.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testTrustUntrustedRootCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://untrusted-root.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testTrustExpiredCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://expired.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testTrustWrongHostCertificate() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://wrong.host.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
     }
 }

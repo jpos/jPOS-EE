@@ -18,10 +18,25 @@
 
 package org.jpos.http.client;
 
+import static org.jpos.util.Logger.log;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.security.cert.CertificateExpiredException;
 
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
@@ -33,6 +48,8 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
@@ -51,6 +68,7 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.util.Destroyable;
 import org.jpos.util.Log;
+import org.jpos.util.LogEvent;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.transaction.Context;
@@ -79,13 +97,16 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String responseName;
     private String statusName;
     private String contentTypeName;
+    private String trustAllCertsName;
     private String basicAuthenticationName;
     private RedirectStrategy redirectStrategy;
     private boolean ignoreNullRequest;
 
-    // A shared client for the instance.
+    // Shared clients for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
     private CloseableHttpAsyncClient httpClient = null;
+    // This client will be used when certificate validation bypassing is needed
+    private CloseableHttpAsyncClient unsecureHttpClient = null;
 
     public HttpQuery () {
         super();
@@ -129,7 +150,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             }
         }
 
-        getHttpClient().execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
+        boolean trustAllCerts = ctx.getString(trustAllCertsName, "false").equals("true");
+        getHttpClient(trustAllCerts).execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse result) {
                 ctx.log (result.getStatusLine());
@@ -197,6 +219,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         preemptiveAuth = cfg.getBoolean("preemptiveAuth", preemptiveAuth);
         basicAuthenticationName = cfg.get("basicAuthenticationName", ".HTTP_BASIC_AUTHENTICATION");
 
+        trustAllCertsName = cfg.get("trustAllCerts", "HTTP_TRUST_ALL_CERTS");
+
         // ctx name under which extra http headers could exist at runtime
         // the object could be a List<String> or String[] (in the "name:value" format)
         // or a Map<String,String>
@@ -223,20 +247,62 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
     }
 
-    public CloseableHttpAsyncClient getHttpClient() {
+    public CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
         if (httpClient == null) {
-            setHttpClient(getClientBuilder().build());
+            setHttpClient(getClientBuilder(false).build());
             httpClient.start();
         }
-        return httpClient;
+        if (unsecureHttpClient == null) {
+            setUnsecureHttpClient(getClientBuilder(true).build());
+            unsecureHttpClient.start();
+        }
+        return trustAllCerts ? unsecureHttpClient: httpClient;
     }
 
     public void setHttpClient(CloseableHttpAsyncClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    protected HttpAsyncClientBuilder getClientBuilder() {
-        return HttpAsyncClients.custom().useSystemProperties().setRedirectStrategy(redirectStrategy);
+    public void setUnsecureHttpClient(CloseableHttpAsyncClient httpClient) {
+        this.unsecureHttpClient = httpClient;
+    }
+
+    protected HttpAsyncClientBuilder getClientBuilder(boolean trustAllCerts) {
+        HttpAsyncClientBuilder builder = HttpAsyncClients.custom().useSystemProperties()
+                .setRedirectStrategy(redirectStrategy);
+        if (trustAllCerts) {
+            disableSSLVerification(builder);
+        }
+        return builder;
+    }
+
+    private HttpAsyncClientBuilder disableSSLVerification(HttpAsyncClientBuilder builder) {
+        TrustManager[] wrappedTrustManagers = new TrustManager[] {
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    log(new LogEvent(certs.toString() + " " + authType));
+                }
+            }
+        };
+
+        SSLContext sc;
+        try {
+            sc = SSLContext.getInstance("TLS");
+            sc.init(null, wrappedTrustManagers, new SecureRandom());
+            return builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).setSSLContext(sc);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            LogEvent evt = new LogEvent(this, "warn");
+            evt.addMessage(e);
+            log(evt);
+            return builder;
+        }
     }
 
     private String getURL (Context ctx) {

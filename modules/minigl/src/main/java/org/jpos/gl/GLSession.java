@@ -1445,8 +1445,7 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
-        return getBalance  (journal, acct, layers);
+        return createBalanceCache (journal, acct, layers, getSafeMaxGLEntryId());
     }
     private BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers, long maxId)

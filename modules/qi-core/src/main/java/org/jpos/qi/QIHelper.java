@@ -66,16 +66,26 @@ public abstract class QIHelper {
         revMgr.createRevision(author, entity.toLowerCase() + "." + id, info);
     }
 
+    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem,
+                                       String[] itemProps)
+    {
+        return this.addRevisionUpdated(db, entity, id, oldItem, newItem, itemProps, null);
+    }
     //Must be executed inside a DB.execWithTransaction
-    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem, String[] itemProps) {
+    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem,
+                                       String[] itemProps, String extraInfo)
+    {
         StringBuilder revInfo = new StringBuilder();
         BeanDiff bd = new BeanDiff (oldItem, newItem, itemProps);
         revInfo.append(bd.toString());
         if (revInfo.length() > 0) {
             User author = getUser();
-            String info = revInfo.length() < 1000 ? revInfo.toString() : revInfo.toString().substring(0, 990) + "...";
+            StringJoiner info = new StringJoiner(BeanDiff.LINESEP);
+            if (extraInfo != null && !extraInfo.isEmpty())
+                info.add(extraInfo);
+            info.add(revInfo.length() < 1000 ? revInfo.toString() : revInfo.substring(0, 990) + "...");
             RevisionManager revMgr = new RevisionManager(db);
-            revMgr.createRevision (author, entity.toLowerCase() + "." + id, info);
+            revMgr.createRevision (author, entity.toLowerCase() + "." + id, info.toString());
             return true;
         } else {
             return false;

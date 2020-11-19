@@ -81,6 +81,14 @@
         color: #CE6C47;
     }
 
+    .v-table-row-green-row, .green-row {
+        color: green;
+    }
+
+    .v-table-row-red-row, .red-row {
+        color: red;
+    }
+
     .v-panel-caption-color1 {
         @include valo-panel-caption-style($background-color: hsl(220, 5%, 38%));
     }

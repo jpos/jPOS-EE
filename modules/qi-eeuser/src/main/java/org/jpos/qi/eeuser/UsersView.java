@@ -21,6 +21,7 @@ package org.jpos.qi.eeuser;
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Grid;
@@ -38,7 +39,10 @@ import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 public class UsersView extends QIEntityView<User> {
-
+    // Ensure that password contains between 8-20 characters long, have at least one digit (0-9),
+    // one lowercase character, one uppercase character and at least one special character @#-.=_!
+    static String PASSWORD_PATTERN = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-!_=#@.]).{8,20})";
+    
     private User selectedU;
     private Binder<String> passwordBinder;
     private PasswordField currentPasswordField;
@@ -258,6 +262,7 @@ public class UsersView extends QIEntityView<User> {
         newPasswordField.setWidth("80%");
         passwordBinder.forField(newPasswordField)
                 .asRequired(getApp().getMessage("errorMessage.req",newPasswordField.getCaption()))
+                .withValidator(new RegexpValidator(QI.getQI().getMessage("errorMessage.invalidField", newPasswordField.getCaption()), PASSWORD_PATTERN))
                 .withValidator(((UsersHelper)getHelper()).getNewPasswordNotUsedValidator())
                 .bind(string->string,null);
         form.addComponent(newPasswordField);

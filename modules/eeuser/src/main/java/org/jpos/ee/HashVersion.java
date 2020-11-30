@@ -60,7 +60,6 @@ public enum HashVersion {
         @Override
         public String hash (String seed, String secret, byte[] salt) throws Exception {
             if (salt == null) {
-                System.out.println ("-- generated salt --");
                 salt = ONE.genSalt();
             }
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");

@@ -36,7 +36,7 @@ public class SysConfig extends Cloneable implements Serializable {
     @Column(length=64)
     private String id;
 
-    @Column(length=8192)
+    @Column(length=8000)
     private String value;
 
     @Column(length=64)

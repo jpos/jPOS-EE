@@ -37,7 +37,7 @@ public class Realm implements Serializable {
     @Column(length=64)
     private String name;
 
-    @Column(length=8192)
+    @Column(length=8000)
     private String description;
 
     public Long getId() {

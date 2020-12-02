@@ -27,7 +27,7 @@
     </id>
 
     <property name="nick" type="string" length="64" not-null="true" unique="true" index="eeuser_nick"  />
-    <property name="passwordHash" length="8192" type="string" />
+    <property name="passwordHash" length="8000" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="email" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />
@@ -43,7 +43,7 @@
       <key column="eeuser" not-null="true"/>
       <list-index column="id"/>
       <composite-element class="org.jpos.ee.PasswordHistory">
-       <property name="value" type="string" length="8192" not-null="true" />
+       <property name="value" type="string" length="8000" not-null="true" />
       </composite-element>
     </list>
 
@@ -60,4 +60,3 @@
     </map>
   </class>
 </hibernate-mapping>
-

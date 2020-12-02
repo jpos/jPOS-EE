@@ -25,7 +25,7 @@
     <id name="id" column="id" type="string">
       <generator class="assigned" />
     </id>
-    <property name="hash" length="8192" type="string" />
+    <property name="hash" length="8000" type="string" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />
     <property name="startDate"     type="date" />

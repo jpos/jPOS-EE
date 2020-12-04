@@ -304,7 +304,7 @@ public class GLTransaction extends Cloneable {
      * @return a reversal transaction
      */
     public GLTransaction createReverse(boolean keepEntryTags) {
-        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        GLTransaction glt = new GLTransaction (negate(getDetail()));
         glt.setJournal (getJournal());
         for (GLEntry e : getEntries()) {
             GLEntry reversalEntry = glt.createGLEntry(
@@ -487,6 +487,13 @@ public class GLTransaction extends Cloneable {
     }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
+    }
+
+    private String negate (String s) {
+        if (s == null)
+            return s;
+        else
+            return "(" + s + ")";
     }
 
     @Override

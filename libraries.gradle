@@ -17,7 +17,7 @@ ext {
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.11.2'
     nettyVersion = '4.1.42.Final'
-    httpAsyncClientVersion = '4.1.4'
+    httpClientVersion = '5.0.3'
     mysqlJDBCVersion = '8.0.17'
     c3p0Version = '0.9.5.4'
     postgresJDBCVersion = '42.2.11'
@@ -127,7 +127,7 @@ ext {
 
             jsonSchemaValidator: "com.github.java-json-tools:json-schema-validator:${jsonSchemaVersion}",
             guava: "com.google.guava:guava:${guavaVersion}",
-            httpAsyncClient: "org.apache.httpcomponents:httpasyncclient:${httpAsyncClientVersion}",
+            httpAsyncClient: "org.apache.httpcomponents.client5:httpclient5:${httpClientVersion}",
             flywaydb: "org.flywaydb:flyway-core:${flywaydbVersion}",
             liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}",
 

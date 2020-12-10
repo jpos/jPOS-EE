@@ -327,8 +327,12 @@ public class DB implements Closeable {
     {
         if (session != null)
         {
-            session.close();
-            session = null;
+            synchronized (DB.class)
+            {
+                session.clear();
+                session.close();
+                session = null;
+            }
         }
     }
 

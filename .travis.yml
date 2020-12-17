@@ -1,15 +1,8 @@
 sudo: required
-dist: xenial
+dist: trusty
 language: java
 jdk:
-  - openjdk8
-  - openjdk9
-  - openjdk10
-  - openjdk11
-  - openjdk12
-  - openjdk13
-  - openjdk14
-  - openjdk15
+  - oraclejdk8
 before_script:
 - echo $JAVA_OPTS
 - export JAVA_OPTS=-Xmx1G
@@ -28,11 +21,3 @@ env:
 notifications:
   slack:
     secure: HikbVVS4pi1VI1q0W0Kkh7NMXmrtDFw+ulqBpKA4VT+2LyOxsF18Bg+j40+hNonfTRPTuBYuOuU0wA79u1GBZRKdm2Ky3CGd1rohG53ONOk3I+J1K1W0hfzITZ+nkrB//+oAYJBADhZJQZ8PwjbhA4wxsz+k4XOaScwbTiemt8Y=
-matrix:
-  include:
-    - jdk: oraclejdk8
-      dist: trusty
-  allow_failures:
-    - jdk: openjdk9
-    - jdk: openjdk10
-

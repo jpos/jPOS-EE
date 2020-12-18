@@ -23,6 +23,7 @@ import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
+import org.jpos.core.Environment;
 import org.jpos.util.LogEvent;
 import org.jpos.util.LogSource;
 import org.jpos.util.Logger;
@@ -34,10 +35,12 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
-@SuppressWarnings("unused unchecked")
+@SuppressWarnings("unused")
 public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
-    private Scheduler scheduler;
+    protected Scheduler scheduler;
     private Element config;
+
+    @Override
     protected void initService() throws Exception {
         scheduler = createScheduler();
         QFactory factory = getFactory();
@@ -65,9 +68,10 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
 
             CronTrigger trigger;
             try {
+                String cronExpression = Environment.get(e.getAttributeValue("when"));
                 trigger = TriggerBuilder.newTrigger()
                         .withIdentity(e.getAttributeValue("id"), getName())
-                        .withSchedule(CronScheduleBuilder.cronSchedule(e.getAttributeValue("when")))
+                        .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
                         .build();
 
                 Date ft = scheduler.scheduleJob(job, trigger);
@@ -84,13 +88,19 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
 
         Logger.log(evt);
     }
+
+    @Override
     protected void startService() throws SchedulerException {
         scheduler.start();
     }
+
+    @Override
     protected void stopService() throws SchedulerException {
         NameRegistrar.unregister(getName());
         scheduler.shutdown(true);
     }
+
+    @Override
     protected void destroyService() {
         scheduler = null;
     }

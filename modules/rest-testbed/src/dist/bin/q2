@@ -3,6 +3,7 @@
 cd `dirname $0`/.. || exit 1
 rm -f deploy/shutdown.xml
 java -server \
+    -XX:+IgnoreUnrecognizedVMOptions \
     -Dappname=jPOSEE-rest-testbed \
     -Duser.name=admin \
     -Dcom.sun.management.jmxremote \

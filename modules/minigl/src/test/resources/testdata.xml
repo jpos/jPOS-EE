@@ -114,7 +114,8 @@
  <journal>
   <name>TestJournal</name>
   <start>20010101</start>
-  <end>20201231</end>
+  <!-- Increase by 10 years in 2030, and increment this number: 2 -->
+  <end>20301231</end>
   <status>open</status>
   <chart>TestChart</chart>
   <grant user="bob">post</grant>
@@ -153,7 +154,8 @@
  <journal>
   <name>HistoryJournal</name>
   <start>20010101</start>
-  <end>20201231</end>
+  <!-- Increase by 10 years in 2030, and increment this number: 2 -->
+  <end>20301231</end>
   <status>open</status>
   <chart>TestChart</chart>
   <grant user="bob">post</grant>

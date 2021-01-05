@@ -18,13 +18,11 @@
 
 package org.jpos.http.client;
 
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
-import org.jpos.transaction.TransactionStatusEvent;
-import org.jpos.transaction.TransactionStatusListener;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

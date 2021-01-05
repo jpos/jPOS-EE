@@ -23,47 +23,40 @@ import static org.jpos.util.Logger.log;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.security.cert.CertificateExpiredException;
 
-import org.apache.http.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
-
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequests;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.client5.http.auth.*;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.auth.BasicScheme;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.StatusLine;
 import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.util.Destroyable;
@@ -115,25 +108,33 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     public int prepare (long id, Serializable o) {
         Context ctx = (Context) o;
 
-        HttpRequestBase httpRequest = getHttpRequest(ctx);
+        SimpleHttpRequest httpRequest = getHttpRequest(ctx);
         if (httpRequest == null)
             return ignoreNullRequest ? PREPARED | NO_JOIN | READONLY : FAIL;
 
         addHeaders(ctx, httpRequest);
 
         httpRequest.setConfig(RequestConfig.custom().
-            setConnectTimeout(connectTimeout).
-            setSocketTimeout(timeout).
+            setConnectTimeout(connectTimeout, TimeUnit.MILLISECONDS).
+            setResponseTimeout(timeout, TimeUnit.MILLISECONDS).
             build());
 
         HttpClientContext httpCtx= HttpClientContext.create();                              // per-request http context
 
         String basicAuth = ctx.get(basicAuthenticationName);
         if (basicAuth != null && basicAuth.contains(":")) {
+            HttpHost host = null;
+            try {
+                URI uri = httpRequest.getUri();
+                host = new HttpHost(uri.getScheme(), uri.getHost(), uri.getPort());
+            } catch (URISyntaxException e) {
+                ctx.log(e);
+            }
             String[] credentials = basicAuth.split(":");
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(AuthScope.ANY,
-                                         new UsernamePasswordCredentials(credentials[0], credentials[1]));
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(
+                    new AuthScope(host, null, StandardAuthScheme.BASIC),
+                    new UsernamePasswordCredentials(credentials[0], credentials[1].toCharArray()));
             httpCtx.setCredentialsProvider(credsProvider);
 
             // NOTE: The Apache HTTP client does not do preemptive authentication out of the box.
@@ -143,29 +144,24 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             // For preemptive authentication, an AuthCache needs to be configured.
             // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
             if (preemptiveAuth) {
-                URI uri= httpRequest.getURI();
                 AuthCache authCache= new BasicAuthCache();
-                authCache.put(new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme()), new BasicScheme());
+                authCache.put(host, new BasicScheme());
                 httpCtx.setAuthCache(authCache);
             }
         }
 
         boolean trustAllCerts = ctx.getString(trustAllCertsName, "false").equals("true");
-        getHttpClient(trustAllCerts).execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
+        getHttpClient(trustAllCerts).execute(httpRequest, httpCtx, new FutureCallback<SimpleHttpResponse>() {
             @Override
-            public void completed(HttpResponse result) {
-                ctx.log (result.getStatusLine());
+            public void completed(SimpleHttpResponse result) {
+                ctx.log (new StatusLine(result));
 
-                int sc = result.getStatusLine().getStatusCode();
+                int sc = result.getCode();
 
                 // we always include the response body on success and check responseOnError for failed requests
                 boolean includeResponse= (sc == HttpStatus.SC_CREATED) || (sc == HttpStatus.SC_OK) || responseOnError;
                 if (includeResponse) {
-                    try {
-                        ctx.put (responseName, EntityUtils.toString(result.getEntity()));
-                    } catch (IOException e) {
-                        ctx.log (e);
-                    }
+                    ctx.put (responseName, result.getBodyText());
                 }
 
                 ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
@@ -242,7 +238,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         if ("default".equals(redirProp))
             redirectStrategy= DefaultRedirectStrategy.INSTANCE;
         else if ("lax".equals(redirProp))
-            redirectStrategy= LaxRedirectStrategy.INSTANCE;
+            redirectStrategy= DefaultRedirectStrategy.INSTANCE;
         else
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
     }
@@ -298,7 +294,14 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         try {
             sc = SSLContext.getInstance("TLS");
             sc.init(null, wrappedTrustManagers, new SecureRandom());
-            return builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).setSSLContext(sc);
+            return builder.setConnectionManager(PoolingAsyncClientConnectionManagerBuilder
+                    .create()
+                    .setTlsStrategy(ClientTlsStrategyBuilder
+                            .create()
+                            .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                            .setSslContext(sc)
+                            .build())
+                    .build());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             LogEvent evt = new LogEvent(this, "warn");
             evt.addMessage(e);
@@ -319,24 +322,24 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         return sb.toString();
     }
 
-    private HttpRequestBase getHttpRequest(Context ctx) {
+    private SimpleHttpRequest getHttpRequest(Context ctx) {
         String url = getURL(ctx);
         String payload;
         switch (ctx.getString(methodName)) {
             case "POST":
-                HttpPost post = new HttpPost(url);
+                SimpleHttpRequest post = SimpleHttpRequests.post(url);
                 payload = ctx.getString(requestName);
                 if (payload != null)
-                    post.setEntity(new StringEntity(payload, getContentType(ctx)));
+                    post.setBody(payload, getContentType(ctx));
                 return post;
             case "PUT":
-                HttpPut put = new HttpPut(url);
+                SimpleHttpRequest put = SimpleHttpRequests.put(url);
                 payload = ctx.getString(requestName);
                 if (payload != null)
-                    put.setEntity(new StringEntity(payload, getContentType(ctx)));
+                    put.setBody(payload, getContentType(ctx));
                 return put;
             case "GET":
-                return new HttpGet(url);
+                return SimpleHttpRequests.get(url);
         }
         ctx.log ("Invalid request method");
         return null;
@@ -345,11 +348,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private ContentType getContentType (Context ctx) {
         return cfg.getBoolean("no-charset") ?
           ContentType.create(ctx.get(contentTypeName, contentType)) :
-          ContentType.create(ctx.get(contentTypeName, contentType), Consts.UTF_8);
+          ContentType.create(ctx.get(contentTypeName, contentType), StandardCharsets.UTF_8);
     }
 
     @SuppressWarnings("unchecked")
-    private void addHeaders(Context ctx, HttpUriRequest req) {
+    private void addHeaders(Context ctx, SimpleHttpRequest req) {
         // first add the ones from the cfg
         req.setHeaders(httpHeaders);
 
@@ -397,7 +400,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     }
 
     private CloseableHttpAsyncClient destroyClient (CloseableHttpAsyncClient client) {
-        if (client != null && client.isRunning()) {
+        if (client != null) {
             try {
                 client.close();
             } catch (IOException e) {

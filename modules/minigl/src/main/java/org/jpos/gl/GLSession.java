@@ -1134,7 +1134,14 @@ public class GLSession {
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal[] getBalances
-      (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
+    (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
+      throws HibernateException, GLException
+    {
+        return getBalances0(journal, acct, date, inclusive, layers, maxId, null);
+    }
+
+    private BigDecimal[] getBalances0
+      (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId, BalanceCache bcache)
       throws HibernateException, GLException
     {
         StringBuilder select;
@@ -1151,12 +1158,12 @@ public class GLSession {
 
         checkPermission (GLPermission.READ, journal);
         BigDecimal balance[] = { ZERO, Z };
-        BalanceCache bcache = null;
         select.append(", transacc as txn\n");
 
         if (date == null && !ignoreBalanceCache) {
             short[] layersCopy = Arrays.copyOf(layers,layers.length);
-            bcache = getBalanceCache(journal, acct, layersCopy);
+            if (bcache == null)
+                bcache = getBalanceCache(journal, acct, layersCopy);
             if (maxId > 0 && bcache != null && bcache.getRef() > maxId)
                 bcache = null; // ignore bcache 'in the future'
         }
@@ -1453,6 +1460,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         BigDecimal balance;
+        BalanceCache bc = null;
         if (acct.isCompositeAccount()) {
             balance = ZERO;
             Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
@@ -1462,15 +1470,16 @@ public class GLSession {
             }
         }
         else if (acct.isFinalAccount())
-            createFinalBalanceCache(journal, (FinalAccount) acct, layers, maxId);
-        return getBalance(journal, acct, layers);
+            bc = createFinalBalanceCache(journal, (FinalAccount) acct, layers, maxId);
+
+        return getBalances0 (journal, acct, null, true, layers, 0L, bc) [0];
     }
 
-    public void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers) throws GLException {
-        createFinalBalanceCache(journal, acct, layers, getSafeMaxGLEntryId());
+    public BalanceCache createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers) throws GLException {
+        return createFinalBalanceCache(journal, acct, layers, getSafeMaxGLEntryId());
     }
 
-    private void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers, long maxId) throws GLException {
+    private BalanceCache createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers, long maxId) throws GLException {
         lock (journal, acct);
         BigDecimal balance = getBalances (journal, acct, null, true, layers, maxId) [0];
         BalanceCache c = getBalanceCache (journal, acct, layers);
@@ -1485,6 +1494,7 @@ public class GLSession {
             c.setBalance (balance);
             session.saveOrUpdate (c);
         }
+        return c;
     }
 
     /**

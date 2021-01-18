@@ -21,13 +21,13 @@ package org.jpos.gl;
 import java.math.BigInteger;
 import java.util.*;
 import java.math.BigDecimal;
+import java.util.concurrent.DelayQueue;
 
 import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.hibernate.type.LongType;
@@ -48,6 +48,7 @@ public class GLSession {
     public static final short[] LAYER_ZERO = new short[] { 0 };
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
+
     private long SAFE_WINDOW = 1000L;
     private boolean ignoreBalanceCache = false;
     private boolean strictAccountCodes = true;
@@ -1460,23 +1461,26 @@ public class GLSession {
                 balance = balance.add (createBalanceCache (journal, a, layers, maxId));
             }
         }
-        else if (acct.isFinalAccount()) {
-            lock (journal, acct);
-            balance = getBalances (journal, acct, null, true, layers, maxId) [0];
-            BalanceCache c = getBalanceCache (journal, acct, layers);
-            if (c == null) {
-                c = new BalanceCache ();
-                c.setJournal (journal);
-                c.setAccount (acct);
-                c.setLayers (layersToString(layers));
-            }
-            if (maxId != c.getRef()) {
-                c.setRef (maxId);
-                c.setBalance (balance);
-                session.saveOrUpdate (c);
-            }
-        }
+        else if (acct.isFinalAccount())
+            createFinalBalanceCache(journal, (FinalAccount) acct, layers, maxId);
         return getBalance(journal, acct, layers);
+    }
+
+    public void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers, long maxId) throws GLException {
+        lock (journal, acct);
+        BigDecimal balance = getBalances (journal, acct, null, true, layers, maxId) [0];
+        BalanceCache c = getBalanceCache (journal, acct, layers);
+        if (c == null) {
+            c = new BalanceCache ();
+            c.setJournal (journal);
+            c.setAccount (acct);
+            c.setLayers (layersToString(layers));
+        }
+        if (maxId != c.getRef()) {
+            c.setRef (maxId);
+            c.setBalance (balance);
+            session.saveOrUpdate (c);
+        }
     }
 
     /**

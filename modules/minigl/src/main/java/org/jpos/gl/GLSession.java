@@ -1466,7 +1466,11 @@ public class GLSession {
         return getBalance(journal, acct, layers);
     }
 
-    public void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers, long maxId) throws GLException {
+    public void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers) throws GLException {
+        createFinalBalanceCache(journal, acct, layers, getSafeMaxGLEntryId());
+    }
+
+    private void createFinalBalanceCache (Journal journal, FinalAccount acct, short[] layers, long maxId) throws GLException {
         lock (journal, acct);
         BigDecimal balance = getBalances (journal, acct, null, true, layers, maxId) [0];
         BalanceCache c = getBalanceCache (journal, acct, layers);

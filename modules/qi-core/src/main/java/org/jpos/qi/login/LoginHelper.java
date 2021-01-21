@@ -142,7 +142,7 @@ public class LoginHelper {
         }
     }
 
-    protected User getUserByNick (String nick, String pass) {
+    public User getUserByNick (String nick, String pass) {
         try {
             return (User) DB.execWithTransaction((db) -> {
                 UserManager umgr = new UserManager (db);

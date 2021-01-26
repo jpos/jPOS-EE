@@ -28,6 +28,7 @@ import org.jpos.q2.QFactory;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jdom2.Element;
 import org.hibernate.HibernateException;
 
@@ -71,6 +72,7 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
     private void registerTask (Element e) 
         throws ConfigurationException
     {
+        Environment env = Environment.getEnvironment();
         QFactory qf = getServer().getFactory();
         Object obj  = qf.newInstance (e.getChildTextTrim ("class"));
         if (!(obj instanceof MonitorTask)) {
@@ -82,10 +84,10 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
         qf.setConfiguration (obj, e);
         timer.schedule (
             new MonitorTimerTask (
-                e.getAttributeValue("id"),
+                env.getProperty(e.getAttributeValue("id")),
                 (MonitorTask) obj), 
-                getLong (e.getAttributeValue ("delay")),
-                getLong (e.getAttributeValue ("period"))
+                getLong (env.getProperty(e.getAttributeValue ("delay"))),
+                getLong (env.getProperty(e.getAttributeValue ("period")))
         );
     }
     private long getLong (String l) 

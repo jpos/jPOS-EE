@@ -72,7 +72,6 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
     private void registerTask (Element e) 
         throws ConfigurationException
     {
-        Environment env = Environment.getEnvironment();
         QFactory qf = getServer().getFactory();
         Object obj  = qf.newInstance (e.getChildTextTrim ("class"));
         if (!(obj instanceof MonitorTask)) {
@@ -84,10 +83,10 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
         qf.setConfiguration (obj, e);
         timer.schedule (
             new MonitorTimerTask (
-                env.getProperty(e.getAttributeValue("id")),
+                Environment.get(e.getAttributeValue("id")),
                 (MonitorTask) obj), 
-                getLong (env.getProperty(e.getAttributeValue ("delay"))),
-                getLong (env.getProperty(e.getAttributeValue ("period")))
+                getLong (Environment.get(e.getAttributeValue ("delay"))),
+                getLong (Environment.get(e.getAttributeValue ("period")))
         );
     }
     private long getLong (String l) 

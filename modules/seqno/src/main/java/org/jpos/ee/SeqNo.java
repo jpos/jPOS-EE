@@ -56,6 +56,11 @@ public class SeqNo extends Cloneable implements Serializable {
         this.id = id;
     }
 
+    public SeqNo(String id, long value) {
+        this.id = id;
+        this.value = value;
+    }
+
     public SeqNo() {
         super();
     }

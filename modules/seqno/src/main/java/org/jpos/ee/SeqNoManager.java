@@ -64,9 +64,26 @@ public class SeqNoManager {
         getOrCreate(id).setValue(value);
     }
 
+    /**
+     * get SeqNo value
+     * @param id sequencer id
+     * @return current value
+     */
+    public long get (String id) {
+        return getOrCreate(id).getValue();
+    }
 
+    /**
+     * get SeqNo value
+     * @param id sequencer id
+     * @param initialValue for newly created sequencers
+     * @return current value
+     */
+    public long get (String id, long initialValue) {
+        return getOrCreate(id, initialValue).getValue();
+    }
+    
     /* Asynchronous methods */
-
     /**
      * Asynchronous 'lock'
      *
@@ -154,23 +171,24 @@ public class SeqNoManager {
         return false;
     }
 
-
-
-
     private SeqNo getOrCreate(String id) {
+        return getOrCreate(id, 0L);
+    }
+
+    private SeqNo getOrCreate(String id, long initialValue) {
         SeqNo seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
         if (seq == null) {
-            create (id);
+            create (id, initialValue);
             seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
         }
         return seq;
     }
 
-    private void create (String id) {
+    private void create (String id, long initialValue) {
         try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
-            SeqNo seq = new SeqNo(id);
+            SeqNo seq = new SeqNo(id, initialValue);
             db.session().save(seq);
             db.commit();
         } catch (Exception ignored) { }

@@ -38,6 +38,29 @@ public class SeqNoTest {
     }
 
     @Test
+    public void testNewSeqNoWithDefault() {
+        try (DB db = new DB()) {
+            db.open();
+            SeqNoManager mgr = new SeqNoManager(db);
+            db.beginTransaction();
+            assertEquals(5, mgr.get("test.new.default.5", 5L));
+            db.commit();
+        }
+        try (DB db = new DB()) {
+            db.open();
+            SeqNoManager mgr = new SeqNoManager(db);
+            db.beginTransaction();
+            assertEquals(6, mgr.next("test.new.default.5", 10L));
+            assertEquals(7, mgr.next("test.new.default.5", 10L));
+            assertEquals(8, mgr.next("test.new.default.5", 10L));
+            assertEquals(9, mgr.next("test.new.default.5", 10L));
+            assertEquals(10, mgr.next("test.new.default.5", 10L));
+            assertEquals(1, mgr.next("test.new.default.5", 10L));
+            db.commit();
+        }
+    }
+
+    @Test
     public void testSyncLock() throws InterruptedException {
         int runs = 20;
         List<Thread> tl = new ArrayList<>();

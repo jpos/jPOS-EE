@@ -43,6 +43,7 @@ public class SendResponse implements AbortParticipant, Configurable {
     private String contentType;
     private boolean jsonIncludeNulls= true;
     private String corsHeader;
+    public static final String MAPPER = ".mapper";
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -104,7 +105,9 @@ public class SendResponse implements AbortParticipant, Configurable {
                 if (response.body() instanceof String)
                     responseBody = String.valueOf(response.body()).getBytes();
                 else {
-                    ObjectMapper m= jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
+                    ObjectMapper m = ctx.get(MAPPER);
+                    if (m == null)
+                        m = jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
                     responseBody = m.writeValueAsBytes(response.body());
                     isJson = true;
                 }

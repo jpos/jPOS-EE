@@ -99,6 +99,9 @@ public class QINavigator extends Navigator {
                         allowed = hasAccessToRoute(route);
                     }
                     if (!allowed) {
+                        QI.getQI().displayNotification(QI.getQI().getMessage(
+                          "errorMessage.notPermission", QI.getQI().getUser().getNick())
+                        );
                         navigationState = "/home";
                     }
                     super.navigateTo(navigationState);

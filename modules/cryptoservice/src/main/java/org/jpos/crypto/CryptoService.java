@@ -28,6 +28,7 @@ import org.jpos.q2.QFactory;
 import org.jpos.space.Space;
 import org.jpos.space.TSpace;
 import org.jpos.util.*;
+import org.jpos.security.SensitiveString;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;

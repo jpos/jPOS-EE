@@ -19,7 +19,7 @@
 package org.jpos.q2.cli.crypto;
 
 import org.jpos.crypto.CryptoService;
-import org.jpos.crypto.SensitiveString;
+import org.jpos.security.SensitiveString;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.util.NameRegistrar;

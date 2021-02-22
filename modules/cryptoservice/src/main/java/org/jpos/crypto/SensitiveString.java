@@ -30,6 +30,12 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
+/**
+ * @deprecated
+ * <p>This class has been graduated to jPOS <code>org.jpos.security.SensitiveString</code></p>
+ */
+
+@Deprecated
 public class SensitiveString implements Supplier<String> {
     private SecretKey key;
     private byte[] encoded;

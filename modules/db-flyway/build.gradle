@@ -2,7 +2,6 @@ description = 'jPOS-EE :: flyWay support'
 
 dependencies {
     api project(':modules:dbsupport')
-    api project(':modules:db-postgresql')
     api project(':modules:logback')
     api libraries.flywaydb
 }

@@ -31,7 +31,8 @@
     <property name="type"        type="string" length="32" />
     <property name="severity"    type="int" />
     <property name="summary"     type="string" length="255" />
-    <property name="detail"      type="text" />
-    <property name="trace"       type="text" />
+    <property name="detail"      type="string" length="4000" />
+    <property name="trace"       type="string" length="4000" />
   </class>
 </hibernate-mapping>
+

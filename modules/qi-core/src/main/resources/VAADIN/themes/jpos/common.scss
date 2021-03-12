@@ -193,4 +193,8 @@
     .no-padding-button {
       padding: 0px;
     }
+
+    .row-disabled > td {
+      color: lightgray;
+    }
 }

@@ -234,6 +234,12 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     }
 
     @Override
+    protected void editClick(Button.ClickEvent event, Layout formLayout) {
+        setReadOnly(false);
+        super.editClick(event, formLayout);
+    }
+
+    @Override
     protected boolean saveClick(Button.ClickEvent event, Layout formLayout) {
         try {
             entryGrid.validate();

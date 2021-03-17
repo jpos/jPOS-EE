@@ -41,6 +41,8 @@ public class ViewConfig {
 
     private List<String> readOnlyFields;
 
+    private String writePerm;
+
     public ViewConfig () {
         fields = new LinkedHashMap<>();
         columns = new LinkedHashMap<>();
@@ -101,6 +103,7 @@ public class ViewConfig {
 
     public void setXmlElement(Element e) throws DataConversionException {
         xmlElement = e;
+        writePerm = e.getAttributeValue("write-perm");
         for (Element f : e.getChildren("attribute")) {
             String name = f.getAttributeValue("name");
             String perm = f.getAttributeValue("perm");
@@ -128,6 +131,9 @@ public class ViewConfig {
             boolean addField = f.getAttribute("field") == null || f.getAttribute("field").getBooleanValue();
             boolean addColumn = f.getAttribute("column") == null || f.getAttribute("column").getBooleanValue();
             boolean isReadOnly = f.getAttribute("read-only") != null && f.getAttribute("read-only").getBooleanValue();
+            String writePerm = f.getAttributeValue("write-perm") != null &&
+              !f.getAttributeValue("write-perm").isEmpty() ? f.getAttributeValue("write-perm") : null;
+            isReadOnly = isReadOnly || (writePerm != null && !QI.getQI().getUser().hasPermission(writePerm));
             boolean isRequired = f.getAttribute("required") != null && f.getAttribute("required").getBooleanValue();
             int expandRatio = f.getAttribute("expand-ratio") != null  ? f.getAttribute("expand-ratio").getIntValue() : -1;
             if (addField) {
@@ -153,6 +159,14 @@ public class ViewConfig {
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+    }
+
+    public String getWritePerm() {
+        return writePerm;
+    }
+
+    public void setWritePerm(String writePerm) {
+        this.writePerm = writePerm;
     }
 
     public class FieldConfig {

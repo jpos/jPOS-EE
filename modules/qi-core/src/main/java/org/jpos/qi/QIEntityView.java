@@ -658,15 +658,25 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public abstract String getHeaderSpecificTitle (Object entity);
 
     public boolean canEdit() {
-        return false;
+        return hasWritePerm();
     }
 
     public boolean canAdd() {
-        return false;
+        return hasWritePerm();
     }
 
     public boolean canRemove() {
-        return false;
+        return hasWritePerm();
+    }
+
+    // Check if User has write permission defined as write-perm in 00_qi for the view.
+    // If write-perm is not defined or empty default to true.
+    public boolean hasWritePerm () {
+        String writePerm = getViewConfig() != null ? getViewConfig().getWritePerm() : "";
+        if (writePerm != null && !writePerm.isEmpty())
+            return getApp().getUser().hasPermission(writePerm);
+        else
+            return true;
     }
 
     public QI getApp() {

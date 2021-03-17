@@ -98,8 +98,7 @@ public class SysConfigView extends QIEntityView<SysConfig> {
             Binder.BindingBuilder builder = binder.forField(id)
                 .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getFieldCaption("id"))))
                 .withNullRepresentation("")
-                .withConverter(userInputValue -> userInputValue
-                                , this::removePrefix);
+                .withConverter(userInputValue -> userInputValue, this::removePrefix);
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);
             ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
@@ -131,26 +130,11 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     }
 
     private String removePrefix (String value) {
-        if (value != null && !value.isEmpty())
-            return prefix != null ? value.substring(prefix.length()) : value;
+        if (prefix != null && value != null && !value.isEmpty() && value.startsWith(prefix))
+            return value.substring(prefix.length());
         return value;
     }
     
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
     public String getPrefix() {
         return prefix;
     }

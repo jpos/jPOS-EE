@@ -21,13 +21,19 @@ package org.jpos.q2.jetty;
 import java.io.FileInputStream;
 import java.util.StringTokenizer;
 
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
+import org.jpos.core.Configuration;
+import org.jpos.core.ConfigurationException;
 import org.jpos.q2.QBeanSupport;
+import org.jpos.security.SensitiveString;
 
 public class Jetty extends QBeanSupport implements JettyMBean {
     private String config;
     private Server server;
+    private SensitiveString keystorePassword;
 
     @Override
     public void initService() throws Exception {
@@ -35,8 +41,30 @@ public class Jetty extends QBeanSupport implements JettyMBean {
         StringTokenizer st = new StringTokenizer(config, ", ");
         while (st.hasMoreElements()) {
             FileInputStream fis = new FileInputStream(st.nextToken());
+            @SuppressWarnings("deprecation")
             XmlConfiguration xml = new XmlConfiguration(fis);
             xml.configure(server);
+            if (keystorePassword != null && 
+                    keystorePassword.get() != null && 
+                    keystorePassword.get().trim().length() > 0) {                    
+                for (Connector connector : server.getConnectors()) {
+                    SslConnectionFactory connFactory = connector.getConnectionFactory(SslConnectionFactory.class);
+                    if (connFactory != null) {
+                        connFactory.getSslContextFactory().setKeyStorePassword(keystorePassword.get());
+                    }
+                }    
+            }
+        }
+    }
+
+    @Override
+    public void setConfiguration(Configuration cfg) throws ConfigurationException {
+        super.setConfiguration(cfg);
+        try {
+            keystorePassword = new SensitiveString(cfg.get("keystorePassword"));
+        }
+        catch (Exception e) {
+            throw new ConfigurationException(e);
         }
     }
 

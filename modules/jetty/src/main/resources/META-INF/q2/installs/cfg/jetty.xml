@@ -124,7 +124,6 @@
 
     <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
         <Set name="KeyStorePath"><Property name="jetty.home" default="." />/cfg/keystore.jks</Set>
-        <Set name="KeyStorePassword">jposjposjposjpos</Set>
         <Set name="ExcludeCipherSuites">
             <Array type="java.lang.String">
                 <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
@@ -309,4 +308,3 @@
       </Arg>
     </Call>
 </Configure>
-

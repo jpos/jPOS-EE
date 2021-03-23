@@ -162,7 +162,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 boolean includeResponse= (sc == HttpStatus.SC_CREATED) || (sc == HttpStatus.SC_OK) || responseOnError;
                 if (includeResponse) {
                     try {
-                        ctx.put (responseName, EntityUtils.toString(result.getEntity()));
+                        if (result.getEntity() != null) {
+                            ctx.put(responseName, EntityUtils.toString(result.getEntity()));
+                        } else {
+                            ctx.put("HTTP_RESPONSE_STATUS", sc);
+                        }
                     } catch (IOException e) {
                         ctx.log (e);
                     }

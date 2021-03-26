@@ -170,6 +170,17 @@ public class StatusManager {
     public Status getStatus (String id, boolean create) 
         throws HibernateException, SQLException
     {
+        return getStatus(id, create, null);
+    }
+
+    /**
+     * @param id status id and optional name (used when create=true)
+     * @param create if true and status doesn't exist, a new status with an optional name would be created.
+     * @param groupName group name to be used if a new status is created.
+     */
+    public Status getStatus (String id, boolean create, String groupName) 
+        throws HibernateException, SQLException
+    {
         String name = "";
         int sp = id.indexOf (" ");
         if (sp > 0 && id.length() > sp) {
@@ -182,7 +193,7 @@ public class StatusManager {
             s.setId (id);
             s.setName (name.length() > 0 ? name : id);
             s.setTimeoutState (Status.OFF);
-            s.setGroupName ("Unfiled");
+            s.setGroupName (groupName != null ? groupName : "Unfiled");
             db.save (s);
         }
         return s;

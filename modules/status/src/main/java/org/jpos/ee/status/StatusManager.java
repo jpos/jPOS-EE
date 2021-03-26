@@ -19,7 +19,6 @@
 package org.jpos.ee.status;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.jpos.ee.DB;
@@ -69,6 +68,21 @@ public class StatusManager {
         db.session().evict (status);
     }
 
+     /**
+     * @param id status id
+     * @param state Status.OK, Status.WARN, Status.ERROR or user defined
+     * @param detail optional detail information
+     * @param groupName group name
+     */
+    public void touch (String id, String state, String detail, String groupName) 
+        throws HibernateException, SQLException
+    {
+        Transaction tx = db.beginTransaction();
+        Status status = touch (id, state, detail, tx, groupName);
+        tx.commit();
+        db.session().evict (status);
+    }
+
     /**
      * @param id status id
      * @param state Status.OK, Status.WARN, Status.ERROR or user defined
@@ -76,6 +90,19 @@ public class StatusManager {
      * @param tx transaction 
      */
     public Status touch (String id, String state, String detail, Transaction tx) 
+        throws HibernateException, SQLException
+    {
+        return touch(id, state, detail, tx, null);
+    }
+
+    /**
+     * @param id status id
+     * @param state Status.OK, Status.WARN, Status.ERROR or user defined
+     * @param detail optional detail information
+     * @param tx transaction 
+     * @param groupName group name
+     */
+    public Status touch (String id, String state, String detail, Transaction tx, String groupName) 
         throws HibernateException, SQLException
     {
         Status status = getStatus (id, true);
@@ -109,9 +136,10 @@ public class StatusManager {
         status.setLastTick (now);
         status.setDetail (detail);
         status.setExpired (false);
+        status.setGroupName (groupName);
         return status;
     }
-
+    
     /**
      * @param state
      * @return syslog severity associated with this state

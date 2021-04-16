@@ -203,17 +203,13 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
         return true;
     }
 
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
 
     @Override
     public boolean canAdd() {
         TransactionsHelper helper = (TransactionsHelper) getHelper();
         List journals = helper.getJournals();
         if (journals != null && journals.size() > 0) {
-            return true;
+            return super.canAdd();
         } else {
             getApp().displayError("errorMessage.noJournal", "errorMessage.noJournal.detail");
             return false;

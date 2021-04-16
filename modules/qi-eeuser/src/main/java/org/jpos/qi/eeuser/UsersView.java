@@ -339,20 +339,4 @@ public class UsersView extends QIEntityView<User> {
             l.addComponent(resetPassBtn);
         }
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
 }

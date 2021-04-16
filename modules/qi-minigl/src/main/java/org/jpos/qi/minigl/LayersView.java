@@ -202,19 +202,4 @@ public class LayersView extends QIEntityView {
                 + "?journal=" + this.selectedJournal.getId();
         getApp().getNavigator().navigateTo(url);
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
 }

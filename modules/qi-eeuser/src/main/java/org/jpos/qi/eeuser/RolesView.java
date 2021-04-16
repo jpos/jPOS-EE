@@ -99,20 +99,4 @@ public class RolesView extends QIEntityView {
         g.addColumn(Role::getName).setId("name");
         g.addColumn(Role::getPermissions).setId("permissions");
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
 }

@@ -214,14 +214,6 @@ public class ConsumersView extends QIEntityView<Consumer> {
         }
     }
 
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-    @Override
-    public boolean canAdd() {return true;}
-    public boolean canRemove() {return true;}
-
     private CryptoService getCryptoService() throws NameRegistrar.NotFoundException {
        return (CryptoService) NameRegistrar.get("crypto-service");
     }

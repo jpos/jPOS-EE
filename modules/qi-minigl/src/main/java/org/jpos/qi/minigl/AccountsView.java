@@ -424,9 +424,4 @@ public class AccountsView extends QIEntityView<Account> {
         return "/accounts".equals(super.getGeneralRoute()) && !isGeneralView() && account != null ?
                     super.getGeneralRoute() + "/expand/" + account.getId() : super.getGeneralRoute();
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
 }

@@ -94,10 +94,13 @@ public class Role extends Cloneable implements Serializable {
     }
 
     public boolean hasPermission (String permName) {
-        return permName != null && (getActivePermissions().contains(Permission.valueOf(permName)));
+        boolean ignoreRealm = false;
+        if (permName != null && permName.startsWith("*")) {
+            ignoreRealm = true;
+            permName = permName.substring(1);
+        }
+        return permName != null && (getActivePermissions(ignoreRealm).contains(Permission.valueOf(permName)));
     }
-
-
 
     public void addPermission (String permName) {
         permissions.add (Permission.valueOf(permName));
@@ -148,14 +151,23 @@ public class Role extends Cloneable implements Serializable {
           String.format("role.%s", getName());
     }
 
+    public Set<Permission> getActivePermissions () {
+        return getActivePermissions(false);
+    }
 
-    public Set<Permission> getActivePermissions() {
+    public Set<Permission> getActivePermissions (boolean ignoreRealm) {
         Set<Permission> perm = new LinkedHashSet<>();
         perm.add(Permission.valueOf(getFQRN()));
-        perm.addAll(getActivePermissions(getRealm()));
+        if (ignoreRealm)
+            perm.addAll(permissions);
+        else
+            perm.addAll(getActivePermissions(getRealm()));
         for (Role r = this; r.getParent() != null; ) {
             r = r.getParent();
-            perm.addAll(r.getActivePermissions(getRealm()));
+            if (ignoreRealm)
+                perm.addAll(r.getPermissions());
+            else
+                perm.addAll(r.getActivePermissions(getRealm()));
         }
         return perm;
     }

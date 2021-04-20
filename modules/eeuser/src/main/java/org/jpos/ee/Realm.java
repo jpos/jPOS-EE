@@ -64,11 +64,17 @@ public class Realm implements Serializable {
         this.description = description;
     }
 
+    public Realm() {
+        super();
+    }
+
     public Realm(String name) {
+        super();
         this.name = name;
     }
 
     public Realm(String name, String description) {
+        super();
         this.name = name;
         this.description = description;
     }

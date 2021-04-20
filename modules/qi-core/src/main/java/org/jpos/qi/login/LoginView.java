@@ -86,7 +86,7 @@ public class LoginView extends VerticalLayout {
         try {
             if (binder.isValid()) {
                 user = helper.getUserByNick(u, true);
-                if (user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"))) {
+                if (user != null && user.isActive() && user.hasPermission("*login")) {
                     if (processLogin(user, p)) {
                         helper.clearLoginAttempts(user);
                         clearErrorMessages();
@@ -115,7 +115,7 @@ public class LoginView extends VerticalLayout {
      */
     protected boolean processLogin(User theUser, String password) throws ParseException {
         User user = helper.getUserByNick(theUser.getNick(), password);
-        return user != null && user.isActive() && ("admin".equals(user.getNick()) || user.hasPermission("login"));
+        return user != null && user.isActive() && user.hasPermission("*login");
     }
 
     private void loginOk (User user, boolean rememberMe) {

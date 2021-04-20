@@ -334,7 +334,7 @@ public class UsersView extends QIEntityView<User> {
             changePassBtn = createChangePasswordButton();
             l.addComponents(changePassBtn, createPasswordPanel());
         }
-        if (QI.getQI().getUser().hasPermission("sysadmin") && !isNewView()) {
+        if (QI.getQI().getUser().hasPermission("*sysadmin") && !isNewView()) {
             resetPassBtn = createResetPasswordButton();
             l.addComponent(resetPassBtn);
         }

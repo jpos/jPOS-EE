@@ -97,6 +97,7 @@ public class RolesView extends QIEntityView {
         Grid<Role> g = this.getGrid();
         g.addColumn(Role::getId).setId("id");
         g.addColumn(Role::getName).setId("name");
+        g.addColumn(Role::getRealm).setId("realm");
         g.addColumn(Role::getPermissions).setId("permissions");
     }
 }

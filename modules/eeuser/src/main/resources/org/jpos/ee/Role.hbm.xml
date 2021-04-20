@@ -28,7 +28,7 @@
         <property name="name" type="string">
             <column name="name" sql-type="varchar(64)" not-null="true" unique-key="UK_RoleRealmName" />
         </property>
-        <many-to-one name="realm"  not-null="false" insert="false" update="false" foreign-key="FK_RoleRealm" unique-key="UK_RoleRealmName" />
+        <many-to-one name="realm"  not-null="false" foreign-key="FK_RoleRealm" unique-key="UK_RoleRealmName" lazy="false"/>
         <many-to-one name="parent" not-null="false" insert="false" update="false" foreign-key="FK_RoleParent" />
 
         <set name="permissions" lazy="false" table="role_perms" order-by="name">

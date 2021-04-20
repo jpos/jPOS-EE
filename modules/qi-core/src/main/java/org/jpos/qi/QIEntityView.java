@@ -137,6 +137,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 newView = true;
             } else {
                 o = getEntityByParam(params[0]);
+                String realm = getRealm((T) o);
+                if (realm != null && !app.getUser().getRealmsAsString().contains(realm)) {
+                    getApp().getNavigator().navigateTo("");
+                    getApp().displayNotification(getApp().getMessage("errorMessage.notRealm", realm));
+                    return;
+                }
             }
             if (parameter.contains("?")) {
                 //Has query params.
@@ -883,5 +889,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getRealm(T bean) {
+        return null;
     }
 }

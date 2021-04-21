@@ -21,10 +21,15 @@ package org.jpos.qi.views;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
+import org.jpos.qi.QI;
 
 public class DefaultView extends VerticalLayout implements View {
     public DefaultView () {
         setSizeFull();
+        Label header = new Label(QI.getQI().getMessage("welcome") + " " + QI.getQI().getUser().getNick());
+        header.setStyleName(ValoTheme.LABEL_HUGE);
+        addComponent(header);
     }
 
     @Override

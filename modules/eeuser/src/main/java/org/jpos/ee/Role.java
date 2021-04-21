@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,25 +18,39 @@
 
 package org.jpos.ee;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
+import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class Role extends Cloneable {
+public class Role extends Cloneable implements Serializable {
+    private static final long serialVersionUID = -8259326520155524014L;
     private Long id;
+    private Realm realm;
     private String name;
     private Set<Permission> permissions;
+    private Role parent;
 
     public Role () {
-        super();
-        permissions    = new LinkedHashSet<Permission>();
+        permissions = new LinkedHashSet<>();
     }
     public Role(String name) {
         this();
         setName(name);
+    }
+    public Role(Realm realm, String name) {
+        this();
+        this.realm = realm;
+        setName(name);
+    }
+
+    public Role(Realm realm, String name, Set<Permission> permissions, Role parent) {
+        this();
+        this.realm = realm;
+        this.name = name;
+        this.permissions = permissions;
+        this.parent = parent;
     }
 
     public Long getId() {
@@ -47,12 +61,28 @@ public class Role extends Cloneable {
         this.id = id;
     }
 
+    public Realm getRealm() {
+        return realm;
+    }
+
+    public void setRealm(Realm realm) {
+        this.realm = realm;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Role getParent() {
+        return parent;
+    }
+
+    public void setParent(Role parent) {
+        this.parent = parent;
     }
 
     public Set<Permission> getPermissions() {
@@ -64,7 +94,12 @@ public class Role extends Cloneable {
     }
 
     public boolean hasPermission (String permName) {
-        return permName != null && (permissions.contains(Permission.valueOf(permName)) || permName.equals("role." + name));
+        boolean ignoreRealm = false;
+        if (permName != null && permName.startsWith("*")) {
+            ignoreRealm = true;
+            permName = permName.substring(1);
+        }
+        return permName != null && (getActivePermissions(ignoreRealm).contains(Permission.valueOf(permName)));
     }
 
     public void addPermission (String permName) {
@@ -79,23 +114,68 @@ public class Role extends Cloneable {
         permissions.clear ();
     }
 
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", getId())
-                .append("name", getName())
-                .toString();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(id, role.id) &&
+          Objects.equals(realm, role.realm) &&
+          Objects.equals(name, role.name) &&
+          Objects.equals(permissions, role.permissions) &&
+          Objects.equals(parent, role.parent);
     }
 
-    public boolean equals(Object other) {
-        if ( !(other instanceof Role) ) return false;
-        Role castOther = (Role) other;
-        return new EqualsBuilder()
-                .append(this.getId(), castOther.getId())
-                .isEquals();
-    }
+    @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(getId())
-                .toHashCode();
+        return Objects.hash(id, realm, name, permissions, parent);
+    }
+
+    @Override
+    public String toString() {
+        return "Role{" +
+          "id=" + id +
+          ", realm='" + realm + '\'' +
+          ", name='" + name + '\'' +
+          ", permissions=" + permissions +
+          ", parent=" + parent +
+          '}';
+    }
+
+    /**
+     * get Fully Qualified Role Name
+     * @return [realm:]role.name
+     */
+    private String getFQRN() {
+        return getRealm () != null ? String.format("%s:role.%s", getRealm().getName(), getName()) :
+          String.format("role.%s", getName());
+    }
+
+    public Set<Permission> getActivePermissions () {
+        return getActivePermissions(false);
+    }
+
+    public Set<Permission> getActivePermissions (boolean ignoreRealm) {
+        Set<Permission> perm = new LinkedHashSet<>();
+        perm.add(Permission.valueOf(getFQRN()));
+        if (ignoreRealm)
+            perm.addAll(permissions);
+        else
+            perm.addAll(getActivePermissions(getRealm()));
+        for (Role r = this; r.getParent() != null; ) {
+            r = r.getParent();
+            if (ignoreRealm)
+                perm.addAll(r.getPermissions());
+            else
+                perm.addAll(r.getActivePermissions(getRealm()));
+        }
+        return perm;
+    }
+
+    private Set<Permission> getActivePermissions (Realm r) {
+        return r != null ?
+          permissions.stream().map(
+            p -> Permission.valueOf(r.getName() + ":" + p.getName())
+          ).collect(Collectors.toSet()) : permissions;
     }
 }

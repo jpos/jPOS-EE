@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,6 @@
 package org.jpos.ee.status;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.jpos.ee.DB;
@@ -69,6 +68,21 @@ public class StatusManager {
         db.session().evict (status);
     }
 
+     /**
+     * @param id status id
+     * @param state Status.OK, Status.WARN, Status.ERROR or user defined
+     * @param detail optional detail information
+     * @param groupName group name
+     */
+    public void touch (String id, String state, String detail, String groupName) 
+        throws HibernateException, SQLException
+    {
+        Transaction tx = db.beginTransaction();
+        Status status = touch (id, state, detail, tx, groupName);
+        tx.commit();
+        db.session().evict (status);
+    }
+
     /**
      * @param id status id
      * @param state Status.OK, Status.WARN, Status.ERROR or user defined
@@ -76,6 +90,19 @@ public class StatusManager {
      * @param tx transaction 
      */
     public Status touch (String id, String state, String detail, Transaction tx) 
+        throws HibernateException, SQLException
+    {
+        return touch(id, state, detail, tx, null);
+    }
+
+    /**
+     * @param id status id
+     * @param state Status.OK, Status.WARN, Status.ERROR or user defined
+     * @param detail optional detail information
+     * @param tx transaction 
+     * @param groupName group name
+     */
+    public Status touch (String id, String state, String detail, Transaction tx, String groupName) 
         throws HibernateException, SQLException
     {
         Status status = getStatus (id, true);
@@ -109,9 +136,10 @@ public class StatusManager {
         status.setLastTick (now);
         status.setDetail (detail);
         status.setExpired (false);
+        status.setGroupName (groupName);
         return status;
     }
-
+    
     /**
      * @param state
      * @return syslog severity associated with this state
@@ -142,6 +170,17 @@ public class StatusManager {
     public Status getStatus (String id, boolean create) 
         throws HibernateException, SQLException
     {
+        return getStatus(id, create, null);
+    }
+
+    /**
+     * @param id status id and optional name (used when create=true)
+     * @param create if true and status doesn't exist, a new status with an optional name would be created.
+     * @param groupName group name to be used if a new status is created.
+     */
+    public Status getStatus (String id, boolean create, String groupName) 
+        throws HibernateException, SQLException
+    {
         String name = "";
         int sp = id.indexOf (" ");
         if (sp > 0 && id.length() > sp) {
@@ -154,7 +193,7 @@ public class StatusManager {
             s.setId (id);
             s.setName (name.length() > 0 ? name : id);
             s.setTimeoutState (Status.OFF);
-            s.setGroupName ("Unfiled");
+            s.setGroupName (groupName != null ? groupName : "Unfiled");
             db.save (s);
         }
         return s;

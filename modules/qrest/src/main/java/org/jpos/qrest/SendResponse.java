@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import io.netty.util.ReferenceCountUtil;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.rc.Result;
@@ -30,6 +31,7 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -39,6 +41,9 @@ import static org.jpos.qrest.Constants.*;
 public class SendResponse implements AbortParticipant, Configurable {
     private static ObjectMapper mapper = Mapper.getMapper();
     private String contentType;
+    private boolean jsonIncludeNulls= true;
+    private String corsHeader;
+    public static final String MAPPER = ".mapper";
 
     @Override
     public int prepare(long id, Serializable context) {
@@ -66,16 +71,20 @@ public class SendResponse implements AbortParticipant, Configurable {
     private void sendResponse (Context ctx, ChannelHandlerContext ch, FullHttpRequest request, FullHttpResponse response) {
         boolean keepAlive = HttpUtil.isKeepAlive(request);
         HttpHeaders headers = response.headers();
-        if (keepAlive)
-            headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        try {
+            if (keepAlive)
+                headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-        if (contentType != null)
-            headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
-        headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        ChannelFuture cf = ch.writeAndFlush(response);
-        ctx.log(cf);
-        if (!keepAlive)
-            ch.close();
+            if (contentType != null)
+                headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
+            headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            ChannelFuture cf = ch.writeAndFlush(response);
+            ctx.log(cf);
+            if (!keepAlive)
+                ch.close();
+        } finally {
+            ReferenceCountUtil.release(request);
+        }
     }
 
     private FullHttpResponse error (HttpResponseStatus rc) {
@@ -96,7 +105,10 @@ public class SendResponse implements AbortParticipant, Configurable {
                 if (response.body() instanceof String)
                     responseBody = String.valueOf(response.body()).getBytes();
                 else {
-                    responseBody = mapper.writeValueAsBytes(response.body());
+                    ObjectMapper m = ctx.get(MAPPER);
+                    if (m == null)
+                        m = jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
+                    responseBody = m.writeValueAsBytes(response.body());
                     isJson = true;
                 }
                 httpResponse = new DefaultFullHttpResponse(
@@ -104,9 +116,11 @@ public class SendResponse implements AbortParticipant, Configurable {
                   response.status(),
                   copiedBuffer(responseBody));
 
+                HttpHeaders httpHeaders = httpResponse.headers();
                 if (isJson)
                     httpResponse.headers().set(CONTENT_TYPE, APPLICATION_JSON);
-
+                if (corsHeader != null)
+                    httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
             } catch (JsonProcessingException e) {
                 ctx.log(e);
                 httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -123,5 +137,7 @@ public class SendResponse implements AbortParticipant, Configurable {
 
     public void setConfiguration (Configuration cfg) {
         this.contentType = cfg.get("content-type", null);
+        this.jsonIncludeNulls = cfg.getBoolean("json-include-nulls", true);
+        this.corsHeader = cfg.get("Access-Control-Allow-Origin", null);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom2.Element;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -284,6 +285,7 @@ public class GLTransaction extends Cloneable {
     {
         return createGLEntry (acct, amount, detail, true, layer);
     }
+
     /**
      *
      * Create a reverse transaction based on this one
@@ -291,19 +293,59 @@ public class GLTransaction extends Cloneable {
      * @return a reversal transaction
      */
     public GLTransaction createReverse() {
-        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        return createReverse(false);
+    }
+
+    /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param keepEntryTags if true entries tags are copied to the reversal entries
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(boolean keepEntryTags) {
+        GLTransaction glt = new GLTransaction (negate(getDetail()));
         glt.setJournal (getJournal());
         for (GLEntry e : getEntries()) {
-            glt.createGLEntry(
+            GLEntry reversalEntry = glt.createGLEntry(
               e.getAccount(),
               negate(e.getAmount()),
               e.getDetail(),
               e.isCredit(),
               e.getLayer()
             );
+            if (keepEntryTags) reversalEntry.setTags(e.getTags());
         }
         return glt;
     }
+
+        /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param keepEntryTags if true entries tags are copied to the reversal entries
+     * @param layer entries with layer <code>layer</code> are selected
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(boolean keepEntryTags, short... layers) {
+        GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
+        glt.setJournal (getJournal());
+        for (GLEntry e : getEntries()) {
+            if (ArrayUtils.contains(layers,e.getLayer())) {
+                GLEntry reversalEntry = glt.createGLEntry(
+                  e.getAccount(),
+                  negate(e.getAmount()),
+                  e.getDetail(),
+                  e.isCredit(),
+                  e.getLayer()
+                );
+                if (keepEntryTags) reversalEntry.setTags(e.getTags());
+            }
+        }
+        return glt;
+    }
+
+
 
     /**
      *
@@ -315,6 +357,20 @@ public class GLTransaction extends Cloneable {
      * @return a reversal transaction
      */
     public GLTransaction createReverse(Tags withTags, Tags withoutTags) {
+        return createReverse(withTags, withoutTags, false);
+    }
+
+    /**
+     *
+     * Create a reverse transaction based on this one
+     *
+     * @param withTags entries with any tag in <code>withTags</code> are selected (can be null)
+     * @param withoutTags entries with any tag in <code>withoutTags</code> are discarded (can be null)
+     *
+     * @param keepEntryTags if true, reverse entries have the same tags as the original ones
+     * @return a reversal transaction
+     */
+    public GLTransaction createReverse(Tags withTags, Tags withoutTags, boolean keepEntryTags) {
         GLTransaction glt = new GLTransaction ("(" + getDetail() + ")");
         glt.setJournal (getJournal());
         for (GLEntry e : getEntries()) {
@@ -322,13 +378,14 @@ public class GLTransaction extends Cloneable {
             if ((withTags == null || tags.containsAll(withTags)) &&
               (withoutTags == null || !tags.containsAny(withoutTags)))
             {
-                glt.createGLEntry(
+                GLEntry reversalEntry = glt.createGLEntry(
                   e.getAccount(),
                   negate(e.getAmount()),
                   e.getDetail(),
                   e.isCredit(),
                   e.getLayer()
                 );
+                if (keepEntryTags) reversalEntry.setTags(e.getTags());
             }
         }
         return glt;
@@ -394,7 +451,7 @@ public class GLTransaction extends Cloneable {
             .toHashCode();
     }
     public boolean hasLayers (short[] layers) {
-        for (GLEntry e : (List<GLEntry>) getEntries()) {
+        for (GLEntry e : getEntries()) {
             if (e.hasLayers (layers))
                 return true;
         }
@@ -418,7 +475,7 @@ public class GLTransaction extends Cloneable {
         }
         return credits;
     }
-    @SuppressWarnings("unchecked")
+
     public BigDecimal getImpact(Account acct, short[] layers) {
         BigDecimal impact = GLSession.ZERO;
         for (GLEntry e : getEntries()) {
@@ -430,6 +487,13 @@ public class GLTransaction extends Cloneable {
     }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
+    }
+
+    private String negate (String s) {
+        if (s == null)
+            return s;
+        else
+            return "(" + s + ")";
     }
 
     @Override

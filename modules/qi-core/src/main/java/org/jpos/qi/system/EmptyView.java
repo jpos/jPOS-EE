@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -32,7 +32,7 @@ import org.jpos.qi.views.DefaultView;
 public class EmptyView extends DefaultView implements ViewDisplay  {
 
     public EmptyView(boolean canAdd) {
-        Label emptyLabel = new Label("There are no items in this view");
+        Label emptyLabel = new Label(QI.getQI().getMessage("noItems"));
         emptyLabel.addStyleName(ValoTheme.LABEL_H2);
         addComponents(emptyLabel);
         setComponentAlignment(emptyLabel, Alignment.TOP_CENTER);

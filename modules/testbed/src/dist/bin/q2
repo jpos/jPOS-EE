@@ -3,6 +3,7 @@
 cd `dirname $0`/.. || exit 1
 rm -f deploy/shutdown.xml
 java -server \
+    -XX:+IgnoreUnrecognizedVMOptions \
     -Dappname=jPOSEE-testbed \
     -Duser.name=admin \
     -Dcom.sun.management.jmxremote \
@@ -10,10 +11,5 @@ java -server \
     -Xloggc:log/gc.log \
     -Dorg.mortbay.xml.XmlParser.NotValidating=true \
     -Xmx1G -Xms1G \
-    -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses \
-    -XX:+UseConcMarkSweepGC  \
-    -XX:+AggressiveOpts \
-    -XX:+ParallelRefProcEnabled \
-    -XX:+TieredCompilation \
     -jar jposee-@jarname@ "$@"
 

@@ -1,0 +1,69 @@
+[[sysconfig]]
+== SysConfig
+
+[plantuml, sysconfig, svg]
+----
+@startuml
+
+class SysConfig {
+  String id;
+  String value;
+  String readPerm;
+  String writePerm;
+} 
+
+@enduml
+----
+
+The `SysConfig` entity footnote:['sysconfig' table] is a general purpose entity 
+used by jPOS-EE to store configuration parameters.
+
+It contains the following properties:
+
+- `id`
+- `value`
+- `readPerm`
+- `writePerm`
+
+`readPerm` and `writePerm` properties can be optionally used by 
+the user interface in order to limit access to specific entries.
+
+Most jPOS applications typically use a prefix, for example:
+
+[source]
+--------
+              id       |               value                
+-----------------------+------------------------------------
+ perm.sysadmin         | System Administrator
+ perm.login            | Login
+ perm.sysconfig.read   | View System Configuration
+ perm.sysconfig.write  | Edit System Configuration
+ perm.users.write      | Write permission on Users
+ perm.users.read       | Read permission on Users
+ perm.accounting       | Full access to accounting records
+--------
+
+When shown in the user interface, that `perm.` prefix is discarded, e.g.:
+
+image:images/permissions.png[width="500px",alt="Permissions"]
+
+This prefix is configured in `00_qi.xml` like this:
+
+[source,xml]
+------------
+  <view route="permissions" class="org.jpos.qi.sysconfig.SysConfigView" 
+    perm="sysadmin" sidebar="system">
+    <property name="name" value="permissions"/>
+    <property name="entityName" value="permission"/>
+    <property name="prefix" value="perm." />                                       <1>
+    <property name="title" value="Permissions" />
+    <attribute name="id" read-only="true" required="true"/>
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
+  </view>
+------------
+<1> There goes the `perm.` prefix.
+
+Using this technique, it's easy to create CRUD operations for different kind of
+configuration groups (roles, permissions, hosts, cryptograms, etc.) just by copying
+that little XML element snippet inside the application's `00_qi.xml`.
+

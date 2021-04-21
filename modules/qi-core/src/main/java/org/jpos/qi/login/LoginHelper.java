@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -142,7 +142,7 @@ public class LoginHelper {
         }
     }
 
-    protected User getUserByNick (String nick, String pass) {
+    public User getUserByNick (String nick, String pass) {
         try {
             return (User) DB.execWithTransaction((db) -> {
                 UserManager umgr = new UserManager (db);
@@ -164,10 +164,19 @@ public class LoginHelper {
     }
 
     protected User getUserByNick (String nick) {
+        return this.getUserByNick(nick, false);
+    }
+
+    protected User getUserByNick (String nick, boolean loadProperties) {
         try {
             return (User) DB.exec((db) -> {
                 UserManager umgr = new UserManager(db);
-                return umgr.getUserByNick(nick);
+                User user = umgr.getUserByNick(nick);
+                if (loadProperties && user != null) {
+                    //just to ensure lazy user properties are loaded by db session
+                    user.getProps().size();
+                }
+                return user;
             });
         } catch (Exception e) {
             QI.getQI().getLog().error(e);

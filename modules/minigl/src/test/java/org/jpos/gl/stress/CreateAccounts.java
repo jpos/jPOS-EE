@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,10 +18,14 @@
 
 package org.jpos.gl.stress;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.jpos.gl.*;
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.Test;
 
 public class CreateAccounts extends TestBase {
+    @Test
     public void testCreateComposites () throws Exception {
         start ("testCreateComposites");
         CompositeAccount cards = gls.getCompositeAccount ("TestChart", "23");
@@ -42,6 +46,7 @@ public class CreateAccounts extends TestBase {
             createFinals (i);
         }
     }
+    @Test
     private void createFinals (int n) throws Exception {
         CompositeAccount parent = 
             gls.getCompositeAccount ("TestChart", "23." + n);

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -42,17 +42,22 @@ public abstract class DateRangeComponent extends HorizontalLayout {
         app = (QI) UI.getCurrent();
         setSpacing(true);
         setSizeUndefined();
-        datePickerFrom = createDatePicker(app.getMessage("from").toUpperCase());
-        datePickerTo   = createDatePicker(app.getMessage("to").toUpperCase());
-        addComponents(datePickerFrom, datePickerTo);
+        datePickerFrom = createDatePicker(null);
+        datePickerTo   = createDatePicker(null);
         if (dateRangeEnabled) {
             dateRanges = createDateRanges();
             dateRanges.setValue(defaultRangeKey);
-            addComponent(dateRanges);
+            Label separator = new Label(app.getMessage("or"));
+            addComponents(dateRanges, separator);
+            setComponentAlignment(separator, Alignment.BOTTOM_LEFT);
         }
+        Label separator = new Label("-");
+        addComponents(datePickerFrom, separator, datePickerTo);
+        setComponentAlignment(separator, Alignment.BOTTOM_LEFT);
         refreshBtn = new Button(app.getMessage("refresh"));
         refreshBtn.setIcon(VaadinIcons.REFRESH);
-        refreshBtn.setStyleName(ValoTheme.BUTTON_SMALL);
+        refreshBtn.setStyleName(ValoTheme.BUTTON_TINY);
+        refreshBtn.addStyleName(ValoTheme.BUTTON_PRIMARY);
         refreshBtn.setSizeUndefined();
         refreshBtn.addClickListener(createRefreshListener());
         addComponent(refreshBtn);
@@ -72,7 +77,7 @@ public abstract class DateRangeComponent extends HorizontalLayout {
                 dr.setStart(startDate);
             }
             if (datePickerTo.getValue() != null) {
-                Date endDate = Date.from(datePickerTo.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date endDate = Date.from(datePickerTo.getValue().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
                 dr.setEnd(endDate);
             }
         } else {
@@ -86,7 +91,8 @@ public abstract class DateRangeComponent extends HorizontalLayout {
     private DateField createDatePicker (String caption) {
         DateField field = new DateField();
         field.setCaption(caption);
-        field.setStyleName(ValoTheme.DATEFIELD_SMALL);
+        field.setWidth("130px");
+        field.setStyleName(ValoTheme.DATEFIELD_TINY);
         field.setDateFormat(app.getMessage("daterange.format"));
         field.setResolution(DateResolution.DAY);
         field.addValueChangeListener(event -> {
@@ -97,10 +103,10 @@ public abstract class DateRangeComponent extends HorizontalLayout {
     }
 
     private ComboBox createDateRanges () {
-        ComboBox combo = new ComboBox(app.getMessage("or").toUpperCase());
-        combo.setStyleName(ValoTheme.COMBOBOX_SMALL);
+        ComboBox combo = new ComboBox();
+        combo.setStyleName(ValoTheme.COMBOBOX_TINY);
         combo.setEmptySelectionAllowed(false);
-        combo.setItems((Object[])DateRange.ranges);
+        combo.setItems(DateRange.ranges);
         combo.setItemCaptionGenerator(range -> app.getMessage((String)range));
         combo.addValueChangeListener(event -> {
             if (event.getValue() != null) {
@@ -111,5 +117,45 @@ public abstract class DateRangeComponent extends HorizontalLayout {
             }
         });
         return combo;
+    }
+
+    public QI getApp() {
+        return app;
+    }
+
+    public void setApp(QI app) {
+        this.app = app;
+    }
+
+    public DateField getDatePickerFrom() {
+        return datePickerFrom;
+    }
+
+    public void setDatePickerFrom(DateField datePickerFrom) {
+        this.datePickerFrom = datePickerFrom;
+    }
+
+    public DateField getDatePickerTo() {
+        return datePickerTo;
+    }
+
+    public void setDatePickerTo(DateField datePickerTo) {
+        this.datePickerTo = datePickerTo;
+    }
+
+    public ComboBox getDateRanges() {
+        return dateRanges;
+    }
+
+    public void setDateRanges(ComboBox dateRanges) {
+        this.dateRanges = dateRanges;
+    }
+
+    public Button getRefreshBtn() {
+        return refreshBtn;
+    }
+
+    public void setRefreshBtn(Button refreshBtn) {
+        this.refreshBtn = refreshBtn;
     }
 }

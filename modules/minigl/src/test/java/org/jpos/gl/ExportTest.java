@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,12 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
 import org.jpos.gl.tools.Export;
+import org.junit.jupiter.api.Test;
 
-public class ExportTest extends TestCase {
+public class ExportTest extends TestBase {
+    @Test
     public void testExport() throws Exception {
-        new Export().export(System.out);
+        new Export(configModifier).export(System.out);
     }
 }

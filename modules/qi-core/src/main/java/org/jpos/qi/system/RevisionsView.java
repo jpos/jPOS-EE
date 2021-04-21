@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,6 +21,7 @@ package org.jpos.qi.system;
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.server.SerializableFunction;
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.renderers.HtmlRenderer;
@@ -28,11 +29,11 @@ import org.jpos.ee.Revision;
 import org.jpos.ee.User;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.qi.ReadOnlyField;
+import org.jpos.qi.util.ReadOnlyField;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 /**
@@ -41,7 +42,7 @@ import static org.jpos.util.QIUtils.getCaptionFromId;
 public class RevisionsView extends QIEntityView<Revision> {
 
     public RevisionsView() {
-        super(Revision.class, "revision_history");
+        super(Revision.class);
         setShowRevisionHistoryButton(false);
     }
 
@@ -83,11 +84,11 @@ public class RevisionsView extends QIEntityView<Revision> {
                     (SerializableFunction<User,String>) toPresentation ->
                             ((RevisionsHelper)getHelper()).getAuthorLink(toPresentation.getNickAndId(), String.valueOf(getInstance().getId())));
         }
-        if ("ref".equals(propertyId)) {
-            builder = builder.withConverter(userInput -> userInput,
-                    (SerializableFunction<String,String>) toPresentation ->
-                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getInstance().getId())));
-        }
+//        if ("ref".equals(propertyId)) {
+//            builder = builder.withConverter(userInput -> userInput,
+//                    (SerializableFunction<String,String>) toPresentation ->
+//                            ((RevisionsHelper)getHelper()).getLink(toPresentation, String.valueOf(getInstance().getId())));
+//        }
         validators.forEach(builder::withValidator);
         builder.bind(propertyId);
         return field;
@@ -97,14 +98,22 @@ public class RevisionsView extends QIEntityView<Revision> {
     public void setGridGetters() {
         Grid<Revision> g = this.getGrid();
         g.addColumn(Revision::getId).setId("id");
-        g.addColumn(Revision::getInfo,new HtmlRenderer("")).setId("info");
-        g.addColumn(revision ->
-                ((RevisionsHelper)getHelper()).getLink(revision.getRef(),""), new HtmlRenderer("")).setId("ref");
-        g.addColumn(revision ->
-            ((RevisionsHelper)getHelper()).getAuthorLink(revision.getAuthor().getNickAndId(),"")
-        ,new HtmlRenderer("")).setId("author");
         g.addColumn(Revision::getDate).setId("date");
-
+        g.addColumn(Revision::getRef).setId("ref");
+        //g.addColumn(revision ->
+        //        ((RevisionsHelper)getHelper()).getLink(revision.getRef(),""), new HtmlRenderer("")).setId("ref");
+        g.addColumn(revision ->
+                        ((RevisionsHelper)getHelper()).getAuthorLink(revision.getAuthor().getNickAndId(),"")
+                ,new HtmlRenderer("")).setId("author");
+        g.addColumn(revision -> {
+            String info = revision.getInfo();
+            return info.length() > 40 ? info.substring(0, 40) + "..." : info;
+        },new HtmlRenderer("")).setId("info");
     }
 
+    @Override
+    public void formatGrid() {
+        super.formatGrid();
+        getGrid().sort(getGrid().getColumn("date"), SortDirection.ASCENDING);
+    }
 }

@@ -1,10 +1,14 @@
+
 description = 'jPOS-EE :: MiniGL Module'
 
 dependencies {
-    compile project(':modules:logback')
-    compile project(':modules:dbsupport')
-    testCompile project(':modules:db-h2')
-    compile libraries.commons_lang
+    api project(':modules:logback')
+    api project(':modules:dbsupport')
+    api libraries.commons_lang
+    testImplementation project(':modules:db-h2')
+    testImplementation project(':modules:db-postgresql')
+    testImplementation libraries.postgresql_embedded
+    testImplementation libraries.postgresql_bin
 }
 
 ext {
@@ -25,8 +29,10 @@ task copyTestResources(dependsOn: 'jposeeSetup', type: Copy) {
 
 test {
     dependsOn 'copyTestResources'
-    include '**/AllTests.*'
-    include '**/StressTests.*'
-    scanForTestClasses false
+    include '**/*Test.class'
+    exclude '**/stress/*'
     workingDir testRuntimeDir
+    systemProperty "test.minigl_db_driver", System.getProperty("test.minigl_db_driver")
+    systemProperties(["user.name" : "travis" ])
 }
+

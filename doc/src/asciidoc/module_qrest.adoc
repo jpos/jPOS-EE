@@ -6,8 +6,8 @@
 | *When*         | Implemented during 2.2.5
 | *Who*          | The jPOS Software team.
 | *Where*        | Directory modules/qrest
-| *Why*          | Used by local Q2 nodes as audit trail or to SAF its transactions
-| *Status*       | Experimental
+| *Why*          | Useful in situations where a full blown Jetty/Jersey is overkill
+| *Status*       | Used in production
 | *License*      | <<appendix_license,GNU Affero General Public License version 3>>
 |=================================================================
 
@@ -48,7 +48,7 @@ we've created a little **QRest** module that can be configured like this:
 </qrest>
 ----------------------------------------------------------------------------------------
 <1> Listening port
-<2> Transaction manager queue name
+<2> Transaction manager queue name (if no specific routes are present)
 <3> `true` to enable TLS
 <4> Set to `false` in order to allow self-signed certificates
 <5> `true` requires client-side certificates
@@ -60,6 +60,25 @@ we've created a little **QRest** module that can be configured like this:
 Once the server receives an HTTP request, it creates a `org.jpos.transaction.Context`, places a reference to the http request
 (under the Constant name `REQUEST` defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`
 constant (so that a `SendResponse` participant can reply) and send it off to the TransactionManager for processing.
+
+If no specific `<route>` entries are present in the QRest configuration, incoming messages are sent to the `queue`
+specified in the `queue` property, but you can override those with a route like this:
+
+[source,xml]
+----------------------------------------------------------------------------------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  <property name='port' value='8081' />
+  <property name='queue' value='TXNMGR' />
+  ...
+  ...
+  <route path="/v2/**" method="GET" queue="TXNMGR.2"/>                             <1>
+  <route path="/v2/**" method="POST" queue="TXNMGR.2"/>                            <2>
+</qrest>
+----------------------------------------------------------------------------------------
+<1> All `GET` methods starting with `/v2` will get queued to `TXNMGR.2` instead of the
+    standard `TXNMGR` queue.
+<2> Likewise, `POST` starting with `/v2` will get queued to the `TXNMGR.2` too.
+
 
 The TransactionManager is configured like this:
 
@@ -81,7 +100,6 @@ The TransactionManager is configured like this:
   <group name="q2">
     <participant class="org.jpos.qrest.participant.Q2Info" />
   </group>
-
   ..
   ..
   <group name="group1">
@@ -97,6 +115,21 @@ The TransactionManager is configured like this:
 ----------------------------------------------------------------------------------------
 <1> This route is special, see below, route processing gets delegated to the Q2Info class
 
+In situations where multiple routes are defined at the QRest server configuration,
+classes like `Q2Info` that internally process routes may need to know about the
+prefix in use. This can be configured using the `prefix` property, i.e.:
+
+
+[source,xml]
+----------------------------------------------------------------------------------------
+  <group name="q2">
+    <participant class="org.jpos.qrest.participant.Q2Info">
+       <property name="prefix" value="/v2" />                                    <1>
+    </participant>
+  </group>
+----------------------------------------------------------------------------------------
+<1> `prefix` property should match the route's prefix
+
 [TIP]
 =====
 This old link:http://jpos.org/blog/2013/10/eating-our-own-dogfood/[Blog Post] explained how
@@ -105,8 +138,8 @@ be used to simplify a lot of Jetty/Server/Jersey boilerplate.
 =====
 
 The `Router` participant is actually a `GroupSelector` (from the TransactionManager's standpoint)
-and takes care of parsing and placing in the Context both _Path Parameters_ as well as 
-_Query Parameters_ (under the `PATHPARAMS` and `QUERYPARAMS` contants).
+and takes care of parsing and placing in the Context both _Path Parameters_ as well as
+_Query Parameters_ (under the `PATHPARAMS` and `QUERYPARAMS` constants).
 
 So if we define a route like this:
 
@@ -254,7 +287,7 @@ Here is a copy of the internal Q2Info route configuration:
         routes.add(new Route<>("/q2/uptime**", "GET",
             (t,s) -> mapOf("uptime", q2.getUptime())));
         routes.add(new Route<>("/q2/started**", "GET",
-            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - 
+            (t,s) -> mapOf("started", new Date(System.currentTimeMillis() -
             q2.getUptime()))));
         routes.add(new Route<>("/q2/diskspace**", "GET",
             (t,s) -> diskspace()));
@@ -267,4 +300,85 @@ Here is a copy of the internal Q2Info route configuration:
 
 If we just call `/q2`, it will output them all.
 
+==== Static and Dynamic HTML content
+
+QRest is by no means a full fledged web server, but it can still serve static and
+dynamic HTML pages using the `StaticContent` and `DynamicContent` participants.
+
+Our qrest TXNMGR configuration can include static content like this:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/welcome.html" method="GET" name="welcome" />
+ </participant>
+
+ <group name="welcome">
+   <participant class="org.jpos.qrest.participant.StaticContent">
+       <property name="documentRoot" value="html" />
+       <property name="content" value="welcome.html" />
+   </participant>
+ </group>
+------------
+
+So a call to `http://localhost:8080/welcome.html` will land in group named `welcome` that
+will serve the file `html/welcome.html`. If instead of hitting `welcome.html` the user
+tries anything else, it will fail with a 404 error.
+
+In order to serve _any_ file inside the `documentRoot`, one can omit the property
+`content`, i.e.:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/static/**" method="GET" name="static" />
+ </participant>
+
+ <group name="static">
+   <participant class="org.jpos.qrest.participant.StaticContent">
+     <property name="documentRoot" value="static" />
+   </participant>
+ </group>
+------------
+
+In this case, any file in the `static` directory will be served, if present.
+
+In addition to static files, QRest can render dynamic content using Freemarker.
+
+The configuration looks like this:
+
+[source,xml]
+------------
+ <participant class="org.jpos.qrest.participant.Router">
+    <route path="/dynamic" method="GET" name="dynamic" />
+ </participant>
+
+ <group name="dynamic">
+   <participant class="org.jpos.qrest.participant.DynamicContent">
+     <property name="documentRoot" value="templates" />
+     <property name="content" value="dynamic.html" />                 <1>
+     <property name="page.ctx.include" value="_include.html" />
+     <property name="page.ctx.myprop" value="myvalue" />
+   </participant>
+ </group>
+------------
+<1> For security, the template file has to be specified.
+
+The `DynamicContent` class uses a special qrest Constant `RENDER_CONTEXT` with a
+map to be passed to the Freemarker template engine. Properties starting with the
+prefix `page.ctx.` will be processed at participant initialization time and
+handed to the template engine at process time. In this example, a property called
+`include` and `myprop` will be available to the template engine, and can be used to write
+a template like this:
+
+[source,html]
+-------------
+<h1> Dynamic Content </h1>
+
+Processing transaction ${id}           <1>
+
+<#include include>
+-------------
+<1> The 'id' property is also provided by the `DynamicContent` participant using the
+    transaction id.
 

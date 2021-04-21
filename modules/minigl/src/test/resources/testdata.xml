@@ -60,7 +60,7 @@
     <account code="113" type="debit">
      <description>Bank Account</description>
     </account>
-    <account code="120" type="debit">
+    <account code="114" type="debit">
      <description>Trip Fund</description>
     </account>
    </composite-account>
@@ -90,6 +90,15 @@
   <composite-account code="5" type="debit" >
    <description>Losses</description>
   </composite-account>
+  <composite-account code="6">
+   <description>Order</description>
+   <composite-account code="61" type="debit" >
+    <description>Order debit</description>
+   </composite-account>
+   <composite-account code="62" type="credit" >
+    <description>Order credit</description>
+   </composite-account>
+  </composite-account>
  </chart-of-accounts>
 
  <!--
@@ -105,7 +114,7 @@
  <journal>
   <name>TestJournal</name>
   <start>20010101</start>
-  <end>20201231</end>
+  <!-- <end>20301231</end> -->
   <status>open</status>
   <chart>TestChart</chart>
   <grant user="bob">post</grant>
@@ -144,7 +153,8 @@
  <journal>
   <name>HistoryJournal</name>
   <start>20010101</start>
-  <end>20201231</end>
+  <!-- Increase by 10 years in 2030, and increment this number: 2 -->
+  <end>20301231</end>
   <status>open</status>
   <chart>TestChart</chart>
   <grant user="bob">post</grant>
@@ -177,12 +187,12 @@
    <amount>10000.00</amount>
   </entry>
   <!-- a Virtual entry in Layer 1 - trip fund -->
-  <entry account="120" type="debit" layer="1">
+  <entry account="114" type="debit" layer="1">
    <detail>Bob Check #001 20% to Trip Fund</detail>
    <amount>2000.00</amount>
   </entry>
   <!-- a Virtual entry in Layer 2 - trip budget -->
-  <entry account="120" type="credit" layer="2">
+  <entry account="114" type="credit" layer="2">
    <detail>Trip Budget 50000</detail>
    <amount>50000.00</amount>
   </entry>

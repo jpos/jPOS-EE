@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,8 +27,10 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.CollectionKey;
 import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
@@ -36,6 +38,7 @@ import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jpos.ee.support.ModuleUtils;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
@@ -64,6 +67,7 @@ public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
+    private Dialect dialect;
 
     private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Semaphore> mdSems = Collections.synchronizedMap(new HashMap<>());
@@ -73,6 +77,7 @@ public class DB implements Closeable {
     private static final String MODULES_CONFIG_PATH = "META-INF/org/jpos/ee/modules/";
     private static Map<String,SessionFactory> sessionFactories = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Metadata> metadatas = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Properties> properties = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates DB Object using default Hibernate instance
@@ -95,7 +100,7 @@ public class DB implements Closeable {
      *      <code>META-INF/org/jpos/ee/modules/v1-*</code> instead of just
      *      <code>META-INF/org/jpos/ee/modules/</code> </li>
      *
-     *  <li>finally, if the modifier ends with <code>.hbm.xml</code> (case insensitive), then all configuration
+     *  <li>finally, if the modifier ends with <code>.cfg.xml</code> (case insensitive), then all configuration
      *      is picked from that config file.</li>
      * </ul>
      *
@@ -106,6 +111,7 @@ public class DB implements Closeable {
         this.configModifier = configModifier;
         sfSems.putIfAbsent(configModifier, new Semaphore(1));
         mdSems.putIfAbsent(configModifier, new Semaphore(1));
+        getSessionFactory();
     }
 
     /**
@@ -114,7 +120,7 @@ public class DB implements Closeable {
      * @param log Log object
      */
     public DB(Log log) {
-        super();
+        this();
         setLog(log);
     }
 
@@ -143,12 +149,24 @@ public class DB implements Closeable {
             sf = sessionFactories.get(cm);
             if (sf == null)
                 sessionFactories.put(cm, sf = newSessionFactory());
+            if (sf instanceof SessionFactoryImpl) {
+                dialect = ((SessionFactoryImpl) sf).getJdbcServices().getDialect();
+            }
         } catch (IOException | ConfigurationException | DocumentException | InterruptedException e) {
             throw new RuntimeException("Could not configure session factory", e);
         } finally {
             sfSem.release();
         }
         return sf;
+    }
+
+    public Properties getProperties() {
+        String cm  = configModifier != null ? configModifier : "";
+        return properties.get(cm);
+    }
+
+    public Dialect getDialect() {
+        return dialect;
     }
 
     public static synchronized void invalidateSessionFactories() {
@@ -270,8 +288,14 @@ public class DB implements Closeable {
             }
             if (create)
                 targetTypes.add(TargetType.DATABASE);
-            if(targetTypes.size()>0)
-                export.create(EnumSet.copyOf(targetTypes), getMetadata());
+            if(targetTypes.size()>0) {
+                // First, drop everything, disregarding errors
+                export.setHaltOnError(false);
+                export.drop(EnumSet.copyOf(targetTypes), getMetadata());
+                // Now attempt schema creation, but halting on error
+                export.setHaltOnError(true);
+                export.createOnly(EnumSet.copyOf(targetTypes), getMetadata());
+            }
         }
         catch (IOException | ConfigurationException | InterruptedException e)
         {
@@ -477,6 +501,7 @@ public class DB implements Closeable {
         }
     }
 
+
     @Override
     public String toString() {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
@@ -495,9 +520,10 @@ public class DB implements Closeable {
                 String propFile;
                 String dbPropertiesPrefix = "";
                 String metadataPrefix = "";
+                boolean standardHibernateConfig = cm.endsWith(".cfg.xml");
 
                 String hibCfg = null;
-                if (cm.endsWith(".cfg.xml")) {
+                if (standardHibernateConfig) {
                     hibCfg = cm;
                 } else if (configModifier != null) {
                     String[] ss = configModifier.split(":");
@@ -514,24 +540,28 @@ public class DB implements Closeable {
                     hibCfg = System.getProperty("HIBERNATE_CFG","/hibernate.cfg.xml");
 
                 ssrb.configure(hibCfg);
-                propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
-                Properties dbProps = loadProperties(propFile);
-                if (dbProps != null) {
+                Properties dbProps = null;
+                if (!standardHibernateConfig) {
+                    propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
+                    dbProps = loadProperties(propFile);
                     for (Map.Entry entry : dbProps.entrySet()) {
-                        ssrb.applySetting((String) entry.getKey(), entry.getValue());
+                        String k = (String) entry.getKey();
+                        String v = Environment.get((String) entry.getValue());
+                        ssrb.applySetting(k,v);
+                        dbProps.setProperty(k,v);
                     }
+
+                    // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
+                    Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+                    String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+                    String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+                    if (user != null)
+                        ssrb.applySetting("hibernate.connection.username", user);
+                    if (pass != null)
+                        ssrb.applySetting("hibernate.connection.password", pass);
                 }
-
-                // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
-                Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-                String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-                String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-                if (user != null)
-                    ssrb.applySetting("hibernate.connection.username", user);
-                if (pass != null)
-                    ssrb.applySetting("hibernate.connection.password", pass);
-
                 MetadataSources mds = new MetadataSources(ssrb.build());
+
                 List<String> moduleConfigs = ModuleUtils.getModuleEntries(MODULES_CONFIG_PATH);
                 for (String moduleConfig : moduleConfigs) {
                     if (metadataPrefix.length() == 0 || moduleConfig.substring(MODULES_CONFIG_PATH.length()).startsWith(metadataPrefix)) {
@@ -543,6 +573,8 @@ public class DB implements Closeable {
                 }
                 md = mds.buildMetadata();
                 metadatas.put(cm, md);
+                if (dbProps != null)
+                    properties.put(cm, dbProps);
             }
         } finally {
             mdSem.release();

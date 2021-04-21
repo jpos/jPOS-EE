@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -30,6 +30,12 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
+/**
+ * @deprecated
+ * <p>This class has been graduated to jPOS <code>org.jpos.security.SensitiveString</code></p>
+ */
+
+@Deprecated
 public class SensitiveString implements Supplier<String> {
     private SecretKey key;
     private byte[] encoded;
@@ -37,11 +43,7 @@ public class SensitiveString implements Supplier<String> {
     private static final String AES = "AES/CBC/PKCS5Padding";
 
     static {
-        try {
-            rnd = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        rnd = new SecureRandom();
     }
 
 

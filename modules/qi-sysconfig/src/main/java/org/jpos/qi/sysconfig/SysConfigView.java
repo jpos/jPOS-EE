@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,21 +20,18 @@ package org.jpos.qi.sysconfig;
 
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.core.Configuration;
 import org.jpos.ee.BLException;
 import org.jpos.ee.SysConfig;
-import org.jpos.qi.QI;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
+import org.jpos.qi.ViewConfig;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class SysConfigView extends QIEntityView<SysConfig> {
     private String prefix;
@@ -54,7 +51,7 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof SysConfig) {
             SysConfig s = (SysConfig) entity;
-            return s.getId() != null ? s.getId() : "New";
+            return s.getId() != null ? s.getId() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -95,17 +92,32 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     @Override
     protected Component buildAndBindCustomComponent(String propertyId) {
         if ("id".equals(propertyId)) {
-            TextField id = new TextField(getCaptionFromId(propertyId));
+            TextField id = new TextField(getFieldCaption("id"));
             List<Validator> validators = getFieldFactory().getValidators(propertyId);
             Binder<SysConfig> binder = getBinder();
             Binder.BindingBuilder builder = binder.forField(id)
-                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getCaptionFromId(propertyId))))
+                .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getFieldCaption("id"))))
                 .withNullRepresentation("")
-                .withConverter(userInputValue -> userInputValue
-                                , toPresentation -> removePrefix(toPresentation));
+                .withConverter(userInputValue -> userInputValue, this::removePrefix);
             validators.forEach(builder::withValidator);
             builder.bind(propertyId);
+            ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
+            String width = config != null ? config.getWidth() : null;
+            id.setWidth(width);
             return id;
+        } else if ("value".equals(propertyId)) {
+            TextField value = new TextField(getFieldCaption("value"));
+            List<Validator> validators = getFieldFactory().getValidators(propertyId);
+            Binder<SysConfig> binder = getBinder();
+            Binder.BindingBuilder builder = binder.forField(value)
+                    .asRequired(getApp().getMessage("errorMessage.req", StringUtils.capitalize(getFieldCaption("value"))))
+                    .withNullRepresentation("");
+            validators.forEach(builder::withValidator);
+            builder.bind(propertyId);
+            ViewConfig.FieldConfig config = getViewConfig().getFields().get(propertyId);
+            String width = config != null ? config.getWidth() : null;
+            value.setWidth(width);
+            return value;
         }
         return null;
     }
@@ -118,26 +130,11 @@ public class SysConfigView extends QIEntityView<SysConfig> {
     }
 
     private String removePrefix (String value) {
-        if (value != null && !value.isEmpty())
-            return prefix != null ? value.substring(prefix.length()) : value;
+        if (prefix != null && value != null && !value.isEmpty() && value.startsWith(prefix))
+            return value.substring(prefix.length());
         return value;
     }
     
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
     public String getPrefix() {
         return prefix;
     }
@@ -149,9 +146,38 @@ public class SysConfigView extends QIEntityView<SysConfig> {
         String title = cfg.get("title", null);
         if (title != null)
             setTitle("<strong>" + title + "</strong>");
-        String name = cfg.get("name", null);
-        if (name != null) {
-            setGeneralRoute("/" + name);
+    }
+
+    @Override
+    public void formatGrid() {
+        super.formatGrid();
+        if (getGrid() != null && getGrid().getColumn("id") != null)
+            getGrid().getColumn("id").setCaption(getColumnCaption("id"));
+        if (getGrid() != null && getGrid().getColumn("value") != null)
+            getGrid().getColumn("value").setCaption(getColumnCaption("value"));
+    }
+
+    private String getColumnCaption (String propertyId) {
+        String caption = propertyId;
+        String propertyIdWithPrefix;
+        if (propertyId != null) {
+            propertyIdWithPrefix = getPrefix() != null ? getPrefix() + propertyId : propertyId;
+            caption = getCaptionFromId("column." + propertyIdWithPrefix);
+            if (caption != null && caption.replaceAll("\\s+", "").equals(propertyIdWithPrefix))
+                caption = getCaptionFromId("column." + propertyId);
         }
+        return caption;
+    }
+
+    private String getFieldCaption (String propertyId) {
+        String caption = propertyId;
+        String propertyIdWithPrefix;
+        if (propertyId != null) {
+            propertyIdWithPrefix = getPrefix() != null ? getPrefix() + propertyId : propertyId;
+            caption = getCaptionFromId("field." + propertyIdWithPrefix);
+            if (caption != null && caption.replaceAll("\\s+", "").equals(propertyIdWithPrefix))
+                caption = getCaptionFromId("field." + propertyId);
+        }
+        return caption;
     }
 }

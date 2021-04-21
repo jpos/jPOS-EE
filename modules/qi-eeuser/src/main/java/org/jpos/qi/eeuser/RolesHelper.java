@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -65,7 +65,7 @@ public class RolesHelper extends QIHelper {
                         String.valueOf(r.getId()),
                         oldRole,
                         r,
-                        new String[]{"name", "permissions"});
+                        new String[]{"name", "permissions", "realm"});
             });
         } catch (Exception e) {
             throw new BLException(e.getMessage());
@@ -94,5 +94,44 @@ public class RolesHelper extends QIHelper {
             getApp().getLog().error(e);
             return null;
         }
+    }
+
+    public Realm getRealm (long id) {
+        try {
+            return DB.exec((db) -> {
+                RealmManager mgr = new RealmManager(db);
+                return mgr.getRealmById(id);
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return null;
+        }
+    }
+
+    public Realm getRealmByName (String name) {
+        try {
+            return DB.exec((db) -> {
+                RealmManager mgr = new RealmManager(db);
+                return mgr.getRealmByName(name);
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return null;
+        }
+    }
+
+    public Realm createRealm (String name, String description) {
+        try {
+            return DB.execWithTransaction(db -> {
+                Realm realm = new Realm(name, description);
+                db.save(realm);
+                addRevisionCreated(db, "realm", String.valueOf(realm.getId()));
+                return realm;
+            });
+        } catch (Exception e) {
+            getApp().getLog().error(e);
+            return null;
+        }
+
     }
 }

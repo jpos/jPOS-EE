@@ -25,13 +25,6 @@ rebase your branch on top of the upstream master.
 * *A single development branch should represent changes related to a single issue.*
 If you decide to work on another issue, create another branch.
 
-[NOTE]
-========================================================================
-Please note we use our own issue tracker system, YouTrack, hosted in jPOS.org.
-Please don't be confused with the excellent issue tracker provided by Github, 
-we are currently not using that one.
-========================================================================
-
 ==== Step-by-step (the short version)
 
 - Fork on GitHub (click Fork button)

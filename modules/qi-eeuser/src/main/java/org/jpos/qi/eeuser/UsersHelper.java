@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,10 +22,9 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
 import com.vaadin.ui.PasswordField;
-import org.hibernate.Criteria;
 import org.jpos.ee.*;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.PasswordGenerator;
+import org.jpos.qi.util.PasswordGenerator;
 
 import java.util.*;
 import java.util.List;
@@ -163,6 +162,7 @@ public class UsersHelper extends QIHelper {
                 User user = db.session().get(User.class, t.getId());
                 if (user == null) return false;
                 t.setDeleted(true);
+                t.setNick("." + t.getNick() + "." + t.getId());
                 db.session().merge(t);
                 addRevisionRemoved(db, getEntityName(), String.valueOf(t.getId()));
                 return true;

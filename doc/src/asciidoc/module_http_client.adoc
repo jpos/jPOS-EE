@@ -1,0 +1,104 @@
+=== HttpClient
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | HttpQuery participant
+| *When*         | Implemented during 2.2.6
+| *Who*          | The jPOS Software team.
+| *Where*        | Directory modules/http-client
+| *Why*          | Lightweight asynchronous Http Participant
+| *Status*       | Experimental
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+        <dependency>
+            <groupId>org.jpos.ee</groupId>
+            <artifactId>jposee-http-client</artifactId>
+            <version>${jposee.version}</version>
+        </dependency>
+----
+
+The `HttpQuery` participant has the following configuration properties:
+
+* `url`: a _hardcoded_ url for the request (it will be used as is, so it must be valid as per `java.net.URI`)
+* `connect-timeout`: milliseconds to wait for connection (default 10000)
+* `timeout`: milliseconds to wait for an HTTP response (based on socket activity; default 15000)
+* `contentType`: defaults to `"application/json"`
+* `httpHeader`: a _repeatable_ configuration property representing an HTTP request header, where the value is
+   of the form `header_name:header_value`
+* `redirect-strategy`: Sets the strategy to use when the remote HTTP server returns a redirect.
+   If the property is undefined, or has the "default" value, it will use Apache's `DefaultRedirectStrategy`.
+   If the value is `lax` it will use `LaxRedirectStrategy` (see: https://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html)
+* `preemptiveAuth`: if doing Basic Authentication (by presence of context value), do it on the first request (default `false`)
+* `responseBodyOnError`: should an HTTP response body be included for responses with error
+   status code? (`boolean`, default `false`);
+
+In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
+
+* `HTTP_URL`: with the remote host's URL
+* `HTTP_METHOD`: currently one of `GET`, `POST`, `PUT`
+* `HTTP_PARAMS`: the _query string_ (must be correctly encoded), and it's appended to the previously
+   computed URL, with a `?` separating both parts
+* `HTTP_REQUEST`: a request payload (i.e. JSON String)
+* `HTTP_CONTENT_TYPE`: overrides the one given with the `contentType` configuration property
+* `HTTP_HEADERS`: HTTP request headers that will be dynamically added to whatever was configured by the
+   set of `httpHeader` properties.  The value of the `HTTP_HEADERS` entry in the `Context` can be of three different
+   types:
+   ** a `String[]` where each item follows the `header_name:header_value` syntax
+   ** a `List<String>` where each item follows the `header_name:header_value` syntax
+   ** a `Map<String,String>` where the keys represent _header names_, and the values the corresponding _header values_
+* `.HTTP_BASIC_AUTHENTICATION`: A String of the form `<username>:<password>` used for HTTP Basic Authentication.
+   NOTE: The default `Context` name starts with a period (`.`), meaning it will be hidden in the logs during a context dump.
+
+After successful completion (which may include normal HTTP errors such as `404` or `500`), `HttpQuery` stores the result
+back into the `Context`:
+
+* `HTTP_STATUS`: integer with the HTTP status code.
+* `HTTP_RESPONSE`: response body.
+
+Here is a sample configuration taking all the defauts:
+
+[source,xml]
+------------
+  <participant class="org.jpos.http.client.HttpQuery" />
+------------
+
+The default names used above can be overriden, e.g.:
+
+[source,xml]
+------------
+<participant class="org.jpos.http.client.HttpQuery">
+    <property name="urlName" value="MY_HTTP_URL" />
+    <property name="methodName" value="MY_HTTP_METHOD" />
+    <property name="paramsName" value="MY_HTTP_PARAMS" />
+    <property name="requestName" value="MY_HTTP_REQUEST" />
+    <property name="responseName" value="MY_HTTP_RESPONSE" />
+    <property name="responseStatusName" value="MY_HTTP_STATUS" />
+    <property name="headersName" value="MY_HTTP_HEADERS" />
+    <property name="contentTypeName" value="MY_HTTP_CONTENT_TYPE" />  <1>
+    <property name="contentType" value="application/json" />          <2>
+    <property name="basicAuthenticationName" value=".MY_BASIC_CREDENTIALS" /> <3>
+  </participant>
+------------
+<1> Name of the Context variable where user can override the default content type.
+<2> Content-Type defaults to `application/json`
+<3> We recommend that the context key starts with a period, so it will be a hidden entry during a context dump in the logs.
+
+Here is a sample use:
+
+[source,java]
+-------------
+    TransactionManager mgr = ... // somehow get a reference to a TransactionManager
+    Context ctx = new Context();
+    ctx.put("HTTP_URL", "http://localhost/q2/version");
+    ctx.put("HTTP_METHOD", "GET");
+    mgr.queue(ctx); <1>
+    Integer sc = ctx.get ("HTTP_STATUS", 10000L); <2>
+    String response = ctx.get ("HTTP_RESPONSE");
+-------------
+<1> Enqueue `ctx` to be processed by `mgr` that has an `HttpQuery` in its list of participants.
+<2> Wait up to 10 seconds for a response
+

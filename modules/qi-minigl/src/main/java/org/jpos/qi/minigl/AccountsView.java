@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,21 +33,22 @@ import com.vaadin.ui.components.grid.HeaderCell;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.themes.ValoTheme;
+import org.jpos.core.Configuration;
 import org.jpos.ee.DB;
 import org.jpos.gl.*;
 import org.jpos.qi.components.DateRange;
 import org.jpos.qi.components.DateRangeComponent;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
-import org.jpos.util.FieldFactory;
+import org.jpos.qi.util.FieldFactory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.jpos.util.QIUtils.createAmountRenderer;
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.createAmountRenderer;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class AccountsView extends QIEntityView<Account> {
 
@@ -61,7 +62,7 @@ public class AccountsView extends QIEntityView<Account> {
     private List<Account> expandedItems;
 
     public AccountsView() {
-        super(Account.class, "accounts");
+        super(Account.class);
         expandedItems = new ArrayList<>();
     }
 
@@ -83,13 +84,13 @@ public class AccountsView extends QIEntityView<Account> {
         TreeGrid<Account> tree = new TreeGrid();
         tree.setSizeFull();
         tree.setSelectionMode(Grid.SelectionMode.SINGLE);
-        tree.addItemClickListener(event -> {
+//        tree.addItemClickListener(event -> {
             //do nothing if it's root
-            if (event.getItem().getRoot().getId() != event.getItem().getId()) {
-                String url = getGeneralRoute() + "/" + getHelper().getItemId(event.getItem());
-                getApp().getNavigator().navigateTo(url);
-            }
-        });
+//            if (event.getItem().getRoot().getId() != event.getItem().getId()) {
+//                String url = getGeneralRoute() + "/" + getHelper().getItemId(event.getItem());
+//                getApp().getNavigator().navigateTo(url);
+//            }
+//        });
         tree.setItemCollapseAllowedProvider(account -> account.getParent() != null);
         tree.addExpandListener(listener -> {
             if (listener.getExpandedItem().getParent() != null)
@@ -118,9 +119,7 @@ public class AccountsView extends QIEntityView<Account> {
           }
         });
 
-        Iterator<Grid.Column<Account, ?>> it = grid.getColumns().iterator();
-        while (it.hasNext()) {
-            Grid.Column c  = it.next();
+        for (Grid.Column<Account, ?> c : grid.getColumns()) {
             String columnId = c.getId();
             if (!Arrays.asList(getVisibleColumns()).contains(columnId)) {
                 grid.removeColumn(columnId);
@@ -161,10 +160,8 @@ public class AccountsView extends QIEntityView<Account> {
             refCredit.setStyleName("credit-color");
             refDebit.addStyleName(ValoTheme.LABEL_SMALL);
             refCredit.addStyleName(ValoTheme.LABEL_SMALL);
-            Button collapse = new Button(getApp().getMessage("collapseAll"), event -> {
-                ((TreeGrid) getGrid()).collapse(expandedItems.toArray());
-
-            });
+            Button collapse = new Button(getApp().getMessage("collapseAll"),
+                    event -> ((TreeGrid) getGrid()).collapse(expandedItems.toArray()));
             collapse.setStyleName(ValoTheme.BUTTON_LINK);
             collapse.addStyleName(ValoTheme.BUTTON_SMALL);
             HorizontalLayout l = new HorizontalLayout(refDebit, refCredit, collapse);
@@ -208,7 +205,7 @@ public class AccountsView extends QIEntityView<Account> {
         }
         if ("type".equalsIgnoreCase(propertyId)) {
             ComboBox<Integer> typeCombo = new ComboBox<>(getCaptionFromId(propertyId));
-            typeCombo.setItems(Account.CHART,Account.DEBIT,Account.CREDIT);
+            typeCombo.setItems(Account.UNDEFINED,Account.DEBIT,Account.CREDIT);
             typeCombo.setItemCaptionGenerator(type -> getApp().getMessage("account." + type).toUpperCase());
             formatField(propertyId,typeCombo).bind(propertyId);
             return typeCombo;
@@ -358,15 +355,12 @@ public class AccountsView extends QIEntityView<Account> {
         filterPanel.addStyleName("v-panel-well");
 
         journals = new JournalsCombo(true);
-
         rangeLabelTitle = new Label();
         rangeLabelTitle.addStyleName(ValoTheme.LABEL_BOLD);
         dateRangeComponent = new DateRangeComponent(DateRange.ALL_TIME, true) {
             @Override
             protected Button.ClickListener createRefreshListener() {
-                return event -> {
-                    refreshDetails();
-                };
+                return event -> refreshDetails();
             }
         };
         VerticalLayout detailsLayout = new VerticalLayout();
@@ -407,11 +401,16 @@ public class AccountsView extends QIEntityView<Account> {
     }
 
     private void expand(Account a) {
-        TreeGrid tree = (TreeGrid) getGrid();
-        if (a.getParent() != null) {
+        if (a != null && a.getParent() != null) {
+            TreeGrid tree = (TreeGrid) getGrid();
             expand(a.getParent());
+            tree.expand(a);
         }
-        tree.expand(a);
+    }
+
+    protected int loadMaxLevelFromConfig() {
+        Configuration config = getViewConfig().getConfiguration();
+        return config.getInt("level", 2);
     }
 
     @Override
@@ -424,10 +423,5 @@ public class AccountsView extends QIEntityView<Account> {
     public String getGeneralRoute () {
         return "/accounts".equals(super.getGeneralRoute()) && !isGeneralView() && account != null ?
                     super.getGeneralRoute() + "/expand/" + account.getId() : super.getGeneralRoute();
-    }
-
-    @Override
-    public boolean canEdit() {
-        return true;
     }
 }

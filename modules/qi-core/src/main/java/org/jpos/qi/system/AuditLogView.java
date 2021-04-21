@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@
 
 package org.jpos.qi.system;
 
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.Grid;
 import org.jpos.ee.SysLog;
 import org.jpos.qi.QIEntityView;
@@ -29,7 +30,7 @@ import org.jpos.qi.QIHelper;
 public class AuditLogView extends QIEntityView<SysLog> {
 
     public AuditLogView() {
-        super(SysLog.class,"syslog");
+        super(SysLog.class);
     }
     @Override
     public QIHelper createHelper() {
@@ -50,7 +51,7 @@ public class AuditLogView extends QIEntityView<SysLog> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof SysLog) {
             SysLog s = (SysLog) entity;
-            return s.getId() != 0 ? s.getId().toString() : "New";
+            return s.getId() != 0 ? s.getId().toString() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -60,6 +61,7 @@ public class AuditLogView extends QIEntityView<SysLog> {
     public void formatGrid() {
         super.formatGrid();
         getGrid().getColumn("summary").setExpandRatio(3);
+        getGrid().sort(getGrid().getColumn("date"), SortDirection.ASCENDING);
     }
 
     @Override

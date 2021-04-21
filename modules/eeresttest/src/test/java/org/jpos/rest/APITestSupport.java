@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,14 +20,14 @@ package org.jpos.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.space.Space;
 import org.jpos.space.SpaceFactory;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -40,14 +40,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SuppressWarnings("unchecked")
 public abstract class APITestSupport {
     static Q2 q2;
     static Space sp;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = APITest.BASE_URL;
         RestAssured.requestSpecification = new RequestSpecBuilder().build().contentType(MediaType.APPLICATION_JSON);
@@ -57,7 +57,8 @@ public abstract class APITestSupport {
             q2 = new Q2();
             q2.start();
         }
-        ISOUtil.sleep(5000);
+        if (!q2.ready(15000L))
+            throw new IllegalStateException("Q2 not running");
     }
 
     protected APICredential createAPICredential(String consumerId, String base64Key, String nonce, byte[] payLoad)

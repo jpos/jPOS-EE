@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,17 +18,20 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
 
 public class CurrencyTest extends TestBase {
+    @Test
     public void testCurrency840 () throws Exception {
         Currency currency = (Currency) gls.session().load (Currency.class, "840");
         assertNotNull (currency);
         assertEquals ("USD", currency.getSymbol());
         assertEquals ("US Dollars", currency.getName());
     }
+    @Test
     public void testCurrency858 () throws Exception {
         Currency currency = (Currency) gls.session().load (Currency.class, "858");
         assertNotNull (currency);

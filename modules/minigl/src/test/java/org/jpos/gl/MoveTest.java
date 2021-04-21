@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,12 +18,16 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Random;
+
 import org.hibernate.Transaction;
+import org.junit.jupiter.api.Test;
 
 public class MoveTest extends TestBase {
+    @Test
     public void testMove () throws Exception {
         Journal j = gls.getJournal ("TestJournal");
         Journal h = gls.getJournal ("HistoryJournal");

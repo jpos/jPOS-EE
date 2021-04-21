@@ -124,7 +124,6 @@
 
     <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
         <Set name="KeyStorePath"><Property name="jetty.home" default="." />/cfg/keystore.jks</Set>
-        <Set name="KeyStorePassword">jposjposjposjpos</Set>
         <Set name="ExcludeCipherSuites">
             <Array type="java.lang.String">
                 <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
@@ -143,6 +142,25 @@
                 <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA256</Item>
                 <Item>TLS_DHE_RSA_WITH_AES_256_GCM_SHA384</Item>
                 <Item>TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                <Item>TLS_RSA_WITH_AES_128_CBC_SHA</Item>
+                <Item>TLS_RSA_WITH_AES_128_CBC_SHA256</Item>
+                <Item>TLS_RSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_RSA_WITH_AES_256_CBC_SHA256</Item>
+                <Item>TLS_RSA_WITH_AES_128_GCM_SHA256</Item>
+                <Item>TLS_RSA_WITH_AES_256_GCM_SHA384</Item>
+                <Item>.*NULL.*</Item>
+                <Item>.*RC4.*</Item>
+                <Item>.*MD5.*</Item>
+                <Item>.*DES.*</Item>
+                <Item>.*DSS.*</Item>
+                <Item>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA</Item>
+                <Item>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA</Item>
+                <Item>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA</Item>
+                <Item>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA</Item>
+                <Item>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA</Item>
             </Array>
         </Set>
         <Set name="ExcludeProtocols">
@@ -212,6 +230,36 @@
       </New>
     </Set>
 
+    <Set name="handler">
+      <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+        <Set name="handlers">
+        <Array type="org.eclipse.jetty.server.Handler">
+            <Item>
+            <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+            </Item>
+            <Item>
+            <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
+            </Item>
+            <Item>
+            <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+            </Item>
+        </Array>
+        </Set>
+      </New>
+    </Set>
+
+    <Ref refid="RequestLog">
+      <Set name="requestLog">
+        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+        <Arg><SystemProperty name="jetty.logs" default="./log"/>/yyyy_mm_dd.request.log</Arg>
+        <Set name="retainDays">90</Set>
+        <Set name="append">true</Set>
+        <Set name="extended">false</Set>
+        <Set name="LogTimeZone">GMT</Set>
+        </New>
+      </Set>
+    </Ref>
+
     <Call name="addBean">
       <Arg>
         <New id="DeploymentManager" class="org.eclipse.jetty.deploy.DeploymentManager">
@@ -260,4 +308,3 @@
       </Arg>
     </Call>
 </Configure>
-

@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':modules:qi-core')
-    compile project(':modules:cryptoservice')
+    api project(':modules:qi-core')
+    api project(':modules:cryptoservice')
 }
 

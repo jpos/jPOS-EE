@@ -37,7 +37,14 @@ include ':modules:core',
         ':modules:binlog-quartz',
         ':modules:cryptoservice',
         ':modules:qrest',
-        ':modules:cryptoserver'
+        ':modules:cryptoserver',
+        ':modules:iso-http-client',
+        ':modules:iso-http-server',
+        ':modules:iso-http-servlet',
+        ':modules:http-client',
+        ':modules:seqno',
+        ':modules:db-flyway',
+        ':modules:elasticsearch'
 
 rootProject.name = 'jposee'
 

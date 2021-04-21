@@ -18,5 +18,11 @@
 
 <jetty class="org.jpos.q2.jetty.Jetty">
   <attr name="config">cfg/jetty.xml</attr>
+  <!-- 
+    For production systems, replace the literal value with a reference 
+    to a system or environment property.
+    For further information on the jPOS configuration sub-system, 
+    see jPOS Programmer's Guide, section 3.3. 
+  -->
+  <property name="keystorePassword" value="jposjposjposjpos"/>
 </jetty>
-

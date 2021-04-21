@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,7 @@ package org.jpos.q2.cli.binlog;
 import org.jpos.binlog.BinLogWriter;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
-import java.io.File;
+import java.nio.file.Paths;
 
 @SuppressWarnings("unused")
 public class CUTOVER implements CLICommand {
@@ -30,7 +30,7 @@ public class CUTOVER implements CLICommand {
 
     public void exec(CLIContext cli, String[] args) throws Exception {
         boolean quiet = args.length > 1 && "-q".equals (args[1]);
-        try (BinLogWriter bl = new BinLogWriter(new File((String) cli.getUserData().get("binlog")))) {
+        try (BinLogWriter bl = new BinLogWriter(Paths.get((String) cli.getUserData().get("binlog")))) {
             int oldFile = bl.getFileNumber();
             bl.cutover();
             if (!quiet)

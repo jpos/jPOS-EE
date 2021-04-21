@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// RFC 6570 implementation, based on http://bitworking.org/projects/URI-Templates
+// RFC 6570 implementation, based on https://tools.ietf.org/html/rfc6570
 public class Route<T> implements BiFunction<Route<T>, String,T> {
     private Pattern pathPattern;
     private String path;
@@ -40,7 +40,6 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
         Objects.requireNonNull(path);
         Objects.requireNonNull(method);
         Objects.requireNonNull(supplier);
-
         this.path = path;
         this.pathPattern = buildPathPattern(path);
         this.method = method;
@@ -77,8 +76,8 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
     @Override
     public String toString() {
         return "Route{" +
-          ", path='" + path + '\'' +
-          ", method='" + method + '\'' +
+          "path='" + path + "'" +
+          ", method='" + method + "'" +
           '}';
     }
 

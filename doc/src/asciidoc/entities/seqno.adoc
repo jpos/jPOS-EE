@@ -1,0 +1,66 @@
+[[seqno]]
+== SeqNo
+
+[plantuml, seqno, svg]
+----
+@startuml
+
+class SeqNo {
+  String id;
+  long value;
+  long lockedBy;
+  long lockUntil;
+} 
+
+@enduml
+----
+
+The `SeqNo` entity footnote:['seqno' table] is a general purpose entity 
+used by jPOS-EE to store application specific sequencers.
+
+Typical use case would be terminal-level STANS, Voucher IDs and the like.
+
+The `SeqNoManager` supports two operating modes:
+
+- Synchronous
+- Asynchronous
+
+In Synchronous mode, the transaction life-cycle is handled by the caller, e.g.:
+
+[source,java]
+-------------
+    private long next(String id) {
+        try (DB db = new DB()) {
+            SeqNoManager mgr = new SeqNoManager(db);
+            db.open();
+            db.beginTransaction();
+            long l = mgr.next(id, 999999L);
+            db.commit();
+            return l;
+        }
+    }
+-------------
+
+[NOTE]
+======
+In 'sync' mode, a second thread trying to obtain a sequence number will block until the
+former is committed.
+
+======
+
+In Asynchronous mode, the JDBC connection is released and an explicit call to `SeqNoManager.release`
+has to be issued, e.g.:
+
+[source,java]
+-------------
+   SeqNoManager mgr = new SeqNoManager(new DB());
+   long l = mgr.next("sync", id, 60000L, 60000L, 999999L);
+   // ... do something, e.g.: query remote host
+   mgr.release("sync", id);
+   return l;
+-------------
+
+Interesting thing about async mode, is that while one calls a remote host (i.e. using `QueryHost`),
+the JDBC connection gets released back to its pool.
+
+

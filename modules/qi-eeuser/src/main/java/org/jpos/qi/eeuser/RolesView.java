@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -35,14 +35,14 @@ import java.util.List;
 public class RolesView extends QIEntityView {
 
     public RolesView() {
-        super(Role.class, "roles");
+        super(Role.class);
     }
 
     @Override
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Role) {
             Role r = (Role) entity;
-            return r.getName() != null ? r.getName() : "New";
+            return r.getName() != null ? r.getName() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -72,7 +72,7 @@ public class RolesView extends QIEntityView {
     protected Component buildAndBindCustomComponent(String propertyId) {
         List<Validator> validators = getFieldFactory().getValidators(propertyId);
         if ("permissions".equals(propertyId)) {
-            CheckBoxGroup<Permission> f = new CheckBoxGroup("Permissions");
+            CheckBoxGroup<Permission> f = new CheckBoxGroup(getApp().getMessage("permissions"));
             List<SysConfig> sysconfigs = ((RolesHelper)getHelper()).getPermissions();
             List<Permission> allPermissions = new ArrayList<>();
             //convert SysConfigs to Permissions
@@ -97,22 +97,7 @@ public class RolesView extends QIEntityView {
         Grid<Role> g = this.getGrid();
         g.addColumn(Role::getId).setId("id");
         g.addColumn(Role::getName).setId("name");
+        g.addColumn(Role::getRealm).setId("realm");
         g.addColumn(Role::getPermissions).setId("permissions");
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
 }

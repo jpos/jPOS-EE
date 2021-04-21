@@ -1,0 +1,18 @@
+<qrest-txnmgr class="org.jpos.transaction.TransactionManager" logger="Q2" realm='qrest-txnmgr'>
+  <property name="queue" value="TXNMGR"/>
+  <property name="sessions" value="2"/>
+  <property name="max-sessions" value="128"/>
+  <property name="debug" value="true"/>
+
+  <participant class="org.jpos.qrest.participant.Router">
+    <route path="/q2**" method="GET" name="q2"/>
+    <route path="/q2**" method="POST" name="q2"/>
+  </participant>
+
+  <group name="q2">
+    <participant class="org.jpos.qrest.participant.Q2Info" />
+  </group>
+  <participant class="org.jpos.qrest.SendResponse" logger="Q2">
+    <!--<property name="content-type" value="application/json" />-->
+  </participant>
+</qrest-txnmgr>

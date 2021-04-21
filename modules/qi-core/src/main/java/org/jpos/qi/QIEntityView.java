@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,23 +33,26 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 
+import org.jdom2.Attribute;
+import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
+import org.jpos.core.XmlConfigurable;
 import org.jpos.ee.BLException;
-import org.jpos.ee.DB;
-import org.jpos.util.FieldFactory;
+import org.jpos.qi.util.FieldFactory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
-public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable {
+public abstract class QIEntityView<T> extends VerticalLayout implements View, Configurable, XmlConfigurable {
     private QI app;
     private Class<T> clazz;
     private boolean generalView;
+    private String name;
     private String title;
     private String generalRoute;
     private String[] visibleColumns;
@@ -70,24 +73,25 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     private ViewConfig viewConfig;
     private T bean;
     private FieldFactory fieldFactory;
-
+    private List<Layout> fieldsLayouts;
+    private Layout formLayout;
 
     public QIEntityView(Class<T> clazz, String name) {
+        this(clazz);
+        this.name = name;
+        this.title = "<strong>" + app.getMessage(name) + "</strong>";
+        generalRoute = "/" + name;
+    }
+
+    public QIEntityView (Class<T> clazz) {
         super();
         app = (QI) UI.getCurrent();
         this.clazz = clazz;
-        this.title = "<strong>" + app.getMessage(name) + "</strong>";
-        generalRoute = "/" + name;
-        viewConfig = app.getView(name);
-        this.visibleColumns = viewConfig.getVisibleColumns();
-        this.visibleFields = viewConfig.getVisibleFields();
-        this.readOnlyFields = viewConfig.getReadOnlyFields();
         setSizeFull();
         setMargin(new MarginInfo(false, false, false, false));
         setSpacing(false);
         showRevisionHistoryButton=true;
     }
-
 
     @Override
     public void enter (ViewChangeListener.ViewChangeEvent event) {
@@ -98,6 +102,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             showGeneralView();
         } else {
             generalView = false;
+            fieldsLayouts = new ArrayList<>();
             showSpecificView (event.getParameters());
         }
     }
@@ -124,13 +129,20 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void showSpecificView (final String parameter) {
         Object o = null;
-        String[] params = parameter.split("/|\\?");
+        String[] params = parameter.split("[/?]");
         if (params.length > 0) {
-            if ("new".equals(params[0]) && canAdd()) {
-                o =  createNewEntity();
+            if ("new".equals(params[0])) {
+                if (canAdd())
+                    o =  createNewEntity();
                 newView = true;
             } else {
                 o = getEntityByParam(params[0]);
+                String realm = getRealm((T) o);
+                if (realm != null && !app.getUser().getRealmsAsString().contains(realm)) {
+                    getApp().getNavigator().navigateTo("");
+                    getApp().displayNotification(getApp().getMessage("errorMessage.notRealm", realm));
+                    return;
+                }
             }
             if (parameter.contains("?")) {
                 //Has query params.
@@ -138,7 +150,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 for (String queryParam : queryParams) {
                     String[] keyValue = queryParam.split("=");
                     if (keyValue.length > 0  && "back".equals(keyValue[0])) {
-                        setGeneralRoute("/"+keyValue[1].replace(".","/"));
+                        ((QINavigator)app.getNavigator()).setPreviousView("/" + keyValue[1].replace(".", "/"));
                     }
                 }
             }
@@ -154,7 +166,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         Panel panel = new Panel();
         panel.setSizeFull();
         addComponent(panel);
-        final Layout formLayout = createForm(o, params, "new".equals(params[0]));
+        formLayout = createForm(o, params, "new".equals(params[0]));
         panel.setContent(formLayout);
         setExpandRatio(panel, 1);
         if (!"new".equals(params[0]) && isShowRevisionHistoryButton()) {
@@ -248,6 +260,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             }
 
         }
+        try {
+            grid.setColumnOrder(getVisibleColumns());
+        } catch (IllegalStateException exc) {
+            getApp().displayNotification(exc.getMessage());
+        }
         //fix for when a manual resize is done, the last column takes the empty space.
         grid.addColumnResizeListener(event -> {
             int lastColumnIndex = grid.getColumns().size()-1;
@@ -265,11 +282,11 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         profileLayout.setSpacing(true);
 
         //Add Back Button
-        if (params.length <= 1 || !"profile".equals(params[1])) {
+        if ((params.length <= 1 || !"profile".equals(params[1])) && ((QINavigator)app.getNavigator()).hasHistory()) {
             Button back = new Button(getApp().getMessage("back"));
-            back.addStyleName("borderless-colored");
+            back.setStyleName(ValoTheme.BUTTON_LINK);
             back.setIcon(VaadinIcons.ARROW_LEFT);
-            back.addClickListener(event -> app.getNavigator().navigateTo(getGeneralRoute()));
+            back.addClickListener(event -> ((QINavigator)app.getNavigator()).navigateBack());
             profileLayout.addComponent(back);
             profileLayout.setComponentAlignment(back, Alignment.MIDDLE_LEFT);
         }
@@ -283,12 +300,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                     for (String fieldId : readOnlyFields) {
                         if (binder.getBinding(fieldId).isPresent()) {
                             HasValue field = binder.getBinding(fieldId).get().getField();
-                            if ((field != null && !field.isEmpty()) || !field.isRequiredIndicatorVisible()) {
+                            if ((field != null && !field.isEmpty()) ||
+                                    (field != null && !field.isRequiredIndicatorVisible()))
+                            {
                                 field.setReadOnly(true);
-                                binder.bind(field, fieldId);
                             }
                         }
-
                     }
                 }
             }
@@ -320,16 +337,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         saveBtn.setStyleName("icon-ok");
         saveBtn.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
-        removeBtn.addClickListener(event -> app.addWindow(new ConfirmDialog(
-                        app.getMessage("confirmTitle"),
-                        app.getMessage("removeConfirmationMessage"),
-                        confirm -> {
-                            if (confirm) {
-                                removeEntity();
-                            }
-                        }
-        )
-        ));
+        removeBtn.addClickListener(event -> removeClick());
         removeBtn.addStyleName("icon-trash");
 
         cancelBtn.addClickListener(event -> {
@@ -346,12 +354,12 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
         if (canEdit()) {
             footer.addComponent(editBtn);
-            footer.addComponent(saveBtn);
-            footer.addComponent(cancelBtn);
             footer.setComponentAlignment(editBtn, Alignment.MIDDLE_RIGHT);
-            footer.setComponentAlignment(saveBtn, Alignment.MIDDLE_RIGHT);
-            footer.setComponentAlignment(cancelBtn, Alignment.MIDDLE_RIGHT);
         }
+        footer.addComponent(saveBtn);
+        footer.addComponent(cancelBtn);
+        footer.setComponentAlignment(saveBtn, Alignment.MIDDLE_RIGHT);
+        footer.setComponentAlignment(cancelBtn, Alignment.MIDDLE_RIGHT);
         if (canRemove()) {
             footer.addComponent(removeBtn);
             footer.setComponentAlignment(removeBtn, Alignment.MIDDLE_RIGHT);
@@ -366,15 +374,17 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         return profileLayout;
     }
     protected void cancelClick(Button.ClickEvent event, Layout formLayout) {
-        binder.readBean(bean); //this discards the changes
         binder.setReadOnly(true);
+        binder.readBean(bean); //this discards the changes
         event.getButton().setVisible(false);
         saveBtn.setVisible(false);
         editBtn.setVisible(true);
         removeBtn.setVisible(true);
         errorLabel.setVisible(false);
         errorLabel.setValue(null);
-        formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        for (Layout l : getFieldsLayouts()) {
+            l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        }
     }
 
     protected boolean saveClick(Button.ClickEvent event, Layout formLayout) {
@@ -397,7 +407,9 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
                 }
             }
             binder.setReadOnly(true);
-            formLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            for (Layout l : getFieldsLayouts()) {
+                l.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+            }
             event.getButton().setVisible(false);
             cancelBtn.setVisible(false);
             editBtn.setVisible(true);
@@ -423,39 +435,171 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
         removeBtn.setVisible(false);
         saveBtn.setVisible(true);
         cancelBtn.setVisible(true);
-        formLayout.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        for (Layout l : getFieldsLayouts()) {
+            l.removeStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        }
+    }
+
+    protected void removeClick() {
+        app.addWindow(new ConfirmDialog(
+            app.getMessage("confirmTitle"),
+            app.getMessage("removeConfirmationMessage"),
+            confirm -> {
+                if (confirm) {
+                    removeEntity();
+                }
+            }
+          )
+        );
     }
 
     protected Layout createLayout() {
+        switch (getNumberOfColumnsOfLayout()) {
+            case 2:
+                return createTwoColumnLayout();
+            case 3:
+                return createThreeColumnLayout();
+            default:
+                return createOneColumnLayout();
+        }
+    }
+
+    private Layout createOneColumnLayout () {
         FormLayout layout = new FormLayout();
+        layout.setMargin(false);
         layout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        layout.addStyleName("qi-form");
-        layout.setMargin(new MarginInfo(false));
+        getFieldsLayouts().add(layout);
         addFields(layout);
         return layout;
     }
 
-    public FieldFactory createFieldFactory () {
-        return new FieldFactory(getBean(), getViewConfig(), getBinder());
+    private Layout createTwoColumnLayout () {
+        FormLayout layout = new FormLayout();
+        layout.setMargin(false);
+        FormLayout leftLayout = new FormLayout();
+        leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        leftLayout.setMargin(false);
+        FormLayout rightLayout = new FormLayout();
+        rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        rightLayout.setMargin(false);
+        getFieldsLayouts().add(leftLayout);
+        getFieldsLayouts().add(rightLayout);
+        HorizontalLayout hl = new HorizontalLayout(leftLayout, rightLayout);
+        hl.setWidth("100%");
+        hl.setMargin(false);
+        layout.addComponent(hl);
+        addFields(leftLayout, rightLayout, layout);
+        return layout;
     }
 
-    protected void addFields(Layout l) {
-        fieldFactory = createFieldFactory();
-        for (String id : getVisibleFields()) {
-            //Check if there's a custom builder
-            Component field = buildAndBindCustomComponent(id);
-            if (field == null) {
-                //if it wasn't built yet, build it now.
-                try {
-                    l.addComponent(fieldFactory.buildAndBindField(id));
-                } catch (NoSuchFieldException e) {
-                    getApp().getLog().error(e);
-                }
-            } else {
-                l.addComponent(field);
+    private Layout createThreeColumnLayout () {
+        FormLayout layout = new FormLayout();
+        layout.setMargin(false);
+        FormLayout leftLayout = new FormLayout();
+        leftLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        leftLayout.setMargin(false);
+        FormLayout centerLayout = new FormLayout();
+        centerLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        centerLayout.setMargin(false);
+        FormLayout rightLayout = new FormLayout();
+        rightLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        rightLayout.setMargin(false);
+        getFieldsLayouts().add(leftLayout);
+        getFieldsLayouts().add(centerLayout);
+        getFieldsLayouts().add(rightLayout);
+        HorizontalLayout hl = new HorizontalLayout(leftLayout, centerLayout, rightLayout);
+        hl.setWidth("100%");
+        hl.setMargin(false);
+        layout.addComponent(hl);
+        addFields(leftLayout, centerLayout, rightLayout, layout);
+        return layout;
+    }
+
+    private int getNumberOfColumnsOfLayout () {
+        int n = 1;
+        ViewConfig config = getViewConfig();
+        for (String s : config.getFields().keySet()) {
+            ViewConfig.FieldConfig fieldConfig = config.getFields().get(s);
+            if (!fieldConfig.getPosition().equals(ViewConfig.Position.LEFT)) {
+                if (fieldConfig.getPosition().equals(ViewConfig.Position.CENTER))
+                    return 3;
+                else if (fieldConfig.getPosition().equals(ViewConfig.Position.RIGHT))
+                    n = 2;
             }
         }
+        return n;
     }
+
+    public FieldFactory createFieldFactory () {
+        return new FieldFactory(getBean(), getViewConfig(), getBinder(), helper.getValidators());
+    }
+
+    protected void addFields (Layout leftLayout, Layout rightLayout, Layout formLayout) {
+        fieldFactory = createFieldFactory();
+        for (String id : getVisibleFields()) {
+            ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
+            ViewConfig.Position position = fieldConfig.getPosition();
+            Layout layout;
+            switch (position) {
+                case RIGHT:
+                    layout = rightLayout;
+                    break;
+                case BOTTOM:
+                    layout = formLayout;
+                    break;
+                case LEFT:
+                default:
+                    layout = leftLayout;
+            }
+            addField (fieldFactory, id, layout);
+        }
+    }
+
+    protected void addFields (Layout leftLayout, Layout centerLayout, Layout rightLayout, Layout formLayout) {
+        fieldFactory = createFieldFactory();
+        for (String id : getVisibleFields()) {
+            ViewConfig.FieldConfig fieldConfig = viewConfig.getFields().get(id);
+            ViewConfig.Position position = fieldConfig.getPosition();
+            Layout layout;
+            switch (position) {
+                case RIGHT:
+                    layout = rightLayout;
+                    break;
+                case CENTER:
+                    layout = centerLayout;
+                    break;
+                case BOTTOM:
+                    layout = formLayout;
+                    break;
+                case LEFT:
+                default:
+                    layout = leftLayout;
+            }
+            addField (fieldFactory, id, layout);
+        }
+    }
+    
+    protected void addFields(Layout l) {
+        fieldFactory = createFieldFactory();
+        for (String id : getVisibleFields())
+            addField (fieldFactory, id, l);
+    }
+
+    public void addField (FieldFactory fieldFactory, String id, Layout l) {
+        //Check if there's a custom builder
+        Component field = buildAndBindCustomComponent(id);
+        if (field == null) {
+            //if it wasn't built yet, build it now.
+            try {
+                l.addComponent((Component) fieldFactory.buildAndBindField(id));
+            } catch (NoSuchFieldException e) {
+                getApp().getLog().error(e);
+            }
+        } else {
+            l.addComponent(field);
+        }
+    }
+
     //Override on specific views to create a custom field for a certain property, or to add validators.
     // Do not forget to getValidators and add them.
     protected Component buildAndBindCustomComponent(String propertyId) {
@@ -471,11 +615,15 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     }
 
     private void loadRevisionHistory (Layout formLayout, String ref) {
-        DB db = new DB();
-        db.open();
-        revisionsPanel = new RevisionsPanel(ref, db);
-        formLayout.addComponent(revisionsPanel);
-        db.close();
+        try {
+            revisionsPanel = getHelper().createAndLoadRevisionHistoryPanel(ref);
+            if (revisionsPanel != null)
+                formLayout.addComponent(revisionsPanel);
+        } catch (Exception e) {
+            Label errorLabel = new Label(getApp().getMessage("errorMessage.revisionFailed"));
+            errorLabel.setStyleName(ValoTheme.LABEL_FAILURE);
+            formLayout.addComponent(errorLabel);
+        }
     }
 
     public Object createNewEntity (){
@@ -516,15 +664,25 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public abstract String getHeaderSpecificTitle (Object entity);
 
     public boolean canEdit() {
-        return false;
+        return hasWritePerm();
     }
 
     public boolean canAdd() {
-        return false;
+        return hasWritePerm();
     }
 
     public boolean canRemove() {
-        return false;
+        return hasWritePerm();
+    }
+
+    // Check if User has write permission defined as write-perm in 00_qi for the view.
+    // If write-perm is not defined or empty default to true.
+    public boolean hasWritePerm () {
+        String writePerm = getViewConfig() != null ? getViewConfig().getWritePerm() : "";
+        if (writePerm != null && !writePerm.isEmpty())
+            return getApp().getUser().hasPermission(writePerm);
+        else
+            return true;
     }
 
     public QI getApp() {
@@ -646,8 +804,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
     public void setCancelBtn(Button cancelBtn) {
         this.cancelBtn = cancelBtn;
     }
-
-
+    
     public T getInstance() {
         return bean;
     }
@@ -666,9 +823,18 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setConfiguration (Configuration cfg) {
         this.cfg = cfg;
-        String name = cfg.get("name");
+    }
+
+    public void setConfiguration (Element element) {
+        Attribute routeAttribute = element.getAttribute("route");
+        name = routeAttribute != null ? routeAttribute.getValue() : name;
+        generalRoute = routeAttribute != null ? "/" + routeAttribute.getValue() : generalRoute;
         if (name != null && QI.getQI().getView(name)!= null)  {
             this.setViewConfig(QI.getQI().getView(name));
+            this.title = "<strong>" + app.getMessage(name) + "</strong>";
+            this.visibleColumns = getViewConfig().getVisibleColumns();
+            this.visibleFields = getViewConfig().getVisibleFields();
+            this.readOnlyFields = getViewConfig().getReadOnlyFields();
         }
     }
 
@@ -698,5 +864,34 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
 
     public void setBean(T bean) {
         this.bean = bean;
+    }
+    public List<Layout> getFieldsLayouts() {
+        if (fieldsLayouts == null)
+            fieldsLayouts = new ArrayList<>();
+        return fieldsLayouts;
+    }
+
+    public void setFieldsLayouts(List<Layout> fieldsLayouts) {
+        this.fieldsLayouts = fieldsLayouts;
+    }
+
+    public Layout getFormLayout() {
+        return formLayout;
+    }
+
+    public void setFormLayout(Layout formLayout) {
+        this.formLayout = formLayout;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getRealm(T bean) {
+        return null;
     }
 }

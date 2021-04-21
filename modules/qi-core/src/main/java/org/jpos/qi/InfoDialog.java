@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,12 +18,9 @@
 
 package org.jpos.qi;
 
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Window;
-import com.vaadin.v7.shared.ui.label.ContentMode;
-import com.vaadin.v7.ui.*;
+import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 
 /**

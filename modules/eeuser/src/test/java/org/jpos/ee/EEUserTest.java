@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,18 +18,17 @@
 
 package org.jpos.ee;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EEUserTest {
     DB db;
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         db = new DB();
         db.createSchema("schema.sql", true);
@@ -38,62 +37,102 @@ public class EEUserTest {
 
     @Test
     public void tests() throws Exception {
+        createRealms();
         createUser();
         checkUser();
     }
 
-    private void createUser() throws BLException {
+    private void createRealms() throws Exception {
+        db.beginTransaction();
+        db.save(new Realm("TEST"));
+        db.save(new Realm("PROD"));
+        db.commit();
+    }
+
+    private void createUser() throws Exception {
         db.beginTransaction();
         User user = new User();
         user.setNick("admin");
         user.setName("User Administrator");
         user.setActive(true);
         db.session().save(user);
-        UserManager mgr = new UserManager(db, UserManager.VERSION.ZERO);
+        UserManager mgr = new UserManager(db, HashVersion.ZERO);
         mgr.setPassword(user, "test", null);
-        Role role = new Role("admin");
-        Set<Permission> perms = role.getPermissions();
-        perms.add(Permission.valueOf("login"));
-        perms.add(Permission.valueOf("admin"));
 
-        db.session().save(role);
-        user.getRoles().add(role);
+        RealmManager rmgr = new RealmManager(db);
+        Realm testRealm = rmgr.getRealmByName("TEST");
+        Realm prodRealm = rmgr.getRealmByName("PROD");
+
+
+        Role r = createRole(db, null, "admin", "login", "admin");
+        user.getRoles().add(r);
+        // user permissions: `login`, `admin`, `role.admin`
+
+        Role r1 = createRole (db, testRealm, "tester", "testread", "testwrite");
+        r1.setParent(r);
+        user.getRoles().add(r1);
+        // adds permissions: `TEST.testread`, `TEST.testwrite`
+
         db.commit();
     }
-    public void checkUser() throws BLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void checkUser() throws Exception {
         db.beginTransaction();
-        UserManager mgr = new UserManager(db, UserManager.VERSION.ZERO);
+        UserManager mgr = new UserManager(db, HashVersion.ZERO);
         User u = mgr.getUserByNick("admin");
-        assertNotNull("User can't be null", u);
-        assertTrue("User has 'login' permission", u.hasPermission("login"));
-        assertTrue("User has 'admin' permission", u.hasPermission("admin"));
-        assertTrue("User has 'admin' role", u.hasPermission("role.admin"));
-        assertTrue("User has all permissions", u.hasAllPermissions(new String[]{"login", "admin", "role.admin"}));
-        assertTrue("User has any permissions", u.hasAnyPermission(new String[]{"nologin", "admin", "role.admin"}));
-        assertFalse("User don't have 'superuser' permission", u.hasPermission("superuser"));
-        assertTrue("User password is 'test'", mgr.checkPassword(u, "test"));
-        assertEquals("User hash is correct", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
-        assertFalse("Password has to be in history", mgr.checkNewPassword(u, "test"));
+        assertNotNull(u, "User can't be null");
+        assertTrue(u.hasPermission("login"), "User has 'login' permission");
+        assertTrue(u.hasPermission("admin"), "User has 'admin' permission");
+        assertTrue(u.hasPermission("role.admin"), "User has 'admin' role");
+
+//        for (Role r : u.getRoles()) {
+//            System.out.println("Role " + r.getName() + "-> " + r.getActivePermissions());
+//        }
+
+        assertTrue(u.hasPermission("TEST:testread"), "User has 'TEST:testread");
+        assertTrue(u.hasPermission("TEST:admin"), "User has 'TEST:admin");
+
+        assertTrue(
+          u.hasAllPermissions(
+             new String[] {"TEST:role.tester", "TEST:testread", "TEST:testwrite", "TEST:admin", "TEST:login"}
+          ),
+          "User has all permissions TEST:role.tester, TEST:testread, TEST:testwrite, TEST:admin, TEST:login");
+        assertTrue(u.hasAllPermissions(new String[]{"login", "admin", "role.admin"}), "User has all permissions");
+        assertTrue(u.hasAnyPermission(new String[]{"nologin", "admin", "role.admin"}), "User has any permissions");
+        assertFalse(u.hasPermission("superuser"), "User don't have 'superuser' permission");
+
+        assertTrue(mgr.checkPassword(u, "test"), "User password is 'test'");
+        assertEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash is correct");
+        assertFalse(mgr.checkNewPassword(u, "test"), "Password has to be in history");
         mgr.upgradePassword(u, "test");
-        assertNotEquals("User hash has changed", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
-        assertTrue("User password is still 'test'", mgr.checkPassword(u, "test"));
-        assertNotEquals("User hash has changed", "ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash());
-        assertFalse("Password has to be in history", mgr.checkNewPassword(u, "test"));
+        assertNotEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash has changed");
+        assertTrue(mgr.checkPassword(u, "test"), "User password is still 'test'");
+        assertNotEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash has changed");
+        assertFalse(mgr.checkNewPassword(u, "test"), "Password has to be in history");
         mgr.setPassword(u, "test1");
         mgr.setPassword(u, "test2");
         mgr.setPassword(u, "test3");
-        assertFalse("Password 1 has to be in history", mgr.checkNewPassword(u, "test1"));
-        assertFalse("Password 2 has to be in history", mgr.checkNewPassword(u, "test2"));
-        assertFalse("Password 3 has to be in history", mgr.checkNewPassword(u, "test3"));
-        assertTrue("User password is now 'test3'", mgr.checkPassword(u, "test3"));
+        assertFalse(mgr.checkNewPassword(u, "test1"), "Password 1 has to be in history");
+        assertFalse(mgr.checkNewPassword(u, "test2"), "Password 2 has to be in history");
+        assertFalse(mgr.checkNewPassword(u, "test3"), "Password 3 has to be in history");
+        assertTrue(mgr.checkPassword(u, "test3"), "User password is now 'test3'");
         mgr.setPassword(u, "test");
-        assertTrue("User password is back to 'test'", mgr.checkPassword(u, "test"));
-        assertEquals ("History size is ", 5, u.getPasswordhistory().size());
+        assertTrue(mgr.checkPassword(u, "test"), "User password is back to 'test'");
+        assertEquals (5, u.getPasswordhistory().size(), "History size is ");
         db.commit();
     }
 
-    @After
+
+    @AfterEach
     public void tearDown() {
         db.close();
+    }
+
+    private Role createRole (DB db, Realm realm, String name, String... permissions) {
+        Role role = new Role(realm, name);
+        Set<Permission> perms = role.getPermissions();
+        for (String p : permissions)
+            perms.add(Permission.valueOf(p));
+        db.save(role);
+        return role;
     }
 }

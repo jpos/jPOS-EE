@@ -6,20 +6,21 @@
 that are field separator delimited, fixed length, branching based on data
 parsed, looking ahead in the stream for a specific byte and base future
 parsing decisions. Provides out of the box PCI compliance and ability to add java objects to meet you compliance needs.
-|*When:*| Available as of jPOS-EE 2.0.9
-|*Who:*| The jPOS.org team (contributed by @chhil)
+|*When:*| Available in all versions of jPOS-EE.
+|*Who:*| The jPOS.org team.
 |*How:*| Posted by the jPOS-EE team.
-|*Where:*| Directory modules/fsdpackager available in the jPOS-EE main git repository
+|*Where:*| Directory modules/fsdmsgX available in the jPOS-EE main
+subversion repository at google code.
 |*Why:*| When schema based FSD does not meet your parsing needs to write more complex parsing rules.
 |*Status:*| Production grade
 |*Dependencies:*| module jpos
-|*License:*| <<appendix_license,GNU Affero General Public License version 3>>
+|*License:*| <<appendix_license,GNU Affero General Public License version 3>> 
 |=================================================================
 
 
 ==== Introduction to using the packagers
 
-===== FixedFieldPackager
+====== FixedFieldPackager
 
 Consider a specification that states field 1 is a fixed field of 6 and field 2 is a fixed stream of 2 bytes.
 Stream of bytes=123456AB
@@ -33,22 +34,22 @@ Field2 = AB
 ====
 
 
-    FSDMsgX msg = new FSDMsgX("Example1");
-    FixedFieldPackager field1 = new FixedFieldPackager("Field1", 6, AsciiInterpreter.INSTANCE);
-    FixedFieldPackager field2 = new FixedFieldPackager("Field2", 2, AsciiInterpreter.INSTANCE);
-
-    msg.add(field1);
-    msg.add(field2);
-
-    String s = "123456ABEXTRA";// there are EXTRA bytes in the stream
-
-    int offset = msg.unpack(s.getBytes());
-    System.out.println("Offset="+offset);
-    System.out.println("Field1="+msg.get("Field1"));
-    System.out.println("Field2="+msg.get("Field2"));
-    System.out.println(msg.dump("dump> "));
-    System.out.println(msg.getParserTree("tree> "));
-    System.out.println(msg.hexDump(""));
+		FSDMsgX msg = new FSDMsgX("Example1");
+		FixedFieldPackager field1 = new FixedFieldPackager("Field1", 6, AsciiInterpreter.INSTANCE);
+		FixedFieldPackager field2 = new FixedFieldPackager("Field2", 2, AsciiInterpreter.INSTANCE);
+	
+		msg.add(field1);
+		msg.add(field2);
+	
+		String s = "123456ABEXTRA";// there are EXTRA bytes in the stream
+	
+		int offset = msg.unpack(s.getBytes());
+		System.out.println("Offset="+offset);
+		System.out.println("Field1="+msg.get("Field1"));
+		System.out.println("Field2="+msg.get("Field2"));
+		System.out.println(msg.dump("dump"));
+		System.out.println(msg.getParserTree("tree>"));
+		System.out.println(msg.hexDump(""));
 ====
 
 *Output*
@@ -57,14 +58,19 @@ Field2 = AB
 Offset=8
 Field1=123456
 Field2=AB
-dump> <fsdmsgX name="Example1">
-dump>   <field id="Field1" value="123456"/>
-dump>   <field id="Field2" value="AB"/>
-dump> </fsdmsgX>
-tree> [Example1]
-tree> Field [Field1] : Fixed [6] : 123456
-tree> Field [Field2] : Fixed [2] : AB
+dump<fsdmsgX name="Example1">
+dump	<field id="Field1" value="123456"/>
+dump	<field id="Field2" value="AB"/>
+dump</fsdmsgX>
+tree>[Example1]
+tree>Field [Field1] : Fixed [6] : 123456
+tree>Field [Field2] : Fixed [2] : AB
 0000  31 32 33 34 35 36 41 42                           123456AB
+
+
+
+
+
 
 * Create the main container object FSDMsgX.
 * Create the individual field packagers for field1 and field2.
@@ -77,38 +83,38 @@ tree> Field [Field2] : Fixed [2] : AB
 * The container has a hexdump method that dumps the hex equivalent of the unpacked stream. Notice EXTRA is not there as there was no rule to unpack it.
 * If the input string was s = "123456" then an ISOException would be thrown telling you precisely what was wrong.
 org.jpos.iso.ISOException: Field [Field2] at offset [6]:Expecting 2 bytes found 0
-
+	
 
 .FixedFieldPackager Usage [packing object into bytes]
 ====
 
+		
+		FSDMsgX msg = new FSDMsgX("Example1");
+		FixedFieldPackager field1 = new FixedFieldPackager("Field1", 6, AsciiInterpreter.INSTANCE);
+		FixedFieldPackager field2 = new FixedFieldPackager("Field2", 2, AsciiInterpreter.INSTANCE);
 
-    FSDMsgX msg = new FSDMsgX("Example1");
-    FixedFieldPackager field1 = new FixedFieldPackager("Field1", 6, AsciiInterpreter.INSTANCE);
-    FixedFieldPackager field2 = new FixedFieldPackager("Field2", 2, AsciiInterpreter.INSTANCE);
+		msg.add(field1);
+		msg.add(field2);
 
-    msg.add(field1);
-    msg.add(field2);
+		msg.set("Field1", "ABCDEF");
+		msg.set("Field2", "12");
+	
+		byte[] outStream = msg.pack();
+	
+		System.out.println(msg.dump("dump"));
+		System.out.println(msg.getParserTree("tree>"));
+		System.out.println(msg.hexDump(""));
+		System.out.println(ISOUtil.hexdump(outStream));
 
-    msg.set("Field1", "ABCDEF");
-    msg.set("Field2", "12");
-
-    byte[] outStream = msg.pack();
-
-    System.out.println(msg.dump("dump"));
-    System.out.println(msg.getParserTree("tree>"));
-    System.out.println(msg.hexDump(""));
-    System.out.println(ISOUtil.hexdump(outStream));
-
-
+	
 
 ====
 
 *Output*
 [source,xml]
 dump<fsdmsgX name="Example1">
-dump  <field id="Field1" value="ABCDEF"/>
-dump  <field id="Field2" value="12"/>
+dump	<field id="Field1" value="ABCDEF"/>
+dump	<field id="Field2" value="12"/>
 dump</fsdmsgX>
 tree>[Example1]
 tree>Field [Field1] : Fixed [6] : ABCDEF
@@ -122,49 +128,47 @@ tree>Field [Field2] : Fixed [2] : 12
 * You can verify that the parser parsed it correctly.
 * You can verify the hexdump of the actual packed vyte array outstream is the same as the hexdump of the container.
 
-===== VariableFieldPackager
+
+====== VariableFieldPackager
 Used when the size of the field is variable and needs a delimiter to indicate the end of the field.
 
 Consider a specification that indicates a field FirstName can have a maximum of 20 characters and will be terminate/delimited by a semi colon followed by a Lastname with a maximum of 10 characters terminated by a period.
 The delimiter is important because one could have a name Tom, Tommy, Thomas to indicate the end of a name a delimiter is needed. If I did bot have a FirstName, a semi colon would be needed to indicate there is no first name.
 
 
-.VariableFieldPackager Usage
+
+.VariableFieldPackager Usage 
 ====
 
-  @Test
-  public void unpackTest02() throws ISOException {
+	@Test
+	public void unpackTest02() throws ISOException {
 
-    VariableFieldPackager f1 = new VariableFieldPackager("F1", 20, new Byte((byte) 0x1c),
-        AsciiInterpreter.INSTANCE);
-    VariableFieldPackager f2 = new VariableFieldPackager(
-      "F2", 5, new Byte((byte) 0x1d), 
-      AsciiInterpreter.INSTANCE
-    );
+		VariableFieldPackager f1 = new VariableFieldPackager("F1", 20, new Byte((byte) 0x1c),
+				AsciiInterpreter.INSTANCE);
+		VariableFieldPackager f2 = new VariableFieldPackager("F2", 5, new Byte((byte) 0x1d), AsciiInterpreter.INSTANCE);
 
-    FSDMsgX msg = new FSDMsgX("Test1");
-    msg.add("F1", f1);
-    msg.add("F2", f2);
+		FSDMsgX msg = new FSDMsgX("Test1");
+		msg.add("F1", f1);
+		msg.add("F2", f2);
 
-    String inStream = "123456" + (char) 0x1c + "ABC" + (char) 0x1d;
-    msg.unpack(inStream.getBytes());
+		String inStream = "123456" + (char) 0x1c + "ABC" + (char) 0x1d;
+		msg.unpack(inStream.getBytes());
 
-    assertEquals("123456", msg.get("F1"));
-    assertEquals("ABC", msg.get("F2"));
-
-    FSDMsgX msg2 = new FSDMsgX("Test2");
-    msg2.add("F1", f1);
-    msg2.add("F2", f2);
-    byte[] outStream = msg2.pack();
-
-    System.out.println(msg2.getParserTree("Msg2"));
-    assertArrayEquals(inStream.getBytes(), outStream);
-    System.out.println(msg2.hexDump(""));
-    System.out.println(msg.hexDump(""));
-  }
+		assertEquals("123456", msg.get("F1"));
+		assertEquals("ABC", msg.get("F2"));
+		
+		FSDMsgX msg2 = new FSDMsgX("Test2");
+		msg2.add("F1", f1);
+		msg2.add("F2", f2);
+		byte[] outStream = msg2.pack();
+		
+		System.out.println(msg2.getParserTree("Msg2"));
+		assertArrayEquals(inStream.getBytes(), outStream);
+		System.out.println(msg2.hexDump(""));
+		System.out.println(msg.hexDump(""));
+	}
 
 ====
-
 
 *Output*
 
@@ -185,7 +189,7 @@ Msg2Field [F2] : VAR[0..5] delimiter[0x1D] or EOM  : ABC
 * See the hexdumps are identical for both the containers,operations show equivalence.
 
 
-===== BranchFieldPackager
+====== BranchFieldPackager
 
 Consider a specification where you need to parse fields differently based on a particular field. Typically you will see a pattern where, if the value of the field is X the fields following it are Y1,Y2..Yn.
 
@@ -195,76 +199,76 @@ There is a field F1 which is fixed.
 There is a fixed field F2 that can have values 01 or 02.
 If the value is 01, 2 fields following it are Fixed 3 and Fixed 3.
 If the value is 02, 2 fields following it are Fixed 4 and Fixed 4.
-.BranchFieldPackager Usage
+.BranchFieldPackager Usage 
 ====
-  @Test
-  public void unpackTest06() throws ISOException{
+	@Test
+	public void unpackTest06() throws ISOException{
+		
+		AFSDFieldPackager f1 = new FixedFieldPackager("F1", 5, AsciiInterpreter.INSTANCE);
+		AFSDFieldPackager f2 = new FixedFieldPackager("F2", 2, AsciiInterpreter.INSTANCE);
+		
+		
+		FSDMsgX innerFSDCase01 = new FSDMsgX("inner-1");
+		AFSDFieldPackager f7 = new FixedFieldPackager("F7", 3, AsciiInterpreter.INSTANCE);
+		AFSDFieldPackager f6 = new FixedFieldPackager("F6", 3, AsciiInterpreter.INSTANCE);
+		innerFSDCase01.add("F7",f7);
+		innerFSDCase01.add("F6",f6);
 
-    AFSDFieldPackager f1 = new FixedFieldPackager("F1", 5, AsciiInterpreter.INSTANCE);
-    AFSDFieldPackager f2 = new FixedFieldPackager("F2", 2, AsciiInterpreter.INSTANCE);
+		FSDMsgX innerFSDCase02 = new FSDMsgX("inner-2");
+		AFSDFieldPackager f8 = new FixedFieldPackager("F8", 4, AsciiInterpreter.INSTANCE);
+		AFSDFieldPackager f9 = new FixedFieldPackager("F9", 4, AsciiInterpreter.INSTANCE);
+		innerFSDCase02.add("F8",f8);
+		innerFSDCase02.add("F9",f9);
 
+		Map<String, AFSDFieldPackager> caseMap = new HashMap<String, AFSDFieldPackager>();
+		caseMap.put("01", innerFSDCase01);
+		caseMap.put("02", innerFSDCase02);
+		AFSDFieldPackager f3 = new BranchFieldPackager("F3", "F2", caseMap, null);
+		
+		FSDMsgX msg = new FSDMsgX("Test");
+		msg.add("F1", f1);
+		msg.add("F2", f2);
+		msg.add("F3", f3);
+		
+		System.out.println(msg.getParserTree(""));
+		
+		msg.unpack("ABCDE0244445555".getBytes());
+		System.out.println(msg.dump(""));
+		assertEquals("ABCDE", msg.get("F1"));
+		assertEquals("02", msg.get("F2"));
+		
+		assertEquals("4444", msg.get("F8"));
+		assertEquals("5555", msg.get("F9"));
 
-    FSDMsgX innerFSDCase01 = new FSDMsgX("inner-1");
-    AFSDFieldPackager f7 = new FixedFieldPackager("F7", 3, AsciiInterpreter.INSTANCE);
-    AFSDFieldPackager f6 = new FixedFieldPackager("F6", 3, AsciiInterpreter.INSTANCE);
-    innerFSDCase01.add("F7",f7);
-    innerFSDCase01.add("F6",f6);
-
-    FSDMsgX innerFSDCase02 = new FSDMsgX("inner-2");
-    AFSDFieldPackager f8 = new FixedFieldPackager("F8", 4, AsciiInterpreter.INSTANCE);
-    AFSDFieldPackager f9 = new FixedFieldPackager("F9", 4, AsciiInterpreter.INSTANCE);
-    innerFSDCase02.add("F8",f8);
-    innerFSDCase02.add("F9",f9);
-
-    Map<String, AFSDFieldPackager> caseMap = new HashMap<String, AFSDFieldPackager>();
-    caseMap.put("01", innerFSDCase01);
-    caseMap.put("02", innerFSDCase02);
-    AFSDFieldPackager f3 = new BranchFieldPackager("F3", "F2", caseMap, null);
-
-    FSDMsgX msg = new FSDMsgX("Test");
-    msg.add("F1", f1);
-    msg.add("F2", f2);
-    msg.add("F3", f3);
-
-    System.out.println(msg.getParserTree(""));
-
-    msg.unpack("ABCDE0244445555".getBytes());
-    System.out.println(msg.dump(""));
-    assertEquals("ABCDE", msg.get("F1"));
-    assertEquals("02", msg.get("F2"));
-
-    assertEquals("4444", msg.get("F8"));
-    assertEquals("5555", msg.get("F9"));
-
-
-
-  }
+		
+		
+	}
 ====
 
 *Output*
 [source,xml]
  [Test]
-Field [F1] : Fixed [5]
-Field [F2] : Fixed [2]
+Field [F1] : Fixed [5] 
+Field [F2] : Fixed [2] 
 Field [F3] : [Branch]
-  switch (F2)
-    01:
-      [inner-1]
-      Field [F7] : Fixed [3]
-      Field [F6] : Fixed [3]
-    02:
-      [inner-1]
-      Field [F8] : Fixed [4]
-      Field [F9] : Fixed [4]
-    default:
-      [Not Set]
+	switch (F2)
+		01:
+			[inner-1]
+			Field [F7] : Fixed [3] 
+			Field [F6] : Fixed [3] 
+		02:
+			[inner-1]
+			Field [F8] : Fixed [4] 
+			Field [F9] : Fixed [4] 
+		default:
+			[Not Set]
 <fsdmsgX name="Test">
-  <field id="F1" value="ABCDE"/>
-  <field id="F2" value="02"/>
-  <fsdmsgX name="inner-1">
-    <field id="F8" value="4444"/>
-    <field id="F9" value="5555"/>
-  </fsdmsgX>
+	<field id="F1" value="ABCDE"/>
+	<field id="F2" value="02"/>
+	<fsdmsgX name="inner-1">
+		<field id="F8" value="4444"/>
+		<field id="F9" value="5555"/>
+	</fsdmsgX>
 </fsdmsgX>
 
 

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,38 +20,50 @@ package org.jpos.binlog;
 
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.TPS;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.SystemUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(OrderAnnotation.class)
 public class BinLogTest implements Runnable {
-    public static File dir;
+    public static Path dir;
     private AtomicLong cnt = new AtomicLong();
 
-    @Before
+    @BeforeEach
     public void before () {
-        Assume.assumeFalse(System.getProperty("os.name").startsWith("Windows")); //Skip Tests for BinLog if on MS Windows
+        /**
+         * Skip Tests for BinLog if on MS Windows due to file locking considerations
+         * Skip Binlog Tests for OSX on Java 9 and newer due to fcntl(fd, F_FULLSYNC) being slow
+         * Note: Java 8 does not properly flush buffers to disk on OSX
+         */
+        Assumptions.assumeFalse(IS_OS_WINDOWS || (IS_OS_MAC_OSX && isJavaVersionAtLeast(JAVA_9)));
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setup () throws IOException {
-        dir = File.createTempFile("binlog-", "");
-        dir.delete();
+        dir = Files.createTempFile("binlog-", "");
+        Files.delete(dir);
         System.out.println ("TEMP=" + dir);
         // dir = new File("/tmp/binlog");
     }
     @Test
+    @Order(1)
     public void test000_Write() throws IOException {
         try (BinLogWriter w = new BinLogWriter(dir)) { }
         for (int i=0; i<10; i++) {
@@ -65,7 +77,7 @@ public class BinLogTest implements Runnable {
                 if ((i % 1000) == 0)
                     System.out.println(i + " " + new String(b));
             }
-            assertEquals("Invalid number of entries", 100000, i);
+            assertEquals(100000, i, "Invalid number of entries");
         }
     }
 
@@ -86,17 +98,17 @@ public class BinLogTest implements Runnable {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws IOException {
-        if (dir.listFiles() != null) {
-            for (File f : dir.listFiles()) {
+        if (Files.isDirectory(dir)) {
+            for (Path f : Files.newDirectoryStream(dir)) {
                 if (f.toString().endsWith(".dat")) {
                     System.out.println ("Deleting " + f.toString());
-                    f.delete();
+                    Files.delete(f);
                 }
             }
         }
         System.out.println ("Deleting " + dir);
-        dir.delete();
+        Files.deleteIfExists(dir);
     }
 }

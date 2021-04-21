@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,7 @@ import org.jpos.q2.QFactory;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jdom2.Element;
 import org.hibernate.HibernateException;
 
@@ -82,10 +83,10 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
         qf.setConfiguration (obj, e);
         timer.schedule (
             new MonitorTimerTask (
-                e.getAttributeValue("id"),
+                Environment.get(e.getAttributeValue("id")),
                 (MonitorTask) obj), 
-                getLong (e.getAttributeValue ("delay")),
-                getLong (e.getAttributeValue ("period"))
+                getLong (Environment.get(e.getAttributeValue ("delay"))),
+                getLong (Environment.get(e.getAttributeValue ("period")))
         );
     }
     private long getLong (String l) 

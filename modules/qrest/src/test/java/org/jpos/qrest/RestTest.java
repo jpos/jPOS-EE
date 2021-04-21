@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,16 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.jpos.qrest;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.builder.RequestSpecBuilder;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import org.jpos.q2.Q2;
 import org.jpos.util.NameRegistrar;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 
 import static org.hamcrest.Matchers.*;
@@ -33,7 +34,7 @@ public class RestTest  {
     private static final String BASE_URL = "http://localhost:8081/";
     private static Q2 q2;
     
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws NameRegistrar.NotFoundException {
         RestAssured.baseURI = BASE_URL;
         RestAssured.useRelaxedHTTPSValidation();
@@ -86,5 +87,17 @@ public class RestTest  {
               Q2.getVersion(), Q2.getBranch(), Q2.getRevision(), Q2.getBuildTimestamp()
             )
           ));
+    }
+
+    @Test
+    public void testMultiplesTMs()  {
+        given().log().all()
+          .get("/q2/txnmgr/name").then().statusCode(200).assertThat()
+          .body("name", equalTo("txnmgr")
+        );
+        given().log().all()
+          .get("/v2/q2/txnmgr/name").then().statusCode(200).assertThat()
+          .body("name", equalTo("txnmgr2")
+          );
     }
 }

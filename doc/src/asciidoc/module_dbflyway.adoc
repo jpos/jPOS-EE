@@ -1,0 +1,80 @@
+=== FlyWay Support
+
+The `db-flyway` module can be used to run FlyWay migrations from the jPOS command line interface.
+
+It picks the DataSource configuration from the standard DB configuration used by jPOS (that can
+be defined in the `db.properties` file, or a target _Environment_.
+
+When running `q2 --cli` (or reaching a running Q2 server using SSH), there's a
+new `flyway` subsystem. Inside the `flyway` subsystem you can find the following
+commands:
+
+- `clean`
+- `info`
+- `baseline`
+- `migrate`
+- `validate`
+- `repair`
+
+All Flyway commands take into account possible environment variables, defined in `cfg/default.yml`, i.e.:
+
+[source,yaml]
+-------------
+flyway:
+    table: schema_version <1>
+-------------
+<1> Sets `flyway.table` property, in this example, we override the new default value `flyway_schema_history` for
+    backward compatibility.
+
+[NOTE]
+======
+By default, the `clean` command is disabled, unless `flyway.cleanDisabled: false` is placed in the environment.
+======
+
+[TIP]
+=====
+The migrate command accepts an optional --out-of-order parameter.
+=====
+
+In addition to CLI support, there's also a `FlywayService` that can be
+configured as a QBean. We recommend to use a low filename (such as
+`01_flyway.xml` so that the service starts before other services that may
+require the schema to be impacted in the database.
+
+The QBean descriptor looks like this:
+
+[source,xml]
+------------
+<flyway class="org.jpos.flyway.FlywayService" logger="Q2">
+    <property name="out-of-order" value="true" />                   <1>
+    <commands>
+        info
+        migrate
+    </commands>
+</flyway>
+------------
+<1> Optional property used by Flyway migrate.
+
+
+Valid commands are:
+
+- info
+- baseline
+- repair
+- migrate
+- validate
+- clean
+
+[NOTE]
+======
+For security, the `clean` command is disabled by default. The
+`flyway.cleanDisabled` property can be set to `false` in order to enable it.
+======
+
+[TIP]
+======
+These Flyway commands use stdout for their output. We recommend to add
+<property name="redirect" value="stdout, stderr" />
+to your 00_logger.xml configuration in order to get unified logs.
+======
+

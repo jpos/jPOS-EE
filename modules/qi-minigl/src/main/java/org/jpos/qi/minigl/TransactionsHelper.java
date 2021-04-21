@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,14 +33,19 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class TransactionsHelper extends QIHelper {
-
+    private DateRange defaultDateRange;
     private static long defaultJournalId;
 
-    protected TransactionsHelper(){
+    protected TransactionsHelper (DateRange defaultDateRange){
         super(GLTransaction.class);
         List<Journal> journals = getJournals();
         if (journals.size() > 0)
             setDefaultJournalId(journals.get(0).getId());
+        this.defaultDateRange = defaultDateRange;
+    }
+
+    protected TransactionsHelper(){
+        this(null);
     }
 
     public void setDefaultJournalId(long defaultJournalId) {
@@ -147,7 +152,11 @@ public class TransactionsHelper extends QIHelper {
                         return 0;
                     }
                 });
-        return (ConfigurableFilterDataProvider<GLTransaction,Void,DateRange>) dataProvider.withConfigurableFilter();
+        ConfigurableFilterDataProvider<GLTransaction,Void,DateRange> wrapper = dataProvider.withConfigurableFilter();
+        if (defaultDateRange != null) {
+            wrapper.setFilter(defaultDateRange);
+        }
+        return wrapper;
     }
 
     protected boolean updateEntity (Binder binder, EntryGrid entryGrid, boolean shouldReverse) throws BLException {

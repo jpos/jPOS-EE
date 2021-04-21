@@ -81,6 +81,14 @@
         color: #CE6C47;
     }
 
+    .v-table-row-green-row, .green-row {
+        color: green;
+    }
+
+    .v-table-row-red-row, .red-row {
+        color: red;
+    }
+
     .v-panel-caption-color1 {
         @include valo-panel-caption-style($background-color: hsl(220, 5%, 38%));
     }
@@ -150,4 +158,43 @@
         border-radius: 0px !important;
     }
 
+    .marginView {
+        margin-right: 8px;
+        margin-left: 8px;
+    }
+
+    .no-stripes .v-grid-row-stripe > td {
+        background-color: $v-grid-row-background-color !important;
+    }
+    
+    .borderless .v-grid-cell {
+        border: none !important;
+    }
+
+    .smallgrid .v-grid-body .v-grid-cell {
+      line-height: 34px;     // adjust to your needs
+      font-size: 12px;       // adjust to your needs
+      padding: 0 10px;
+    }
+
+    .smallgrid .v-grid-header .v-grid-cell {
+      font-size: 12px;       // adjust to your needs
+      padding: 0 10px;
+    }
+
+    .active-label {
+      color: #19670B;
+    }
+
+    .inactive-label {
+      color: #D45248;
+    }
+
+    .no-padding-button {
+      padding: 0px;
+    }
+
+    .row-disabled > td {
+      color: lightgray;
+    }
 }

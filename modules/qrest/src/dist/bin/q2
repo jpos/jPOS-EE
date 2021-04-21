@@ -3,6 +3,7 @@
 cd `dirname $0`/.. || exit 1
 rm -f deploy/shutdown.xml
 exec java -server \
+    -XX:+IgnoreUnrecognizedVMOptions \
     -Xmx1G \
     -Xloggc:log/gc.log \
     -XX:+PrintGCDetails \
@@ -13,10 +14,5 @@ exec java -server \
     -XX:NumberOfGCLogFiles=5 \
     -Djava.net.preferIPv4Stack=true \
     -Dcom.sun.management.jmxremote \
-    -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses \
-    -XX:+UseConcMarkSweepGC  \
-    -XX:+AggressiveOpts \
-    -XX:+ParallelRefProcEnabled \
-    -XX:+TieredCompilation \
     -jar jposee-@jarname@ --pid-file='jpos.pid' "$@"
 

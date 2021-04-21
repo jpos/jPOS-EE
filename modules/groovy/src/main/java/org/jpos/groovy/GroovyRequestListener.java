@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,9 @@
 
 package org.jpos.groovy;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.Configuration;
@@ -25,12 +28,15 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISORequestListener;
 import org.jpos.iso.ISOSource;
+import org.jpos.q2.QFactory;
 import org.jpos.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.jdom2.Element;
 
@@ -76,7 +82,7 @@ import groovy.lang.GroovyShell;
  * <p>A Groovy script given as embedded text in a {@code CDATA} section. The script will be pre-compiled, and called
  * only for requests of the MTI's given in the "whitelist" property.
  * <pre>
- *     &lt;request-listener class="org.jpos.transaction.participant.GroovyRequestListener" logger="Q2" realm="groovy-test-one"&gt;
+ *     &lt;request-listener class="org.jpos.groovy.GroovyRequestListener" logger="Q2" realm="groovy-test-one"&gt;
  *       &lt;property name="whitelist" value="0100, 0420" /&gt;
  *       &lt;script&gt;
  *         &lt;![CDATA[
@@ -89,7 +95,7 @@ import groovy.lang.GroovyShell;
  * <p>A Groovy script given in an external file. The "compiled" property is set to "false", so the script
  * will be interpreted and evaluated for each request. The script will be called for all MTI's.
  * <pre>
- *     &lt;request-listener class="org.jpos.transaction.participant.GroovyRequestListener" logger="Q2" realm="groovy-test-two"&gt;
+ *     &lt;request-listener class="org.jpos.groovy.GroovyRequestListener" logger="Q2" realm="groovy-test-two"&gt;
  *       &lt;property name="compiled" value="false" /&gt;
  *       &lt;script src="../cfg/reqlistener2.groovy" /&gt;
  *     &lt;/request-listener&gt;
@@ -145,6 +151,10 @@ public class GroovyRequestListener extends Log
     @Override
     public void setConfiguration(Element e) throws ConfigurationException
     {
+        ClassLoader thisCL= this.getClass().getClassLoader();
+        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
+        GroovySetup.runScriptOnce(scriptURL);
+
         xmlCfg= e;
 
         script= getScript(e.getChild("script"));
@@ -178,7 +188,7 @@ public class GroovyRequestListener extends Log
             }
             else // !compiled, evaluate it each time
             {
-                GroovyShell shell= new GroovyShell(binding);
+                GroovyShell shell= new GroovyShell(binding,newCompilerConfiguration());
                 if (script instanceof File)
                     ret= shell.evaluate((File)script);
                 else if (script instanceof String)
@@ -187,7 +197,7 @@ public class GroovyRequestListener extends Log
         }
         catch (Exception e)
         {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
 
         // any non-null and non-boolean value is considered "true-ish"
@@ -204,11 +214,11 @@ public class GroovyRequestListener extends Log
     }
 
 
-    /** Helper method to {@link #setConfiguration(Element)}
-    *
+    /**
+    * Helper method to {@link #setConfiguration(Element)}
     * Returns a String, a File, or a fully parsed {@code Class&lt;groovy.lang.Script&gt;}.
     */
-    private Object getScript (Element e) throws ConfigurationException
+    protected Object getScript (Element e) throws ConfigurationException
     {
         compiled= cfg.getBoolean("compiled", true);
         String src=     e.getAttributeValue("src");
@@ -217,6 +227,7 @@ public class GroovyRequestListener extends Log
 
         if (src != null)
         {
+            src= QFactory.getAttributeValue(e, "src");          // effective src, after ${} replacements
             scriptName= src;                                    // should be a file path, will be output as file name part
             f= new File(src);
             if (!f.canRead())
@@ -237,7 +248,7 @@ public class GroovyRequestListener extends Log
         // that will be instantiated for each invocation of the participant's method
         try
         {
-            gcl= new GroovyClassLoader();
+            gcl= new GroovyClassLoader(this.getClass().getClassLoader(),newCompilerConfiguration());
             // TODO: We can add CompilerConfiguration to set a JDK8 target
             // Also, using CompilationCustomizer's I think we can mandate a @CompileStatic
             // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
@@ -267,6 +278,20 @@ public class GroovyRequestListener extends Log
             throw new ConfigurationException(ex.getMessage(), ex.getCause());
         }
     }
+    protected CompilerConfiguration newCompilerConfiguration(){
+        CompilerConfiguration conf = new CompilerConfiguration();
+        ImportCustomizer customizer  = new ImportCustomizer();
+        customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
+        customizer.addStaticStars("org.jpos.transaction.ContextConstants");
+        conf.addCompilationCustomizers(customizer);
 
+        String[] paths= cfg.getAll("classpath");
+        if (paths.length > 0)
+        {
+            List<String> cpList= Arrays.asList(paths);
+            conf.setClasspathList(cpList);
+        }
+
+        return conf;
+    }
 }
-

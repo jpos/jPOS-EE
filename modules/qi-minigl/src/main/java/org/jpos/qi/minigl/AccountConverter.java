@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -60,7 +60,7 @@ public class AccountConverter implements Converter<String, Account> {
     public Result<Account> convertToModel(String value, ValueContext valueContext) {
         if (value != null && !value.isEmpty()) {
             try {
-                Account acct = (Account) DB.exec(db -> {
+                Account acct = DB.exec(db -> {
                     GLSession session = new GLSession(db);
                     Account res = session.getAccount("jcard",value);
                     if (res == null && createNew) {

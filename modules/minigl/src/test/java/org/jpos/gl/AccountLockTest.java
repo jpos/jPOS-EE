@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,33 +18,36 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import java.math.BigDecimal;
-import java.util.Date;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
+import org.jpos.ee.DB;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AccountLockTest extends TestBase {
     Journal tj;
     Account cash;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         tj = gls.getJournal ("TestJournal");
         cash = gls.getAccount ("TestChart", "111");
     }
+    @Test
     public void testLock () throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.lock (tj, cash);
         tx1.commit();
     }
+    @Test
     public void testDeadLock () throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.lock (tj, cash);
 
-        GLSession gls2 = new GLSession("bob");
+        GLSession gls2 = new GLSession(new DB(configModifier), "bob");
         Transaction tx2 = gls2.beginTransaction();
 
         Journal tj2 = gls2.getJournal ("TestJournal");
@@ -71,8 +74,8 @@ public class AccountLockTest extends TestBase {
         {
         }
         long end = System.currentTimeMillis();
-        assertTrue("Elapsed is " + (end - start), end - start >= 5000);
-        assertTrue ("Elapsed is "+(end - start),end - start < 7000);
+        assertTrue(end - start >= 5000, "Elapsed is " + (end - start));
+        assertTrue (end - start < 7000, "Elapsed is " + (end - start));
         tx2.commit();
         gls2.close();
     }

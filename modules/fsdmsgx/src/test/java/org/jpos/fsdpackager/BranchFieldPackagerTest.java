@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,8 +18,8 @@
 
 package org.jpos.fsdpackager;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jpos.iso.AsciiInterpreter;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.LiteralInterpreter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BranchFieldPackagerTest {
 	

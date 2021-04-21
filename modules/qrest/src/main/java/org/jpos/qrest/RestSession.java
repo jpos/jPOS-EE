@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -48,7 +48,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             ctx.put(Constants.REQUEST, request);
             if (contentKey != null)
                 ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
-            server.queue(ctx);
+            server.queue(request, ctx);
         } else {
             super.channelRead(ch, msg);
         }

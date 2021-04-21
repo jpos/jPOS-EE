@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,19 +18,20 @@
 
 package org.jpos.gl;
 
-import junit.framework.TestCase;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.jpos.ee.DB;
-import org.jpos.gl.*;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class AddExportUserTest extends TestCase {
-    public void testAddExportUser() throws Exception {     
-        Session sess = new DB().open();
+public class AddExportUserTest extends TestBase {
+    @Test
+    public void testAddExportUser() throws Exception {
+        Session sess = new DB(configModifier).open();
         try {
             GLUser user = getUser(sess,System.getProperty("user.name"));
         } catch (IllegalArgumentException e) {

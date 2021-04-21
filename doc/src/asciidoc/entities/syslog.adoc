@@ -1,0 +1,51 @@
+== SysLog
+
+[plantuml, syslog, svg]
+----
+@startuml
+class SysLog {
+  int id;
+  Date date;
+  String source;
+  int severity;
+  String summary;
+  String detail;
+  String trace;
+  boolean deleted;
+} 
+@enduml
+----
+
+The `SysLog` entity is a general purpose entity used by jPOS-EE to record
+an audit trail of relevant events.
+
+The table has the following columns:
+
+- `id` : auto-generated ID
+- `date`: timestamp
+- `deleted`: logical delete indicator
+- `source`: application specific source (i.e. node name)
+- `severity`: we use DEBUG = 0, TRACE = 1, INFO  = 2, WARN  = 3, ERROR = 4, CRITICAL=5
+- `summary`: a brief description of the event, suitable to be printed by the UI in a column
+- `detail`: specific info about the event
+- `trace`: additional information (i.e. dumps)
+- `deleted`: logical delete
+
+
+Here is a sample use:
+
+[source]
+--------
+  id  |          date           |  source   |  type  | severity |         summary         
+------+-------------------------+-----------+--------+----------+-------------------------
+ 1102 | 2018-10-15 21:02:31.544 | N01       | SYSTEM |        2 | Start
+ 1607 | 2018-10-15 21:02:43.028 | N01       | SYSTEM |        2 | Stop (uptime 11s)
+ 1608 | 2018-10-16 16:43:10.318 | N01       | SYSTEM |        2 | Start
+ 1609 | 2018-10-16 17:00:20.428 | N01       | SYSTEM |        2 | Stop (uptime 17m10s)
+ 1610 | 2018-10-16 17:00:31.798 | RESTAPI01 | SYSTEM |        2 | Start
+ 1613 | 2018-10-16 17:14:43.698 | RESTAPI01 | SYSTEM |        2 | Stop (uptime 14m13s)
+ 1614 | 2018-10-16 17:14:50.987 | N01       | SYSTEM |        2 | Start
+ 1618 | 2018-10-16 19:46:20.14  | N01       | SYSTEM |        2 | Stop (uptime 2h31m29s)
+--------
+
+

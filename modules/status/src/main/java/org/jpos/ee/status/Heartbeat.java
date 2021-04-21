@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -51,13 +51,13 @@ public class Heartbeat extends QBeanSupport implements Runnable {
                 if (cfg.getBoolean ("check", true))
                     mgr.check ();
                 mgr.touch (statusId, Status.OK, getDetail (start, i));
-                Thread.sleep (interval);
             } catch (Throwable t) {
                 getLog().error (t);
                 ISOUtil.sleep (1000);
             } finally {
                 close();
             }
+            ISOUtil.sleep (interval);
         }
     }
     private void close() {
@@ -67,9 +67,9 @@ public class Heartbeat extends QBeanSupport implements Runnable {
             getLog().error (e);
         }
     }
-    private String getDetail (long start, int tick) {
+    protected String getDetail (long start, int tick) {
         Runtime r = Runtime.getRuntime();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append ("memory=");
         sb.append (r.totalMemory());
         sb.append (", threads=");
@@ -87,9 +87,9 @@ public class Heartbeat extends QBeanSupport implements Runnable {
             db.open ();
             statusId = cfg.get ("status-id", getName());
             Status s = mgr.getStatus (statusId, false);
-            if (s == null) {
+            if (s == null || cfg.getBoolean("update-status")) {
                 Transaction tx = db.beginTransaction();
-                s = mgr.getStatus (statusId, true);
+                if (s== null) s = mgr.getStatus (statusId, true);
                 s.setName (cfg.get ("status-name", statusId));
                 s.setGroupName (cfg.get ("status-group", ""));
                 s.setTimeoutState (cfg.get ("on-timeout", Status.OFF));

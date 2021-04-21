@@ -1,0 +1,20 @@
+description = 'jPOS-EE :: ISO over HTTP Client Code'
+
+apply plugin: 'war'
+
+dependencies {
+    api libraries.jpos
+    api libraries.servlet_api
+    api "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
+    api project(':modules:iso-http-server')
+    providedCompile project(':modules:jetty')
+}
+
+jar {
+    from 'src/main/webapp'
+}
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+
+installApp.dependsOn('war')
+dist.dependsOn('war')

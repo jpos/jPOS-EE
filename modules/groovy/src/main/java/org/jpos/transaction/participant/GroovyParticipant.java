@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,13 +22,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.HashMap;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.q2.QFactory;
 import org.jpos.transaction.TransactionParticipant;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
@@ -69,12 +75,15 @@ import groovy.lang.GroovyShell;
  * </ul>
  *
  * <p>By default, scripts are pre-compiled by a GroovyClassLoader. If you want the script
- * to be evaluated each time, then set the "compiled" property to "false".
+ * to be evaluated on each run, then set the "compiled" property to "false".
  *
- * Add a transaction participant like this:
+ * <p>If your script depends on other scripts, you can add one or more "classpath" properties.
+ *
+ * <p>Add a transaction participant like this:
  *
  * <pre>
  *     &lt;participant class="org.jpos.transaction.participant.GroovyParticipant" logger="Q2" realm="groovy-test"&gt;
+ *       &lt;property name="classpath" value="cfg/scripts" /&gt;
  *       &lt;prepare src="deploy/prepare.groovy" /&gt;
  *       &lt;commit src="deploy/commit.groovy" /&gt;
  *       &lt;abort&gt;
@@ -93,11 +102,11 @@ import groovy.lang.GroovyShell;
 public class GroovyParticipant extends Log
     implements TransactionParticipant, AbortParticipant, XmlConfigurable, Configurable
 {
-    private boolean compiled= true;
-    private GroovyClassLoader gcl;
+    protected boolean compiled= true;
+    protected GroovyClassLoader gcl;
 
     // map script part (prepare, abort...) to a name which can be a path, a realm or something to identify in error logs
-    private HashMap<String, String> scriptNames= new HashMap<>();
+    protected HashMap<String, String> scriptNames= new HashMap<>();
 
     // prepare, prepareForAbort, commit, and abort
     // can be instances of String, File, or Class<Script>
@@ -107,14 +116,14 @@ public class GroovyParticipant extends Log
     private Object abort;
 
     private TransactionManager tm;
-    private Configuration cfg;
-    private final String groovyShellKey  = ".groovy-" + Integer.toString(hashCode());
+    protected Configuration cfg;
+    private final String groovyShellKey  = ".groovy-" + hashCode();
 
 
     @SuppressWarnings("unchecked")
     public int prepare (long id, Serializable ctx) {
         if (prepare == null)  {
-            return PREPARED | NO_JOIN | READONLY; // nothing to do
+            return PREPARED | READONLY; // nothing to do
         }
         try {
             if (compiled) {
@@ -125,7 +134,7 @@ public class GroovyParticipant extends Log
             else
                 return (int) eval(getShell(id, ctx), prepare, scriptNames.get("prepare"));
         } catch (Exception e) {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
         return ABORTED;
     }
@@ -133,7 +142,7 @@ public class GroovyParticipant extends Log
     @SuppressWarnings("unchecked")
     public int prepareForAbort (long id, Serializable ctx) {
         if (prepareForAbort == null) {
-            return PREPARED | NO_JOIN | READONLY; // nothing to do
+            return PREPARED | READONLY; // nothing to do
         }
         try {
             if (compiled) {
@@ -144,7 +153,7 @@ public class GroovyParticipant extends Log
             else
                 return (int) eval(getShell(id, ctx), prepareForAbort, scriptNames.get("prepare-for-abort"));
         } catch (Exception e) {
-            error(e);
+            error(StackTraceUtils.deepSanitize(e));
         }
         return ABORTED;
     }
@@ -161,7 +170,7 @@ public class GroovyParticipant extends Log
                 else
                     eval(getShell(id, ctx), commit, scriptNames.get("commit"));
             } catch (Exception e) {
-                error(e);
+                error(StackTraceUtils.deepSanitize(e));
             }
         }
     }
@@ -178,7 +187,7 @@ public class GroovyParticipant extends Log
                 else
                     eval(getShell(id, ctx), abort, scriptNames.get("abort"));
             } catch (Exception e) {
-                error(e);
+                error(StackTraceUtils.deepSanitize(e));
             }
         }
     }
@@ -195,12 +204,13 @@ public class GroovyParticipant extends Log
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         ClassLoader thisCL= this.getClass().getClassLoader();
-        URL scriptURL= thisCL.getResource("org/jpos/transaction/ContextDefaults.groovy");
+        URL scriptURL= thisCL.getResource("org/jpos/groovy/JPOSGroovyDefaults.groovy");
         GroovySetup.runScriptOnce(scriptURL);
 
         compiled= cfg.getBoolean("compiled", true);
         if (compiled) {
-            gcl= new GroovyClassLoader();
+            gcl= new GroovyClassLoader(thisCL,newCompilerConfiguration());
+
             // TODO: We can add CompilerConfiguration to set a JDK8 target
             // Also, using CompilationCustomizer's I think we can mandate a @CompileStatic
             // as explained in http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation_by_default
@@ -219,9 +229,11 @@ public class GroovyParticipant extends Log
     }
 
 
-    /** Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
+    /**
+    * Helper method to {@link #setConfiguration(Element)}
+    * Returns a String, a File, or a fully parsed Class&lt;groovy.lang.Script&gt;
     */
-    private Object getScript (Element e) throws ConfigurationException
+    protected Object getScript (Element e) throws ConfigurationException
     {
         if (e != null)
         {
@@ -232,7 +244,8 @@ public class GroovyParticipant extends Log
 
             if (src != null)
             {
-                scriptNames.put(elName, src);                   // the file path, as given
+                src= QFactory.getAttributeValue(e, "src");      // effective src, after ${} replacements
+                scriptNames.put(elName, src);                   // the resolved file path, as given
                 f= new File(src);
                 if (!f.canRead())
                     throw new ConfigurationException ("Can't read '" + src + "'");
@@ -277,7 +290,7 @@ public class GroovyParticipant extends Log
         return null;    // nothing to process
     }
 
-    private Object eval (GroovyShell shell, Object script, String name) throws IOException {
+    protected Object eval (GroovyShell shell, Object script, String name) throws IOException {
         if (script instanceof File)
             return shell.evaluate((File)script);
         else if (script instanceof String)
@@ -285,22 +298,22 @@ public class GroovyParticipant extends Log
         return null;
     }
 
-    private GroovyShell getShell (long id, Serializable context) {
+    protected GroovyShell getShell (long id, Serializable context) {
         GroovyShell shell;
         if (context instanceof Context) {
             Context ctx = (Context) context;
             shell = (GroovyShell) ctx.get(groovyShellKey);
             if (shell == null) {
-                shell = new GroovyShell(newBinding(id, ctx));
+                shell = new GroovyShell(newBinding(id, ctx), newCompilerConfiguration());
                 ctx.put (groovyShellKey, shell);
             }
         } else {
-            shell = new GroovyShell(newBinding(id, context));
+            shell = new GroovyShell(newBinding(id, context), newCompilerConfiguration());
         }
         return shell;
     }
 
-    private Binding newBinding (long id, Serializable ctx) {
+    protected Binding newBinding (long id, Serializable ctx) {
         Binding binding = new Binding();
         binding.setVariable("id", id);
         binding.setVariable("ctx", ctx);
@@ -308,5 +321,22 @@ public class GroovyParticipant extends Log
         binding.setVariable("tm", tm);
         binding.setVariable("cfg", cfg);
         return binding;
+    }
+
+    protected CompilerConfiguration newCompilerConfiguration() {
+        CompilerConfiguration conf = new CompilerConfiguration();
+        ImportCustomizer customizer  = new ImportCustomizer();
+        customizer.addStaticStars("org.jpos.transaction.TransactionConstants");
+        customizer.addStaticStars("org.jpos.transaction.ContextConstants");
+        conf.addCompilationCustomizers(customizer);
+
+        String[] paths= cfg.getAll("classpath");
+        if (paths.length > 0)
+        {
+            List<String> cpList= Arrays.asList(paths);
+            conf.setClasspathList(cpList);
+        }
+
+        return conf;
     }
 }

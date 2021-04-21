@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,26 +20,26 @@ package org.jpos.qi.eeuser;
 
 import com.vaadin.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.data.provider.Query;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.jpos.crypto.CryptoService;
-import org.jpos.crypto.SecureData;
 import org.jpos.ee.*;
 import org.jpos.qi.ConfirmDialog;
 import org.jpos.qi.QIEntityView;
 import org.jpos.qi.QIHelper;
 import org.jpos.util.NameRegistrar;
-import org.jpos.util.QIUtils;
-import org.jpos.util.Serializer;
+import org.jpos.qi.util.QIUtils;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 /**
@@ -52,7 +52,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     private User selectedUser;
 
     public ConsumersView() {
-        super(Consumer.class, "consumers");
+        super(Consumer.class);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
         if (params.length > 1) {
             String userId = params[1];
             try {
-                this.selectedUser = (User) DB.exec(db -> {
+                this.selectedUser = DB.exec(db -> {
                     UserManager mgr = new UserManager(db);
                     return mgr.getItemByParam("id",userId,false);
                 });
@@ -87,7 +87,8 @@ public class ConsumersView extends QIEntityView<Consumer> {
             }
             super.showSpecificView(parameter);
         } else if (parameter.contains("new")){
-            getApp().displayError("Invalid User","Must select a User");
+            getApp().displayError(getApp().getMessage("errorMessage.invalidUser"),
+                    getApp().getMessage("errorMessage.mustSelectUser"));
             getApp().getNavigator().navigateTo(getGeneralRoute());
         } else {
             super.showSpecificView(parameter);
@@ -128,13 +129,16 @@ public class ConsumersView extends QIEntityView<Consumer> {
     public void setGridGetters() {
         Grid<Consumer> g = getGrid();
         g.addColumn(Consumer::getId).setId("id");
-        g.addColumn(consumer -> consumer.getRolesAsString()).setId("roles");
+        g.addColumn(Consumer::getRolesAsString).setId("roles");
         g.addColumn(Consumer::getStartDate).setId("startDate");
         g.addColumn(Consumer::getEndDate).setId("endDate");
         g.addColumn(consumer -> consumer.getUser().getNickAndId()).setId("user");
-        g.addColumn(Consumer::isActive).setId("active");
+        g.addColumn(consumer -> {
+            String active = VaadinIcons.CHECK.getHtml();
+            String inActive = VaadinIcons.CLOSE.getHtml();
+            return consumer.isActive() ? active : inActive;
+        }).setId("active").setRenderer(new HtmlRenderer());
         g.addColumn(Consumer::isDeleted).setId("deleted");
-
         //select first item on user combobox
         userComboBox.setValue(userComboBox.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
     }
@@ -159,7 +163,7 @@ public class ConsumersView extends QIEntityView<Consumer> {
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof Consumer) {
             Consumer u = (Consumer) entity;
-            return u.getId() != null ? u.getId() : "New";
+            return u.getId() != null ? u.getId() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -173,53 +177,42 @@ public class ConsumersView extends QIEntityView<Consumer> {
             formatField(propertyId,checkBoxGroup).bind(propertyId);
             return checkBoxGroup;
         }
-        if ("user".equalsIgnoreCase(propertyId)) {
-            ComboBox<User> box = createUserBox();
-            formatField(propertyId,box).bind(propertyId);
-            box.setEnabled(false);
-            box.setValue(this.selectedUser);
-            return box;
-        }
         if ("startdate".equalsIgnoreCase(propertyId) || "endDate".equalsIgnoreCase(propertyId)) {
             return getFieldFactory().buildAndBindDateField(propertyId);
+        }
+        if ("user".equalsIgnoreCase(propertyId) && getFieldFactory().isLinkField(propertyId)) {
+            String url = getViewConfig().getFields().get(propertyId).getLink();
+            UserLinkField field = new UserLinkField (url);
+            field.setCaption(getCaptionFromId("field." + propertyId));
+            formatField(propertyId, field).bind(propertyId);
+            return field;
         }
         return null;
     }
 
     public void saveEntity () {
-        // TODO: BBB maybe the logic of creating a consumer and its secret should be
-        // abstracted away inside ConsumerManager and not in UI code?
         Consumer c = getInstance();
-        c.setUser(this.selectedUser);
-        Map<String,String> smap = new HashMap<>();
-        try{
-            smap.put("S", Base64.toBase64String(generateKey().getEncoded()));
-            SecureData sd = getCryptoService().aesEncrypt(Serializer.serialize(smap));
-            c.setKid(sd.getId().toString());
-            c.setSecureData(sd.getEncoded());
-        } catch (Exception e) {
-            getApp().getLog().error(e);
-        }
-
-        getApp().addWindow(new ConfirmDialog(
+        if (getBinder().writeBeanIfValid(c)) {
+            c.setUser(this.selectedUser);
+            String sk = "?";
+            try{
+                sk = Base64.toBase64String(generateKey().getEncoded());
+                c.setHash(HashVersion.ONE.hash(Long.toString(c.getUser().getId(),16), sk, HashVersion.ONE.getSalt()));
+            } catch (Exception e) {
+                getApp().getLog().error(e);
+            }
+            getApp().addWindow(new ConfirmDialog(
                 getApp().getMessage("secretTitle"),
-                getApp().getMessage("secretDescription", smap.getOrDefault("S", "?")),
+                getApp().getMessage("secretDescription", sk),
                 getApp().getMessage("secretConfirm"),
                 getApp().getMessage("cancel"),
                 confirm -> {
                     if (confirm) {
                         super.saveEntity();
                     }
-                }));
+            }));
+        }
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-    @Override
-    public boolean canAdd() {return true;}
-    public boolean canRemove() {return true;}
 
     private CryptoService getCryptoService() throws NameRegistrar.NotFoundException {
        return (CryptoService) NameRegistrar.get("crypto-service");

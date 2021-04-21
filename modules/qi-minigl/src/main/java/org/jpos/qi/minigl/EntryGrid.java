@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,8 +33,8 @@ import org.jpos.gl.GLTransaction;
 import java.util.Collection;
 import java.util.List;
 
-import static org.jpos.util.QIUtils.createAmountRenderer;
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.createAmountRenderer;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 /**
  * Created by jr on 8/1/17.
@@ -54,7 +54,16 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
         if (caption != null)
             this.setCaption(caption);
         this.addStyleName("v-grid");
-        this.addColumn(entry ->"<label>" + entry.getAccount().getCode() + "</label>&nbsp;<label class='v-label-light'>" + entry.getAccount().getDescription() + "</label>").setId("account")
+        this.addColumn(entry -> {
+            String lbl = "<label>";
+            lbl += entry.getAccount() != null && entry.getAccount().getCode() != null ?
+                    entry.getAccount().getCode() : "";
+            lbl += "</label>&nbsp;<label class='v-label-light'>";
+            lbl += entry.getAccount() != null && entry.getAccount().getDescription() != null ?
+                    entry.getAccount().getDescription() : "";
+            lbl += "</label>";
+            return lbl;
+        }).setId("account")
                 .setCaption(getCaptionFromId("account"))
                 .setSortable(true)
                 .setHidable(false)
@@ -74,11 +83,6 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                 .setCaption(getCaptionFromId("detail"))
                 .setSortable(true)
                 .setHidable(false);
-        this.addColumn(entry -> entry.getTags() != null ? entry.getTags().toString() : "")
-                .setId("tags")
-                .setCaption(getCaptionFromId("tags"))
-                .setSortable(true)
-                .setHidable(false);
         this.addColumn(entry -> entry.isDebit() ? entry.getAmount() : null)
                 .setId("debit")
                 .setStyleGenerator(cellStyle -> "align-right")
@@ -91,6 +95,11 @@ public class EntryGrid extends Grid<GLEntry> implements HasValue<GLTransaction> 
                 .setStyleGenerator(cellStyle -> "align-right")
                 .setRenderer(createAmountRenderer())
                 .setCaption(getCaptionFromId("credit"))
+                .setSortable(true)
+                .setHidable(false);
+        this.addColumn(entry -> entry.getTags() != null ? entry.getTags().toString() : "")
+                .setId("tags")
+                .setCaption(getCaptionFromId("tags"))
                 .setSortable(true)
                 .setHidable(false);
         //also align right header of credit & debit

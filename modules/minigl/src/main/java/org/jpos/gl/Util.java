@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -37,13 +37,13 @@ public class Util {
     static {
         df_yyyyMMdd = (SimpleDateFormat) DateFormat.getDateTimeInstance();
         df_yyyyMMdd.applyPattern("yyyyMMdd");
-        df_yyyyMMddhhmmss = (SimpleDateFormat) 
+        df_yyyyMMddhhmmss = (SimpleDateFormat)
             DateFormat.getDateTimeInstance();
         df_yyyyMMddhhmmss.applyPattern("yyyyMMddHHmmss");
     }
-    static SimpleDateFormat dfDate = (SimpleDateFormat) 
+    static SimpleDateFormat dfDate = (SimpleDateFormat)
         DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK);
-    static SimpleDateFormat dfDateTime = (SimpleDateFormat) 
+    static SimpleDateFormat dfDateTime = (SimpleDateFormat)
         DateFormat.getDateTimeInstance(
             DateFormat.SHORT, DateFormat.MEDIUM, Locale.UK);
 
@@ -89,8 +89,8 @@ public class Util {
      * @param attributeName attribute name
      * @param d date object
      */
-    public static void setDateAttribute 
-        (Element elem, String attributeName, Date d) 
+    public static void setDateAttribute
+        (Element elem, String attributeName, Date d)
     {
         if (d != null) {
             elem.setAttribute (attributeName, dateToString (d));
@@ -102,13 +102,14 @@ public class Util {
      * @param attributeName attribute name
      * @param d date object
      */
-    public static void setDateTimeAttribute 
-        (Element elem, String attributeName, Date d) 
+    public static void setDateTimeAttribute
+        (Element elem, String attributeName, Date d)
     {
         if (d != null) {
             elem.setAttribute (attributeName, dateTimeToString (d));
         }
     }
+
     /**
      * Force the 'time' portion of a date up to 23:59:59.999
      * @param d date
@@ -130,6 +131,35 @@ public class Util {
         cal.set (Calendar.MILLISECOND, 999);
         return cal.getTime();
     }
+
+    public static Date ceil (Date d, int precision) {
+        Calendar cal = Calendar.getInstance();
+        if (d != null)
+            cal.setTime (d);
+        else {
+            cal.set (Calendar.DAY_OF_MONTH, 31);
+            cal.set (Calendar.MONTH, 12);
+            cal.set (Calendar.YEAR, 2099);
+        }
+
+        switch (precision) {
+            case Calendar.DATE:
+                cal.set (Calendar.HOUR_OF_DAY, 23);  // nobreak
+            case Calendar.HOUR:
+            case Calendar.HOUR_OF_DAY:
+                cal.set (Calendar.MINUTE, 59);       // nobreak
+            case Calendar.MINUTE:
+                cal.set (Calendar.SECOND, 59);       // nobreak
+            case Calendar.SECOND:
+            case Calendar.MILLISECOND:
+                cal.set (Calendar.MILLISECOND, 999); // nobreak
+
+            default:
+                // nothing? throw error?
+        }
+        return cal.getTime();
+    }
+
     /**
      * Force the 'time' portion of a date down to 00:00:00.000
      * @param d date (if null, we default to 01/01/1970)
@@ -151,6 +181,73 @@ public class Util {
         cal.set (Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
+
+    public static Date floor (Date d, int precision) {
+        Calendar cal = Calendar.getInstance();
+        if (d != null)
+            cal.setTime (d);
+        else {
+            cal.set (Calendar.DAY_OF_MONTH, 1);
+            cal.set (Calendar.MONTH, 1);
+            cal.set (Calendar.YEAR, 1970);
+        }
+
+        // keep in sync with nextFloor(Date, int)!
+        switch (precision) {
+            case Calendar.DATE:
+                cal.set (Calendar.HOUR_OF_DAY, 0);  // nobreak
+            case Calendar.HOUR:
+            case Calendar.HOUR_OF_DAY:
+                cal.set (Calendar.MINUTE, 0);       // nobreak
+            case Calendar.MINUTE:
+                cal.set (Calendar.SECOND, 0);       // nobreak
+            case Calendar.SECOND:
+                cal.set (Calendar.MILLISECOND, 0);  // nobreak
+            // case Calendar.MILLISECOND: ???
+            default:
+                // nothing? throw error?
+        }
+        return cal.getTime();
+    }
+
+    /**
+     * Increment the given precision unit, and set the next lower unit to ZERO.
+     *
+     * For example, if the <code>Date d</code> represents "Mon Jan 21 20:34:46 UYT 2019",
+     * then, <code>Util.nextFloor(d, Calendar.HOUR_OF_DAY)</code> will advance to the beginning
+     * of next hour, i.e. "Mon Jan 21 21:00:00 UYT 2019". (notice that  the next hour could very well be
+     * on the next day, year, etc...)
+     *
+     * @param d date
+     * @param precision is one of the Calendar constants: DATE, HOUR, HOUR_OF_DAY, MINUTE, SECOND
+     *                   (behavior for other values is undefined)
+     * @return converted date
+     * @throws NullPointerException if d is null
+     */
+    public static Date nextFloor (Date d, int precision) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime (d);
+        cal.add (precision, 1);
+
+        // floor it! (basically what floor(Date, int) does, keep in sync!
+        switch (precision) {
+            case Calendar.DATE:
+                cal.set (Calendar.HOUR_OF_DAY, 0);  // nobreak
+            case Calendar.HOUR:
+            case Calendar.HOUR_OF_DAY:
+                cal.set (Calendar.MINUTE, 0);       // nobreak
+            case Calendar.MINUTE:
+                cal.set (Calendar.SECOND, 0);       // nobreak
+            case Calendar.SECOND:
+                cal.set (Calendar.MILLISECOND, 0);  // nobreak
+            // case Calendar.MILLISECOND: ???
+            default:
+                // nothing? throw error?
+        }
+        return cal.getTime();
+    }
+
+
     /**
      * Force date to tomorrow at 00:00:00.000
      * @param d date
@@ -168,4 +265,3 @@ public class Util {
         return cal.getTime();
     }
 }
-

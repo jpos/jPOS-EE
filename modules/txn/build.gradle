@@ -1,5 +1,5 @@
 description = 'jPOS-EE :: Txn Module'
 
 dependencies {
-    compile project(':modules:dbsupport')
+    api project(':modules:dbsupport')
 }

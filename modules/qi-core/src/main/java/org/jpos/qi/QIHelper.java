@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,14 +19,15 @@
 package org.jpos.qi;
 
 import com.vaadin.data.Binder;
+import com.vaadin.data.Validator;
 import com.vaadin.data.provider.CallbackDataProvider;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.QuerySortOrder;
-import com.vaadin.data.provider.SortOrder;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.ui.UI;
 import org.jpos.core.Configuration;
 import org.jpos.ee.*;
+import org.jpos.ee.Cloneable;
 import org.jpos.util.BeanDiff;
 
 import java.util.*;
@@ -40,6 +41,7 @@ public abstract class QIHelper {
     protected Class clazz;
     private Configuration cfg;
     private Object originalEntity;
+    private Map<String, List<Validator>> validators = new HashMap<>();
 
 
     protected QIHelper(Class clazz) {
@@ -64,20 +66,34 @@ public abstract class QIHelper {
         revMgr.createRevision(author, entity.toLowerCase() + "." + id, info);
     }
 
+    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem,
+                                       String[] itemProps)
+    {
+        return this.addRevisionUpdated(db, entity, id, oldItem, newItem, itemProps, null);
+    }
     //Must be executed inside a DB.execWithTransaction
-    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem, String[] itemProps) {
+    public boolean addRevisionUpdated (DB db, String entity, String id, Object oldItem, Object newItem,
+                                       String[] itemProps, String extraInfo)
+    {
         StringBuilder revInfo = new StringBuilder();
         BeanDiff bd = new BeanDiff (oldItem, newItem, itemProps);
         revInfo.append(bd.toString());
         if (revInfo.length() > 0) {
             User author = getUser();
-            String info = revInfo.length() < 1000 ? revInfo.toString() : revInfo.toString().substring(0, 990) + "...";
+            StringJoiner info = new StringJoiner(BeanDiff.LINESEP);
+            if (extraInfo != null && !extraInfo.isEmpty())
+                info.add(extraInfo);
+            info.add(revInfo.length() < 1000 ? revInfo.toString() : revInfo.substring(0, 990) + "...");
             RevisionManager revMgr = new RevisionManager(db);
-            revMgr.createRevision (author, entity.toLowerCase() + "." + id, info);
+            revMgr.createRevision (author, entity.toLowerCase() + "." + id, info.toString());
             return true;
         } else {
             return false;
         }
+    }
+
+    public RevisionsPanel createAndLoadRevisionHistoryPanel (String ref) throws Exception {
+        return DB.exec(db -> new RevisionsPanel(ref, db));
     }
 
     public User getUser() {
@@ -99,7 +115,7 @@ public abstract class QIHelper {
     public boolean removeEntity() throws BLException {
         Object entity = getOriginalEntity();
         try {
-            return (boolean) DB.execWithTransaction(db -> {
+            return DB.execWithTransaction(db -> {
                 db.session().delete(entity);
                 addRevisionRemoved(db, getEntityName(), getItemId(entity));
                 return true;
@@ -111,7 +127,7 @@ public abstract class QIHelper {
 
     public boolean saveEntity(Binder binder) throws BLException {
         try {
-            return (boolean) DB.execWithTransaction(db -> {
+            return DB.execWithTransaction(db -> {
                 if (binder.writeBeanIfValid(getOriginalEntity())) {
                     db.save(getOriginalEntity());
                     addRevisionCreated(db, getEntityName(), getItemId(getOriginalEntity()));
@@ -160,7 +176,6 @@ public abstract class QIHelper {
     public abstract boolean updateEntity(Binder binder) throws
             BLException;
 
-
     @SuppressWarnings("unchecked")
     public DataProvider getDataProvider() {
         DataProvider dataProvider = DataProvider.fromCallbacks(
@@ -191,9 +206,74 @@ public abstract class QIHelper {
         return dataProvider;
     }
 
-    public abstract Stream getAll(int offset, int limit, Map<String,Boolean> orders) throws Exception;
+    public DataProvider getSysConfigsDataProvider (String prefix) {
+        Map<String,Boolean> orders = new HashMap<>();
+        return DataProvider.fromCallbacks(
+                (CallbackDataProvider.FetchCallback) query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+                    Iterator it = query.getSortOrders().iterator();
+                    while (it.hasNext()) {
+                        QuerySortOrder order = (QuerySortOrder) it.next();
+                        orders.put(order.getSorted(),order.getDirection() == SortDirection.DESCENDING);
+                    }
+                    try {
+                        return getSysConfigs(offset,limit,orders, prefix);
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return null;
+                    }
+                },
+                (CallbackDataProvider.CountCallback<SysConfig, Void>) query -> {
+                    try {
+                        return getSysConfigsCount(prefix);
+                    } catch (Exception e) {
+                        getApp().getLog().error(e);
+                        return 0;
+                    }
+                });
+    }
 
-    public abstract int getItemCount() throws Exception;
+    public Collection<SysConfig> getSysConfigsByValue (String prefix) {
+        try {
+            return DB.exec(db -> {
+                SysConfigManager mgr = new SysConfigManager(db, prefix);
+                return mgr.getAllByValue();
+            });
+        } catch (Exception e) {
+            getApp().getLog().createError(e.getMessage());
+            return null;
+        }
+    }
+
+    private Stream getSysConfigs (int offset,int limit,Map<String,Boolean> orders, String prefix) throws Exception {
+        return ((List) DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db, prefix);
+            return mgr.getAll(offset,limit,orders);
+        })).stream();
+    }
+
+    private int getSysConfigsCount (String prefix) throws Exception {
+        return DB.exec(db -> {
+            SysConfigManager mgr = new SysConfigManager(db, prefix);
+            return mgr.getItemCount();
+        });
+    }
+
+    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+        List items = DB.exec(db -> {
+            DBManager mgr = new DBManager(db, clazz);
+            return mgr.getAll(offset,limit,orders);
+        });
+        return items.stream();
+    }
+
+    public int getItemCount() throws Exception {
+        return DB.exec(db -> {
+            DBManager mgr = new DBManager(db, clazz);
+            return mgr.getItemCount();
+        });
+    }
 
     public abstract String getItemId(Object item);
 
@@ -209,5 +289,19 @@ public abstract class QIHelper {
 
     public void setOriginalEntity(Object originalEntity) {
         this.originalEntity = originalEntity;
+    }
+
+
+    public void addValidators(String key, Validator ... validators){
+        List<Validator> v = this.validators.computeIfAbsent(key, k -> new LinkedList<>());
+        for (Validator validator: validators) v.add(validator);
+    }
+
+    public List<Validator> getValidators(String key) {
+        return validators.getOrDefault(key, Collections.emptyList());
+    }
+
+    public Map<String, List<Validator>> getValidators() {
+        return validators;
     }
 }

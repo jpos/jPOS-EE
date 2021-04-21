@@ -1,0 +1,323 @@
+== EEUser module
+
+The `eeuser` module can be used to represent visitors and users of the system with their
+respective roles and permissions. Roles can be system-wide, or per-Resource (tenant).
+
+[graphviz, eeuser-module, svg, scaledwidth=90%]
+----
+digraph eeuser {
+    node [shape=box, width=2.0];  user; visitor; realm;
+    node [shape=circle, fixedsize=true,width=1.2]; consumer; role; permissions; props; history; revision;
+    visitor -> user
+
+    user -> props;
+    user -> history;
+    user -> revision;
+
+    user -> consumer;
+    user -> role;
+    realm -> role;
+
+    consumer -> role;
+
+    role -> role;
+    role -> permissions;
+}
+----
+
+=== Visitor
+
+For web-based applications, a _visitor_ represents a remote user, either
+anonymous or logged into the system. The _Visitor_ entity allows implementing the optional
+_remember me_ feature. When its _User_ is not null, that means the user
+is already logged in. A Cookie is used to locate a given visitor.
+
+[plantuml, visitor, svg]
+----
+@startuml
+
+class Visitor {
+  String id;
+  User user;
+  Date lastUpdate;
+  Map props;
+} 
+
+@enduml
+----
+
+[frame="none",cols="15%,85%",options="header"]
+|===
+|Property   | Description
+|id         | Application specific, QI uses a UUID string
+|user       | If the user is already logged into the system, points to a valid User (in `eeuser` table)
+|lastUpdate | timestamp with last session initiation
+|props      | application specific properties  (i.e. host/ip address)
+|===
+
+- The visitor id format is application specific, QI uses a UUID string
+
+=== User
+
+_Users_, in turn have _roles_ containing _permissions_. 
+
+Roles can be limited to certain realms. Roles can have a parent, in which case, it inherits its permissions.
+
+[TIP]
+=====
+Because `user` is usually a reserved word in SQL, we use the name `eeuser` 
+for the users table.
+=====
+
+[plantuml, user-entity, svg, scaledwidth="90%"]
+----
+@startuml
+class User {
+  long id;
+  String nick;
+  String passwordHash;
+  String name;
+  String email;
+  Set roles;
+  Map props;
+  boolean deleted;
+  boolean active;
+  boolean verified;
+  Date startDate;
+  Date endDate;
+  List passwordHistory;
+  boolean forcePasswordChange;
+  Date lastLogin;
+  Date passwordChanged;
+  int loginAttempts;
+}
+
+class Realm {
+  String id;
+  String name;
+  String description;
+}
+
+class Role {
+  long id;
+  Role parent;
+  Realm realm;
+  String name;
+  Set permissions;
+}
+
+class Permission {
+  String name;
+}
+
+class PasswordHistory {
+  String value;
+}
+
+class Consumer {
+  String name
+  String hash
+  boolean deleted
+  Date startDate;
+  Date endDate;
+  User user
+  Set props
+  Set roles;
+}
+
+Realm    --o Role
+User     --o Role
+Role     --o Role
+Role     --o Permission
+User     --o PasswordHistory
+User     --o Consumer
+Consumer --o Role
+
+@enduml
+----
+
+[frame="none",cols="20%,80%",options="header"]
+|===
+|Property             | Description
+| id                  | internal id
+| nick                | unique system-wide nick name
+| passwordHash        | current strategy (`HashVersion.ONE`) uses `PBKDF2WithHmacSHA256`
+| name                | the user name
+| email               | primary e-mail address - additional email addresses can be stored in the `User.props` map
+| roles               |  user roles (which in turn have a permissions set)
+| props               | a general purpose map used to store application-specific data associated with the user
+| deleted             | logical delete
+| active              | true if the user is active
+| verified            | true if user has been verified. The verification process is application specific
+| startDate           | if not null, user is not valid before this date
+| endDate             | if not null, user is not valid after this date
+| passwordHistory     |  stores previous password hashes in order to implement password reuse feature
+| forcePasswordChange | if true, QI forces the user to change his/her password
+| lastLogin           | QI updates this entry on every login
+| passwordChanged     | last password change, use to force users to change password after X time
+| loginAttempts       | invalid login counter, can be used to lock users (by setting `active=false`)
+|===
+
+[NOTE]
+======
+jPOS-EE support multiple password hash strategies. 
+The current one (`VERSION.ONE`) uses `PBKDF2WithHmacSHA256`. 
+Entries with an older version (ZERO) get automatically upgraded to version 
+ONE on the next login.
+======
+
+=== Roles and Permissions
+
+Users have roles, which in turn have permissions.
+
+Here is a sample `role` entry:
+
+[source]
+---------------------
+# select * from role where name='admin';
+
+ id | name  
+----+-------
+ 64 | admin
+
+# select * from role_perms where role=64;
+
+ role |      name       
+------+-----------------
+   64 | sysadmin
+   64 | login
+   64 | sysconfig.read
+   64 | sysconfig.write
+   64 | users.read
+   64 | users.write
+   64 | accounting
+---------------------
+
+The permission and role names are application specific. QI (the jPOS UI) uses 
+the `sysconfig` (see <<sysconfig,SysConfig schema>>) table in order to assist 
+the UI with permission options, e.g.
+
+[source]
+--------
+# select * from sysconfig where id like 'perm%';
+          id          |    readperm    |               value               | writeperm 
+----------------------+----------------+-----------------------------------+-----------
+ perm.accounting      | sysconfig.read | Full access to accounting records | sysadmin
+ perm.login           | sysconfig.read | Login                             | sysadmin
+ perm.sysadmin        | sysadmin       | System Administrator              | sysadmin
+ perm.sysconfig.read  | sysconfig.read | View System Configuration         | sysadmin
+ perm.sysconfig.write | sysconfig.read | Edit System Configuration         | sysadmin
+ perm.users.read      | sysconfig.read | Read permission on Users          | admin
+ perm.users.write     | sysconfig.read | Write permission on Users         | admin
+--------
+
+As mentioned, the permission names are totally application specific. QI checks that a given user
+has a role that in turn has the `perm.login` in order to allow access to the system. These permissions
+can be configured in the `00_qi.xml` (see <<QI, QI module>>)  file to allow access to different parts
+of the system, e.g.:
+
+[source,xml]
+------------
+  <view route="profile" class="org.jpos.qi.eeuser.ProfilesView" 
+    perm="login" sidebar="system">                                    <1>
+    <property name="entityName" value="user"/>
+    <attribute name="id" field="false"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;"/>
+    <attribute name="email" length="128" />
+    <attribute name="active"/>
+    <attribute name="roles" column="false" perm="sysadmin"/>
+  </view>
+  <view route="roles" class="org.jpos.qi.eeuser.RolesView" 
+         perm="sysadmin" sidebar="system">                            <2>
+    <property name="entityName" value="role"/>
+    <attribute name="id" field="false"/>
+    <attribute name="name" regex="&WORD_PATTERN;" length="64"/>
+    <attribute name="permissions" column="false"/>
+  </view>
+------------
+<1> user can access its own profile
+<2> but needs `sysadmin` permission in order to administer roles
+
+=== Role's realm
+
+In multi-tenant systems, a user may have a role `admin` within a given realm 
+(e.g., a given `Issuer`) but not on others. A `role` can have an optional `realm` 
+to limit its scope.
+
+The permissions granted to a role restricted to a given realm are automatically
+prefixed with the realm's name, for example, if a given role `realm=accounting,
+role=admin` has the permissions `read` and `post`, the permissions granted to
+the user are `accounting:read` and `accounting:post` instead of just `read` and
+`post`.
+
+As shown in the previous diagram, a Role has permissions, but it also has a
+parent (that points to another Role).
+
+If we have a generic `accounting-admin` role with permissions 'read' and 'post',
+we can have a realm-scoped `accounting-admin` role that don't need to be
+configured with said permissions.
+
+[frame="none",cols="10%,20%,20%,30%,20%",options="header"]
+|===
+|Id | Realm     | Role             | Permissions  | Parent
+| 1 |           | accounting-admin | read, post   | (no parent)
+| 2 | company_1 | accounting-admin |              | 1
+| 3 | company_2 | accounting-admin |              | 1
+| 4 | company_3 | accounting-admin |              | 1
+| 5 | company_4 | accounting-admin |              | 1
+|===
+
+A user that has Role 1 (`accounting-admin` with no realm restriction) will have
+the generic permissions:
+
+- `read` and 
+- `post`
+
+A user that has Role 2 (`company_1`) and 4 (`company_3`) will have the permissions:
+
+- `company_1:read` 
+- `company_1:post`
+- `company_3:read` 
+- `company_3:post`
+
+[NOTE]
+======
+The permission is formed out of the realm name, plus a colon and the real permission name.
+======
+
+=== Consumer
+
+A _Consumer_ is used to represent an API client (i.e. a mobile device). If the 
+API is being hit by a mobile application, the Consumer would represent an instance of 
+that application.
+
+A Consumer belongs to a user, but it has its own set of roles and permissions.
+
+[frame="none",cols="20%,80%",options="header"]
+|===
+|Property             | Description
+| id                  | application-specific ID (i.e. UUID)
+| hash                | current strategy (`HashVersion.ONE`) uses `PBKDF2WithHmacSHA256`
+| active              | true if the user is active
+| deleted             | logical delete
+| startDate           | if not null, user is not valid before this date
+| endDate             | if not null, user is not valid after this date
+| user                | Consumers belong to a given user
+| roles               | set of roles (which in turn has permissions)
+| props               | application-specific properties
+|===
+
+=== Password History
+
+In order to support the optional _do not repeat passwords_ feature, we have a
+companion password history entity where the UI keeps track of the password
+hashes of the last N passwords used.
+
+=== User/Consumer properties
+
+Application-specific data associated with the user can be stored in this
+general purpose key/value map. Typical information stored there are 
+alternate email addresses, UI preferences, etc.
+
+

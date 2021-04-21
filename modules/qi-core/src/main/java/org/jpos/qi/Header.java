@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -110,11 +110,11 @@ public class Header extends HorizontalLayout {
         }
         userMenuItem = mb.addItem(app.getUser().getNick(), null);
         userMenuItem.setIcon(VaadinIcons.USER);
-        userMenuItem.addItem("Profile", selectedItem -> {
+        userMenuItem.addItem(app.getMessage("profile"), selectedItem -> {
             removeSelected();
             app.navigateTo("/profile");
         });
-        userMenuItem.addItem("Log Out", selectedItem -> app.logout());
+        userMenuItem.addItem(app.getMessage("logout"), selectedItem -> app.logout());
         return mb;
     }
 
@@ -124,7 +124,7 @@ public class Header extends HorizontalLayout {
             boolean allowed = perm == null || QI.getQI().getUser().hasPermission(perm);
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
-                        e.getAttributeValue("name"),
+                        app.getMessage(e.getAttributeValue("name")),
                         selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);
@@ -142,7 +142,7 @@ public class Header extends HorizontalLayout {
             boolean allowed = perm == null || QI.getQI().getUser().hasPermission(perm);
             if (allowed) {
                 MenuBar.MenuItem mi = mb.addItem(
-                        e.getAttributeValue("name"),
+                        app.getMessage(e.getAttributeValue("name")),
                         selectedItem -> menuItemSelected(selectedItem, e)
                 );
                 decorate (mi, e);

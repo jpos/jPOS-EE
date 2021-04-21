@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -25,6 +25,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.*;
+import org.jpos.core.Configurable;
+import org.jpos.core.Configuration;
+import org.jpos.core.ConfigurationException;
 import org.jpos.q2.Q2;
 import org.jpos.q2.iso.QMUX;
 import org.jpos.qrest.Response;
@@ -32,24 +35,24 @@ import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.transaction.TransactionParticipant;
+import org.jpos.util.Caller;
 import org.jpos.util.NameRegistrar;
 
 import static org.jpos.qrest.Constants.REQUEST;
 import static org.jpos.qrest.Constants.RESPONSE;
 
-public class Q2Info implements TransactionParticipant {
+public class Q2Info implements TransactionParticipant, Configurable {
     private TransactionManager txnmgr;
     private Q2 q2;
     private List<Route<Map<String,Object>>> routes = new ArrayList<>();
+    private String prefix;
 
-    public Q2Info() {
-        initInternalRoutes();
-    }
+    public Q2Info() { }
 
     @Override
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
-        FullHttpRequest request = (FullHttpRequest)  ctx.get(REQUEST);
+        FullHttpRequest request = ctx.get(REQUEST);
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
         Map<String,Object> response = null;
         Optional<Route<Map<String,Object>>> route = routes.stream().filter(rr -> rr.matches(decoder.uri())).findFirst();
@@ -84,6 +87,12 @@ public class Q2Info implements TransactionParticipant {
     public void setTransactionManager (TransactionManager txnmgr) {
         this.txnmgr = txnmgr;
         this.q2 = txnmgr.getServer();
+    }
+
+    @Override
+    public void setConfiguration(Configuration cfg) {
+        this.prefix = cfg.get("prefix");
+        initInternalRoutes();
     }
 
     private Map<String, Object> muxes () {
@@ -155,15 +164,16 @@ public class Q2Info implements TransactionParticipant {
 
 
     private void initInternalRoutes() {
-        routes.add(new Route<>("/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
-        routes.add(new Route<>("/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
-        routes.add(new Route<>("/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
-        routes.add(new Route<>("/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
-        routes.add(new Route<>("/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
-        routes.add(new Route<>("/q2/diskspace**", "GET", (t,s) -> diskspace()));
-        routes.add(new Route<>("/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
-        routes.add(new Route<>("/q2/mux**", "GET", (t,s) -> muxes()));
-        routes.add(new Route<>("/q2/txnmgr**", "GET", (t,s) -> txnmgr()));
+        routes.add(new Route<>(prefix + "/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
+        routes.add(new Route<>(prefix + "/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
+        routes.add(new Route<>(prefix + "/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
+        routes.add(new Route<>(prefix + "/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
+        routes.add(new Route<>(prefix + "/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
+        routes.add(new Route<>(prefix + "/q2/diskspace**", "GET", (t,s) -> diskspace()));
+        routes.add(new Route<>(prefix + "/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
+        routes.add(new Route<>(prefix + "/q2/mux**", "GET", (t,s) -> muxes()));
+        routes.add(new Route<>(prefix + "/q2/txnmgr/name", "GET", (t,s) -> mapOf("name", txnmgr.getName())));
+        routes.add(new Route<>(prefix + "/q2/txnmgr**", "GET", (t,s) -> txnmgr()));
     }
 
     private  Map<String, Object> newMap () {
@@ -186,4 +196,5 @@ public class Q2Info implements TransactionParticipant {
         m.put("usable", f.getUsableSpace());
         return mapOf("diskspace", m);
     }
+
 }

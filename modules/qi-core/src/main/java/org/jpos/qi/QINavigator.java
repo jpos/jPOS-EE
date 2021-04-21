@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -32,24 +32,24 @@ import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QFactory;
 import org.jpos.qi.views.DefaultView;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QINavigator extends Navigator {
-    private static String URL_PATTERN_STRING = "^[\\w\\s.\\-\\/\\?\\=]{0,255}$";
-    private static Pattern ROUTE_PATTERN = Pattern.compile("^\\/(\\w+)\\/*.*");
+    private static String URL_PATTERN_STRING = "^[\\w\\s.\\-\\/\\?\\=\\:\\&]{0,255}$";
+    private static Pattern ROUTE_PATTERN = Pattern.compile("^/(\\w+)/*.*");
     public Validator validator;
     QI app;
     Map<String,String> perms = new HashMap<>();
     Map<String,String> routes = new HashMap<>();
     private QFactory qfactory;
+    private Stack<String> history;
 
     public QINavigator(QI app, Layout layout) {
         super(app, layout);
         this.app = app;
-        validator = new RegexpValidator("Invalid URL",URL_PATTERN_STRING);
+        validator = new RegexpValidator(app.getMessage("errorMessage.invalidURL"),URL_PATTERN_STRING);
         qfactory = app.getQ2().getFactory();
         initNavigator();
     }
@@ -70,20 +70,18 @@ public class QINavigator extends Navigator {
                 }
                 perms.put(route, perm);
                 e.getChildren("property").stream().filter(p -> "entityName".equals(p.getAttributeValue("name"))).forEach(
-                        p -> {
-                            if (routes.get(p.getAttributeValue("value")) == null ) {
-                                routes.put(p.getAttributeValue("value"), route);
-                            }
-                        });
+                        p -> routes.putIfAbsent(p.getAttributeValue("value"), route));
             } catch (ClassNotFoundException ex) {
                 app.getLog().error(ex);
             }
             app.addView(route, e);
         }
+        history = new Stack<>();
     }
 
     @Override
     public void navigateTo(String navigationState) {
+        addHistory(navigationState);
         if (app.getUser().isForcePasswordChange()) {
             super.navigateTo("/users/" + app.getUser().getId() + "/profile/password_change");
             return;
@@ -101,11 +99,14 @@ public class QINavigator extends Navigator {
                         allowed = hasAccessToRoute(route);
                     }
                     if (!allowed) {
+                        QI.getQI().displayNotification(QI.getQI().getMessage(
+                          "errorMessage.notPermission", QI.getQI().getUser().getNick())
+                        );
                         navigationState = "/home";
                     }
                     super.navigateTo(navigationState);
                     if (app.sidebar() != null) {
-                        app.sidebar().markAsSelected(navigationState.substring(1).split("/|,|\\?")[0]);
+                        app.sidebar().markAsSelected(navigationState.substring(1).split("[/,?]")[0]);
                     }
                 } catch( IllegalArgumentException e) {
                     QI.getQI().displayNotification(e.getMessage());
@@ -113,9 +114,19 @@ public class QINavigator extends Navigator {
                 }
             } else {
                 QI.getQI().displayNotification(result.getErrorMessage());
+                QI.getQI().getLog().error(result.getErrorMessage());
                 super.navigateTo("/home");
             }
         }
+    }
+
+    public void navigateBack () {
+        if (hasHistory())
+            navigateTo(getPreviousView());
+    }
+
+    public boolean hasHistory () {
+        return history.size() > 1;
     }
 
     public boolean hasAccessToRoute (String route) {
@@ -126,6 +137,23 @@ public class QINavigator extends Navigator {
 
     public String getRouteForEntity(String entityName) {
         return routes.get(entityName);
+    }
+
+    private void addHistory (String url) {
+        history.add(url);
+        while (history.size() > 10)
+            history.remove(0);
+    }
+
+    public void setPreviousView (String previousUrl) {
+        String current = history.peek() != null ? history.pop() : null;
+        history.push(previousUrl);
+        history.push(current);
+    }
+
+    public String getPreviousView () {
+        history.pop(); // Remove current view.
+        return history.pop();
     }
 
     public class QIViewProvider implements ViewProvider {

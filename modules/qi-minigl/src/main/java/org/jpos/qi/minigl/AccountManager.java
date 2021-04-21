@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,16 +33,23 @@ import java.util.Map;
  * Created by jr on 8/8/17.
  */
 public class AccountManager extends DBManager<Account> {
-    
+
     
     public AccountManager(DB db) {
         super(db,Account.class);
     }
 
-    public List<Account> getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
+    public List getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent, boolean onlyComposite) throws Exception {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
-        CriteriaQuery<Account> query = criteriaBuilder.createQuery(Account.class);
-        Root<Account> root = query.from(Account.class);
+        CriteriaQuery query;
+        Root root;
+        if (onlyComposite) {
+            query = criteriaBuilder.createQuery(CompositeAccount.class);
+            root = query.from(CompositeAccount.class);
+        } else {
+            query = criteriaBuilder.createQuery(Account.class);
+            root = query.from(Account.class);
+        }
         List<Order> orderList = new ArrayList<>();
         //ORDERS
         for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
@@ -59,11 +66,19 @@ public class AccountManager extends DBManager<Account> {
         query.select(root);
         query.orderBy(orderList);
         query.where(p);
-        List<Account> list = db.session().createQuery(query)
+        List<CompositeAccount> list = db.session().createQuery(query)
                 .setMaxResults(limit)
                 .setFirstResult(offset)
                 .getResultList();
         return list;
+    }
+
+    public List getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
+        return getAllChildren(offset, limit, orders, parent, false);
+    }
+
+    public List getAllCompositeChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
+        return getAllChildren(offset, limit, orders, parent, true);
     }
 
 
@@ -90,6 +105,16 @@ public class AccountManager extends DBManager<Account> {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<CompositeAccount> root = query.from(CompositeAccount.class);
+        query.select(criteriaBuilder.count(root));
+        return db.session().createQuery(query).getSingleResult().intValue();
+    }
+
+    public int getCompositeChildrenCount (Account parent) {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<CompositeAccount> root = query.from(CompositeAccount.class);
+        Predicate equals = criteriaBuilder.equal(root.get("parent"), parent);
+        query.where(equals);
         query.select(criteriaBuilder.count(root));
         return db.session().createQuery(query).getSingleResult().intValue();
     }

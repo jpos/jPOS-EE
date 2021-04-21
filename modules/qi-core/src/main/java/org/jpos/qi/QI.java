@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -72,7 +72,7 @@ public class QI extends UI {
         qiLayout = new QILayout();
         views = new HashMap<>();
         try {
-            q2 = (Q2) NameRegistrar.get("Q2");
+            q2 = NameRegistrar.get("Q2");
         } catch (NameRegistrar.NotFoundException e) {
             throw new IllegalStateException ("Q2 not available");
         }
@@ -251,10 +251,12 @@ public class QI extends UI {
         qiLayout.getContentLayout().removeComponent(loginView);
         createMainView();
         String fragment = UI.getCurrent().getPage().getUriFragment();
-        if (fragment != null && !fragment.isEmpty() && fragment.startsWith("!"))
+        if (fragment == null || fragment.isEmpty()) {
+            navigateTo("/home");
+        } else if (fragment.startsWith("!")) {
             navigateTo(fragment.substring(1));
+        }
     }
-
 
     void logout() {
         qiLayout.removeAllComponents();
@@ -334,8 +336,12 @@ public class QI extends UI {
         return sidebar;
     }
 
-    private void createLoginView () {
-        qiLayout.getContentLayout().addComponent(loginView = new LoginView());
+    private void createLoginView() {
+        qiLayout.getContentLayout().addComponent(loginView = prepareLoginView());
+    }
+
+    protected LoginView prepareLoginView() {
+        return new LoginView();
     }
 
     private Visitor getVisitor(DB db) {
@@ -354,7 +360,7 @@ public class QI extends UI {
         return v;
     }
 
-    private void createMainView() {
+    protected void createMainView() {
         setNavigator(new QINavigator(this, qiLayout.getContentLayout()));
         if (qiLayout.getHeaderLayout() != null) {
             header = new Header(this);

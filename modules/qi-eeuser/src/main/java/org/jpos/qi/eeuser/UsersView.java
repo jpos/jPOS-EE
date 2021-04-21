@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,27 +21,33 @@ package org.jpos.qi.eeuser;
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.HtmlRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.jpos.ee.*;
 import org.jpos.qi.*;
-import org.jpos.util.FieldFactory;
-import org.jpos.util.PasswordGenerator;
+import org.jpos.qi.util.FieldFactory;
+import org.jpos.qi.util.PasswordGenerator;
 
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 
 public class UsersView extends QIEntityView<User> {
-
+    // Ensure that password contains between 8-20 characters long, have at least one digit (0-9),
+    // one lowercase character, one uppercase character and at least one special character @#-.=_!
+    static String PASSWORD_PATTERN = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-!_=#@.]).{8,20})";
+    
     private User selectedU;
     private Binder<String> passwordBinder;
     private PasswordField currentPasswordField;
     private PasswordField repeatPasswordField;
+    private PasswordField newPasswordField;
     private Panel passwordPanel;
     private Button changePassBtn;
     private Button resetPassBtn;
@@ -49,14 +55,14 @@ public class UsersView extends QIEntityView<User> {
     private boolean binderIsReadOnly;   //used while binder.isReadOnly not implemented by Vaadin
 
     public UsersView () {
-        super(User.class, "users");
+        super(User.class);
     }
 
     @Override
     public String getHeaderSpecificTitle(Object entity) {
         if (entity instanceof User) {
             User u = (User) entity;
-            return u.getNick() != null ? u.getId() + " - " + u.getNick() : "New";
+            return u.getNick() != null ? u.getNick() : getApp().getMessage("new");
         } else {
             return null;
         }
@@ -125,8 +131,10 @@ public class UsersView extends QIEntityView<User> {
             changePassBtn.setEnabled(false);
             getCancelBtn().setEnabled(false);
             getApp().scrollIntoView(passwordPanel);
+            newPasswordField.setReadOnly(false);
+            currentPasswordField.setReadOnly(false);
+            repeatPasswordField.setReadOnly(false);
         }
-
     }
 
     protected Component buildAndBindCustomComponent(String propertyId) {
@@ -150,14 +158,6 @@ public class UsersView extends QIEntityView<User> {
         return new FieldFactory(getBean(), getViewConfig(), getBinder()) {
             public List<Validator> getValidators(String propertyId) {
                 List<Validator> list = super.getValidators(propertyId);
-                if ("email".equals(propertyId)) {
-                    list.add(new EmailValidator(getApp().getMessage("errorMessage.invalidEmail")) {
-                        @Override
-                        protected boolean isValid(String value) {
-                            return value == null || value.isEmpty() || super.isValid(value);
-                        }
-                    });
-                }
                 if ("nick".equals(propertyId)) {
                     list.add(((UsersHelper)getHelper()).getNickTakenValidator());
                 }
@@ -170,10 +170,14 @@ public class UsersView extends QIEntityView<User> {
     public void setGridGetters() {
         Grid<User> g = getGrid();
         g.addColumn(User::getId).setId("id");
-        g.addColumn(User::getName).setId("name");
         g.addColumn(User::getNick).setId("nick");
+        g.addColumn(User::getName).setId("name");
         g.addColumn(User::getEmail).setId("email");
-        g.addColumn(User::isActive).setId("active");
+        g.addColumn(user -> {
+            String active = VaadinIcons.CHECK.getHtml();
+            String inActive = VaadinIcons.CLOSE.getHtml();
+            return user.isActive() ? active : inActive;
+        }).setId("active").setRenderer(new HtmlRenderer());
         g.addColumn(User::isDeleted).setId("deleted");
         g.addColumn(User::isVerified).setId("verified");
         g.addColumn(User::getStartDate).setId("startDate");
@@ -193,9 +197,13 @@ public class UsersView extends QIEntityView<User> {
         b.setEnabled(false);
         b.addClickListener((Button.ClickListener) event -> {
             passwordPanel.setVisible(!passwordPanel.isVisible());
-            passwordBinder.setReadOnly(!binderIsReadOnly);
+            binderIsReadOnly = !binderIsReadOnly;
+            passwordBinder.setReadOnly(binderIsReadOnly);
             changePassBtn.setCaption(passwordPanel.isVisible() ?
                     getApp().getMessage("cancel") : getApp().getMessage("changePassword"));
+            currentPasswordField.setReadOnly(binderIsReadOnly);
+            newPasswordField.setReadOnly(binderIsReadOnly);
+            repeatPasswordField.setReadOnly(binderIsReadOnly);
         });
         return b;
     }
@@ -250,10 +258,11 @@ public class UsersView extends QIEntityView<User> {
             form.addComponent(currentPasswordField);
         }
 
-        PasswordField newPasswordField = new PasswordField(getApp().getMessage("passwordForm.newPassword"));
+        newPasswordField = new PasswordField(getApp().getMessage("passwordForm.newPassword"));
         newPasswordField.setWidth("80%");
         passwordBinder.forField(newPasswordField)
                 .asRequired(getApp().getMessage("errorMessage.req",newPasswordField.getCaption()))
+                .withValidator(new RegexpValidator(QI.getQI().getMessage("errorMessage.invalidField", newPasswordField.getCaption()), PASSWORD_PATTERN))
                 .withValidator(((UsersHelper)getHelper()).getNewPasswordNotUsedValidator())
                 .bind(string->string,null);
         form.addComponent(newPasswordField);
@@ -325,25 +334,9 @@ public class UsersView extends QIEntityView<User> {
             changePassBtn = createChangePasswordButton();
             l.addComponents(changePassBtn, createPasswordPanel());
         }
-        if (getInstance().hasPermission("sysadmin") && !isNewView()) {
+        if (QI.getQI().getUser().hasPermission("*sysadmin") && !isNewView()) {
             resetPassBtn = createResetPasswordButton();
             l.addComponent(resetPassBtn);
         }
     }
-
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
-
-    @Override
-    public boolean canAdd() {
-        return true;
-    }
-
-    @Override
-    public boolean canRemove() {
-        return true;
-    }
-
 }

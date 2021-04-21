@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@ import org.jpos.binlog.BinLogReader;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
-import java.io.File;
+import java.nio.file.Paths;
 
 @SuppressWarnings("unused")
 public class MONITOR implements CLICommand {
@@ -31,7 +31,7 @@ public class MONITOR implements CLICommand {
     boolean ansi;
 
     public void exec(CLIContext cli, String[] args) throws Exception {
-        try (BinLogReader bl = new BinLogReader(new File((String) cli.getUserData().get("binlog")))) {
+        try (BinLogReader bl = new BinLogReader(Paths.get((String) cli.getUserData().get("binlog")))) {
             while (bl.hasNext(10000L)) {
                 BinLog.Entry ref = bl.next();
                 cli.println(String.format("%06d@%08d %s",

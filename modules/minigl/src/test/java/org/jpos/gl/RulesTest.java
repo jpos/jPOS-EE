@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,13 +18,16 @@
 
 package org.jpos.gl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Date;
 import java.math.BigDecimal;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RulesTest extends TestBase {
     Journal journal;
@@ -35,8 +38,8 @@ public class RulesTest extends TestBase {
     FinalAccount loan;
     FinalAccount bobEquity;
 
+    @BeforeEach
     public void setUp () throws Exception {
-        super.setUp();
         journal   = gls.getJournal ("TestJournal");
         chart     = gls.getChart ("TestChart");
         cashUS    = gls.getFinalAccount (chart, "111");
@@ -45,6 +48,7 @@ public class RulesTest extends TestBase {
         loan      = gls.getFinalAccount (chart, "21");
         bobEquity = gls.getFinalAccount (chart, "31");
     }
+    @Test
     public void testSimplePost () throws Exception {
         BigDecimal amount      = new BigDecimal ("5.00");
         GLTransaction txn = 
@@ -55,6 +59,7 @@ public class RulesTest extends TestBase {
         gls.post (journal, txn);
         tx.commit();
     }
+    @Test
     public void testUnbalancedPost () throws Exception {
         GLTransaction txn = 
             createTransaction (
@@ -76,6 +81,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
+    @Test
     public void testFinalMinBalance () throws Exception {
         BigDecimal amount      = new BigDecimal ("4996.00");
         GLTransaction txn = 
@@ -98,6 +104,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
+    @Test
     public void testFinalMinBalanceInLayerOne () throws Exception {
         BigDecimal amount      = new BigDecimal ("4996.00");
         GLTransaction txn = 
@@ -121,6 +128,7 @@ public class RulesTest extends TestBase {
         fail ("GLException should have been raised");
     }
 
+    @Test
     public void testCompositeMinBalance () throws Exception {
         BigDecimal amount = new BigDecimal ("48001.00");
         GLTransaction txn = 
@@ -146,6 +154,7 @@ public class RulesTest extends TestBase {
         fail ("GLException should have been raised");
     }
 
+    @Test
     public void testCompositeMaxBalance () throws Exception {
         BigDecimal amount = new BigDecimal ("1000000.00");
         GLTransaction txn = 
@@ -170,6 +179,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
+    @Test
     public void testFinalMaxBalance () throws Exception {
         BigDecimal amount = new BigDecimal ("100000.00");
         GLTransaction txn = 

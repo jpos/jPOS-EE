@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -25,7 +25,6 @@ import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.ee.BLException;
 import org.jpos.gl.*;
 import org.jpos.qi.*;
@@ -36,10 +35,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jpos.util.QIUtils.getCaptionFromId;
+import static org.jpos.qi.util.QIUtils.getCaptionFromId;
 
 public class TransactionsView extends QIEntityView<GLTransaction> {
-    private static final String VIEW_NAME = "transactions";
     /**
      * combo to select the journal
      */
@@ -47,7 +45,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     /**
      * field to select transactions in a certain date range
      */
-    DateRangeComponent dateRangeComponent = new DateRangeComponent(DateRange.ALL_TIME, true) {
+    DateRangeComponent dateRangeComponent = new DateRangeComponent(DateRange.TODAY, true) {
         @Override
         protected Button.ClickListener createRefreshListener() {
             return event -> refreshGrid();
@@ -62,7 +60,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     private List<Object> addedEntriesIds;
 
     public TransactionsView() {
-        super(GLTransaction.class, VIEW_NAME);
+        super(GLTransaction.class);
         addedEntriesIds = new ArrayList<>();
     }
 
@@ -109,10 +107,11 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
         controls.setWidth("100%");
         journals = new JournalsCombo(true);
         journals.setValue(journals.getDataProvider().fetch(new Query<>()).findFirst().orElse(null));
-        controls.addComponents(journals, dateRangeComponent);
-        controls.setComponentAlignment(dateRangeComponent, Alignment.MIDDLE_LEFT);
+        controls.addComponent(journals);
         controls.setComponentAlignment(journals, Alignment.MIDDLE_RIGHT);
         controls.setExpandRatio(journals, 0f);
+        controls.addComponent(dateRangeComponent);
+        controls.setComponentAlignment(dateRangeComponent, Alignment.MIDDLE_LEFT);
         controls.setExpandRatio(dateRangeComponent, 1f);
         controls.setMargin(new MarginInfo(false,true,true,true));
         controls.setSpacing(true);
@@ -160,7 +159,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     /**
      * Refreshes the grid when a search parameter changes
      */
-    private void refreshGrid() {
+    public void refreshGrid() {
         DateRange range = dateRangeComponent.getValue();
         Journal selectedJournal = journals.getValue();
         ((TransactionsHelper) getHelper()).setDefaultJournalId(selectedJournal.getId());
@@ -196,7 +195,7 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     @Override
     public String getHeaderSpecificTitle(Object entity) {
         GLTransaction transaction = (GLTransaction)entity;
-        return transaction.getId() != 0 ? String.valueOf(transaction.getId()) : "New";
+        return transaction.getId() != 0 ? String.valueOf(transaction.getId()) : getApp().getMessage("new");
     }
 
     @Override
@@ -204,13 +203,18 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
         return true;
     }
 
-    @Override
-    public boolean canEdit() {
-        return true;
-    }
 
     @Override
-    public boolean canAdd() { return true; }
+    public boolean canAdd() {
+        TransactionsHelper helper = (TransactionsHelper) getHelper();
+        List journals = helper.getJournals();
+        if (journals != null && journals.size() > 0) {
+            return super.canAdd();
+        } else {
+            getApp().displayError("errorMessage.noJournal", "errorMessage.noJournal.detail");
+            return false;
+        }
+    }
 
     @Override
     public boolean canRemove() {
@@ -227,8 +231,8 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
 
     @Override
     protected void editClick(Button.ClickEvent event, Layout formLayout) {
-        super.editClick(event,formLayout);
         setReadOnly(false);
+        super.editClick(event, formLayout);
     }
 
     @Override
@@ -272,7 +276,8 @@ public class TransactionsView extends QIEntityView<GLTransaction> {
     }
 
     public void setReadOnly (boolean readOnly) {
-        newEntryForm.setReadOnly(readOnly);
+        if (newEntryForm != null)
+            newEntryForm.setReadOnly(readOnly);
         entryGrid.setReadOnly(readOnly);
         if (readOnly) {
             shouldReverse=false;

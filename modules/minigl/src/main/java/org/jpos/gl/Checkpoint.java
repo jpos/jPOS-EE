@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,9 +26,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
-/** 
+/**
  *      Journal level account Checkpoint.
- *     
+ *
 */
 public class Checkpoint implements Serializable {
     private Date date;
@@ -86,6 +86,7 @@ public class Checkpoint implements Serializable {
             .append("layers", getLayers())
             .append("journal", getJournal())
             .append("account", getAccount())
+            .append("balance", getBalance())
             .toString();
     }
 

@@ -30,9 +30,9 @@
      <key-property name="date" type="timestamp" />
      <key-property name="layers" type="string" length="32" />
      <key-many-to-one name="journal" class="org.jpos.gl.Journal"
-         foreign-key="FKCheckpointJournal"/>
+         foreign-key="FKCheckpointJournal" column="journal" />
      <key-many-to-one name="account" class="org.jpos.gl.Account" 
-         foreign-key="FKCheckpointAccount "/>
+         foreign-key="FKCheckpointAccount" column="account" on-delete="cascade"/>
     </composite-id>
     <property name="balance" type="big_decimal">
      <column name="balance" sql-type="numeric(14,2)" not-null="true" />

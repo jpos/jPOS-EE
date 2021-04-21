@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: Mail support module'
 
 dependencies {
-    compile project(':modules:core')
-    compile libraries.javax_mail
+    api project(':modules:core')
+    api libraries.javax_mail
 }

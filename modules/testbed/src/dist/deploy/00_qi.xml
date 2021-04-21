@@ -5,6 +5,7 @@
         <!ENTITY TEXT_EXTENDED_PATTERN "^[\w\s.,\-\'():]*$">
         <!ENTITY WORD_PATTERN "^[\w.\-]*$">
         <!ENTITY ACCT_CODE_PATTERN "^[\w.]*$">
+        <!ENTITY SYSCONFIG_ID_PATTERN "^[\w\s.\-\/\?\=\:]{0,255}$">
         ]>
 
 <xml-config name="QI" logger="Q2">
@@ -12,7 +13,7 @@
   <!--first one is default locale-->
   <locale>en-US</locale>
   <!--additional locales-->
-  <!--<locale>es-UY</locale>-->
+  <!--<locale>es-ES</locale>-->
 
   <messages>qi-core-messages</messages>
   <messages>qi-eeuser-messages</messages>
@@ -20,7 +21,7 @@
   <messages>qi-minigl-messages</messages>
 
   <menubar>
-    <menu name="System" icon="COG" style="icon-cog" action="system" />
+    <menu name="system" icon="COG" style="icon-cog" action="system" />
   </menubar>
 
   <!-- sidebar view definition -->
@@ -31,20 +32,21 @@
   </sidebar>
 
   <sidebar id="system">
-    <section name="System"/>
+    <section name="system"/>
     <option name="Info" action="info"/>
     <option name="Log" action="log"/>
-    <option name="Exception log" action="exceptions"/>
-    <option name="Users" action="users"/>
-    <option name="Consumers" action="consumers"/>
-    <option name="Roles" action="roles"/>
-    <option name="Permissions" action="permissions"/>
-    <option name="SysConfig" action="sysconfig"/>
-    <option name="Audit Log" action="syslog"/>
-    <option name="Revision History" action="revision_history"/>
-    <section name="MiniGL"/>
-    <option name="Accounts" action="accounts"/>
-    <option name="Transactions" action="transactions"/>
+    <option name="exceptionlog" action="exceptions"/>
+    <option name="users" action="users"/>
+    <option name="consumers" action="consumers"/>
+    <option name="roles" action="roles"/>
+    <option name="permissions" action="permissions"/>
+    <option name="sysconfig" action="sysconfig"/>
+    <option name="syslog" action="syslog"/>
+    <option name="revision.history" action="revision_history"/>
+    <section name="minigl"/>
+    <option name="accounts" action="accounts"/>
+    <option name="transactions" action="transactions"/>
+    <option name="layers" action="layers"/>
   </sidebar>
 
 
@@ -64,29 +66,23 @@
   </view>
   <view route="sysconfig" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="sysconfig"/>
-    <attribute name="id" required="true" read-only="true" regex="&WORD_PATTERN;" length="64" />
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;"
+               length="64" expand-ratio="1" width="40%"/>
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4" width="40%"/>
   </view>
-  <!--<view route="permissions" class="org.jpos.qi.sysconfig.PermissionView" perm="sysadmin" sidebar="system">-->
-    <!--<property name="entityName" value="permission"/>-->
-    <!--<attribute name="id" read-only="true" required="true"/>-->
-    <!--<attribute name="value" regex="&TEXT_PATTERN;" required="true"/>-->
-  <!--</view>-->
   <view route="permissions" class="org.jpos.qi.sysconfig.SysConfigView" perm="sysadmin" sidebar="system">
-    <property name="name" value="permissions"/>
     <property name="entityName" value="permission"/>
     <property name="prefix" value="perm." />
     <property name="title" value="Permissions" />
-    <attribute name="id" read-only="true" required="true"/>
-    <attribute name="value" regex="&TEXT_PATTERN;" required="true"/>
+    <attribute name="id" required="true" read-only="true" regex="&SYSCONFIG_ID_PATTERN;" length="64" expand-ratio="1" width="40%" />
+    <attribute name="value" regex="&TEXT_PATTERN;" required="true" expand-ratio="4" width="40%"/>
   </view>
-
   <view route="users" class="org.jpos.qi.eeuser.UsersView" perm="users.write" sidebar="system">
     <property name="entityName" value="user"/>
-    <attribute name="id" field="false" required="true"/>
-    <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true"/>
-    <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="1" width="40%"/>
-    <attribute name="email" length="128" expand-ratio="1" width="40%"/>
+    <attribute name="id" field="false" required="true" column="false"/>
+    <attribute name="nick" length="64" regex="&WORD_PATTERN;" required="true" expand-ratio="1"/>
+    <attribute name="name" length="128" regex="&TEXT_PATTERN;" expand-ratio="2" width="40%"/>
+    <attribute name="email" length="128" expand-ratio="2" width="40%"/>
     <attribute name="active" expand-ratio="1"/>
     <attribute name="roles" column="false" perm="sysadmin"/>
   </view>
@@ -108,7 +104,7 @@
   <view route="consumers" class="org.jpos.qi.eeuser.ConsumersView" perm="sysadmin" sidebar="system">
     <property name="entityName" value="consumer"/>
     <attribute name="id" field="false" required="true" read-only="true"/>
-    <attribute name="user" column="false" field = "false" read-only="true"/>
+    <attribute name="user" column="false" read-only="true" link="users"/>
     <attribute name="active" />
     <attribute name="roles" read-only="false"/>
     <attribute name="startDate" />
@@ -130,29 +126,37 @@
       <script>uptime</script>
     </view>
     <view caption="Date" route="date" class="org.jpos.qi.system.ObjectView" perm="login" repeat="1000"
-          clearScreen="true">
+          viewStyle="marginView" clearScreen="true">
       <object class="java.util.Date"/>
     </view>
-    <view caption="PS" route="date" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000" clearScreen="true">
+    <view caption="PS" route="ps" class="org.jpos.qi.system.CommandRunner" perm="login" repeat="1000"
+          viewStyle="marginView" clearScreen="true">
       <command>deploy:ps</command>
+    </view>
+    <view caption="Deploy" route="deploy" class="org.jpos.qi.system.CommandRunner" perm="sysadmin"
+          viewStyle="marginView" clearScreen="true">
+      <command>deploy:list</command>
+    </view>
+    <view route="markdowntest" caption="MarkdownTest" class="org.jpos.qi.system.MarkdownView" perm="sysadmin"
+          clearScreen="true" viewStyle="marginView">
+      <object class="org.jpos.testbed.MarkdownLorem"/>
     </view>
   </view>
   <view route="revision_history" class="org.jpos.qi.system.RevisionsView" perm="login" sidebar="system">
     <property name="entityName" value="revision"/>
-    <attribute name="id" field="false"/>
-    <attribute name="date" read-only="true"/>
-    <attribute name="info" read-only="true"/>
+    <attribute name="id" field="false" column="false"/>
+    <attribute name="date" read-only="true" expand-ratio="1"/>
+    <attribute name="info" read-only="true" expand-ratio="3"/>
     <attribute name="ref" read-only="true"/>
     <attribute name="author" read-only="true"/>
   </view>
   <view route="syslog" class="org.jpos.qi.system.AuditLogView" perm="sysconfig" sidebar="system">
     <property name="entityName" value="syslog"/>
-    <attribute name="id" field="false"/>
-    <attribute name="date" />
-    <attribute name="source" />
-    <attribute name="type" />
-    <attribute name="severity" />
-    <attribute name="summary" />
+    <attribute name="date" expand-ratio="1"/>
+    <attribute name="source" expand-ratio="1"/>
+    <attribute name="type" expand-ratio="1"/>
+    <attribute name="severity" expand-ratio="1"/>
+    <attribute name="summary" expand-ratio="2"/>
     <attribute name="detail" column="false"/>
     <attribute name="trace" column="false"/>
   </view>
@@ -177,6 +181,12 @@
     <attribute name="postDate" />
     <attribute name="journal" column="false" read-only="true"/>
     <attribute name="entries" column="false" />
+  </view>
+  <view route="layers" class="org.jpos.qi.minigl.LayersView" perm="accounting" sidebar="system">
+    <property name="entityName" value="layer"/>
+    <attribute name="id"/>
+    <attribute name="journal" />
+    <attribute name="name" />
   </view>
 </xml-config>
 

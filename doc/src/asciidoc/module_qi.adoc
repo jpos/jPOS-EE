@@ -1,22 +1,23 @@
-=== QI Basics 
+[[QI]]
+=== QI Basics
 
-==== Main XML 
+==== Main XML
 
-The main configuration is done on `00_qi.xml` 
+The main configuration is done on `00_qi.xml`
 
-The main contents of this file are: 
+The main contents of this file are:
 
-===== Title 
+===== Title
 
 Example:
-`<title>jPOS QI</title>` 
+`<title>jPOS QI</title>`
 
-Indicates the title for the app.  
+Indicates the title for the app.
 
-===== Locale 
+===== Locale
 
-Indicates the available locales for the app, it can have more than one. 
-The first one will be the default locale. 
+Indicates the available locales for the app, it can have more than one.
+The first one will be the default locale.
 
 Examples:
 
@@ -28,117 +29,121 @@ Examples:
 ===== Messages
 Indicates the names of the `.properties` files available. It can contain more than one.
 
-Example: 
- 
+Example:
+
 	<messages>qi-core-messages</messages>
-	
+
  	<messages>qi-eeuser-messages</messages>
-	
+
  	<messages>qi-sysconfig-messages</messages>
 
-The naming convention for these files is: `packagename_locale.properties` 
+The naming convention for these files is: `packagename_locale.properties`
 
 
 ===== Menubar
 
-A menubar represents the horizontal menu at the top of the app. 
-It is represented with the `<menubar>` element.  
-It contains "menus". 
+A menubar represents the horizontal menu at the top of the app.
+It is represented with the `<menubar>` element.
+It contains "menus".
 
-====== Menu 
+====== Menu
 It represents the menu item.
-It has a `name`, an `icon`, a `style`, and an `action`. 
+It has a `name`, an `icon`, a `style`, and an `action`.
 
 Example:
 
 `<menu name="System" icon="COG" style="icon-cog" action="system" />`
 
-===== Sidebar 
+===== Sidebar
 
-Represents the sidebar, it can contain <<Section,sections>> and <<Option,options>>. 
-It is represented with the `sidebar` element. 
-It can also be identified by an `id`. Example: `<sidebar id="info"> ... </sidebar>`  
+Represents the sidebar, it can contain <<Section,sections>> and <<Option,options>>.
+It is represented with the `sidebar` element.
+It can also be identified by an `id`. Example: `<sidebar id="info"> ... </sidebar>`
 
-====== Section 
+====== Section
 
 Represents a section of the sidebar, represented with the `<section>` element. It has the following properties:
 
-* `name`: String, required. 
+* `name`: String, required.
 
 
 Example: `<section name="System"/>`
 
-====== Option 
+====== Option
 
-Represents an option on the sidebar, represented with the `<option>` element. It has the following properties: 
+Represents an option on the sidebar, represented with the `<option>` element. It has the following properties:
 
 * `name` (string, required).  The name that will be shown on the sidebar.
- 
-* `action` (string, required). What will be executed on click. 
 
-* `perm` (string, optional). The permission required to execute the action.  
+* `action` (string, required). What will be executed on click.
 
-Example: 
+* `perm` (string, optional). The permission required to execute the action.
+
+Example:
 
 `<option name="Exception log" action="exceptions"/>`
 
 
 
-===== View 
+===== View
 
-Represents a view, it has the following properties: 
+Represents a view, it has the following properties:
 
-* `route` (string, required). The `route` of the view to show. 
-* `class` 
+* `route` (string, required). The `route` of the view to show.
+* `class`
 * `perm` ('*' means any perm).
 * `sidebar` optional sidebar id. Indicates to which sidebar the view corresponds.
 
-Example: 
+Example:
 
 `<view route="home" class="org.jpos.qi.views.DefaultView" perm="*" sidebar = "system"/>`
 
-Views can **can/will** contain different <<Properties,properties>> & <<Attribute,attributes>>. 
+Views can **can/will** contain different <<Properties,properties>> & <<Attribute,attributes>>.
 
-====== Properties 
+====== Properties
 
 Represented with the `<property>` element. It has a `name` and a `value`.
-Some views require:    
+Some views require:
 
 * `entityName` (string, required for entities). The name of the entity. For example, for `users`, it is `user`.  It must be included like this: `<property name="entityName" value="aName"/>`
 
 * `name` (string, required when extending a class). The name for the view. When extending a class (Ex: when extending from SysConfig), it is a required field. 	It must be included like this: `<property name="name" value="aName"/>`
 
-====== Attribute 
+====== Attribute
 
-Represented with the `<attribute>` element. 
-It has: 
+Represented with the `<attribute>` element.
+It has:
 
-* `name` (string, required) The name of the attribute, it will be shown on the column, or field.  
+* `name` (string, required) The name of the attribute, it will be shown on the column, or field.
 
-* `field` (boolean, optional) Boolean value indicating whether the attribute should be shown as a field, on the specific view. 
+* `field` (boolean, optional) Boolean value indicating whether the attribute should be shown as a field, on the specific view.
 
 * `column` (boolean, optional) Boolean value indicating whether the attribute should be shown as a columnn on the general view.
 
 * `read-only` (boolean, optional) Boolean value indicating if the attribute should be editable
 
-* `required` (boolean, optional) Indicates if the field is required. Default is false. 
+* `required` (boolean, optional) Indicates if the field is required. Default is false.
 
-* `regex` (string, optional) A string indicating the regex used for validating the field. 
+* `regex` (string, optional) A string indicating the regex used for validating the field.
 
-* `length` (numeric,optional) A number, indicating the max length for the field value. 
+* `length` (numeric,optional) A number, indicating the max length for the field value.
 
 * `expand-ratio` (numeric,optional) A number, indicating if the field's expandRatio to be used. (Check link:https://vaadin.com/docs/-/part/framework/layout/layout-settings.html#layout.settings.size.expanding(Vaadin docs)[Vaadin Docs] for more info).
 
-* `perm` (string, optional) The permission needed to access the field. 
+* `perm` (string, optional) The permission needed to access the field.
 
-Example: 
+* `link` (string, optional) The URL for which the link will be generated.
+
+* `position` (string, optional) left/center/right/bottom: Indicates if field is displayed on the left, center, right or bottom of form layout.
+
+Example:
 
 
 ====== Different classes of views  - TabView
 
-If the view has a class of type `TabView`. It can contain views within the `<view>` elements. This views accept an additional property: 
+If the view has a class of type `TabView`. It can contain views within the `<view>` elements. This views accept an additional property:
 
-* `caption` Indicates the caption for the tab. 
+* `caption` Indicates the caption for the tab.
 
 
 ==== QI Permissions

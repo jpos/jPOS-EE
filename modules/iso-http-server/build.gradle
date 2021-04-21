@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: ISO over HTTP Client Code'
+
+dependencies {
+    api libraries.jpos
+    implementation "org.jdom:jdom2:2.0.6"
+}
+

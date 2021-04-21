@@ -28,7 +28,7 @@
     </id>
     <discriminator column="subclass" type="string" length="1" />
 
-    <property name="detail" type="string" />
+    <property name="detail" type="string" length="4096" />
     <property name="tags"  type="org.jpos.ee.usertype.TagsType">
       <column name="tags" sql-type="varchar(255)" not-null="false" />
     </property>
@@ -36,8 +36,8 @@
     <property name="layer"  type="short">
      <column name="layer" sql-type="int" not-null="true" />
     </property>
-    <many-to-one name="account" not-null="true" foreign-key="FKGLEntryAccount" />
-    <many-to-one name="transaction" not-null="false" insert="false" update="false" foreign-key="FKGLEntryTransaction" />
+    <many-to-one name="account" not-null="true" foreign-key="FKGLEntryAccount" index="idx_acct"/>
+    <many-to-one name="transaction" not-null="false" insert="false" update="false" foreign-key="FKGLEntryTransaction" index="idx_txn"/>
 
     <property name="amount" type="big_decimal">
      <column name="amount" sql-type="numeric(14,2)" not-null="true" />

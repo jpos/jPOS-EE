@@ -1,6 +1,7 @@
 description = 'jPOS-EE :: BinLog Module'
 
 dependencies {
-    compile libraries.jpos
+    api libraries.jpos
+    testImplementation libraries.commons_lang
 }
 

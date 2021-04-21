@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -53,9 +53,31 @@ import java.util.Set;
 public class Import implements EntityResolver {
     Log log = LogFactory.getLog (Import.class);
     private static final String URL = "http://jpos.org/";
+    private String configModifier;
+    /**
+     * This setting controls whether to check that child account codes
+     * contain the parent account code as a prefix. Defaults to true
+     * for optimal compatibility with getBalances native queries,
+     * but may be set to false to import a legacy system that doesn't
+     * use native queries.
+     */
+    private boolean strictAccountCodes = true;
+
+    public Import (String configModifier) throws HibernateException, GLException, IOException, ConfigurationException
+    {
+        super();
+        this.configModifier = configModifier;
+    }
     public Import () throws HibernateException, GLException, IOException, ConfigurationException
     {
         super();
+        this.configModifier = null;
+    }
+    /**
+     * @param setting - new value for `strictAccountCodes`
+     */
+    public void setStrictAccountCodes(Boolean setting) {
+        strictAccountCodes = setting;
     }
 
     public static void usage () {
@@ -64,7 +86,7 @@ public class Import implements EntityResolver {
     }
 
     private void createSchema () throws HibernateException, DocumentException {
-        DB db = new DB();
+        DB db = new DB(configModifier);
         db.open();
         db.beginTransaction();
         db.createSchema(null, true);
@@ -73,7 +95,7 @@ public class Import implements EntityResolver {
     }
     
     private void createCharts (Session sess, Iterator iter) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         Transaction txn = sess.beginTransaction();
         while (iter.hasNext()) {
@@ -145,7 +167,7 @@ public class Import implements EntityResolver {
     }
     private void processChartChildren 
         (Session sess, CompositeAccount parent, Iterator iter) 
-            throws SQLException, HibernateException, ParseException
+            throws SQLException, HibernateException, ParseException, GLException
     {
         while (iter.hasNext ()) {
             Element e = (Element) iter.next ();
@@ -157,10 +179,20 @@ public class Import implements EntityResolver {
         }
     }
 
+    private void validateAccountCode(Account parent, Account child)
+            throws GLException
+    {
+        if (!parent.isChart() && !child.getCode().startsWith(parent.getCode())) {
+            throw new GLException("Child account code `"+child.getCode()+"` must start with parent account code `"+parent.getCode()+"`");
+        }
+    }
     private void createComposite (Session sess, CompositeAccount parent, Element elem) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         CompositeAccount acct = new CompositeAccount (elem, parent);
+        if (strictAccountCodes)
+            validateAccountCode(parent, acct);
+
         acct.setRoot (parent.getRoot ());
         sess.save (acct);
         acct.setParent (parent);
@@ -170,9 +202,12 @@ public class Import implements EntityResolver {
     }
 
     private void createFinal (Session sess, CompositeAccount parent, Element elem) 
-        throws SQLException, HibernateException, ParseException
+        throws SQLException, HibernateException, ParseException, GLException
     {
         FinalAccount acct = new FinalAccount (elem, parent);
+        if (strictAccountCodes)
+            validateAccountCode(parent, acct);
+
         acct.setRoot (parent.getRoot ());
         sess.save (acct);
         acct.setParent (parent);
@@ -349,7 +384,7 @@ public class Import implements EntityResolver {
         if (root.getChild ("create-schema") != null)
             createSchema ();
 
-        try (DB db = new DB()) {
+        try (DB db = new DB(configModifier)) {
             Session sess = db.open();
             createUsers(sess, root.getChildren("user").iterator());
             createCurrencies(sess, root.getChildren("currency").iterator());

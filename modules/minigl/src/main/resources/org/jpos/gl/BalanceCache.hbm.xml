@@ -25,9 +25,10 @@
   <class name="org.jpos.gl.BalanceCache" table="balance_cache">
     <composite-id>
      <key-many-to-one name="journal" class="org.jpos.gl.Journal"
-         foreign-key="FKBalanceCacheJournal"/>
+         foreign-key="FKBalanceCacheJournal" column="journal" />
      <key-many-to-one name="account" class="org.jpos.gl.Account" 
-         foreign-key="FKBalanceCacheAccount" />
+         foreign-key="FKBalanceCacheAccount" column="account" on-delete="cascade">
+     </key-many-to-one>
      <key-property name="layers" type="string" length="32" />
     </composite-id>
     <property name="ref" type="long" />

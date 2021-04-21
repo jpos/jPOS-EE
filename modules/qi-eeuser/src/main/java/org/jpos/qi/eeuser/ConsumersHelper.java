@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2018 jPOS Software SRL
+ * Copyright (C) 2000-2020 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -56,7 +56,7 @@ public class ConsumersHelper extends QIHelper {
     @Override
     public boolean updateEntity(Binder binder) throws BLException {
         try {
-            return (boolean) DB.execWithTransaction((db) -> {
+            return DB.execWithTransaction((db) -> {
                 Consumer oldConsumer = (Consumer) ((Consumer) getOriginalEntity()).clone();
                 binder.writeBean(getOriginalEntity());
                 Consumer newConsumer = (Consumer) getOriginalEntity();
@@ -86,14 +86,14 @@ public class ConsumersHelper extends QIHelper {
     }
 
     public Stream getAll(int offset, int limit, Map<String, Boolean> orders, User user) throws Exception {
-        return ((List<Consumer>) (DB.exec(db -> {
+        return (DB.exec(db -> {
             ConsumerManager mgr = new ConsumerManager(db,user);
             return mgr.getAll(offset,limit,orders);
-        }))).stream();
+        })).stream();
     }
 
     public int getItemCount(User user) throws Exception {
-        return (int) DB.exec(db -> {
+        return DB.exec(db -> {
             ConsumerManager mgr = new ConsumerManager(db,user);
             return mgr.getItemCount();
         });
@@ -152,7 +152,7 @@ public class ConsumersHelper extends QIHelper {
 
     public List<Role> getRoles() {
         try {
-            return (List<Role>) DB.exec(db-> {
+            return DB.exec(db-> {
                 RoleManager mgr = new RoleManager(db);
                 return mgr.getAll();
             });

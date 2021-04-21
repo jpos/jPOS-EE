@@ -1,7 +1,7 @@
 description = 'jPOS-EE :: Status Module'
 
 dependencies {
-    compile project(':modules:dbsupport')
-    compile project(':modules:syslog')
-    compile project(':modules:eeuser')
+    api project(':modules:dbsupport')
+    api project(':modules:syslog')
+    api project(':modules:eeuser')
 }

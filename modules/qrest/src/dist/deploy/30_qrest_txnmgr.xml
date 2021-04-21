@@ -7,12 +7,42 @@
   <participant class="org.jpos.qrest.participant.Router">
     <route path="/q2**" method="GET" name="q2"/>
     <route path="/q2**" method="POST" name="q2"/>
+    <route path="/welcome.html" method="GET" name="welcome" />
+    <route path="/dynamic" method="GET" name="dynamic" />
+    <route path="/" method="GET" name="index" />
+    <route path="/**" method="GET" name="static" />
   </participant>
 
   <group name="q2">
     <participant class="org.jpos.qrest.participant.Q2Info" />
   </group>
+  <group name="welcome">
+    <participant class="org.jpos.qrest.participant.StaticContent">
+        <property name="documentRoot" value="html" />
+        <property name="content" value="welcome.html" />
+    </participant>
+  </group>
+  <group name="index">
+    <participant class="org.jpos.qrest.participant.StaticContent">
+      <property name="documentRoot" value="html" />
+      <property name="content" value="index.html" />
+    </participant>
+  </group>
+  <group name="static">
+    <participant class="org.jpos.qrest.participant.StaticContent">
+      <property name="documentRoot" value="html" />
+    </participant>
+  </group>
+  <group name="dynamic">
+    <participant class="org.jpos.qrest.participant.DynamicContent">
+      <property name="documentRoot" value="templates" />
+      <property name="content" value="dynamic.html" />
+      <property name="page.ctx.include" value="_include.html" />
+    </participant>
+  </group>
+
   <participant class="org.jpos.qrest.SendResponse" logger="Q2">
     <!--<property name="content-type" value="application/json" />-->
+    <property name="Access-Control-Allow-Origin" value="*" />
   </participant>
 </txnmgr>

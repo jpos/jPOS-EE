@@ -1,0 +1,10 @@
+description = 'jPOS-EE :: ISO over HTTP Client Code'
+
+dependencies {
+    api libraries.jpos
+
+    api "org.eclipse.jetty:jetty-client:${jettyVersion}"
+    api "org.eclipse.jetty.http2:http2-client:${jettyVersion}"
+    api "org.eclipse.jetty.http2:http2-http-client-transport:${jettyVersion}"
+}
+

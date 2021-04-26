@@ -200,11 +200,12 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public String getRealmsAsString () {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
-            if (sb.length() > 0)
-                sb.append (", ");
-            sb.append (r.getRealm().getName());
+            if (r.getRealm() != null) {
+                if (sb.length() > 0)
+                    sb.append (", ");
+                sb.append (r.getRealm().getName());
+            }
         }
-        System.out.println("realms as String: " + sb.toString());
         return sb.toString();
     }
     public void addPasswordHistoryValue (String passwordhistoryhash) {

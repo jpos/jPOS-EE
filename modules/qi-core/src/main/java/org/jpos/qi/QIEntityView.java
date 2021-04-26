@@ -138,7 +138,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             } else {
                 o = getEntityByParam(params[0]);
                 String realm = getRealm((T) o);
-                if (realm != null && !app.getUser().getRealmsAsString().contains(realm)) {
+                if (realm != null && !app.getUser().getRealmsAsString().equals("") && !app.getUser().getRealmsAsString().contains(realm)) {
                     getApp().getNavigator().navigateTo("");
                     getApp().displayNotification(getApp().getMessage("errorMessage.notRealm", realm));
                     return;

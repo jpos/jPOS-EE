@@ -15,7 +15,7 @@ ext {
     groovyVersion = '3.0.4'
     jlineVersion = '2.14.6'
     restAssuredVersion = '2.9.0'
-    vaadinVersion = '8.12.4'
+    vaadinVersion = '8.13.0'
     nettyVersion = '4.1.42.Final'
     httpAsyncClientVersion = '4.1.4'
     mysqlJDBCVersion = '8.0.17'

@@ -192,4 +192,27 @@ public class HttpClientTest {
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
     }
+
+    @Test
+    public void testHttpVersionDefault() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://untrusted-root.badssl.com/");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
+
+    @Test
+    public void testHttpVersionSetValue() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", "https://untrusted-root.badssl.com/");
+        ctx.put("HTTP_VERSION", "2,0");
+        ctx.put("HTTP_METHOD", "GET");
+        ctx.put("HTTP_TRUST_ALL_CERTS", "true");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_OK), sc, "Status code should be 200");
+    }
 }

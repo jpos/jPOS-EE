@@ -38,6 +38,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.cert.CertificateExpiredException;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -101,6 +102,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String basicAuthenticationName;
     private RedirectStrategy redirectStrategy;
     private boolean ignoreNullRequest;
+    private String httpVersion;
 
     // Shared clients for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
@@ -120,6 +122,16 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             return ignoreNullRequest ? PREPARED | NO_JOIN | READONLY : FAIL;
 
         addHeaders(ctx, httpRequest);
+
+        //set the http protocol version, default to version 1.1
+        //config example <property name="httpVersion" value="1,1"/>
+        HttpVersion definedVersion = null;
+        httpVersion = getVersion(ctx);
+        if(httpVersion != null && httpVersion.length() > 0) {
+            String[] versions = httpVersion.split(",");
+            definedVersion = new HttpVersion(Integer.parseInt(versions[0]), Integer.parseInt(versions[1]));
+        }
+        httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);
 
         httpRequest.setConfig(RequestConfig.custom().
             setConnectTimeout(connectTimeout).
@@ -208,6 +220,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         timeout= cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
         urlName = cfg.get("urlName", "HTTP_URL");
+        httpVersion = cfg.get("httpVersion", "HTTP_VERSION");
         methodName = cfg.get("methodName", "HTTP_METHOD");
         paramsName = cfg.get ("paramsName", "HTTP_PARAMS");
         requestName = cfg.get ("requestName", "HTTP_REQUEST");
@@ -340,6 +353,10 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         }
         ctx.log ("Invalid request method");
         return null;
+    }
+
+    private String getVersion(Context ctx) {
+        return ctx.getString(httpVersion);
     }
 
     private ContentType getContentType (Context ctx) {

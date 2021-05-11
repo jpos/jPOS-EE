@@ -52,6 +52,7 @@ In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
    ** a `Map<String,String>` where the keys represent _header names_, and the values the corresponding _header values_
 * `.HTTP_BASIC_AUTHENTICATION`: A String of the form `<username>:<password>` used for HTTP Basic Authentication.
    NOTE: The default `Context` name starts with a period (`.`), meaning it will be hidden in the logs during a context dump.
+* `HTTP_VERSION`: allows forcing an older version. Defaults to JVM default.
 
 After successful completion (which may include normal HTTP errors such as `404` or `500`), `HttpQuery` stores the result
 back into the `Context`:

@@ -7,12 +7,17 @@
   <participant class="org.jpos.qrest.participant.Router">
     <route path="/q2**" method="GET" name="q2"/>
     <route path="/q2**" method="POST" name="q2"/>
+    <route path="/bad**" method="GET" name="invalid"/>
   </participant>
 
   <group name="q2">
     <participant class="org.jpos.qrest.participant.Q2Info" />
   </group>
+  <group name="invalid">
+    <participant class="org.jpos.qrest.participant.SimulateBadRequest" />
+  </group>
   <participant class="org.jpos.qrest.SendResponse" logger="Q2">
     <!--<property name="content-type" value="application/json" />-->
   </participant>
 </qrest-txnmgr>
+

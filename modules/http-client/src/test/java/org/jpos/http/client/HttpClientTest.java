@@ -208,7 +208,7 @@ public class HttpClientTest {
     public void testHttpVersionSetValue() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", "https://untrusted-root.badssl.com/");
-        ctx.put("HTTP_VERSION", "2,0");
+        ctx.put("HTTP_VERSION", "2.0");
         ctx.put("HTTP_METHOD", "GET");
         ctx.put("HTTP_TRUST_ALL_CERTS", "true");
         mgr.queue(ctx);

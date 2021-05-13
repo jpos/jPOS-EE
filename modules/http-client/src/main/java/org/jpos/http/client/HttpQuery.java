@@ -128,7 +128,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         HttpVersion definedVersion = null;
         httpVersion = getVersion(ctx);
         if(httpVersion != null && httpVersion.length() > 0) {
-            String[] versions = httpVersion.split(",");
+            String[] versions = httpVersion.split(".");
             definedVersion = new HttpVersion(Integer.parseInt(versions[0]), Integer.parseInt(versions[1]));
         }
         httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);

@@ -20,6 +20,7 @@ package org.jpos.gl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -386,6 +387,28 @@ public class GLTransaction extends Cloneable {
                   e.getLayer()
                 );
                 if (keepEntryTags) reversalEntry.setTags(e.getTags());
+            }
+        }
+        return glt;
+    }
+
+    /**
+     * Create a simplified transaction based on this one
+     */
+
+    public GLTransaction simplify() {
+        GLTransaction glt = new GLTransaction(getDetail());
+        for (GLEntry e : getEntries()) {
+            if (BigDecimal.ZERO.compareTo(e.getAmount()) != 0) {
+                GLEntry redundantEntry = getEntries().stream().filter(entry ->
+                entry.getAccount().equals(e.getAccount()) &&
+                entry.getAmount().compareTo(e.getAmount()) == 0 &&
+                entry.getLayer() == e.getLayer() &&
+                (e.isCredit() ^ entry.isCredit())).findAny().orElse(null);
+                if (redundantEntry == null) {
+                    glt.createGLEntry(e.getAccount(), e.getAmount(), e.getDetail(), e.isCredit(), e.getLayer());
+                    glt.setTags(e.getTags());
+                }
             }
         }
         return glt;

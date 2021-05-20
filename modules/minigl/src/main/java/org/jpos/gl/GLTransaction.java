@@ -399,12 +399,12 @@ public class GLTransaction extends Cloneable {
     public GLTransaction simplify() {
         GLTransaction glt = new GLTransaction(getDetail());
         for (GLEntry e : getEntries()) {
-            if (e.getAmount() != BigDecimal.ZERO ) {
+            if (BigDecimal.ZERO.compareTo(e.getAmount()) != 0) {
                 GLEntry redundantEntry = getEntries().stream().filter(entry ->
                 entry.getAccount().equals(e.getAccount()) &&
                 entry.getAmount().compareTo(e.getAmount()) == 0 &&
                 entry.getLayer() == e.getLayer() &&
-                (e.isCredit() && !entry.isCredit() || !e.isCredit() && entry.isCredit())).findAny().orElse(null);
+                (e.isCredit() ^ entry.isCredit())).findAny().orElse(null);
                 if (redundantEntry == null) {
                     glt.createGLEntry(e.getAccount(), e.getAmount(), e.getDetail(), e.isCredit(), e.getLayer());
                     glt.setTags(e.getTags());

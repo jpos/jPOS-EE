@@ -18,6 +18,7 @@
 
 package org.jpos.qi;
 
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.ui.*;
@@ -25,13 +26,15 @@ import com.vaadin.ui.themes.ValoTheme;
 import org.jdom2.Element;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Sidebar extends CssLayout {
     private static final String STYLE_VISIBLE = "valo-menu-visible";
     private Map<String, Button> options;
     private Layout menuItems;
-    private QI app;
+    private final QI app;
     private boolean enabled = false;
     private String currentSidebarId;
 
@@ -59,7 +62,6 @@ public class Sidebar extends CssLayout {
     }
 
 
-    @SuppressWarnings("unchecked")
     private void loadSideBarOptions (String id) {
         if (id != null && id.equals(currentSidebarId))
             return;
@@ -75,9 +77,9 @@ public class Sidebar extends CssLayout {
         Element cfg = app.getXmlConfiguration();
         for (Element sb : cfg.getChildren("sidebar")) {
             String eid = sb.getAttributeValue("id");
-            if (id == eid || (eid != null && eid.equals(id))) {
+            if (Objects.equals(eid, id)) {
                 for (Element e : sb.getChildren()) {
-                    if ("section".equals(e.getName())) {
+                    if ("section".equals(e.getName()) && hasPermissionInSection(sb.getChildren(), e)) {
                         Label l = new Label(app.getMessage(e.getAttributeValue("name")));
                         l.setStyleName(ValoTheme.MENU_SUBTITLE);
                         l.setSizeUndefined();
@@ -89,9 +91,9 @@ public class Sidebar extends CssLayout {
                             String iconName = e.getAttributeValue("icon");
                             if (iconName != null) {
                                 try {
-                                    b.setIcon(FontAwesome.valueOf(iconName));
+                                    b.setIcon(VaadinIcons.valueOf(iconName));
                                 } catch (IllegalArgumentException ex) {
-                                    b.setIcon(FontAwesome.EXCLAMATION_TRIANGLE);
+                                    b.setIcon(VaadinIcons.EXCLAMATION);
                                     b.setEnabled(false);
                                 }
                             }
@@ -129,7 +131,7 @@ public class Sidebar extends CssLayout {
         Button valoMenuToggleButton = new Button("", (Button.ClickListener) event -> {
             if (Page.getCurrent().getBrowserWindowWidth() > 1100) {
                 boolean expand = !menuItems.isVisible();
-                menuItems.setVisible(expand ? true : false);
+                menuItems.setVisible(expand);
             } else {
                 if (getStyleName().contains(STYLE_VISIBLE))
                     removeStyleName(STYLE_VISIBLE);
@@ -137,11 +139,28 @@ public class Sidebar extends CssLayout {
                     addStyleName(STYLE_VISIBLE);
             }
         });
-        valoMenuToggleButton.setIcon(FontAwesome.LIST);
+        valoMenuToggleButton.setIcon(VaadinIcons.LIST);
         valoMenuToggleButton.addStyleName("valo-menu-toggle");
         valoMenuToggleButton.addStyleName(ValoTheme.BUTTON_BORDERLESS);
         valoMenuToggleButton.addStyleName(ValoTheme.BUTTON_SMALL);
         return valoMenuToggleButton;
+    }
+
+    private boolean hasPermissionInSection (List<Element> elements, Element section) {
+        List<Element> subElements = elements.subList(elements.indexOf(section)+1, elements.size());
+        int nextSectionIndex = subElements.size();
+        for (Element element : subElements) {
+            if ("section".equals(element.getName())) {
+                nextSectionIndex = subElements.indexOf(element);
+                break;
+            }
+        }
+        subElements = subElements.subList(0, nextSectionIndex);
+        for (Element element : subElements) {
+            if (((QINavigator)QI.getQI().getNavigator()).hasAccessToRoute(element.getAttributeValue("action")))
+                return true;
+        }
+        return false;
     }
 
     public Map<String, Button> getOptions() {

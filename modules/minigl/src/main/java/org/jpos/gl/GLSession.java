@@ -389,6 +389,20 @@ public class GLSession {
     }
 
     /**
+     * Add a Journal
+     * Check permissions.
+     *
+     * @param j The new Journal
+     * @throws HibernateException on error
+     * @throws GLException if user doesn't have write permission
+     */
+    public void addJournal (Journal j) throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.WRITE);
+        session.save (j);
+    }
+
+    /**
      * @param chart chart of accounts.
      * @param code  account's code.
      * @return final account with given code in given chart, or null.
@@ -1529,7 +1543,7 @@ public class GLSession {
      */
     public synchronized Session open () throws HibernateException {
         return db.open();
-    }                                                           
+    }
     /**
      * Close underlying Hibernate session.
      * @throws HibernateException

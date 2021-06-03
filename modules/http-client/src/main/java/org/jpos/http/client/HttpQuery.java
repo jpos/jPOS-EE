@@ -102,7 +102,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String basicAuthenticationName;
     private RedirectStrategy redirectStrategy;
     private boolean ignoreNullRequest;
-    private String httpVersion;
+    private String httpVersionName;
 
     // Shared clients for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
@@ -124,14 +124,15 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         addHeaders(ctx, httpRequest);
 
         //set the http protocol version, default to version 1.1
-        //config example <property name="httpVersion" value="1,1"/>
+        //config example <property name="httpVersionName" value="1.1"/>
         HttpVersion definedVersion = null;
-        httpVersion = getVersion(ctx);
+        String httpVersion = getVersion(ctx);
         if(httpVersion != null && httpVersion.length() > 0) {
-            String[] versions = httpVersion.split(".");
-            definedVersion = new HttpVersion(Integer.parseInt(versions[0]), Integer.parseInt(versions[1]));
+            String[] majmin = httpVersion.split("\\.");                 // split into major and minor version numbers
+            definedVersion = new HttpVersion(Integer.parseInt(majmin[0]),
+                                             majmin.length > 1 ? Integer.parseInt(majmin[1]) : 0);            // default to minor 0 if it can't be split
         }
-        httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);
+        httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);     // default to HTTP/1.1
 
         httpRequest.setConfig(RequestConfig.custom().
             setConnectTimeout(connectTimeout).
@@ -222,7 +223,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         timeout= cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
         urlName = cfg.get("urlName", "HTTP_URL");
-        httpVersion = cfg.get("httpVersion", "HTTP_VERSION");
+        httpVersionName = cfg.get("httpVersionName", "HTTP_VERSION");
         methodName = cfg.get("methodName", "HTTP_METHOD");
         paramsName = cfg.get ("paramsName", "HTTP_PARAMS");
         requestName = cfg.get ("requestName", "HTTP_REQUEST");
@@ -358,7 +359,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     }
 
     private String getVersion(Context ctx) {
-        return ctx.getString(httpVersion);
+        return ctx.getString(httpVersionName);
     }
 
     private ContentType getContentType (Context ctx) {

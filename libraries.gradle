@@ -1,8 +1,8 @@
 ext {
-    jposVersion = '2.1.6-SNAPSHOT'
+    jposVersion = '2.1.7-SNAPSHOT'
     slf4jVersion = '1.7.28'
     logbackVersion = '1.2.3'
-    hibernateVersion = '5.4.22.Final'
+    hibernateVersion = '5.5.0.Final'
     geronimoVersion = '1.1.1'
     jettyVersion = '9.4.23.v20191118'
     servletApiVersion = '4.0.1'

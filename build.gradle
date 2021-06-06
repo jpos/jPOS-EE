@@ -13,7 +13,6 @@ buildscript {
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
-    apply plugin: 'maven'
     apply plugin: 'org.owasp.dependencycheck'
 
     group = 'org.jpos.ee'
@@ -22,6 +21,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
     apply plugin: 'signing'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -34,64 +34,93 @@ subprojects {
     project.archivesBaseName="jposee-${project.name}"
     javadoc.failOnError = false
 
-    def pomConfig = {
-        name 'jPOS-EE Project'
-        description """
-    jPOS Extended Edition
-  """
-        url 'http://jpos.org'
-        inceptionYear '1998'
-        organization {
-            name 'jPOS.org'
-            url 'http://jpos.org'
-        }
-        issueManagement {
-            system 'YouTrack'
-            url 'https://jpos.org/issues'
-        }
-        scm {
-            url "https://github.com/jpos/jPOS"
-            connection "scm:git:https://github.com/jpos/jPOS-EE.git"
-            developerConnection "scm:git:git@github.com:jpos/jPOS-EE.git"
-        }
-        licenses {
-            license {
-                name 'GNU AFFERO GENERAL PUBLIC LICENSE'
-                url 'http://www.gnu.org/licenses/agpl-v3.html'
-                comments 'See http://jpos.org/license for more details.'
-                distribution 'repo'
-            }
-        }
-        developers {
-            developer {
-                id 'jpos-team'
-                name 'jPOS Development Team'
-                email 'info@jpos.org'
-            }
-        }
-    }
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    name = 'jPOS Project'
+                    description = "jPOS Extended Edition"
+                    url = "http://jpos.org"
+                    organization {
+                        name = 'jPOS.org'
+                        url = 'http://jpos.org'
+                    }
+                    issueManagement {
+                        system = 'Github Issues'
+                        url = 'https://github.com/jpos/jPOS-EE/issues'
+                    }
+                    scm {
+                        url = "http://github.com/jpos/jPOS-EE"
+                        connection = "scm:git:https://github.com/jpos/jPOS-EE.git"
+                        developerConnection = "scm:git:git@github.com:jpos/jPOS-EE.git"
+                    }
+                    licenses {
+                        license {
+                            name = 'GNU AFFERO GENERAL PUBLIC LICENSE'
+                            url = 'http://www.gnu.org/licenses/agpl-v3.html'
+                            comments = 'See http://jpos.org/license for more details.'
+                            distribution = 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'jpos-team'
+                            name = 'jPOS Development Team'
+                            email = 'info@jpos.org'
+                        }
+                    }
+                }
+                groupId = 'org.jpos.ee'
+                artifactId = 'jposee'
+                from components.java
+                /*
+                artifact (sourceJar) {
+                    classifier = 'sources'
+                }
+                */
+                artifactId="jposee-${project.name}"
 
-    configure(install.repositories.mavenInstaller) {
-        pom.project pomConfig
+/*
+                pom.withXml {
+                    asNode().dependencies.'*'.findAll() {
+                        it.scope.text() == 'compile' && project.configurations.compile.allDependencies.find { dep ->
+                            dep.name == it.artifactId.text()
+                        }
+                    }.each() {
+                        it.scope*.value = 'implementation'
+                    }
+                    asNode().dependencies.'*'.findAll() {
+                        if (it.groupId.text() == 'org.jpos.ee') {
+                            it.artifactId*.value = "jposee-${it.artifactId.text()}"
+                        }
+                    }
+                }
+*/
+
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = mavenCentralRepo
+                def snapshotsRepoUrl = 'file:///opt/local/maven'
+                url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+                if (!isSnapshot) {
+                    credentials {
+                        if (project.hasProperty("mavenCentralUsername"))
+                            username = mavenCentralUsername
+                        if (project.hasProperty("mavenCentralPassword"))
+                            password = mavenCentralPassword
+                    }
+                }
+            }
+        }
     }
     signing {
         required { !isSnapshot }
-        sign configurations.archives
+        sign publishing.publications.mavenJava
     }
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                pom.project pomConfig
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                repository(url: 'file:///opt/local/maven')
-                /*
-                repository(url: mavenCentralRepo) {
-                    authentication(userName: mavenCentralUsername, password: mavenCentralPassword)
-                }
-                */
-            }
-        }
-    }
+
+
     test {
         useJUnitPlatform()
         maxParallelForks = Runtime.runtime.availableProcessors()

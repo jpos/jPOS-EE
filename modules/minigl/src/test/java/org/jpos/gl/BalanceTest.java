@@ -232,6 +232,7 @@ public class BalanceTest extends TestBase {
         assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }));
         assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
         assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 0,1 }, new short[] { 0,2 }));
         assertEquals (new BigDecimal("-48000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
     }
 

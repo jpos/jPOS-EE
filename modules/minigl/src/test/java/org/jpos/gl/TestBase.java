@@ -84,9 +84,11 @@ public abstract class TestBase {
         try {
             String userName = System.getProperty("user.name");
             System.setProperty("user.name", "travis");
+            System.setProperty("db.create.enabled", "YES");
             new Import(configModifier).parse("../test-classes/testdata.xml");
             new Export(configModifier).export(System.out);
             System.setProperty("user.name", userName);
+            System.setProperty("db.create.enabled", "NO");
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

@@ -32,9 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SeqNoTest {
     @BeforeAll
     public static void setUp() throws DocumentException {
+        System.setProperty("db.create.enabled", "YES");
         try (DB db = new DB()) {
             db.createSchema(null, true);
         }
+        System.setProperty("db.create.enabled", "NO");
     }
 
     @Test

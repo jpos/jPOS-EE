@@ -30,9 +30,11 @@ public class EEUserTest {
     DB db;
     @BeforeEach
     public void setUp() throws Exception {
+        System.setProperty("db.create.enabled", "YES");
         db = new DB();
         db.createSchema("schema.sql", true);
         db.open();
+        System.setProperty("db.create.enabled", "FALSE");
     }
 
     @Test

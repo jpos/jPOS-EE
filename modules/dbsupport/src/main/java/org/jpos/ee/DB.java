@@ -286,8 +286,12 @@ public class DB implements Closeable {
                     targetTypes.add(TargetType.SCRIPT);
                 }
             }
-            if (create)
-                targetTypes.add(TargetType.DATABASE);
+            if (create) {
+                if (isCreateEnabled())
+                    targetTypes.add(TargetType.DATABASE);
+                else
+                    throw new IllegalStateException ("createSchema not enabled");
+            }
             if(targetTypes.size()>0) {
                 // First, drop everything, disregarding errors
                 export.setHaltOnError(false);
@@ -302,6 +306,11 @@ public class DB implements Closeable {
             throw new HibernateException("Could not create schema", e);
         }
     }
+
+    private boolean isCreateEnabled() {
+        return "YES".equals(System.getProperty("db.create.enabled"));
+    }
+
 
     /**
      * open a new HibernateSession if none exists

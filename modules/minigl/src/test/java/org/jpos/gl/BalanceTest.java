@@ -38,6 +38,7 @@ public class BalanceTest extends TestBase {
     Account aliceEquity;
     Account assets;
     Account equity;
+    Account tripFund;
 
     @BeforeEach
     public void setUp () throws Exception {
@@ -49,6 +50,7 @@ public class BalanceTest extends TestBase {
         aliceEquity = gls.getAccount ("TestChart", "32");
         assets      = gls.getAccount ("TestChart", "1");
         equity      = gls.getAccount ("TestChart", "3");
+        tripFund    = gls.getAccount ("TestChart", "114");
         root        = assets.getRoot();
     }
     @Test
@@ -214,6 +216,41 @@ public class BalanceTest extends TestBase {
         assertEquals (4, l.size(), "List size for " + d1 + " to " + d2 + " should be 4");
     }
 
+    @Test
+    @Order(24)
+    public void testMinBalance() throws Exception {
+        assertEquals (new BigDecimal("0.00"), gls.getBalance(tj, tripFund, new short[] { 0 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getBalance(tj, tripFund, new short[] { 1 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getBalance(tj, tripFund, new short[] { 2 }));
+
+        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 2 }));
+
+        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }));
+        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 0,1 }, new short[] { 0,2 }));
+        assertEquals (new BigDecimal("-48000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
+    }
+
+    @Test
+    @Order(25)
+    public void testMaxBalance() throws Exception {
+        assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }));
+        assertEquals (new BigDecimal("-50000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 2 }));
+
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
+        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
+        assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,2 }, new short[] { 0 }));
+    }
 
     // Formerly SummarizeTest
     @Test

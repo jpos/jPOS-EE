@@ -955,7 +955,7 @@ public class GLSession {
         return getBalances (journal, acct, null, true, new short[] { layer }, 0L) [0];
     }
     /**
-     * Current Balance for account in a given journal.
+     * Current Balance for account in a given journal for a given set of layers.
      * @param journal the journal.
      * @param acct the account.
      * @param layers the layers.
@@ -967,6 +967,47 @@ public class GLSession {
     {
         return getBalances (journal, acct, null, true, layers, 0L) [0];
     }
+
+    /**
+     * Minimum Balance for account in a given journal for a given set of layers
+     * @param journal the journal.
+     * @param acct the account.
+     * @param layers set of layers
+     * @return current balance.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public BigDecimal getMinBalance (Journal journal, Account acct, short[]... layers)
+      throws HibernateException, GLException
+    {
+        BigDecimal minBalance = null;
+        for (short[] layer : layers) {
+            BigDecimal bd = getBalance (journal, acct, layer);
+            if (minBalance == null || bd.compareTo(minBalance) < 0)
+                minBalance = bd;
+        }
+        return minBalance == null ? ZERO : minBalance;
+    }
+
+    /**
+     * Maximum Balance for account in a given journal for a given set of layers
+     * @param journal the journal.
+     * @param acct the account.
+     * @param layers set of layers
+     * @return current balance.
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public BigDecimal getMaxBalance (Journal journal, Account acct, short[]... layers)
+      throws HibernateException, GLException
+    {
+        BigDecimal maxBalance = null;
+        for (short[] layer : layers) {
+            BigDecimal bd = getBalance (journal, acct, layer);
+            if (maxBalance == null || bd.compareTo(maxBalance) > 0)
+                maxBalance = bd;
+        }
+        return maxBalance == null ? ZERO : maxBalance;
+    }
+    
     /**
      * Current Balance for account in a given journal.
      * @param journal the journal.

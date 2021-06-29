@@ -22,7 +22,7 @@
         "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-  <class name="org.jpos.gl.GLEntry" table="transentry" discriminator-value=" ">
+  <class name="org.jpos.gl.GLEntry" table="transentry" discriminator-value=" " mutable="false">
     <id name="id" column="id" type="long">
       <generator class="native" />
     </id>

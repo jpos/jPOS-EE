@@ -647,11 +647,16 @@ public class GLSession {
     {
         checkPermission (GLPermission.POST, journal);
         checkPermission (GLPermission.POST, txn.getJournal());
-        invalidateCheckpoints (txn);    // invalidate in old journal
-        txn.setJournal (journal);
-        invalidateCheckpoints (txn);    // invalidate in new journal
-        applyRules (txn, getRules (txn));
-        session.update (txn);
+        GLTransaction reverse = txn.createReverse(true);
+        GLTransaction newTxn = null;
+        try {
+            newTxn = txn.clone();
+            newTxn.setJournal (journal);
+        } catch (CloneNotSupportedException e) {
+            throw new GLException(e); // should not happen - GLTransaction implements clone
+        }
+        post(reverse.getJournal(), reverse);
+        post(journal, newTxn);
     }
 
     /**

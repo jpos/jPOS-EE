@@ -973,7 +973,7 @@ public class GLSession {
      * @param journal the journal.
      * @param acct the account.
      * @param layers set of layers
-     * @return current balance.
+     * @return minimum balance among given layer sets
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getMinBalance (Journal journal, Account acct, short[]... layers)
@@ -993,7 +993,7 @@ public class GLSession {
      * @param journal the journal.
      * @param acct the account.
      * @param layers set of layers
-     * @return current balance.
+     * @return maximum balance among given layer sets
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getMaxBalance (Journal journal, Account acct, short[]... layers)

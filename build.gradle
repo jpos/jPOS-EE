@@ -35,8 +35,6 @@ subprojects {
     javadoc.failOnError = false
 
     java {
-      // Adds a task sourcesJar that will package the Java sources of the main SourceSet in a JAR with classifier sources.
-      // [...] if maven-publish or ivy-publish is also applied, the sources JAR will be published. 
       withSourcesJar()
     }
 

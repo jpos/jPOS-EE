@@ -34,6 +34,12 @@ subprojects {
     project.archivesBaseName="jposee-${project.name}"
     javadoc.failOnError = false
 
+    java {
+      // Adds a task sourcesJar that will package the Java sources of the main SourceSet in a JAR with classifier sources.
+      // [...] if maven-publish or ivy-publish is also applied, the sources JAR will be published. 
+      withSourcesJar()
+    }
+
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -70,14 +76,10 @@ subprojects {
                         }
                     }
                 }
+
                 groupId = 'org.jpos.ee'
                 artifactId = 'jposee'
                 from components.java
-                /*
-                artifact (sourceJar) {
-                    classifier = 'sources'
-                }
-                */
                 artifactId="jposee-${project.name}"
 
 /*
@@ -96,7 +98,6 @@ subprojects {
                     }
                 }
 */
-
             }
         }
         repositories {
@@ -114,7 +115,8 @@ subprojects {
                 }
             }
         }
-    }
+    } // publishing
+
     signing {
         required { !isSnapshot }
         sign publishing.publications.mavenJava
@@ -125,14 +127,7 @@ subprojects {
         useJUnitPlatform()
         maxParallelForks = Runtime.runtime.availableProcessors()
     }
-    task sourceJar(type: Jar) {
-        from sourceSets.main.allSource
-        archiveClassifier.set('sources')
-    }
 
-    artifacts {
-        archives sourceJar
-    }
 
     repositories {
         mavenCentral()
@@ -153,7 +148,7 @@ subprojects {
     }
 
     task allDeps(type: DependencyReportTask) {}
-}
+} // subprojects
 
 task allSources(type: Jar,dependsOn: subprojects.assemble) {
     archiveBaseName = 'jposee-sources'

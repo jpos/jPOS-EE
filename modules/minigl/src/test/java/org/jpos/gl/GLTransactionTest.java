@@ -7,7 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 class GLTransactionTest extends TestBase{
 
@@ -85,5 +87,19 @@ class GLTransactionTest extends TestBase{
         for (GLEntry entry : reversal.getEntries()) {
             Assertions.assertEquals(entry.getTags(), new Tags(TEST_TAG, CREDIT_TAG));
         }
+    }
+
+    @Test
+    void testGetAffectedLayers() {
+        GLTransaction txn = new GLTransaction();
+        txn.createCredit(bobEquity, AMOUNT, null, LAYER);
+        txn.createDebit(aliceEquity, AMOUNT, null, LAYER);
+        Set<Short> affectedLayers = txn.getAffectedLayers(bobEquity);
+        Set<Short> expected = Collections.singleton(LAYER);
+        Assertions.assertEquals(expected, affectedLayers, "Affected layers did not match for bob");
+        affectedLayers = txn.getAffectedLayers(aliceEquity);
+        Assertions.assertEquals(expected, affectedLayers, "Affected layers did not match for alice");
+        affectedLayers = txn.getAffectedLayers(aliceEquity, bobEquity);
+        Assertions.assertEquals(expected, affectedLayers, "Affected layers did not match for both");
     }
 }

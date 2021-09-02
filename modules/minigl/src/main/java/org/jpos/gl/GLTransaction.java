@@ -18,12 +18,13 @@
 
 package org.jpos.gl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.jdom2.Element;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -325,7 +326,7 @@ public class GLTransaction extends Cloneable {
      * Create a reverse transaction based on this one
      *
      * @param keepEntryTags if true entries tags are copied to the reversal entries
-     * @param layer entries with layer <code>layer</code> are selected
+     * @param layers entries with layer <code>layer</code> are selected
      * @return a reversal transaction
      */
     public GLTransaction createReverse(boolean keepEntryTags, short... layers) {
@@ -534,5 +535,27 @@ public class GLTransaction extends Cloneable {
         }
         return glt;
     }
+
+    /**
+     * Handy method to obtain affected layers considering only entries for which all predicates are true
+     * @param predicates Predicates that the inputs have to satisfy, if none, then consider all entries
+     * @return layers affected by entries of this transaction.
+     */
+    @SafeVarargs
+    public final Set<Short> getAffectedLayers(Predicate<GLEntry>... predicates) {
+        Stream<GLEntry> entryStream = getEntries().stream();
+        for (Predicate<GLEntry> p : predicates) entryStream = entryStream.filter(p);
+        return entryStream.map(GLEntry::getLayer).collect(Collectors.toSet());
+    }
+
+    public Set<Short> getAffectedLayers(Collection<Account> accounts) {
+        Objects.requireNonNull(accounts);
+        return getAffectedLayers(e -> accounts.contains(e.getAccount()));
+    }
+
+    public Set<Short> getAffectedLayers(Account ... accounts) {
+        return getAffectedLayers(Arrays.asList(accounts));
+    }
+
 }
 

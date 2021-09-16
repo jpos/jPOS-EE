@@ -38,8 +38,8 @@ import java.util.*;
 public class LoginView extends VerticalLayout {
     protected QI app;
     protected LoginHelper helper;
-    protected TextField username;
-    protected PasswordField password;
+    private TextField username;
+    private PasswordField password;
     protected CheckBox rememberMe;
     protected HorizontalLayout buttonsLayout;
     protected Label errorLabel;

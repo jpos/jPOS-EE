@@ -36,15 +36,15 @@ import java.util.*;
 
 @SuppressWarnings("serial")
 public class LoginView extends VerticalLayout {
-    private QI app;
-    private LoginHelper helper;
+    protected QI app;
+    protected LoginHelper helper;
     private TextField username;
     private PasswordField password;
-    private CheckBox rememberMe;
-    private HorizontalLayout buttonsLayout;
-    private Label errorLabel;
-    private Button loginBtn;
-    private Binder<String> binder;  //just used to add validators to fields
+    protected CheckBox rememberMe;
+    protected HorizontalLayout buttonsLayout;
+    protected Label errorLabel;
+    protected Button loginBtn;
+    protected Binder<String> binder;  //just used to add validators to fields
 
     protected TextField getUsernameField() {
         return username;

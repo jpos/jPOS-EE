@@ -170,6 +170,11 @@ public class DB implements Closeable {
     }
 
     public static synchronized void invalidateSessionFactories() {
+        for (SessionFactory sf : sessionFactories.values()) {
+            try {
+                sf.close();
+            } catch (Exception ignored) {}
+        }
         sessionFactories.clear();
     }
 

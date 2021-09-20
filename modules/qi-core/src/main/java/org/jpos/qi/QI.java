@@ -80,6 +80,22 @@ public class QI extends UI {
         valueContext = new ValueContext(locale);
     }
 
+    protected QILayout getQILayout() {
+        return qiLayout;
+    }
+
+    protected Sidebar getSidebar() {
+        return sidebar;
+    }
+
+    protected Visitor getVisitor() {
+        return visitor;
+    }
+
+    protected LoginView getLoginView() {
+        return loginView;
+    }
+
     private void parseMessages() {
         Properties master = new Properties();
         for (Element element: availableLocales) {

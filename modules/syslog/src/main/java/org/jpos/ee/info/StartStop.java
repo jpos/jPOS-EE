@@ -20,25 +20,26 @@ package org.jpos.ee.info;
 
 import org.jpos.ee.SysLog;
 import org.jpos.ee.SysLogManager;
-import org.jpos.q2.QBeanSupport;
+import org.jpos.q2.QBeanAsyncSupport;
 import org.jpos.util.DateUtil;
 
 @SuppressWarnings("unused")
-public class StartStop extends QBeanSupport implements Runnable {
+public class StartStop extends QBeanAsyncSupport {
     long start;
-    public void startService() {
+
+    @Override
+    protected void doStart() {
         start = System.currentTimeMillis();
-        new Thread(this, getName()).start();
-    }
-    public void run () {
         if (getServer().ready(60000L)) {
             new SysLogManager().log (cfg.get ("source", getName()),
-              "SYSTEM", SysLog.INFO, "Start");
+                "SYSTEM", SysLog.INFO, "Start");
         } else {
             getLog().warn ("Q2 not ready");
         }
     }
-    public void stopService() {
+
+    @Override
+    protected void doStop() {
         long elapsed = System.currentTimeMillis() - start;
         new SysLogManager().log (cfg.get ("source", getName()),
             "SYSTEM", SysLog.INFO, "Stop (uptime " + DateUtil.toDays(elapsed) + ")"

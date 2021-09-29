@@ -53,7 +53,7 @@ ext {
             // Postgresql embedded binary version
             postgresql_bin: "io.zonky.test.postgres:embedded-postgres-binaries-bom:${postgresqlBinVersion}",
             //JODA-Time
-            joda_time: 'joda-time:joda-time:2.10.4',
+            joda_time: 'joda-time:joda-time:2.10.12',
 
             //Hibernate
             hibernate_core: "org.hibernate:hibernate-core:${hibernateVersion}",

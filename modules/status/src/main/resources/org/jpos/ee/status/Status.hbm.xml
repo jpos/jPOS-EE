@@ -40,7 +40,7 @@
 
     <set name="events" lazy="true" cascade="all-delete-orphan" 
       order-by="id asc">
-      <key column="status"/>
+      <key column="source"/>
       <one-to-many class="org.jpos.ee.SysLog" />
     </set>
     <!--

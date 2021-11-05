@@ -1549,6 +1549,10 @@ public class GLSession {
             c.setBalance (balance);
             session.saveOrUpdate (c);
         }
+
+        if (c.getBalance() == null) {
+            c.setBalance(balance);
+        }
         return c;
     }
 

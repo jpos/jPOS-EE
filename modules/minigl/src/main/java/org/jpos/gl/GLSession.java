@@ -1543,6 +1543,9 @@ public class GLSession {
             c.setJournal (journal);
             c.setAccount (acct);
             c.setLayers (layersToString(layers));
+            c.setBalance(ZERO);     //Ensure we load a balance in the cache
+                                    //if maxId > 0 then the cache includes some entries, and
+                                    // we set the balance in the next if, before saving it.
         }
         if (maxId != c.getRef()) {
             c.setRef (maxId);

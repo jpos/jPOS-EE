@@ -77,6 +77,8 @@ import org.jpos.transaction.Context;
 
 @SuppressWarnings("unused")
 public class HttpQuery extends Log implements AbortParticipant, Configurable, Destroyable {
+    private static final String DEFAULT_MAX_CONNECTIONS = "25";         // overridable by sys prop http.maxConnections, or with cfg "maxConnections"
+
     private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     private static final int DEFAULT_TIMEOUT = 15000;
 
@@ -261,9 +263,27 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             redirectStrategy= LaxRedirectStrategy.INSTANCE;
         else
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
+
+
+        String maxConn = System.getProperty("http.maxConnections");
+        if (maxConn == null || maxConn.trim().isEmpty()) {
+            String maxConnCfg = cfg.get("maxConnections", DEFAULT_MAX_CONNECTIONS);
+            maxConn = maxConnCfg.trim();
+            System.setProperty("http.maxConnections", maxConn);
+        }
+        try { Integer.parseInt(maxConn); }
+        catch (Exception e) {
+            throw new ConfigurationException("Bad value for maxConnections: "+maxConn);
+        }
     }
 
-    public CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
+
+    /**
+        Method is synchronized against this instance of HttpQuery, because the instance of
+        the CloseableHttpAsyncClient is *lazily* created upon first request, and only one
+        should be created and shared by all threads.
+    */
+    public synchronized CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
         if (trustAllCerts) {
             if (unsecureHttpClient == null) {
                 setUnsecureHttpClient(getClientBuilder(true).build());
@@ -291,6 +311,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         if (trustAllCerts) {
             disableSSLVerification(builder);
         }
+
         return builder;
     }
 

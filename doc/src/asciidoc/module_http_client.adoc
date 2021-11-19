@@ -36,6 +36,9 @@ The `HttpQuery` participant has the following configuration properties:
 * `preemptiveAuth`: if doing Basic Authentication (by presence of context value), do it on the first request (default `false`)
 * `responseBodyOnError`: should an HTTP response body be included for responses with error
    status code? (`boolean`, default `false`);
+* `maxConnections`: set the maximum number of concurrent client connections; if unset it will default to **25** concurrent connetions.+
+   **NOTE:** This value is overridable by the `http.maxConnections` Java system property, and it applies globally to the whole process.
+
 
 In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
 
@@ -52,8 +55,8 @@ In addition, `HttpQuery` picks a few _configurable_ entries from the `Context`:
    ** a `String[]` where each item follows the `header_name:header_value` syntax
    ** a `List<String>` where each item follows the `header_name:header_value` syntax
    ** a `Map<String,String>` where the keys represent _header names_, and the values the corresponding _header values_
-* `.HTTP_BASIC_AUTHENTICATION`: A String of the form `<username>:<password>` used for HTTP Basic Authentication.
-   NOTE: The default `Context` name starts with a period (`.`), meaning it will be hidden in the logs during a context dump.
+* `.HTTP_BASIC_AUTHENTICATION`: A String of the form `<username>:<password>` used for HTTP Basic Authentication. +
+   **NOTE:** The default `Context` name starts with a period (`.`), meaning it will be hidden in the logs during a context dump.
 
 After successful completion (which may include normal HTTP errors such as `404` or `500`), `HttpQuery` stores the result
 back into the `Context`:

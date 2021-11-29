@@ -331,7 +331,7 @@ public class GLSession {
      *
      * @param parent parent account
      * @param acct account to add
-     * @param fast true if we want a fast add that do not eagerly load all childrens
+     * @param fast true if we want a fast add that do not eagerly load all children
      * @throws HibernateException on error
      * @throws GLException if user doesn't have permissions, type mismatch or Duplicate Code
      */

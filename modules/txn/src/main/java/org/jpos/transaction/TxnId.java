@@ -22,6 +22,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +37,7 @@ public class TxnId {
     private static final long NMUL = 100000L;
     private static final long MAX_VALUE = Long.parseLong("zzzzzzzzzzzz", 36);
     private static Pattern pattern = Pattern.compile("^([\\d]{3})-([\\d]{3})-([\\d]{5})-([\\d]{3})-([\\d]{5})$");
+    private static ZoneId UTC = ZoneId.of("UTC");
 
     private TxnId() {
         super();
@@ -138,6 +142,13 @@ public class TxnId {
             dt = dt.toDateTime(DateTimeZone.UTC);
 
         return id.init (dt.getYear()-2000, dt.getDayOfYear(), dt.getSecondOfDay(), node, transactionId);
+    }
+
+    public static TxnId create (Instant instant, int node, long transactionId) {
+        TxnId id = new TxnId();
+        ZonedDateTime utc = instant.atZone(UTC);
+        int seconds = (utc.getHour() * 3600) + (utc.getMinute()*60) + utc.getSecond();
+        return id.init (utc.getYear()-2000, utc.getDayOfYear(), seconds, node, transactionId);
     }
 
     /**

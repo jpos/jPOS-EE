@@ -31,18 +31,18 @@ public class AmountFee {
         setFeeType(feeType);
         setFee(fee);
         setSettlementFee(settlementFee);
-        setConversionRate(conversionRate);
         if (conversionRate == null) throw new IllegalArgumentException("null conversionRate");
 //        calculateConversionRate();
+        setConversionRate(conversionRate);
     }
 
     public AmountFee(FeeType feeType, CMFAmount fee, CMFAmount settlementFee, String conversionRate) {
         setFeeType(feeType);
         setFee(fee);
         setSettlementFee(settlementFee);
-        setConversionRate(conversionRate);
         if (conversionRate == null) throw new IllegalArgumentException("null conversionRate");
 //        calculateConversionRate();
+        setConversionRate(conversionRate);
     }
 
     public AmountFee(String data) {

@@ -75,7 +75,6 @@ public final class AdditionalAmountsWrapper extends LinkedHashSet<AdditionalAmou
     }
 
 
-
     /**
      * Returns the first occurrence of the additional amount that matches the filter criteria.
      *
@@ -104,6 +103,5 @@ public final class AdditionalAmountsWrapper extends LinkedHashSet<AdditionalAmou
         Objects.requireNonNull(amountType);
         return listByTypes(null, amountType);
     }
-
 
 }

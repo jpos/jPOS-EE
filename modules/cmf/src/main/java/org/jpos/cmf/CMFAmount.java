@@ -28,7 +28,6 @@ public class CMFAmount {
     protected String currency;
     protected BigDecimal amount;
 
-
     public CMFAmount(BigDecimal amount, String currency) {
         setAmount(amount);
         setCurrency(currency);
@@ -65,7 +64,6 @@ public class CMFAmount {
         this.amount = (sign == 'D') ? value.negate() : value; //no need to check for null
         setCurrency(currency);
     }
-
 
 
     /**

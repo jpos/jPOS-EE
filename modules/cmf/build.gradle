@@ -1,0 +1,12 @@
+description = 'jPOS-EE :: CMF Utils'
+
+dependencies {
+    api libraries.jpos
+    api libraries.commons_lang
+
+    testImplementation libraries.junit
+}
+
+
+apply from: "${rootProject.projectDir}/jpos-app.gradle"
+

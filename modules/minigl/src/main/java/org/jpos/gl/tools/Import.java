@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Import an XML document as described in 
+ * Import an XML document as described in
  * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
  *
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
@@ -81,7 +81,7 @@ public class Import implements EntityResolver {
     }
 
     public static void usage () {
-        System.out.println ("Usage: org.jpos.gl.Import filename");
+        System.out.println ("Usage: org.jpos.gl.tools.Import filename");
         System.exit (0);
     }
 
@@ -93,8 +93,8 @@ public class Import implements EntityResolver {
         db.commit();
         db.close();
     }
-    
-    private void createCharts (Session sess, Iterator iter) 
+
+    private void createCharts (Session sess, Iterator iter)
         throws SQLException, HibernateException, ParseException, GLException
     {
         Transaction txn = sess.beginTransaction();
@@ -110,7 +110,7 @@ public class Import implements EntityResolver {
         }
         txn.commit();
     }
-    private void createCurrencies (Session sess, Iterator iter) 
+    private void createCurrencies (Session sess, Iterator iter)
         throws SQLException, HibernateException, ParseException
     {
         Transaction txn = sess.beginTransaction();
@@ -121,7 +121,7 @@ public class Import implements EntityResolver {
         }
         txn.commit();
     }
-    private void createUsers (Session sess, Iterator iter) 
+    private void createUsers (Session sess, Iterator iter)
         throws SQLException, HibernateException, ParseException
     {
         Transaction txn = sess.beginTransaction();
@@ -140,7 +140,7 @@ public class Import implements EntityResolver {
         }
         txn.commit();
     }
-    private void createJournals (Session sess, Iterator iter) 
+    private void createJournals (Session sess, Iterator iter)
         throws SQLException, HibernateException, ParseException
     {
         Transaction txn = sess.beginTransaction();
@@ -165,8 +165,8 @@ public class Import implements EntityResolver {
         }
         txn.commit();
     }
-    private void processChartChildren 
-        (Session sess, CompositeAccount parent, Iterator iter) 
+    private void processChartChildren
+        (Session sess, CompositeAccount parent, Iterator iter)
             throws SQLException, HibernateException, ParseException, GLException
     {
         while (iter.hasNext ()) {
@@ -186,7 +186,7 @@ public class Import implements EntityResolver {
             throw new GLException("Child account code `"+child.getCode()+"` must start with parent account code `"+parent.getCode()+"`");
         }
     }
-    private void createComposite (Session sess, CompositeAccount parent, Element elem) 
+    private void createComposite (Session sess, CompositeAccount parent, Element elem)
         throws SQLException, HibernateException, ParseException, GLException
     {
         CompositeAccount acct = new CompositeAccount (elem, parent);
@@ -201,7 +201,7 @@ public class Import implements EntityResolver {
         processChartChildren (sess, acct, elem.getChildren().iterator());
     }
 
-    private void createFinal (Session sess, CompositeAccount parent, Element elem) 
+    private void createFinal (Session sess, CompositeAccount parent, Element elem)
         throws SQLException, HibernateException, ParseException, GLException
     {
         FinalAccount acct = new FinalAccount (elem, parent);
@@ -252,7 +252,7 @@ public class Import implements EntityResolver {
             glt.getEntries().add (entry);
         }
     }
-    private Account getAccount (Session sess, Account chart, Element elem) 
+    private Account getAccount (Session sess, Account chart, Element elem)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
@@ -263,8 +263,8 @@ public class Import implements EntityResolver {
         List l = q.list();
         return l.size() == 1 ? ((Account) l.get (0)) : null;
     }
-    private FinalAccount getFinalAccount 
-        (Session sess, Account chart, Element elem) 
+    private FinalAccount getFinalAccount
+        (Session sess, Account chart, Element elem)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
@@ -275,7 +275,7 @@ public class Import implements EntityResolver {
         List l = q.list();
         return l.size() == 1 ? ((FinalAccount) l.get (0)) : null;
     }
-    private CompositeAccount getChart (Session sess, String chartCode) 
+    private CompositeAccount getChart (Session sess, String chartCode)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
@@ -285,8 +285,8 @@ public class Import implements EntityResolver {
         List l = q.list();
         return (CompositeAccount) ((l.size() > 0) ? l.get (0) : null);
     }
-    private void createJournalRules 
-        (Session session, Journal journal, Iterator iter) 
+    private void createJournalRules
+        (Session session, Journal journal, Iterator iter)
         throws HibernateException, ParseException, SQLException
     {
         while (iter.hasNext()) {
@@ -298,7 +298,7 @@ public class Import implements EntityResolver {
         }
     }
     private void createJournalLayers
-        (Session session, Journal journal, Iterator iter) 
+        (Session session, Journal journal, Iterator iter)
         throws HibernateException, ParseException, SQLException
     {
         while (iter.hasNext()) {
@@ -308,7 +308,7 @@ public class Import implements EntityResolver {
             session.save (layer);
         }
     }
-    private GLUser getUser (Session session, String nick) 
+    private GLUser getUser (Session session, String nick)
         throws HibernateException
     {
         Query q = session.createQuery ("from GLUser u where u.nick=:nick");
@@ -337,7 +337,7 @@ public class Import implements EntityResolver {
         }
         return permissions;
     }
-    private Journal getJournal (Session sess, String name) 
+    private Journal getJournal (Session sess, String name)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
@@ -363,7 +363,7 @@ public class Import implements EntityResolver {
                 return new InputSource (dtd);
             }
         }
-        else 
+        else
             return null;
     }
     public void parse (String file)
@@ -395,7 +395,7 @@ public class Import implements EntityResolver {
     }
 
     public static void main (String[] args) {
-        if (args.length == 0) 
+        if (args.length == 0)
             usage ();
 
         try {

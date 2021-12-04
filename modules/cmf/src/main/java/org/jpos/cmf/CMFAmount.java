@@ -18,6 +18,10 @@ import java.util.Objects;
  * In jPOS-CMF, these are mostly used to represent fees such as those in DE-046
  * </p>
  *
+ * <p><b>ATTN:</b>  The constructors in this class don't check the length in digits of the raw amount.
+ * It's your responsibility to make sure that, when constructing, and then serializing with
+ *  {@link #serialize(boolean, int)}, that the lengths are in accordance and what you need.
+ * </p>
  * <p><b>NOTE:</b>This class does not handle additional amounts (DE-054).
  * For that, use {@link AdditionalAmount} and {@link AdditionalAmountsWrapper}.
  * </p>

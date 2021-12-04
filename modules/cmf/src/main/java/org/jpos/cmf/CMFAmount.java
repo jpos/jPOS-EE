@@ -1,5 +1,6 @@
 package org.jpos.cmf;
 
+import org.apache.commons.lang3.BitField;
 import org.jpos.iso.ISOCurrency;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOUtil;
@@ -55,13 +56,22 @@ public class CMFAmount {
      * @param sign 'C' for credit, 'D' for debit
      * @param currency currency code
      * @param minorUnit decimal position.
-     * @param amount Amount as string, unscaled
+     * @param amount Amount as string, unscaled, absolute value
+     *
+     * @throws IllegalArgumentException if uppercase sign is not 'C' or 'D'
+     * @throws IllegalArgumentException if amount includes a sign and parses as negative
      */
     public CMFAmount(char sign, String currency, int minorUnit, String amount) {
         sign = Character.toUpperCase(sign);
-        if (sign != 'D' && sign != 'C') throw  new IllegalArgumentException("invalid sign: " + sign);
-        BigDecimal value = new BigDecimal(new BigInteger(amount), minorUnit);
-        this.amount = (sign == 'D') ? value.negate() : value; //no need to check for null
+        if (sign != 'D' && sign != 'C')
+            throw  new IllegalArgumentException("Invalid sign: " + sign);
+
+        BigInteger amt= new BigInteger(amount);
+        if (amt.compareTo(BigInteger.ZERO) < 0)
+            throw new IllegalArgumentException("Amount string negative; must be given as absolute value: " + amount);
+
+        BigDecimal value = new BigDecimal(amt, minorUnit);
+        this.amount = (sign == 'D') ? value.negate() : value;   //no need to check for null
         setCurrency(currency);
     }
 

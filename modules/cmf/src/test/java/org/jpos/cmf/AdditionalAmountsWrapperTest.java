@@ -1,12 +1,11 @@
 package org.jpos.cmf;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public final class AdditionalAmountsWrapperTest {
@@ -36,4 +35,113 @@ public final class AdditionalAmountsWrapperTest {
         assertNotNull(wrapper.getFirstByAmountType(AmountType.AMOUNT_CASH));
         assertNull(wrapper.getFirstByAmountType(AmountType.AMOUNT_REMAINING_THIS_CYCLE));
     }
+
+
+    @Test
+    public void testParseInvalidLengthData() {
+        String sample = "00028582C00000010000000018582C0000001000";
+        assertThrows(IllegalArgumentException.class, () -> AdditionalAmountsWrapper.parse(sample));
+    }
+
+   @Test
+   public void testSuccessfulParse() {
+       String sample =  "00" + "02" + "858"+"2" + "C"+"000000100000" +
+                        "00" + "01" + "858"+"2" + "C"+"000000100000";
+
+       AdditionalAmountsWrapper wrapper = AdditionalAmountsWrapper.parse(sample);
+       assertEquals(2, wrapper.size());
+   }
+
+   @Test
+   public void testParseAndSerialize() {
+       String sample =  "00" + "02" + "840"+"2" + "C"+"000000100000" +
+                        "00" + "01" + "858"+"2" + "C"+"000000100000";
+
+       AdditionalAmountsWrapper wrapper = AdditionalAmountsWrapper.parse(sample);
+       assertEquals(sample, wrapper.serialize());
+   }
+
+   @Test
+   public void testParseAndSerializeOneItem() {
+
+       String sample = "00" + "01" + "858"+"2" + "C"+"000000100000";
+
+       AdditionalAmountsWrapper wrapper = AdditionalAmountsWrapper.parse(sample);
+
+       assertEquals(1, wrapper.size());
+       assertEquals(sample, wrapper.serialize());
+   }
+
+   @Test
+   public void test_listByAmountType() {
+       AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 1));
+       wrapper.add(new AdditionalAmount("30", new BigDecimal("400.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+
+       List<AdditionalAmount> amounts = wrapper.listByAmountType(AmountType.AMOUNT_SURCHARGE);
+
+       assertNotNull(amounts);
+       assertEquals(2, amounts.size());
+   }
+
+   @Test
+   public void test_listByTypes_WithAccountAndAmountTypes() {
+       AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 1));
+       wrapper.add(new AdditionalAmount("30", new BigDecimal("400.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+
+       List<AdditionalAmount> amounts = wrapper.listByTypes("00", AmountType.AMOUNT_SURCHARGE);
+       assertNotNull(amounts);
+       assertEquals(1, amounts.size());
+   }
+
+   @Test
+   public void test_listByTypes_WithNullAccountType() {
+       AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 1));
+       wrapper.add(new AdditionalAmount("30", new BigDecimal("400.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+
+       List<AdditionalAmount> amounts = wrapper.listByTypes(null, AmountType.AMOUNT_SURCHARGE);
+       assertNotNull(amounts);
+       assertEquals(2, amounts.size());
+   }
+
+
+
+   @Test
+   public void test_getFirstByAmountType() {
+       AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 1));
+       wrapper.add(new AdditionalAmount("30", new BigDecimal("400.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+
+       AdditionalAmount amount = wrapper.getFirstByAmountType(AmountType.AMOUNT_SURCHARGE);
+
+       assertNotNull(amount);
+       assertEquals(new BigDecimal("200.00"), amount.getAmount());
+       assertEquals("00", amount.getAccountType());
+   }
+
+   @Test
+   public void test_containsAmountType() {
+       AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 1));
+       wrapper.add(new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 1));
+
+       assertTrue(wrapper.containsAmountType(AmountType.AMOUNT_SURCHARGE));
+       assertTrue(wrapper.containsAmountType(AmountType.AMOUNT_CASH));
+       assertFalse(wrapper.containsAmountType(AmountType.AMOUNT_REMAINING_THIS_CYCLE));
+   }
+
 }
+
+
+

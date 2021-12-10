@@ -24,6 +24,8 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.jpos.qi.QI;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -77,7 +79,8 @@ public abstract class DateRangeComponent extends HorizontalLayout {
                 dr.setStart(startDate);
             }
             if (datePickerTo.getValue() != null) {
-                Date endDate = Date.from(datePickerTo.getValue().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+                LocalDateTime endOfDay = LocalDateTime.of(datePickerTo.getValue(), LocalTime.MAX);
+                Date endDate = Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
                 dr.setEnd(endDate);
             }
         } else {

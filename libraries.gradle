@@ -23,7 +23,7 @@ ext {
     postgresJDBCVersion = '42.2.11'
     flywaydbVersion = '6.0.4'
     liquibaseVersion = '3.8.0'
-    elkVersion = '7.8.0'
+    elkVersion = '7.16.1'
     orgjsonVersion = '20200518'
     postgresqlEmbeddedVersion = '1.2.8'
     postgresqlBinVersion = '12.3.0'

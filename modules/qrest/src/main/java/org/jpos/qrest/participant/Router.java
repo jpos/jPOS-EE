@@ -31,9 +31,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 
-import static org.jpos.qrest.Constants.PATHPARAMS;
-import static org.jpos.qrest.Constants.QUERYPARAMS;
-import static org.jpos.qrest.Constants.REQUEST;
+import static org.jpos.qrest.Constants.*;
 
 public class Router implements GroupSelector, XmlConfigurable {
     private Map<String,List<Route<String>>> routes = new HashMap<>();
@@ -47,9 +45,9 @@ public class Router implements GroupSelector, XmlConfigurable {
     public String select(long id, Serializable context) {
         Context ctx = (Context) context;
         FullHttpRequest request = ctx.get(REQUEST);
-        ctx.log ("Method: " + request.method().name());
-        ctx.log ("Routes: " + routes);
-        List<Route<String>> routesByMethod = routes.get(request.method().name());
+        String method = request.method().name();
+        ctx.put (METHOD, method);
+        List<Route<String>> routesByMethod = routes.get(method);
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
         if (!decoder.parameters().isEmpty())
             ctx.put(QUERYPARAMS, decoder.parameters());

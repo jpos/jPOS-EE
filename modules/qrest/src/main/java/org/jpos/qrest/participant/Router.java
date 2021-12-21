@@ -53,7 +53,7 @@ public class Router implements GroupSelector, XmlConfigurable {
             ctx.put(QUERYPARAMS, decoder.parameters());
 
         if (routesByMethod != null) {
-            Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.uri())).findFirst();
+            Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.path())).findFirst();
             String path = URI.create(decoder.uri()).getPath();
             if (route.isPresent()) {
                 Route<String> r = route.get();

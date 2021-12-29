@@ -66,6 +66,7 @@ public abstract class QuartzJobSupport implements Job, Configurable, Runnable {
             if (o instanceof QuartzAdaptor.Q2Adaptor) {
                 adaptor = (QuartzAdaptor.Q2Adaptor) o;
                 log = new Log(adaptor.getLogger(), adaptor.getRealm());
+                QFactory.autoconfigure(this, adaptor.getConfiguration());
                 setConfiguration(adaptor.getConfiguration());
             }
             run();

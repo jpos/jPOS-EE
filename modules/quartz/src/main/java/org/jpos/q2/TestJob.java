@@ -18,9 +18,14 @@
 
 package org.jpos.q2;
 
+import org.jpos.core.annotation.Config;
+
 public class TestJob extends QuartzJobSupport {
+    @Config("message")
+    private String message;
+
     public void run() {
-        getLog().info(cfg.get ("message"));
+        getLog().info(message);
     }
 }
 

@@ -61,8 +61,8 @@ public class BLException extends Exception implements Loggeable {
         return detail;
     }
     public String getDetailedMessage () {
-        StringBuffer sb = new StringBuffer (getMessage());
-
+        StringBuffer sb = new StringBuffer ();
+        sb.append(getMessage());
         if (detail != null) {
             sb.append (" (");
             sb.append (detail);

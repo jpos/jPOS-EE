@@ -27,7 +27,19 @@ import org.jpos.util.LogEvent;
 import org.jpos.util.LogSource;
 import org.jpos.util.Logger;
 import org.jpos.util.NameRegistrar;
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.Trigger.CompletedExecutionInstruction;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerListener;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;
@@ -35,7 +47,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 @SuppressWarnings("unused unchecked")
-public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
+public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable, TriggerListener {
     private Scheduler scheduler;
     private Element config;
     protected void initService() throws Exception {
@@ -67,7 +79,8 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
             try {
                 trigger = TriggerBuilder.newTrigger()
                         .withIdentity(e.getAttributeValue("id"), getName())
-                        .withSchedule(CronScheduleBuilder.cronSchedule(e.getAttributeValue("when")))
+                        .withSchedule(CronScheduleBuilder.cronSchedule(e.getAttributeValue("when"))
+                        .withMisfireHandlingInstructionFireAndProceed())
                         .build();
 
                 Date ft = scheduler.scheduleJob(job, trigger);
@@ -152,4 +165,36 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
 
         return new StdSchedulerFactory(p).getScheduler();
     }
+    
+    @Override
+    public void triggerFired(Trigger trigger, JobExecutionContext context) {
+        LogEvent evt = getLog().createInfo();
+        evt.addMessage(getName() + " Trigger Fired and it will fire again at " + trigger.getNextFireTime() + "  "
+                + context.getJobDetail());
+        Logger.log(evt);
+
+    }
+
+    @Override
+    public boolean vetoJobExecution(Trigger trigger, JobExecutionContext context) {
+        return false;
+    }
+
+    @Override
+    public void triggerMisfired(Trigger trigger) {
+        LogEvent evt = getLog().createInfo();
+        evt.addMessage(getName() + " Trigger Mis-Fired and will fire again at " + trigger.getNextFireTime());
+        Logger.log(evt);
+
+    }
+
+    @Override
+    public void triggerComplete(Trigger trigger, JobExecutionContext context,
+            CompletedExecutionInstruction triggerInstructionCode) {
+        LogEvent evt = getLog().createInfo();
+        evt.addMessage("Trigger completed. " + context.getJobDetail());
+        Logger.log(evt);
+
+    }
+
 }

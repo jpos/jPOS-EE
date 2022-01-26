@@ -72,4 +72,21 @@ public final class AmountFeeTest
         assertThrows(IllegalArgumentException.class, () -> new AmountFee(amtFee));
     }
 
+    @Test
+    void testParseAndRetrieveParts() {
+        String serialized =                 "07"    // FeeType.ACQUIRER_FEE
+                + "C" + "858" + "2" + "00004400"    // amount fee = UYP 44.00
+                + "8" + "2272727"                   // conversion rate = 0.02272727
+                + "C" + "840" + "2" + "00000100";   // amount fee, reconciliation = USD 1.00
+
+        AmountFee fee = new AmountFee(serialized);
+        assertSame(FeeType.ACQUIRER_FEE, fee.getFeeType());
+        assertEquals(new BigDecimal("44.00"), fee.getFee().getAmount());
+        assertEquals(new BigDecimal("0.02272727"), fee.getConversionRate());
+        assertEquals(new BigDecimal("1.00"), fee.getSettlementFee().getAmount());
+    }
+
+
+
+
 }

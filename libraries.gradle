@@ -10,7 +10,7 @@ ext {
     jgroupsVersion = '4.1.5.Final'
     jaxrsVersion = '2.0.1'
     jsonSchemaVersion = '2.2.11'
-    guavaVersion = '28.1-jre'
+    guavaVersion = '31.0.1-jre'
     jacksonVersion = '2.10.0'
     groovyVersion = '3.0.4'
     jlineVersion = '2.14.6'

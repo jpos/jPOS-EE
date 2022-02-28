@@ -136,12 +136,12 @@ such, so you can write:
     <field id="7" value="ISODate.getANSIDate (new Date())" />
     <field id="11" value="! System.currentTimeMillis() % 1000000" />
     <field id="41" value="! terminal" />
-    <field id="52" value="@ pinblk" />
+    <field id="52" value="# pinblk" />
    </isomsg>
 --------------------------------------------------------------------
 
 Please note that in our example terminal is a runtime script variable
-that we've defined in our block. The '*@*' characters operates in a
+that we've defined in our block. The '*#*' characters operates in a
 similar way as the '*!*' character, but the resulting value, which is
 supposed to be an hexadecimal string, is converted to `byte[]` using
 `ISOUtil.hex2byte(String)` in order to produce an `ISOBinaryField`.

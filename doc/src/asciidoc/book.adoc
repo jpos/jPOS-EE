@@ -9,7 +9,7 @@ jPOS Extended Edition
 :author: jPOS Software SRL
 :email: support@jpos.org
 :revdate: {localdate}
-:revnumber: 2.2.7-SNAPSHOT
+:revnumber: 2.2.9-SNAPSHOT
 :source-highlighter: rouge
 :listing-caption: Listing
 :pdf-page-size: A4
@@ -80,7 +80,7 @@ include::module_client_simulator.adoc[]
 include::module_sshd.adoc[]
 
 == Contributed modules
- 
+
 include::module_fsdmsgX.adoc[]
 
 //------------------------------------------------------------

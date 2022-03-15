@@ -27,10 +27,17 @@ ext {
     orgjsonVersion = '20200518'
     postgresqlEmbeddedVersion = '1.2.8'
     postgresqlBinVersion = '12.3.0'
+    //testing
+    jupiterVersion = '5.5.2'
+    mockitoVersion = '3.12.4'
 
     libraries = [
             //jUnit (Tests)
-            junit: 'org.junit.jupiter:junit-jupiter:5.5.2',
+            junit: "org.junit.jupiter:junit-jupiter:${jupiterVersion}",
+            jupiter_api: "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}",
+
+            //mockito (Tests)
+            mockito: "org.mockito:mockito-core:${mockitoVersion}",
 
             //jPOS
             jpos: "org.jpos:jpos:${jposVersion}",
@@ -99,7 +106,6 @@ ext {
             jetty_servlets: "org.eclipse.jetty:jetty-servlets:${jettyVersion}",
             jetty_ajp: "org.eclipse.jetty:jetty-ajp:${jettyVersion}",
             jetty_continuation: "org.eclipse.jetty:jetty-continuation:${jettyVersion}",
-            jetty_rewrite: "org.eclipse.jetty:jetty-rewrite:${jettyVersion}",
 
             // Quartz Scheduler
             quartz: 'org.quartz-scheduler:quartz:2.3.2',

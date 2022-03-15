@@ -1,0 +1,7 @@
+description = 'jPOS-EE :: Testing Module'
+
+dependencies {
+    implementation libraries.jupiter_api
+    implementation libraries.mockito
+    implementation libraries.jpos
+}

@@ -179,7 +179,8 @@ public class Q2Info implements TransactionParticipant, Configurable {
         m.put ("TPSPeak", txnmgr.getTPSPeak());
         m.put ("TPSPeakWhen", txnmgr.getTPSPeakWhen());
         m.put ("TPSElapsed", txnmgr.getTPSElapsed());
-        m.put ("metrics", txnmgr.getMetrics().metrics());
+        if (txnmgr.getMetrics() != null)
+            m.put ("metrics", txnmgr.getMetrics().metrics());
         return m;
     }
 

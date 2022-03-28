@@ -136,6 +136,7 @@ public class ObjectView extends CssLayout implements View, XmlConfigurable, Runn
         if (obj instanceof Loggeable) {
             obj = toString((Loggeable) obj, " ");
         }
+        QFactory.autoconfigure(obj, cfg);
         return obj;
     }
 

@@ -24,6 +24,7 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
+import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.iso.ISOUtil;
@@ -126,8 +127,9 @@ public class ObjectView extends CssLayout implements View, XmlConfigurable, Runn
     {
         String clazz = objConfig.getAttributeValue ("class");
         Object obj = Class.forName(clazz).newInstance();
+        Configuration cfg = qfactory.getConfiguration(objConfig);
         if (obj instanceof Configurable) {
-            ((Configurable) obj).setConfiguration(qfactory.getConfiguration(objConfig));
+            ((Configurable) obj).setConfiguration(cfg);
         }
         if (obj instanceof XmlConfigurable) {
             ((XmlConfigurable) obj).setConfiguration(objConfig);

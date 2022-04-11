@@ -79,7 +79,6 @@ public class SendResponse implements AbortParticipant, Configurable {
                 headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
             headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
             ChannelFuture cf = ch.writeAndFlush(response);
-            ctx.log(cf);
             if (!keepAlive)
                 ch.close();
         } finally {

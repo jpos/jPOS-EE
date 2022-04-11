@@ -19,15 +19,22 @@
 package org.jpos.qrest;
 
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.jpos.core.annotation.Config;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionParticipant;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.jpos.qrest.Constants.*;
 
 public class ExtractFormParams implements TransactionParticipant {
+    private static final Pattern FORM_PARAM_PATTERN = Pattern.compile("([^&]*)=([^&]*)");
     @Config("ignore-content-type") boolean ignoreContentType;
 
     @Override
@@ -36,9 +43,20 @@ public class ExtractFormParams implements TransactionParticipant {
         FullHttpRequest request = ctx.get(REQUEST);
         String contentType = request.headers().get("Content-Type");
         if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
-            QueryStringDecoder decoder = new QueryStringDecoder("?" + request.content().toString(CharsetUtil.UTF_8));
-            if (!decoder.parameters().isEmpty())
-                ctx.put(FORMPARAMS, decoder.parameters());
+            try {
+                Map<String,String> params = new LinkedHashMap<>();
+                ctx.put (FORMPARAMS, params);
+                String body = request.content().toString(CharsetUtil.UTF_8);
+                Matcher m = FORM_PARAM_PATTERN.matcher(body);
+                while (m.find()) {
+                    if (m.groupCount() == 2) {
+                        params.put(
+                          URLDecoder.decode(m.group(1), CharsetUtil.UTF_8.name()),
+                          URLDecoder.decode(m.group(2), CharsetUtil.UTF_8.name())
+                        );
+                    }
+                }
+            } catch (UnsupportedEncodingException ignored) { }
         } else if (!ignoreContentType)
             return FAIL;
 

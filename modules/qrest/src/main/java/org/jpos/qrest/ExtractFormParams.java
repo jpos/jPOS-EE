@@ -37,7 +37,6 @@ public class ExtractFormParams implements TransactionParticipant {
         String contentType = request.headers().get("Content-Type");
         if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
             QueryStringDecoder decoder = new QueryStringDecoder("?" + request.content().toString(CharsetUtil.UTF_8));
-            ctx.log(decoder);
             if (!decoder.parameters().isEmpty())
                 ctx.put(FORMPARAMS, decoder.parameters());
         } else if (!ignoreContentType)

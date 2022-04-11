@@ -26,5 +26,6 @@ public enum Constants {
     PATHPARAMS,
     RESPONSE,
     RENDER_CONTEXT,
-    METHOD
+    METHOD,
+    FORMPARAMS,
 }

@@ -39,6 +39,7 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -68,6 +69,7 @@ public class BinLogTest implements Runnable {
     public void test000_Write() throws IOException {
         try (BinLogWriter w = new BinLogWriter(dir)) { 
             assertNotNull(w.getFirst(dir), "Did not find first file");
+            assertNull(w.getLastClosed(dir), "Found last closed file");
             assertEquals(1, w.getFileNumber(w.getFirst(dir)), "Invalid first file");
         }
         for (int i=0; i<10; i++) {

@@ -168,18 +168,7 @@ public abstract class BinLog implements AutoCloseable {
     }
 
     private int getNextFileIndex() throws IOException {
-        ByteBuffer index = ByteBuffer.allocate(4);
-        try {
-            int read = raf.read(index, NEXT_LOG_INDEX_OFFSET).get();
-            if (read != 4) {
-                throw new IOException ("Failed to read 4 byte NEXT_LOG_INDEX_OFFSET, return: " + read);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
-        }
-        index.flip();
+        ByteBuffer index = readBuffer(raf, "NEXT_LOG_INDEX_OFFSET", 4, NEXT_LOG_INDEX_OFFSET);
         int next = index.getInt();
         return next;
     }
@@ -357,18 +346,7 @@ public abstract class BinLog implements AutoCloseable {
     private boolean isClosed (Path f) throws IOException {
         if (Files.exists(f)) {
             try (AsynchronousFileChannel raf = AsynchronousFileChannel.open(f, READ)) {
-                ByteBuffer status = ByteBuffer.allocate(2);
-                try {
-                    int read = raf.read(status, STATUS_OFFSET).get();
-                    if (read != 2) {
-                        throw new IOException ("Failed to read 2 byte STATUS_OFFSET, return: " + read);
-                    }
-                } catch (InterruptedException e) {
-                    throw new IOException (e.getMessage());
-                } catch (ExecutionException e) {
-                    throw new IOException (e.getMessage());
-                }
-                status.flip();
+                ByteBuffer status = readBuffer(raf, "STATUS_OFFSET", 2, STATUS_OFFSET);
                 return Status.valueOf(status.getShort()) == Status.CLOSED;
             }
         }

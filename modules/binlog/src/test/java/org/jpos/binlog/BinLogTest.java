@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -65,7 +66,10 @@ public class BinLogTest implements Runnable {
     @Test
     @Order(1)
     public void test000_Write() throws IOException {
-        try (BinLogWriter w = new BinLogWriter(dir)) { }
+        try (BinLogWriter w = new BinLogWriter(dir)) { 
+            assertNotNull(w.getFirst(dir), "Did not find first file");
+            assertEquals(1, w.getFileNumber(w.getFirst(dir)), "Invalid first file");
+        }
         for (int i=0; i<10; i++) {
             new Thread(this).start();
         }
@@ -78,6 +82,8 @@ public class BinLogTest implements Runnable {
                     System.out.println(i + " " + new String(b));
             }
             assertEquals(100000, i, "Invalid number of entries");
+            assertEquals(1, bl.getFileNumber(bl.getFirst(dir)), "Invalid first file");
+            assertEquals(i/5000, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");            
         }
     }
 

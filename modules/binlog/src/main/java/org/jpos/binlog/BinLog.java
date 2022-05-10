@@ -28,6 +28,8 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.*;
 import java.security.SecureRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
@@ -66,6 +68,8 @@ import static java.nio.file.StandardOpenOption.*;
  * Abstract base clase used by BinLogReader and BinLogWriter
  */
 public abstract class BinLog implements AutoCloseable {
+    public static final int INITIAL_INDEX = 1;
+
     private static final int FILE_MAGIC = 0xFC;
     private static final short VERSION = 0x0001;
     private static final int RESERVED_LEN = 232;
@@ -74,17 +78,24 @@ public abstract class BinLog implements AutoCloseable {
     private static final int TAIL_OFFSET = STATUS_OFFSET + Short.BYTES;
     private static final int THIS_LOG_INDEX_OFFSET = TAIL_OFFSET + Long.BYTES;
     protected static final int NEXT_LOG_INDEX_OFFSET = THIS_LOG_INDEX_OFFSET + Integer.BYTES;
-    protected static final int INITIAL_INDEX = 1;
     private static final long CREATE_DELAY = 100L;
     protected static final long FIRST_EVENT_OFFSET = TAIL_OFFSET + RESERVED_LEN + Long.BYTES;
     private static SecureRandom numberGenerator = new SecureRandom();
-    private static String filePattern = "^[\\d]{8}.dat$";
     private OpenOption[] mode;
     private static Map<String,Object> mutexs = Collections.synchronizedMap(new HashMap<>());
     protected Path dir;
     protected int fileNumber;
     protected AsynchronousFileChannel raf;
     protected final Object mutex;
+
+    private static final Pattern fileNamePatternRegX = Pattern.compile("^(.*/)?([\\d]{8})\\.dat$");
+    private static final DirectoryStream.Filter<Path> filePattern = new DirectoryStream.Filter<Path>() {
+
+        @Override
+        public boolean accept(Path entry) throws IOException {
+            return fileNamePatternRegX.matcher(entry.toString()).matches();
+        }
+    };
 
     /**
      * Creates a new FileBinLog instance
@@ -143,19 +154,7 @@ public abstract class BinLog implements AutoCloseable {
     protected boolean checkCutover (boolean findLast) throws IOException {
         boolean changed = false;
         while (readStatus() == Status.CLOSED) {
-            ByteBuffer index = ByteBuffer.allocate(4);
-            try {
-                int read = raf.read(index, NEXT_LOG_INDEX_OFFSET).get();
-                if (read != 4) {
-                    throw new IOException ("Failed to read 4 byte NEXT_LOG_INDEX_OFFSET, return: " + read);
-                }
-            } catch (InterruptedException e) {
-                throw new IOException (e.getMessage());
-            } catch (ExecutionException e) {
-                throw new IOException (e.getMessage());
-            }
-            index.flip();
-            int next = index.getInt();
+            int next = getNextFileIndex();
             if (next <= fileNumber)
                 throw new IOException ("Circular reference in BinLog index " + fileNumber + "/" + next);
             raf.close();
@@ -166,6 +165,12 @@ public abstract class BinLog implements AutoCloseable {
                 break;
         }
         return changed;
+    }
+
+    private int getNextFileIndex() throws IOException {
+        ByteBuffer index = readBuffer(raf, "NEXT_LOG_INDEX_OFFSET", 4, NEXT_LOG_INDEX_OFFSET);
+        int next = index.getInt();
+        return next;
     }
 
     /**
@@ -206,7 +211,7 @@ public abstract class BinLog implements AutoCloseable {
         return raf;
     }
 
-    private String toFileName (int i) {
+    protected String toFileName(int i) {
         return String.format ("%08d.dat", i);
     }
 
@@ -222,55 +227,40 @@ public abstract class BinLog implements AutoCloseable {
         return fileNumber;
     }
 
+    private ByteBuffer readBuffer(AsynchronousFileChannel raf, String name, int bufferSize, int bufferOffset)
+            throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+        try {
+            int read = raf.read(buffer, bufferOffset).get();
+            if (read != bufferSize) {
+                throw new IOException("Failed to read " + bufferSize + " byte " + name + ", return: " + read);
+            }
+        } catch (InterruptedException e) {
+            throw new IOException (e.getMessage());
+        } catch (ExecutionException e) {
+            throw new IOException (e.getMessage());
+        }
+        buffer.flip();
+
+        return buffer;
+    }
+
     /**
      * @return true if this binlog file has been logically closed
      * @throws IOException on error
      */
     public boolean isClosed() throws IOException {
-        ByteBuffer status = ByteBuffer.allocate(2);
-        try {
-            int read = raf.read(status, STATUS_OFFSET).get();
-            if (read != 2) {
-                throw new IOException ("Failed to read 2 byte STATUS_OFFSET, return: " + read);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
-        }
-        status.flip();
+        ByteBuffer status = readBuffer(raf, "STATUS_OFFSET", 2, STATUS_OFFSET);
         return Status.valueOf(status.getShort()) == Status.CLOSED;
     }
 
     protected long readTailOffset(AsynchronousFileChannel raf) throws IOException {
-        ByteBuffer tail = ByteBuffer.allocate(8);
-        try {
-            int read = raf.read(tail, TAIL_OFFSET).get();
-            if (read != 8) {
-                throw new IOException ("Failed to read 8 byte TAIL_OFFSET, return: " + read);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
-        }
-        tail.flip();
+        ByteBuffer tail = readBuffer(raf, "TAIL_OFFSET", 8, TAIL_OFFSET);
         return tail.getLong();
     }
 
     protected Status readStatus() throws IOException {
-        ByteBuffer status = ByteBuffer.allocate(2);
-        try {
-            int read = raf.read(status, STATUS_OFFSET).get();
-            if (read != 2) {
-                throw new IOException ("Failed to read 2 byte STATUS_OFFSET, return: " + read);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
-        }
-        status.flip();
+        ByteBuffer status = readBuffer(raf, "STATUS_OFFSET", 2, STATUS_OFFSET);
         return Status.valueOf(status.getShort());
 
     }
@@ -286,16 +276,18 @@ public abstract class BinLog implements AutoCloseable {
             if (write != 8) {
                 throw new IOException ("Failed to write 8 byte TAIL_OFFSET, return: " + write);
             }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException(e);
         }
     }
 
     protected int getFileNumber(String s) {
-        return s != null ? Integer.parseInt(s.substring(0,8)) : 0;
+        if (s == null)
+            return 0;
+        Matcher m = fileNamePatternRegX.matcher(s);
+        return m.matches() ? Integer.parseInt(m.group(2)) : 0;
     }
+
 
     protected String getLastClosed (Path dir) throws IOException {
         for (String s : getFilesReversed(dir)) {
@@ -305,31 +297,21 @@ public abstract class BinLog implements AutoCloseable {
         return null;
     }
 
-    protected String getFirst (Path dir) throws IOException {
+    protected String getFirst(Path dir) throws IOException {
         return StreamSupport.stream(Files.newDirectoryStream(dir, filePattern).spliterator(), false)
-                .map(Objects::toString)
-                .sorted(String::compareTo)
-                .findFirst()
-                .orElse(null);
+                .map(Objects::toString).sorted(String::compareTo).findFirst().orElse(null);
     }
 
     private void verifyHeader(Path file, AsynchronousFileChannel raf) throws IOException {
         if (raf.size() < TAIL_OFFSET + Long.BYTES)
             throw new IOException ("Invalid jPOS BinLog file " + fileNumber + " (" + file.toString() + ": " + raf.size() + "/" +  TAIL_OFFSET + Long.BYTES + ")");
-        ByteBuffer magicbuf = ByteBuffer.allocate(4);
-        try {
-            int read = raf.read(magicbuf, 0).get();
-            if (read != 4) {
-                throw new IOException ("Failed to read 4 byte FILE_MAGIC, return: " + read);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
-            throw new IOException (e.getMessage());
-        }
-        magicbuf.flip();
+        ByteBuffer magicbuf = readBuffer(raf, "FILE_MAGIC", 4, 0);
         int magic = magicbuf.getInt();
-        if (!(FILE_MAGIC == magic))
+        validateMagicNumber(file, raf, magic);
+    }
+
+    private void validateMagicNumber(Path file, AsynchronousFileChannel raf, int magic) throws IOException {
+        if ((FILE_MAGIC != magic))
             throw new IOException ("Invalid jPOS BinLog version " + fileNumber);
         long pos = readTailOffset(raf);
         if (pos < TAIL_OFFSET + Long.BYTES)
@@ -364,18 +346,7 @@ public abstract class BinLog implements AutoCloseable {
     private boolean isClosed (Path f) throws IOException {
         if (Files.exists(f)) {
             try (AsynchronousFileChannel raf = AsynchronousFileChannel.open(f, READ)) {
-                ByteBuffer status = ByteBuffer.allocate(2);
-                try {
-                    int read = raf.read(status, STATUS_OFFSET).get();
-                    if (read != 2) {
-                        throw new IOException ("Failed to read 2 byte STATUS_OFFSET, return: " + read);
-                    }
-                } catch (InterruptedException e) {
-                    throw new IOException (e.getMessage());
-                } catch (ExecutionException e) {
-                    throw new IOException (e.getMessage());
-                }
-                status.flip();
+                ByteBuffer status = readBuffer(raf, "STATUS_OFFSET", 2, STATUS_OFFSET);
                 return Status.valueOf(status.getShort()) == Status.CLOSED;
             }
         }

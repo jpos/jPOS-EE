@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -39,15 +39,15 @@ public class AccountsHelper extends QIHelper {
     private int maxLevel;
     private boolean isOnlyComposites;
 
-    protected AccountsHelper() {
+    public AccountsHelper() {
         super(Account.class);
     }
 
-    protected AccountsHelper(boolean isOnlyComposites) {
+    public AccountsHelper(boolean isOnlyComposites) {
         this(isOnlyComposites, 2);
     }
 
-    protected AccountsHelper(boolean isOnlyComposites, int maxLevel) {
+    public AccountsHelper(boolean isOnlyComposites, int maxLevel) {
         super(Account.class);
         this.isOnlyComposites = isOnlyComposites;
         this.maxLevel = maxLevel;

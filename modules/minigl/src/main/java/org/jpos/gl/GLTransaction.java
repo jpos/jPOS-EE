@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,13 @@
 
 package org.jpos.gl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.jdom2.Element;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -324,7 +326,7 @@ public class GLTransaction extends Cloneable {
      * Create a reverse transaction based on this one
      *
      * @param keepEntryTags if true entries tags are copied to the reversal entries
-     * @param layer entries with layer <code>layer</code> are selected
+     * @param layers entries with layer <code>layer</code> are selected
      * @return a reversal transaction
      */
     public GLTransaction createReverse(boolean keepEntryTags, short... layers) {
@@ -386,6 +388,28 @@ public class GLTransaction extends Cloneable {
                   e.getLayer()
                 );
                 if (keepEntryTags) reversalEntry.setTags(e.getTags());
+            }
+        }
+        return glt;
+    }
+
+    /**
+     * Create a simplified transaction based on this one
+     */
+
+    public GLTransaction simplify() {
+        GLTransaction glt = new GLTransaction(getDetail());
+        for (GLEntry e : getEntries()) {
+            if (BigDecimal.ZERO.compareTo(e.getAmount()) != 0) {
+                GLEntry redundantEntry = getEntries().stream().filter(entry ->
+                entry.getAccount().equals(e.getAccount()) &&
+                entry.getAmount().compareTo(e.getAmount()) == 0 &&
+                entry.getLayer() == e.getLayer() &&
+                (e.isCredit() ^ entry.isCredit())).findAny().orElse(null);
+                if (redundantEntry == null) {
+                    glt.createGLEntry(e.getAccount(), e.getAmount(), e.getDetail(), e.isCredit(), e.getLayer());
+                    glt.setTags(e.getTags());
+                }
             }
         }
         return glt;
@@ -511,5 +535,27 @@ public class GLTransaction extends Cloneable {
         }
         return glt;
     }
+
+    /**
+     * Handy method to obtain affected layers considering only entries for which all predicates are true
+     * @param predicates Predicates that the inputs have to satisfy, if none, then consider all entries
+     * @return layers affected by entries of this transaction.
+     */
+    @SafeVarargs
+    public final Set<Short> getAffectedLayers(Predicate<GLEntry>... predicates) {
+        Stream<GLEntry> entryStream = getEntries().stream();
+        for (Predicate<GLEntry> p : predicates) entryStream = entryStream.filter(p);
+        return entryStream.map(GLEntry::getLayer).collect(Collectors.toSet());
+    }
+
+    public Set<Short> getAffectedLayers(Collection<Account> accounts) {
+        Objects.requireNonNull(accounts);
+        return getAffectedLayers(e -> accounts.contains(e.getAccount()));
+    }
+
+    public Set<Short> getAffectedLayers(Account ... accounts) {
+        return getAffectedLayers(Arrays.asList(accounts));
+    }
+
 }
 

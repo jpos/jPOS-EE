@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -32,9 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SeqNoTest {
     @BeforeAll
     public static void setUp() throws DocumentException {
+        System.setProperty("db.create.enabled", "YES");
         try (DB db = new DB()) {
             db.createSchema(null, true);
         }
+        System.setProperty("db.create.enabled", "NO");
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -36,15 +36,15 @@ import java.util.*;
 
 @SuppressWarnings("serial")
 public class LoginView extends VerticalLayout {
-    private QI app;
-    private LoginHelper helper;
+    protected QI app;
+    protected LoginHelper helper;
     private TextField username;
     private PasswordField password;
-    private CheckBox rememberMe;
-    private HorizontalLayout buttonsLayout;
-    private Label errorLabel;
-    private Button loginBtn;
-    private Binder<String> binder;  //just used to add validators to fields
+    protected CheckBox rememberMe;
+    protected HorizontalLayout buttonsLayout;
+    protected Label errorLabel;
+    protected Button loginBtn;
+    protected Binder<String> binder;  //just used to add validators to fields
 
     protected TextField getUsernameField() {
         return username;

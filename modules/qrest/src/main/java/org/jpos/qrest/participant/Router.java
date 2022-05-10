@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -31,9 +31,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 
-import static org.jpos.qrest.Constants.PATHPARAMS;
-import static org.jpos.qrest.Constants.QUERYPARAMS;
-import static org.jpos.qrest.Constants.REQUEST;
+import static org.jpos.qrest.Constants.*;
 
 public class Router implements GroupSelector, XmlConfigurable {
     private Map<String,List<Route<String>>> routes = new HashMap<>();
@@ -47,15 +45,15 @@ public class Router implements GroupSelector, XmlConfigurable {
     public String select(long id, Serializable context) {
         Context ctx = (Context) context;
         FullHttpRequest request = ctx.get(REQUEST);
-        ctx.log ("Method: " + request.method().name());
-        ctx.log ("Routes: " + routes);
-        List<Route<String>> routesByMethod = routes.get(request.method().name());
+        String method = request.method().name();
+        ctx.put (METHOD, method);
+        List<Route<String>> routesByMethod = routes.get(method);
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
         if (!decoder.parameters().isEmpty())
             ctx.put(QUERYPARAMS, decoder.parameters());
 
         if (routesByMethod != null) {
-            Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.uri())).findFirst();
+            Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.path())).findFirst();
             String path = URI.create(decoder.uri()).getPath();
             if (route.isPresent()) {
                 Route<String> r = route.get();

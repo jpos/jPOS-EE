@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -79,7 +79,6 @@ public class SendResponse implements AbortParticipant, Configurable {
                 headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
             headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
             ChannelFuture cf = ch.writeAndFlush(response);
-            ctx.log(cf);
             if (!keepAlive)
                 ch.close();
         } finally {

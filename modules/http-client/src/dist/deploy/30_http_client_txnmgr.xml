@@ -18,6 +18,7 @@
     <property name="responseName" value="HTTP_RESPONSE" />
     <property name="responseStatusName" value="HTTP_STATUS" />
     <property name="contentTypeName" value="HTTP_CONTENT_TYPE" />
+    <property name="httpVersion" value="HTTP_VERSION"/>
   </participant>
 
 </http-client-txnmgr>

@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -38,6 +38,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.cert.CertificateExpiredException;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -76,6 +77,8 @@ import org.jpos.transaction.Context;
 
 @SuppressWarnings("unused")
 public class HttpQuery extends Log implements AbortParticipant, Configurable, Destroyable {
+    private static final String DEFAULT_MAX_CONNECTIONS = "25";         // overridable by sys prop http.maxConnections, or with cfg "maxConnections"
+
     private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     private static final int DEFAULT_TIMEOUT = 15000;
 
@@ -101,6 +104,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String basicAuthenticationName;
     private RedirectStrategy redirectStrategy;
     private boolean ignoreNullRequest;
+    private String httpVersionName;
 
     // Shared clients for the instance.
     // Created at configuration time; destroyed when this participant is destroyed.
@@ -120,6 +124,17 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             return ignoreNullRequest ? PREPARED | NO_JOIN | READONLY : FAIL;
 
         addHeaders(ctx, httpRequest);
+
+        //set the http protocol version, default to version 1.1
+        //config example <property name="httpVersionName" value="1.1"/>
+        HttpVersion definedVersion = null;
+        String httpVersion = getVersion(ctx);
+        if(httpVersion != null && httpVersion.length() > 0) {
+            String[] majmin = httpVersion.split("\\.");                 // split into major and minor version numbers
+            definedVersion = new HttpVersion(Integer.parseInt(majmin[0]),
+                                             majmin.length > 1 ? Integer.parseInt(majmin[1]) : 0);            // default to minor 0 if it can't be split
+        }
+        httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);     // default to HTTP/1.1
 
         httpRequest.setConfig(RequestConfig.custom().
             setConnectTimeout(connectTimeout).
@@ -210,6 +225,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         timeout= cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
         urlName = cfg.get("urlName", "HTTP_URL");
+        httpVersionName = cfg.get("httpVersionName", "HTTP_VERSION");
         methodName = cfg.get("methodName", "HTTP_METHOD");
         paramsName = cfg.get ("paramsName", "HTTP_PARAMS");
         requestName = cfg.get ("requestName", "HTTP_REQUEST");
@@ -247,9 +263,27 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             redirectStrategy= LaxRedirectStrategy.INSTANCE;
         else
             throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
+
+
+        String maxConn = System.getProperty("http.maxConnections");
+        if (maxConn == null || maxConn.trim().isEmpty()) {
+            String maxConnCfg = cfg.get("maxConnections", DEFAULT_MAX_CONNECTIONS);
+            maxConn = maxConnCfg.trim();
+            System.setProperty("http.maxConnections", maxConn);
+        }
+        try { Integer.parseInt(maxConn); }
+        catch (Exception e) {
+            throw new ConfigurationException("Bad value for maxConnections: "+maxConn);
+        }
     }
 
-    public CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
+
+    /**
+        Method is synchronized against this instance of HttpQuery, because the instance of
+        the CloseableHttpAsyncClient is *lazily* created upon first request, and only one
+        should be created and shared by all threads.
+    */
+    public synchronized CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
         if (trustAllCerts) {
             if (unsecureHttpClient == null) {
                 setUnsecureHttpClient(getClientBuilder(true).build());
@@ -277,6 +311,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         if (trustAllCerts) {
             disableSSLVerification(builder);
         }
+
         return builder;
     }
 
@@ -342,6 +377,10 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         }
         ctx.log ("Invalid request method");
         return null;
+    }
+
+    private String getVersion(Context ctx) {
+        return ctx.getString(httpVersionName);
     }
 
     private ContentType getContentType (Context ctx) {

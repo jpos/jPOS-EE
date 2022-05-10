@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -200,11 +200,12 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public String getRealmsAsString () {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
-            if (sb.length() > 0)
-                sb.append (", ");
-            sb.append (r.getRealm().getName());
+            if (r.getRealm() != null) {
+                if (sb.length() > 0)
+                    sb.append (", ");
+                sb.append (r.getRealm().getName());
+            }
         }
-        System.out.println("realms as String: " + sb.toString());
         return sb.toString();
     }
     public void addPasswordHistoryValue (String passwordhistoryhash) {

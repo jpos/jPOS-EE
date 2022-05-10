@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -170,6 +170,11 @@ public class DB implements Closeable {
     }
 
     public static synchronized void invalidateSessionFactories() {
+        for (SessionFactory sf : sessionFactories.values()) {
+            try {
+                sf.close();
+            } catch (Exception ignored) {}
+        }
         sessionFactories.clear();
     }
 
@@ -286,8 +291,12 @@ public class DB implements Closeable {
                     targetTypes.add(TargetType.SCRIPT);
                 }
             }
-            if (create)
-                targetTypes.add(TargetType.DATABASE);
+            if (create) {
+                if (isCreateEnabled())
+                    targetTypes.add(TargetType.DATABASE);
+                else
+                    throw new IllegalStateException ("createSchema not enabled");
+            }
             if(targetTypes.size()>0) {
                 // First, drop everything, disregarding errors
                 export.setHaltOnError(false);
@@ -302,6 +311,11 @@ public class DB implements Closeable {
             throw new HibernateException("Could not create schema", e);
         }
     }
+
+    private boolean isCreateEnabled() {
+        return "YES".equals(System.getProperty("db.create.enabled"));
+    }
+
 
     /**
      * open a new HibernateSession if none exists

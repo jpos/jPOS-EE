@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -50,7 +50,8 @@ public class RevisionsPanel extends Panel {
         addStyleName(revisions.size() > 0 ? "revision-history" : "invisible");
     }
     private void addRevision (Revision r) {
-        Label author = new Label("<strong>" + r.getAuthor().getName() + "</strong>", ContentMode.HTML);
+        String auth = r.getAuthor() != null ? r.getAuthor().getName() : "author-unknown";
+        Label author = new Label("<strong>" + auth + "</strong>", ContentMode.HTML);
         Label date = new Label(r.getDate().toString());
         Label info = new Label(r.getInfo(), ContentMode.HTML);
         author.setWidth("60%");

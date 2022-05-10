@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -84,9 +84,11 @@ public abstract class TestBase {
         try {
             String userName = System.getProperty("user.name");
             System.setProperty("user.name", "travis");
+            System.setProperty("db.create.enabled", "YES");
             new Import(configModifier).parse("../test-classes/testdata.xml");
             new Export(configModifier).export(System.out);
             System.setProperty("user.name", userName);
+            System.setProperty("db.create.enabled", "NO");
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

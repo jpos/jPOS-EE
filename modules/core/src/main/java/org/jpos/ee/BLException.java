@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -61,8 +61,8 @@ public class BLException extends Exception implements Loggeable {
         return detail;
     }
     public String getDetailedMessage () {
-        StringBuffer sb = new StringBuffer (getMessage());
-
+        StringBuffer sb = new StringBuffer ();
+        sb.append(getMessage());
         if (detail != null) {
             sb.append (" (");
             sb.append (detail);

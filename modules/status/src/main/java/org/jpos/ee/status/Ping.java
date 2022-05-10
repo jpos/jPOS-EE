@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@
 
 package org.jpos.ee.status;
 
+import java.net.ConnectException;
 import java.net.Socket;
 import java.io.IOException;
 import org.jpos.core.Configurable;
@@ -40,15 +41,12 @@ public class Ping extends Log implements MonitorTask, Configurable {
             socket.setSoLinger (true, 0);
             socket.close();
             rc = true;
+        } catch (ConnectException e) {
+            rc = true;
         } catch (IOException e) {
             String msg = e.getMessage().toUpperCase();
-            if (msg.indexOf ("CONNECTION REFUSED") >= 0) {
-                rc = true;
-            }
-            else {
-                rc = false;
-                detail = " " + msg;
-            }
+            rc = false;
+            detail = " " + msg;
         }
         long elapsed = System.currentTimeMillis() - start;
         return (rc ? Status.OK : Status.WARN) + detail 

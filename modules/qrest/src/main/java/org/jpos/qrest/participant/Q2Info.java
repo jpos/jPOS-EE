@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -42,6 +42,8 @@ import static org.jpos.qrest.Constants.REQUEST;
 import static org.jpos.qrest.Constants.RESPONSE;
 
 public class Q2Info implements TransactionParticipant, Configurable {
+    // special temp key in response map to indicate a specific HttpResponseStatus value (should be removed from actual response)
+    private final static String HTTP_STATUS_KEY = "__http_status__";
     private TransactionManager txnmgr;
     private Q2 q2;
     private List<Route<Map<String,Object>>> routes = new ArrayList<>();
@@ -73,8 +75,14 @@ public class Q2Info implements TransactionParticipant, Configurable {
             }
             status = HttpResponseStatus.OK;
         }
-        if (response != null && response.containsKey("error")) {
-            status = HttpResponseStatus.NOT_ACCEPTABLE;
+
+        if (response != null) {
+            if (response.containsKey("error"))
+                status = HttpResponseStatus.NOT_ACCEPTABLE;
+            else if (response.containsKey(HTTP_STATUS_KEY)) {
+                status = (HttpResponseStatus) response.get(HTTP_STATUS_KEY);
+                response.remove(HTTP_STATUS_KEY);
+            }
         }
         ctx.put(RESPONSE,
           response != null ? new Response(status, response) :
@@ -136,6 +144,19 @@ public class Q2Info implements TransactionParticipant, Configurable {
         }
     }
 
+    private Map<String,Object> connected (Route r, String path) {
+        try {
+            QMUX qmux = (QMUX)QMUX.getMUX((String) r.parameters(path).get("muxname"));
+            Map<String,Object> m = muxInfo(qmux);
+            m.put(HTTP_STATUS_KEY,  qmux.isConnected()    ?
+                                    HttpResponseStatus.OK :
+                                    HttpResponseStatus.SERVICE_UNAVAILABLE);
+            return m;
+        } catch (NameRegistrar.NotFoundException e) {
+            return mapOf("error", e.getMessage() + " not found");
+        }
+    }
+
     private Map<String, Object> txnmgr () {
         List<Object> txnmgr =  NameRegistrar.getAsMap().entrySet()
                 .stream().filter(e -> e.getValue() instanceof TransactionManager)
@@ -158,7 +179,8 @@ public class Q2Info implements TransactionParticipant, Configurable {
         m.put ("TPSPeak", txnmgr.getTPSPeak());
         m.put ("TPSPeakWhen", txnmgr.getTPSPeakWhen());
         m.put ("TPSElapsed", txnmgr.getTPSElapsed());
-        m.put ("metrics", txnmgr.getMetrics().metrics());
+        if (txnmgr.getMetrics() != null)
+            m.put ("metrics", txnmgr.getMetrics().metrics());
         return m;
     }
 
@@ -170,6 +192,7 @@ public class Q2Info implements TransactionParticipant, Configurable {
         routes.add(new Route<>(prefix + "/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
         routes.add(new Route<>(prefix + "/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
         routes.add(new Route<>(prefix + "/q2/diskspace**", "GET", (t,s) -> diskspace()));
+        routes.add(new Route<>(prefix + "/q2/mux/{muxname}/connected", "GET", (t,s) -> connected(t,s)));    // like below, but returns HTTP code 503 if mux not connected
         routes.add(new Route<>(prefix + "/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
         routes.add(new Route<>(prefix + "/q2/mux**", "GET", (t,s) -> muxes()));
         routes.add(new Route<>(prefix + "/q2/txnmgr/name", "GET", (t,s) -> mapOf("name", txnmgr.getName())));

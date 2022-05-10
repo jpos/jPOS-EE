@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -30,9 +30,11 @@ public class EEUserTest {
     DB db;
     @BeforeEach
     public void setUp() throws Exception {
+        System.setProperty("db.create.enabled", "YES");
         db = new DB();
         db.createSchema("schema.sql", true);
         db.open();
+        System.setProperty("db.create.enabled", "FALSE");
     }
 
     @Test

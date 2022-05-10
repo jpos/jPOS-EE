@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -138,7 +138,7 @@ public abstract class QIEntityView<T> extends VerticalLayout implements View, Co
             } else {
                 o = getEntityByParam(params[0]);
                 String realm = getRealm((T) o);
-                if (realm != null && !app.getUser().getRealmsAsString().contains(realm)) {
+                if (realm != null && !app.getUser().getRealmsAsString().equals("") && !app.getUser().getRealmsAsString().contains(realm)) {
                     getApp().getNavigator().navigateTo("");
                     getApp().displayNotification(getApp().getMessage("errorMessage.notRealm", realm));
                     return;

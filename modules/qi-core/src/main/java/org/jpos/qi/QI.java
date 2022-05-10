@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -78,6 +78,22 @@ public class QI extends UI {
         }
         messagesMap = new HashMap<>();
         valueContext = new ValueContext(locale);
+    }
+
+    protected QILayout getQILayout() {
+        return qiLayout;
+    }
+
+    protected Sidebar getSidebar() {
+        return sidebar;
+    }
+
+    protected Visitor getVisitor() {
+        return visitor;
+    }
+
+    protected LoginView getLoginView() {
+        return loginView;
     }
 
     private void parseMessages() {

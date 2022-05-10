@@ -4,6 +4,7 @@ plugins {
 vaadin {
     version=vaadinVersion
     manageDependencies = true
+    manageRepositories = false
 }
 vaadinAddon {
     title='QI'
@@ -11,49 +12,6 @@ vaadinAddon {
 
 vaadinCompile.gwtSdkFirstInClasspath=true
 vaadinThemeCompile.themesDirectory = "${webAppDir}/../resources/VAADIN/themes"
-
-apply plugin: 'maven-publish'
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact (sourceJar) {
-                classifier = 'sources'
-            }
-            artifactId="jposee-${project.name}"
-            pom.withXml {
-                asNode().dependencies.'*'.findAll() {
-                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
-                       dep.name == it.artifactId.text()
-                    }
-                }.each() {
-                    it.scope*.value = 'compile'
-                }
-                asNode().dependencies.'*'.findAll() {
-                    if (it.groupId.text() == 'org.jpos.ee') {
-                        it.artifactId*.value = "jposee-${it.artifactId.text()}"
-                    }
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            url 'file:///opt/local/maven'
-        }
-    }
-}
-
-install { 
-    doFirst {
-        Configuration archivesConfig = project.getConfigurations().getByName('archives') 
-        archivesConfig.artifacts.removeAll { 
-            it.extension.equals('war')
-        } 
-    }
-}
-uploadArchives.enabled = false
 
 dependencies {
     api "com.vaadin:vaadin-server:${vaadinVersion}"
@@ -88,6 +46,5 @@ jar {
 
 jar.dependsOn("vaadinThemeCompile")
 jar.dependsOn("vaadinCompile")
-install.dependsOn("publishToMavenLocal")
 uploadArchives.dependsOn("jar", "publishMavenJavaPublicationToMavenRepository")
 

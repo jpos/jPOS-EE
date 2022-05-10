@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,8 @@ package org.jpos.transaction;
 
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -75,5 +77,14 @@ public class TxnIdTest {
         assertEquals(txnId2, txnId3);
         assertEquals(txnId2.toString(), txnId3.toString());
         assertEquals(12, txnId.toRrn().length());
+    }
+
+    @Test
+    public void testJodaTimeCompatibility() {
+        DateTime now = DateTime.now();
+        Instant instant = now.toDate().toInstant();
+        TxnId txnId1 = TxnId.create(now, 0, 1L);
+        TxnId txnId2 = TxnId.create(instant, 0, 1L);
+        assertEquals(txnId1, txnId2);
     }
 }

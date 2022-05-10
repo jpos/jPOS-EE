@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2020 jPOS Software SRL
+ * Copyright (C) 2000-2021 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,9 +18,14 @@
 
 package org.jpos.q2;
 
+import org.jpos.core.annotation.Config;
+
 public class TestJob extends QuartzJobSupport {
+    @Config("message")
+    private String message;
+
     public void run() {
-        getLog().info(cfg.get ("message"));
+        getLog().info(message);
     }
 }
 

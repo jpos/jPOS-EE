@@ -24,7 +24,7 @@ import org.flywaydb.core.api.MigrationInfoService;
 import org.flywaydb.core.api.MigrationVersion;
 import org.flywaydb.core.internal.info.MigrationInfoDumper;
 import org.jdom2.Element;
-import org.jpos.core.ConfigurationException;
+import org.jpos.core.Environment;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QBeanSupport;
 
@@ -77,9 +77,7 @@ public class FlywayService extends QBeanSupport implements XmlConfigurable {
     }
 
     @Override
-    public void setConfiguration(Element e) throws ConfigurationException {
-        commands = e.getChildText("commands");
-        if (commands == null)
-            commands = "info";
+    public void setConfiguration(Element e) {
+        commands = Environment.get(e.getChildText("commands"), "info");
     }
 }

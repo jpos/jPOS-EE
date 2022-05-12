@@ -38,7 +38,7 @@ The migrate command accepts an optional --out-of-order parameter.
 
 In addition to CLI support, there's also a `FlywayService` that can be
 configured as a QBean. We recommend to use a low filename (such as
-`01_flyway.xml` so that the service starts before other services that may
+`01_flyway.xml`) so that the service starts before other services that may
 require the schema to be impacted in the database.
 
 The QBean descriptor looks like this:

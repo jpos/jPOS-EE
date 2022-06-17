@@ -298,8 +298,10 @@ public abstract class BinLog implements AutoCloseable {
     }
 
     protected String getFirst(Path dir) throws IOException {
-        return StreamSupport.stream(Files.newDirectoryStream(dir, filePattern).spliterator(), false)
-                .map(Objects::toString).sorted(String::compareTo).findFirst().orElse(null);
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, filePattern)) {
+            return StreamSupport.stream(files.spliterator(), false)
+                    .map(Objects::toString).sorted(String::compareTo).findFirst().orElse(null);
+        }
     }
 
     private void verifyHeader(Path file, AsynchronousFileChannel raf) throws IOException {
@@ -331,16 +333,20 @@ public abstract class BinLog implements AutoCloseable {
     }
 
     private List<String> getFiles(Path dir) throws IOException {
-        return StreamSupport.stream(Files.newDirectoryStream(dir, filePattern).spliterator(), false)
-                .map(Objects::toString)
-                .sorted(String::compareTo)
-                .collect(Collectors.toList());
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, filePattern)) {
+            return StreamSupport.stream(files.spliterator(), false)
+                    .map(Objects::toString)
+                    .sorted(String::compareTo)
+                    .collect(Collectors.toList());
+        }
     }
     private List<String> getFilesReversed(Path dir) throws IOException {
-        return StreamSupport.stream(Files.newDirectoryStream(dir, filePattern).spliterator(), false)
-                .map(Objects::toString)
-                .sorted((s1, s2) -> -s1.compareTo(s2))
-                .collect(Collectors.toList());
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, filePattern)) {
+            return StreamSupport.stream(files.spliterator(), false)
+                    .map(Objects::toString)
+                    .sorted((s1, s2) -> -s1.compareTo(s2))
+                    .collect(Collectors.toList());
+        }
     }
 
     private boolean isClosed (Path f) throws IOException {

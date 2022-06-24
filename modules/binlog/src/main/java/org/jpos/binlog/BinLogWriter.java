@@ -129,35 +129,43 @@ public class BinLogWriter extends BinLog {
                 if (readStatus() != Status.OPEN)
                     throw new IOException ("BinLog not open");
                 AsynchronousFileChannel newRaf = openOrCreateFile(dir, ++fileNumber);
-                ByteBuffer index = ByteBuffer.allocate(4);
-                index.putInt(fileNumber);
-                index.flip();
                 try {
-                    int write = raf.write(index, NEXT_LOG_INDEX_OFFSET).get();
-                    if (write != 4) {
-                        throw new IOException ("Failed to write 4 byte NEXT_LOG_INDEX_OFFSET, return: " + write);
+                    ByteBuffer index = ByteBuffer.allocate(4);
+                    index.putInt(fileNumber);
+                    index.flip();
+                    try {
+                        int write = raf.write(index, NEXT_LOG_INDEX_OFFSET).get();
+                        if (write != 4) {
+                            throw new IOException ("Failed to write 4 byte NEXT_LOG_INDEX_OFFSET, return: " + write);
+                        }
+                    } catch (InterruptedException e) {
+                        throw new IOException (e.getMessage());
+                    } catch (ExecutionException e) {
+                        throw new IOException (e.getMessage());
                     }
-                } catch (InterruptedException e) {
-                    throw new IOException (e.getMessage());
-                } catch (ExecutionException e) {
-                    throw new IOException (e.getMessage());
-                }
-                ByteBuffer status = ByteBuffer.allocate(2);
-                status.putShort(Status.CLOSED.shortValue());
-                status.flip();
-                try {
-                    int write = raf.write(status, STATUS_OFFSET).get();
-                    if (write != 2) {
-                        throw new IOException ("Failed to write 2 byte STATUS_OFFSET, return: " + write);
+                    ByteBuffer status = ByteBuffer.allocate(2);
+                    status.putShort(Status.CLOSED.shortValue());
+                    status.flip();
+                    try {
+                        int write = raf.write(status, STATUS_OFFSET).get();
+                        if (write != 2) {
+                            throw new IOException ("Failed to write 2 byte STATUS_OFFSET, return: " + write);
+                        }
+                    } catch (InterruptedException e) {
+                        throw new IOException (e.getMessage());
+                    } catch (ExecutionException e) {
+                        throw new IOException (e.getMessage());
                     }
-                } catch (InterruptedException e) {
-                    throw new IOException (e.getMessage());
-                } catch (ExecutionException e) {
-                    throw new IOException (e.getMessage());
+                    channel.force(false);
+                    raf = newRaf;
+                } finally {
+                    lock.release();
+                    if (newRaf == raf) {
+                        channel.close();
+                    } else {
+                        newRaf.close();
+                    }
                 }
-                channel.force(false);
-                raf = newRaf;
-                lock.release();
             } else {
                 throw new IOException ("Failed to acquire file lock");
             }

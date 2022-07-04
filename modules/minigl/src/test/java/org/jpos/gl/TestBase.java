@@ -48,7 +48,7 @@ public abstract class TestBase {
             String hibernateCfg = "<?xml version='1.0' encoding='utf-8'?>\n" +
                     "<!DOCTYPE hibernate-configuration PUBLIC\n" +
                     "        \"-//Hibernate/Hibernate Configuration DTD 3.0//EN\"\n" +
-                    "        \"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd\">\n" +
+                    "        \"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">\n" +
                     "\n" +
                     "<hibernate-configuration>\n" +
                     "    <session-factory>\n" +

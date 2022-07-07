@@ -258,14 +258,14 @@ public class DB implements Closeable {
         return doc.getRootElement().element("mappings");
     }
 
-    private Properties loadProperties(String filename) throws IOException
-    {
+    private Properties loadProperties(String filename) throws IOException {
         Properties props = new Properties();
         final String s = filename.replaceAll("/", "\\" + File.separator);
         final File f = new File(s);
-        if (f.exists())
-        {
-            props.load(new FileReader(f));
+        if (f.exists()) {
+            try (FileReader fr = new FileReader(f)) {
+                props.load(fr);
+            }
         }
         return props;
     }

@@ -36,10 +36,8 @@ public class Ping extends Log implements MonitorTask, Configurable {
         boolean rc = false;
         String detail = "";
         long start = System.currentTimeMillis();
-        try {
-            Socket socket = new Socket(host, port);
+        try (Socket socket = new Socket(host, port)){
             socket.setSoLinger (true, 0);
-            socket.close();
             rc = true;
         } catch (ConnectException e) {
             rc = true;

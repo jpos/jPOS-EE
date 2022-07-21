@@ -82,6 +82,14 @@ In case we wanted to add some debugging, we could definitely add to the end of t
 <1> The 'ProtectDebugInfo' Participant protects sensitive material from logs.
 <2> The 'Debug' participant dumps the contents of the context to the log.
 
+[NOTE]
+======
+As of jPOS 2.1.1 and beyond, the TransactionManager automatically logs the Context, as
+well as profiling information, whenever the `debug` property is set to `true`.
+The `Debug` participant is hence not required (and actually useless/annoying as it
+would log the Context twice).
+======
+
 This would result in the contents of the context being dumped to the log, protecting
 sensitive material on the way.
 

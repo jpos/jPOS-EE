@@ -7,6 +7,7 @@
   <participant class="org.jpos.qrest.participant.Router">
     <route path="/q2**" method="GET" name="q2"/>
     <route path="/q2**" method="POST" name="q2"/>
+    <route path="/test/load_file" method="POST" name="upload_file"/>
     <route path="/welcome.html" method="GET" name="welcome" />
     <route path="/dynamic" method="GET" name="dynamic" />
     <route path="/" method="GET" name="index" />
@@ -21,6 +22,10 @@
         <property name="documentRoot" value="html" />
         <property name="content" value="welcome.html" />
     </participant>
+  </group>
+  <group name="upload_file">
+    <participant class="org.jpos.qrest.ExtractFile" />
+    <participant class="org.jpos.qrest.test.participant.DumpFile" />
   </group>
   <group name="index">
     <participant class="org.jpos.qrest.participant.StaticContent">

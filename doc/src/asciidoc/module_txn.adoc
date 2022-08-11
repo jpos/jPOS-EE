@@ -7,7 +7,7 @@
 | *When*         | Available in all versions of jPOS-EE.
 | *Who*          | The jPOS.org team.
 | *Where*        | Directory modules/txn available in git repository at github.
-| *Why*          | This module if useful is your jPOS-EE application uses the *Transaction Manager*.
+| *Why*          | This module is useful if your jPOS-EE application uses the *Transaction Manager*.
 | *Status*       | Stable.
 | *License*      | <<appendix_license,GNU Affero General Public License version 3>>
 |=================================================================

@@ -111,7 +111,7 @@ These are the method's signatures:
 Here `keyId`, `password`, and `encoded` cryptogram don't require too much explanation, but `jobId` does
 and here is the rationale. We could have a one-shot `aesDecrypt` method accepting the private key password,
 but decrypting the AES-256 key using PGP is an expensive operation. In situations
-where you have extract a daily file, probably encrypted by just a handful keys, you don't want to decrypt
+where you have to extract a daily file, probably encrypted by just a handful keys, you don't want to decrypt
 the key on every `aesDecrypt` call. We don't want to expose the key to the caller either, so the CryptoService
 keeps it in a private field. In order to do that, `loadKey` caches the key (until it's unloaded), so it's
 cheap to call `loadKey` followed by `aesDecrypt`, after the first call where the key is actually decrypted,

@@ -20,20 +20,23 @@ package org.jpos.qrest;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import org.apache.http.entity.ContentType;
 import org.jpos.q2.Q2;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import java.io.File;
+import java.nio.file.Files;
 
-import static org.hamcrest.Matchers.*;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 public class RestTest  {
     private static final String BASE_URL = "http://localhost:8081/";
     private static Q2 q2;
-    
+
     @BeforeAll
     public static void setUp() throws NameRegistrar.NotFoundException {
         RestAssured.baseURI = BASE_URL;
@@ -99,5 +102,21 @@ public class RestTest  {
           .get("/v2/q2/txnmgr/name").then().statusCode(200).assertThat()
           .body("name", equalTo("txnmgr2")
           );
+    }
+
+    @Test
+    void testUploadFile() throws Exception {
+
+        File tempFile = File.createTempFile("qrest", "test");
+        Files.write(tempFile.toPath(), "hello".getBytes());
+
+        given().log().all()
+          .contentType(ContentType.MULTIPART_FORM_DATA.getMimeType())
+          .multiPart("file", tempFile, "multipart/form-data")
+          .post("/test/load_file")
+          .then()
+          .statusCode(200)
+          .assertThat()
+          .body("content", equalTo("hello"));
     }
 }

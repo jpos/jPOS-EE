@@ -66,7 +66,7 @@ main methods:
 
 While iterating over a BinLog, it might make sense to persistently store its `BinLog.Ref`
 in order to be able to restart the iterator at a given point if required (this is useful
-if using the BinLog to implement a Store and Forward.
+if using the BinLog to implement a Store and Forward).
 
 The `BinLogReader` has two constructors:
 
@@ -160,7 +160,7 @@ at specific places.
 
 ==== Supporting CLI commands
 
-The `binlog` CLI command is a subsystem that currently have two commands:
+The `binlog` CLI command is a subsystem that currently has three commands:
 
 * monitor (to visually monitor a binlog)
 * cutover (to force a cutover)

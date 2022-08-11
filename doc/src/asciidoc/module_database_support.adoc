@@ -41,7 +41,7 @@ For MS-SQL database:
     </dependency>
 ----
 
-WARNING: Only one of these dependencies should defined in your project.
+WARNING: Only one of these dependencies should be defined in your project.
 
 === MySQL (R) Support
 

@@ -104,7 +104,7 @@ that looks like this:
 
 Besides standard configuration (c3p0, jdbc, transaction isolation), the `hibernate.cfg.xml` file has
 a collection of mappings for your application's entities, but jPOS-EE applications are built _à la carte_
-picking modules from the jPOS-EE modules offeering, as well as customer specific modules.
+picking modules from the jPOS-EE modules offering, as well as customer specific modules.
 
 So if an application wants to use jPOS-EE DB support using say Postgresql backend, and wants to use the
 `sysconfig` module, and `eeuser` module, you would add the following dependencies:
@@ -212,7 +212,7 @@ tables in your secondary database are the same as the primary database. If that'
 in addition to read an alternate JDBC configuration from your `slave:db.properties` you want to map
 a different set of entities.
 
-if your config modifier has actually two modifiers, separated by a colon (i.e. `slave:legacy`),
+If your config modifier has actually two modifiers, separated by a colon (e.g. `slave:legacy`),
 then we'd read JDBC and optional properties from the `cfg/slave:db.properties`, but when we scan
 for mapping files, we use the following pattern `META-INF/org/jpos/ee/modules/legacy:*.xml`.
 

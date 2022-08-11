@@ -68,7 +68,7 @@ Tabs must be set exactly every 8 spaces (not 4).
 
 Due to our revision control system, we also need that hard tabs (ASCII
 0x09) are not used in source code and configuration files (in order for
-diff to work properly among platforms.
+diff to work properly among platforms).
 
 For 'vi' users, we are using the following .vimrc:
 

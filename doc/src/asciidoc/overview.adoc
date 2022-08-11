@@ -63,7 +63,7 @@ more comfortable with.
 === About this document
 
 This is the official jPOS-EE documentation that intends to
-aggregate everything related to jPOS-EE, including but no limited to:
+aggregate everything related to jPOS-EE, including but not limited to:
 its objectives, specifications, schedule, priorities, organizational
 chart, road map, change log, coding conventions, core modules, optional
 modules, license information, etc.

@@ -31,10 +31,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.jdom2.Element;
@@ -52,9 +49,7 @@ import org.jpos.util.NameRegistrar;
 
 import javax.net.ssl.*;
 
-import static org.jpos.qrest.Constants.PATHPARAMS;
-import static org.jpos.qrest.Constants.QUERYPARAMS;
-import static org.jpos.qrest.Constants.REQUEST;
+import static io.netty.handler.codec.http.HttpObjectDecoder.*;
 
 public class RestServer extends QBeanSupport implements Runnable, XmlConfigurable {
     private ServerBootstrap serverBootstrap;
@@ -76,6 +71,13 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private String queue;
     private Map<String,List<Route<String>>> routes = new HashMap<>();
 
+    private int maxHeaderSize;
+    private int maxContentLength;
+    private int maxInitialLineLength;
+    private int maxChunkSize;
+    private boolean validateHeaders;
+
+    public static final int DEFAULT_MAX_CONTENT_LENGTH = 512*1024;
 
     @Override
     protected void initService() throws GeneralSecurityException, IOException {
@@ -95,8 +97,8 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                   if (enableTLS) {
                       ch.pipeline().addLast(new SslHandler(getSSLEngine(sslContext), true));
                   }
-                  ch.pipeline().addLast(new HttpServerCodec()) ;
-                  ch.pipeline().addLast(new HttpObjectAggregator(512*1024));
+                  ch.pipeline().addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders));
+                  ch.pipeline().addLast(new HttpObjectAggregator(maxContentLength));
                   ch.pipeline().addLast(new RestSession(RestServer.this));
               }
           })
@@ -173,6 +175,12 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         enabledCipherSuites = cfg.getAll("enabled-cipher");
         enabledProtocols = cfg.getAll("enable-protocol");
         queue = cfg.get("queue");
+
+        maxHeaderSize = cfg.getInt("maxHeaderSize", DEFAULT_MAX_HEADER_SIZE);
+        maxContentLength = cfg.getInt("maxContentLength", DEFAULT_MAX_CONTENT_LENGTH);
+        maxInitialLineLength = cfg.getInt("maxInitialLineLength", DEFAULT_MAX_INITIAL_LINE_LENGTH);
+        maxChunkSize = cfg.getInt("maxChunkSize", DEFAULT_MAX_CHUNK_SIZE);
+        validateHeaders = cfg.getBoolean("validateHeaders", DEFAULT_CHUNKED_SUPPORTED);
     }
 
     @Override

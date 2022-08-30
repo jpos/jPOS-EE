@@ -627,7 +627,7 @@ public class GLSession {
         txn.setJournal (journal);
         txn.setTimestamp (new Date());
         if (txn.getPostDate() == null)
-            txn.setPostDate (txn.getTimestamp());
+            txn.setPostDate (Util.floor(txn.getTimestamp()));
         else
             invalidateCheckpoints (txn);
         Collection rules = getRules (txn);

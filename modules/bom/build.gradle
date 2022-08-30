@@ -1,0 +1,17 @@
+
+plugins {
+    id("io.github.gradlebom.generator-plugin") version "1.0.0.Final"
+}
+
+bomGenerator {
+    includeDependency(libraries.jpos)
+}
+
+dependencies {
+    libraries.values().forEach {
+        api it
+    }
+}
+
+description = 'jPOS-EE :: BOM'
+

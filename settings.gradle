@@ -45,7 +45,9 @@ include ':modules:core',
         ':modules:http-client',
         ':modules:seqno',
         ':modules:db-flyway',
-        ':modules:elasticsearch'
+        ':modules:elasticsearch',
+        ':modules:bom'
+
 
 rootProject.name = 'jposee'
 

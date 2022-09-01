@@ -1,17 +1,38 @@
-
-plugins {
-    id("io.github.gradlebom.generator-plugin") version "1.0.0.Final"
-}
-
-bomGenerator {
-    includeDependency(libraries.jpos)
-}
+apply plugin: 'java-platform'
+apply plugin: 'maven-publish'
+description = 'jPOS-EE :: BOM'
 
 dependencies {
-    libraries.values().forEach {
-        api it
+    constraints {
+        api libraries.jpos
+        rootProject.subprojects.each {
+            if (it.name != 'modules' && it.name != project.name)
+                api it
+        }
+        libraries.values().sort().forEach {
+            api it
+        }
     }
 }
 
-description = 'jPOS-EE :: BOM'
+task my {
+    doLast() {
+        rootProject.subprojects.each {
+            if (it.name != 'modules' && it.name != project.name)
+                println it.name
+            else
+                println ("Ignored " + it)
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'jposee-bom'
+            from components.javaPlatform
+        }
+    }
+}
+
 

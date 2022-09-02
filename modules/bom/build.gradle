@@ -15,17 +15,6 @@ dependencies {
     }
 }
 
-task my {
-    doLast() {
-        rootProject.subprojects.each {
-            if (it.name != 'modules' && it.name != project.name)
-                println it.name
-            else
-                println ("Ignored " + it)
-        }
-    }
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -34,5 +23,4 @@ publishing {
         }
     }
 }
-
 

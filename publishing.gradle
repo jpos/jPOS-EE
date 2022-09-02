@@ -1,0 +1,37 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def isSnapshot = version.contains("SNAPSHOT")
+def mavenCentralRepo = isSnapshot ?
+    'https://oss.sonatype.org/content/repositories/snapshots/' :
+    'https://oss.sonatype.org/service/local/staging/deploy/maven2';
+
+project.archivesBaseName="jposee-${project.name}"
+
+publishing {
+    repositories {
+        maven {
+            def releasesRepoUrl = mavenCentralRepo
+            def snapshotsRepoUrl = 'file:///opt/local/maven'
+            url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+            if (!isSnapshot) {
+                credentials {
+                    if (project.hasProperty("mavenCentralUsername"))
+                        username = mavenCentralUsername
+                    if (project.hasProperty("mavenCentralPassword"))
+                        password = mavenCentralPassword
+                }
+            }
+        }
+    }
+} // publishing
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jpos.org/maven' }
+    maven { url 'https://download.oracle.com/maven' }
+    maven { url 'https://maven.vaadin.com/vaadin-addons' }
+    maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+    mavenLocal()
+}
+

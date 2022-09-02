@@ -9,7 +9,6 @@ buildscript {
     }
 }
 
-
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -26,6 +25,7 @@ allprojects {
 }
 
 subprojects {
+    apply from: "${rootProject.projectDir}/publishing.gradle"
     if (name != 'bom') {
         apply from: "${rootProject.projectDir}/subprojects.gradle"
     }

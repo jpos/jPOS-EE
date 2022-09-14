@@ -30,8 +30,8 @@
     <property name="passwordHash" length="8000" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="email" length="128" not-null="false" type="string" />
-    <property name="active" type="yes_no" />
-    <property name="deleted" type="yes_no" />  
+    <property name="active" type="yes_no" not-null="false"><column name="active" default="'Y'" /></property>
+    <property name="deleted" type="yes_no" />
     <property name="verified" type="yes_no" />
     <property name="startDate"     type="date" />
     <property name="endDate"       type="date" />
@@ -47,12 +47,12 @@
       </composite-element>
     </list>
 
-    <property name="forcePasswordChange" type="yes_no" />
+    <property name="forcePasswordChange" type="yes_no" not-null="false"><column name="forcepasswordchange" default="'N'" /></property>
     <property name="lastLogin"           type="timestamp" />
     <property name="passwordChanged"     type="timestamp" />
     <property name="loginAttempts"       type="int" />
 
-    <map name="props" lazy="true" table="eeuser_props" 
+    <map name="props" lazy="true" table="eeuser_props"
         cascade="all-delete-orphan">
         <key foreign-key="FKUserProps" />
         <index column="propName" type="string" length="64"/>

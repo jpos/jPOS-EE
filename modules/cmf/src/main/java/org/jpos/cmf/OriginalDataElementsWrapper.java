@@ -33,14 +33,13 @@ public final class OriginalDataElementsWrapper {
     private static final int MAX_FIELD_LENGTH = 41;
 
     private String originalMTI;
-    private int originalSTAN;
+    private long originalSTAN;
     private Date originalLocalDate;
     private String originalAcquiringInstCode;
 
     public OriginalDataElementsWrapper() { }
 
     public OriginalDataElementsWrapper(String fieldValue) {
-
         Objects.requireNonNull(fieldValue);
 
         if (fieldValue.length() > MAX_FIELD_LENGTH)
@@ -50,11 +49,9 @@ public final class OriginalDataElementsWrapper {
     }
 
     private void parse(String fieldValue) {
-
         try {
-
             setOriginalMTI(fieldValue.substring(0, 4));
-            setOriginalSTAN(Integer.valueOf(fieldValue.substring(4, 16)));
+            setOriginalSTAN(Long.parseLong(fieldValue.substring(4, 16)));
             setOriginalLocalDate(DateUtils.parseDate(fieldValue.substring(16, 30), "yyyyMMddHHmmss"));
             setOriginalAcquiringInstCode(fieldValue.substring(30));
         }
@@ -65,7 +62,6 @@ public final class OriginalDataElementsWrapper {
     }
 
     public String serialize() {
-
         StringBuilder r = new StringBuilder();
 
         if (StringUtils.isNotBlank(getOriginalMTI()))
@@ -73,7 +69,7 @@ public final class OriginalDataElementsWrapper {
         else
             r.append("0000");
 
-        r.append(StringUtils.leftPad(Integer.toString(getOriginalSTAN()), 12, '0'));
+        r.append(StringUtils.leftPad(Long.toString(getOriginalSTAN()), 12, '0'));
 
         if (getOriginalLocalDate() != null)
             r.append(ISODate.formatDate(getOriginalLocalDate(), "yyyyMMddHHmmss"));
@@ -101,12 +97,11 @@ public final class OriginalDataElementsWrapper {
         this.originalMTI = originalMTI;
     }
 
-    public int getOriginalSTAN() {
+    public long getOriginalSTAN() {
         return originalSTAN;
     }
 
-    public void setOriginalSTAN(int originalSTAN) {
-
+    public void setOriginalSTAN(long originalSTAN) {
         if (originalSTAN < 0)
             throw new IllegalArgumentException("originalSTAN must be a positive number");
 
@@ -126,7 +121,6 @@ public final class OriginalDataElementsWrapper {
     }
 
     public void setOriginalAcquiringInstCode(String originalAcquiringInstCode) {
-
         Objects.requireNonNull(originalAcquiringInstCode);
 
         if (originalAcquiringInstCode.length() > 11)

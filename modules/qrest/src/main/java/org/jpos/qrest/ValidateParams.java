@@ -191,31 +191,35 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
 
     private boolean checkMandatoryQueryParams (Context ctx) {
         Map<String,Object> queryParams = ctx.get(Constants.QUERYPARAMS);
+        boolean validParams = true;
         for (Map.Entry<String,Pattern> entry : mandatoryQueryParams.entrySet()) {
             Object v = queryParams.get(entry.getKey());
             String value = v != null ? v.toString() : null;
             if (value == null) {
                 ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Mandatory param " + entry.getKey().toLowerCase() + " not present");
-                return false;
+                validParams = false;
+            } else {
+                validParams = validParams && validParam(ctx, entry, value);
             }
-            return validParam(ctx, entry, value);
         }
-        return true;
+        return validParams;
     }
 
     private boolean checkOptionalQueryParams (Context ctx) {
         Map<String,Object> queryParams = ctx.get(Constants.QUERYPARAMS);
+        boolean validParams = true;
         for (Map.Entry<String,Pattern> entry : optionalQueryParams.entrySet()) {
             String value = (String) queryParams.get(entry.getKey());
             if (value != null) {
-                return validParam(ctx, entry, value);
+                validParams = validParams && validParam(ctx, entry, value);
             }
         }
-        return true;
+        return validParams;
     }
 
     private boolean checkMandatoryJson (Context ctx) {
         ctx.log ("Mandatory JSON: " + mandatoryJson);
+        boolean validParams = true;
         for (Map.Entry<String,JsonSchema> entry : mandatoryJson.entrySet()) {
             String value = ctx.getString(entry.getKey());
             ProcessingReport report;
@@ -225,20 +229,21 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                     JsonSchema schema = entry.getValue();
                     JsonNode node = JsonLoader.fromString(value);
                     report = schema.validate(node);
+                    if (!report.isSuccess()) {
+                        ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
+                        validParams = false;
+                    }
                 } catch(Exception ex) {
                     ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), ex.toString());
-                    return false;
-                }
-                if (!report.isSuccess()) {
-                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
-                    return false;
+                    validParams = false;
                 }
             }
         }
-        return true;
+        return validParams;
     }
 
     private boolean checkOptionalJson (Context ctx) {
+        boolean validParams = true;
         for (Map.Entry<String,JsonSchema> entry : optionalJson.entrySet()) {
             String value = ctx.getString(entry.getKey());
             ProcessingReport report;
@@ -247,16 +252,16 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
                     JsonSchema schema = entry.getValue();
                     JsonNode node = JsonLoader.fromString(value);
                     report = schema.validate(node);
+                    if (!report.isSuccess()) {
+                        ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
+                        validParams = false;
+                    }
                 } catch(Exception ex) {
                     ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), ex.toString());
-                    return false;
-                }
-                if (!report.isSuccess()) {
-                    ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), report.toString());
-                    return false;
+                    validParams = false;
                 }
             }
         }
-        return true;
+        return validParams;
     }
 }

@@ -4,7 +4,7 @@ plugins {
 vaadin {
     version=vaadinVersion
     manageDependencies = true
-    manageRepositories = false
+    manageRepositories = true
 }
 vaadinAddon {
     title='QI'

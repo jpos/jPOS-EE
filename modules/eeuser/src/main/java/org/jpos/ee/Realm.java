@@ -27,7 +27,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "realm", uniqueConstraints={@UniqueConstraint(columnNames={"name"}, name="UK_realm_name")})
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Realm implements Serializable {
+public class Realm extends Cloneable implements Serializable {
     private static final long serialVersionUID = -5382324365781372973L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

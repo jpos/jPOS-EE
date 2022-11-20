@@ -25,7 +25,7 @@
   </group>
   <group name="upload_file">
     <participant class="org.jpos.qrest.ExtractFile" />
-    <participant class="org.jpos.qrest.test.participant.DumpFile" />
+    <participant class="org.jpos.qrest.test.participant.DumpFile" enabled="${test.enabled:false}" />
   </group>
   <group name="index">
     <participant class="org.jpos.qrest.participant.StaticContent">

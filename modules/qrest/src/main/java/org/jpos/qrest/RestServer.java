@@ -34,7 +34,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
-import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.jdom2.Element;
@@ -79,7 +78,8 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private int maxInitialLineLength;
     private int maxChunkSize;
     private boolean validateHeaders;
-    private CorsConfig corsConfig;
+    private Map<String,CorsConfig> corsConfig = new LinkedHashMap<>();
+    private CorsConfig defaultCorsConfig;
 
     public static final int DEFAULT_MAX_CONTENT_LENGTH = 512*1024;
 
@@ -104,8 +104,6 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                   ch.pipeline()
                      .addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders))
                      .addLast(new HttpObjectAggregator(maxContentLength));
-                  if (corsConfig != null)
-                      ch.pipeline().addLast(new CorsHandler(corsConfig));
                   ch.pipeline().addLast(new RestSession(RestServer.this));
               }
           })
@@ -170,6 +168,16 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         sp.out(getQueue(request), ctx, 60000L);
     }
 
+    public CorsConfig getCorsConfig (FullHttpRequest request) {
+        return corsConfig
+          .entrySet()
+          .stream()
+          .filter(e -> request.uri().startsWith(e.getKey()))
+          .map(Map.Entry::getValue)
+          .findFirst()
+          .orElse(defaultCorsConfig);
+    }
+
     @Override
     public void setConfiguration (Configuration cfg) throws ConfigurationException {
         super.setConfiguration(cfg);
@@ -193,6 +201,14 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         try {
+            for (Element c : e.getChildren("cors")) {
+                String path = c.getAttributeValue("path");
+                CorsConfig cc = getCorsConfig(c);
+                if (path != null)
+                    corsConfig.put (path, cc);
+                else
+                    defaultCorsConfig = cc;
+            }
             for (Element r : e.getChildren("route")) {
                 routes.computeIfAbsent(
                   r.getAttributeValue("method"),
@@ -202,11 +218,6 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                     r.getAttributeValue("method"),
                     (t, s) -> r.getAttributeValue("queue"))
                 );
-            }
-            Element cors = e.getChild("cors");
-            if (cors != null) {
-                corsConfig = getCorsConfig(cors);
-                System.out.println (corsConfig);
             }
         } catch (Throwable t) {
             throw new ConfigurationException(t);

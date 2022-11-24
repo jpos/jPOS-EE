@@ -36,7 +36,6 @@ import java.io.Serializable;
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpMethod.OPTIONS;
 import static org.jpos.qrest.Constants.*;
 
 public class SendResponse implements AbortParticipant, Configurable {
@@ -48,9 +47,7 @@ public class SendResponse implements AbortParticipant, Configurable {
 
     @Override
     public int prepare(long id, Serializable context) {
-        Context ctx = (Context) context;
-        // if METHOD=OPTIONS, return NO_JOIN as request is managed by the CorsHandler
-        return PREPARED | READONLY | (OPTIONS.name().equals(ctx.get(METHOD)) ? NO_JOIN : 0);
+        return PREPARED | READONLY;
     }
 
     @Override

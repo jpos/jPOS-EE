@@ -21,6 +21,8 @@ package org.jpos.qrest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
@@ -28,6 +30,10 @@ import io.netty.util.CharsetUtil;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
@@ -43,9 +49,16 @@ public class RestSession extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ch, Object msg) throws Exception {
-        Context ctx = new Context();
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest request = (FullHttpRequest) msg;
+            if (request.method().equals(HttpMethod.OPTIONS)) {
+                CorsConfig corsConfig = server.getCorsConfig(request);
+                if (corsConfig != null) {
+                    new CorsHandler(corsConfig).channelRead(ch, msg);
+                    return;
+                }
+            }
+            Context ctx = new Context();
             ctx.put(Constants.SESSION, ch);
             ctx.put(Constants.REQUEST, request);
             ch.channel().attr(httpVersion).set(request.protocolVersion());

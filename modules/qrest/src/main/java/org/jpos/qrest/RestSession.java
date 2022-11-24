@@ -23,6 +23,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
@@ -33,6 +34,7 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
 public class RestSession extends ChannelInboundHandlerAdapter {
     private RestServer server;
     private String contentKey;
+    private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
     RestSession(RestServer server) {
         this.server = server;
@@ -46,6 +48,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             final FullHttpRequest request = (FullHttpRequest) msg;
             ctx.put(Constants.SESSION, ch);
             ctx.put(Constants.REQUEST, request);
+            ch.channel().attr(httpVersion).set(request.protocolVersion());
+
             if (contentKey != null)
                 ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
             server.queue(request, ctx);
@@ -71,8 +75,11 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             }
         }
         Logger.log(evt);
+
+        HttpVersion version = ctx.channel().attr(httpVersion).get();
+
         ctx.writeAndFlush(new DefaultFullHttpResponse(
-          HttpVersion.HTTP_1_1,
+          version,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
           copiedBuffer(cause.getMessage().getBytes())
         ));

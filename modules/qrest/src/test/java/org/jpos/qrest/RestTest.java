@@ -23,6 +23,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import org.apache.http.entity.ContentType;
 import org.jpos.q2.Q2;
 import org.jpos.util.NameRegistrar;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -42,12 +43,19 @@ public class RestTest  {
         RestAssured.baseURI = BASE_URL;
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.requestSpecification = new RequestSpecBuilder().build().contentType(APPLICATION_JSON.toString());
+        System.setProperty("test.enabled", "true");
         if (q2 == null) {
             q2 = new Q2();
             q2.start();
             NameRegistrar.get("qrest", 60000L);
             NameRegistrar.get("qrest"); // this time throw exception
         }
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        if (q2 != null)
+            q2.stop();
     }
 
     @Test

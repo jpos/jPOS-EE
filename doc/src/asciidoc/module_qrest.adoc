@@ -80,6 +80,7 @@ specified in the `queue` property, but you can override those with a route like 
 <2> Likewise, `POST` starting with `/v2` will get queued to the `TXNMGR.2` too.
 
 
+
 The TransactionManager is configured like this:
 
 [source,xml]
@@ -381,4 +382,47 @@ Processing transaction ${id}           <1>
 -------------
 <1> The 'id' property is also provided by the `DynamicContent` participant using the
     transaction id.
+
+==== CORS configuration
+
+QRest supports CORS that can be configured like this:
+
+[source,xml]
+------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  ...
+  ...
+  <cors path="/api/abc"                              <1>
+        max-age="600" 
+        allow-null-origin="false" 
+        allow-credentials="true">
+     <origin>http://jpos.org</origin>                <2>
+     <origin>https://jpos.org</origin>
+     <allow-method>GET</allow-method>                <3>
+     <allow-method>POST</allow-method>
+     <allow-method>PUT</allow-method>
+     <allow-method>REMOVE</allow-method>
+     <expose-header>Content-Type</expose-header>     <4>
+     <expose-header>Authorization</expose-header>
+     <request-header>consumer-id</request-header>    <5>
+   </cors>
+  <cors path="/api/xyz" ...>
+     ...
+     ...
+  </cors>
+</qrest>
+------------
+
+<1> The optional `cors` element supports `max-age`, `allow-null-origin` and `allow-credentials` attributes.
+<2> One or more `origin` elements can be added. If no `origin` element is specified, we assum _any_ origin.
+<3> Multiple `allow-method` elements can be specified.
+<4> Multiple `expose-header` elements can be specified.
+<5> Multiple `request-header` elements can be specified.
+
+[NOTE]
+======
+CORS can be configured on a system-wide basis by not providing a `path` attribute.
+
+The last entry with no path is taken as the system's default.
+======
 

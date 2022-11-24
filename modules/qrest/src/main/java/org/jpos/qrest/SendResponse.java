@@ -21,6 +21,7 @@ package org.jpos.qrest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
@@ -31,7 +32,6 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -55,7 +55,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         Context ctx = (Context) context;
         ChannelHandlerContext ch = ctx.get(SESSION);
         FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx);
+        FullHttpResponse response = getResponse(ctx, request.protocolVersion());
         sendResponse(ctx, ch, request, response);
     }
 
@@ -64,7 +64,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         Context ctx = (Context) context;
         ChannelHandlerContext ch = ctx.get(SESSION);
         FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx);
+        FullHttpResponse response = getResponse(ctx, request.protocolVersion());
         sendResponse(ctx, ch, request, response);
     }
 
@@ -79,18 +79,19 @@ public class SendResponse implements AbortParticipant, Configurable {
                 headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
             headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
             ChannelFuture cf = ch.writeAndFlush(response);
+
             if (!keepAlive)
-                ch.close();
+                cf.addListener(ChannelFutureListener.CLOSE);
         } finally {
             ReferenceCountUtil.release(request);
         }
     }
 
-    private FullHttpResponse error (HttpResponseStatus rc) {
-        return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, rc);
+    private FullHttpResponse error (HttpResponseStatus rc, HttpVersion version) {
+        return new DefaultFullHttpResponse(version, rc);
     }
 
-    private FullHttpResponse getResponse (Context ctx) {
+    private FullHttpResponse getResponse (Context ctx, HttpVersion version) {
         Object r = ctx.get(RESPONSE);
         FullHttpResponse httpResponse;
 
@@ -111,7 +112,7 @@ public class SendResponse implements AbortParticipant, Configurable {
                     isJson = true;
                 }
                 httpResponse = new DefaultFullHttpResponse(
-                  HttpVersion.HTTP_1_1,
+                  version,
                   response.status(),
                   copiedBuffer(responseBody));
 
@@ -122,14 +123,14 @@ public class SendResponse implements AbortParticipant, Configurable {
                     httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
             } catch (JsonProcessingException e) {
                 ctx.log(e);
-                httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR, version);
             }
         } else {
             Result result = ctx.getResult();
             if (result.hasFailures()) {
-                httpResponse = error(HttpResponseStatus.valueOf(result.failure().getIrc().irc()));
+                httpResponse = error(HttpResponseStatus.valueOf(result.failure().getIrc().irc()), version);
             } else
-                httpResponse = error(HttpResponseStatus.NOT_FOUND);
+                httpResponse = error(HttpResponseStatus.NOT_FOUND, version);
         }
         return httpResponse;
     }

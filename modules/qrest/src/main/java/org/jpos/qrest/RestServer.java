@@ -32,6 +32,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.jdom2.Element;
@@ -76,6 +78,8 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private int maxInitialLineLength;
     private int maxChunkSize;
     private boolean validateHeaders;
+    private Map<String,CorsConfig> corsConfig = new LinkedHashMap<>();
+    private CorsConfig defaultCorsConfig;
 
     public static final int DEFAULT_MAX_CONTENT_LENGTH = 512*1024;
 
@@ -97,8 +101,9 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                   if (enableTLS) {
                       ch.pipeline().addLast(new SslHandler(getSSLEngine(sslContext), true));
                   }
-                  ch.pipeline().addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders));
-                  ch.pipeline().addLast(new HttpObjectAggregator(maxContentLength));
+                  ch.pipeline()
+                     .addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders))
+                     .addLast(new HttpObjectAggregator(maxContentLength));
                   ch.pipeline().addLast(new RestSession(RestServer.this));
               }
           })
@@ -163,6 +168,16 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         sp.out(getQueue(request), ctx, 60000L);
     }
 
+    public CorsConfig getCorsConfig (FullHttpRequest request) {
+        return corsConfig
+          .entrySet()
+          .stream()
+          .filter(e -> request.uri().startsWith(e.getKey()))
+          .map(Map.Entry::getValue)
+          .findFirst()
+          .orElse(defaultCorsConfig);
+    }
+
     @Override
     public void setConfiguration (Configuration cfg) throws ConfigurationException {
         super.setConfiguration(cfg);
@@ -186,6 +201,14 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         try {
+            for (Element c : e.getChildren("cors")) {
+                String path = c.getAttributeValue("path");
+                CorsConfig cc = getCorsConfig(c);
+                if (path != null)
+                    corsConfig.put (path, cc);
+                else
+                    defaultCorsConfig = cc;
+            }
             for (Element r : e.getChildren("route")) {
                 routes.computeIfAbsent(
                   r.getAttributeValue("method"),
@@ -287,5 +310,48 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
             }
         }
         return cfg.get("queue");
+    }
+
+    private CorsConfig getCorsConfig(Element e) {
+        String[] origins = e.getChildren("origin")
+          .stream()
+          .map(Element::getTextTrim)
+          .toArray(String[]::new);
+
+        CorsConfigBuilder ccb = origins.length > 0 ?
+          CorsConfigBuilder.forOrigins(origins) :
+          CorsConfigBuilder.forAnyOrigin();
+
+        if ("true".equalsIgnoreCase(e.getAttributeValue("allow-null-origin", "false")))
+            ccb.allowNullOrigin();
+
+        ccb.exposeHeaders(
+          e.getChildren("expose-header")
+            .stream()
+            .map(Element::getTextTrim)
+            .toArray(String[]::new)
+        );
+        if ("true".equalsIgnoreCase(e.getAttributeValue("allow-credentials", "false")))
+            ccb.allowCredentials();
+
+        long maxAge = Long.parseLong(e.getAttributeValue("max-age", "0"));
+        if (maxAge > 0)
+            ccb.maxAge(maxAge);
+
+        ccb.allowedRequestMethods(
+          e.getChildren("allow-method")
+            .stream()
+            .map(Element::getTextTrim)
+            .map(HttpMethod::valueOf)
+            .toArray(HttpMethod[]::new)
+        );
+
+        ccb.allowedRequestHeaders(
+          e.getChildren("request-header")
+            .stream()
+            .map(Element::getTextTrim)
+            .toArray(String[]::new)
+        );
+        return ccb.build();
     }
 }

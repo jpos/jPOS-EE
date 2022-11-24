@@ -21,18 +21,26 @@ package org.jpos.qrest;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
 public class RestSession extends ChannelInboundHandlerAdapter {
     private RestServer server;
     private String contentKey;
+    private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
     RestSession(RestServer server) {
         this.server = server;
@@ -41,11 +49,20 @@ public class RestSession extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ch, Object msg) throws Exception {
-        Context ctx = new Context();
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest request = (FullHttpRequest) msg;
+            if (request.method().equals(HttpMethod.OPTIONS)) {
+                CorsConfig corsConfig = server.getCorsConfig(request);
+                if (corsConfig != null) {
+                    new CorsHandler(corsConfig).channelRead(ch, msg);
+                    return;
+                }
+            }
+            Context ctx = new Context();
             ctx.put(Constants.SESSION, ch);
             ctx.put(Constants.REQUEST, request);
+            ch.channel().attr(httpVersion).set(request.protocolVersion());
+
             if (contentKey != null)
                 ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
             server.queue(request, ctx);
@@ -71,8 +88,11 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             }
         }
         Logger.log(evt);
+
+        HttpVersion version = ctx.channel().attr(httpVersion).get();
+
         ctx.writeAndFlush(new DefaultFullHttpResponse(
-          HttpVersion.HTTP_1_1,
+          version,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
           copiedBuffer(cause.getMessage().getBytes())
         ));

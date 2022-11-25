@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
 
-public class Q2ReporterFactory extends MetricReporterFactory
+public class Q2LogReporterFactory implements MetricsReporterFactory
 {
 
     private MetricFilter filter = MetricFilter.ALL;
@@ -26,7 +26,7 @@ public class Q2ReporterFactory extends MetricReporterFactory
     @Override
     public ScheduledReporter build(Metrics metrics)
     {
-        return new Q2Reporter(
+        return new Q2LogReporter(
             metrics.getMetricRegistry(),
             metrics.getLog(),
             prefix,

@@ -15,13 +15,13 @@ import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricAttribute.*;
 
-public class Q2Reporter extends ScheduledReporter
+public class Q2LogReporter extends ScheduledReporter
 {
 
     private final Log logger;
     private final String prefix;
 
-    public Q2Reporter(
+    public Q2LogReporter(
         final MetricRegistry registry,
         final Log logger,
         final String prefix,

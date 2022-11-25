@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 public class Metrics extends QBeanSupport implements XmlConfigurable
 {
 
-    private final List<MetricReporterFactory> factories = new ArrayList<>();
+    private final List<MetricsReporterFactory> factories = new ArrayList<>();
     private final List<ScheduledReporter> reporters = new ArrayList<>();
 
     private MetricRegistry registry;
@@ -32,13 +32,12 @@ public class Metrics extends QBeanSupport implements XmlConfigurable
             registry = new MetricRegistry();
             setup(registry);
             SharedMetricRegistries.add(getName(), registry);
-
             if (defaultRegistry)
             {
                 SharedMetricRegistries.setDefault(getName());
             }
         }
-        for (MetricReporterFactory factory : factories)
+        for (MetricsReporterFactory factory : factories)
         {
             ScheduledReporter reporter = factory.build(this);
             try
@@ -94,9 +93,9 @@ public class Metrics extends QBeanSupport implements XmlConfigurable
             String className = e.getAttributeValue("class");
             try
             {
-                MetricReporterFactory check = Class.forName(className).asSubclass(MetricReporterFactory.class).newInstance();
-                check.setConfiguration(e);
-                factories.add(check);
+                MetricsReporterFactory factory = Class.forName(className).asSubclass(MetricsReporterFactory.class).newInstance();
+                factory.setConfiguration(e);
+                factories.add(factory);
             } catch (Exception ex)
             {
                 log.error(ex);

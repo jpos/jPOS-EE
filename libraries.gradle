@@ -27,6 +27,7 @@ ext {
     orgjsonVersion = '20200518'
     postgresqlEmbeddedVersion = '1.2.8'
     postgresqlBinVersion = '12.3.0'
+    dropwizardMetricsVersion = '4.2.13'
 
     libraries = [
             //jUnit (Tests)
@@ -132,7 +133,11 @@ ext {
             liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}",
 
             elk: "org.elasticsearch.client:elasticsearch-rest-high-level-client:${elkVersion}",
-            orgJson: "org.json:json:${orgjsonVersion}"
+            orgJson: "org.json:json:${orgjsonVersion}",
+
+            metrics: "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}",
+            metricsJvm: "io.dropwizard.metrics:metrics-jvm:${dropwizardMetricsVersion}",
+            metricsHealthChecks: "io.dropwizard.metrics:metrics-healthchecks:${dropwizardMetricsVersion}"
     ]
 
     jsonSchemaValidatorLibs = [

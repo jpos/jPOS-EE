@@ -89,7 +89,7 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
                 String name = m.group(i);
                 params.add(name);
                 s = m.replaceFirst(
-                  String.format("(?<%s>[^\\/.]*)", name)
+                  String.format("(?<%s>[^\\/]*)", name)
                 );
                 m.reset(s);
             }

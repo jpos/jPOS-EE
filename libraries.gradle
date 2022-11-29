@@ -3,6 +3,7 @@ ext {
     slf4jVersion = '1.7.28'
     logbackVersion = '1.2.8'
     hibernateVersion = '6.1.5.Final'
+    hibernateEhcacheVersion = '6.0.0.Alpha7'
     geronimoVersion = '1.1.1'
     jettyVersion = '9.4.44.v20210927'
     servletApiVersion = '4.0.1'
@@ -62,7 +63,7 @@ ext {
             hibernate_c3p0: "org.hibernate.orm:hibernate-c3p0:${hibernateVersion}",
             hibernate_ant: "org.hibernate.orm:hibernate-ant:${hibernateVersion}",
             c3p0: "com.mchange:c3p0:${c3p0Version}",
-            hibernate_ehcache: "org.hibernate:hibernate-ehcache:${hibernateVersion}",
+            hibernate_ehcache: "org.hibernate:hibernate-ehcache:${hibernateEhcacheVersion}",
             jta: "org.apache.geronimo.specs:geronimo-jta_1.1_spec:${geronimoVersion}",
 
             //Supported Databases

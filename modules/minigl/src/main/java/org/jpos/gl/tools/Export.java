@@ -37,7 +37,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
- * Export to an XML document as described in 
+ * Export to an XML document as described in
  * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
  *
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
@@ -69,32 +69,32 @@ public class Export {
         addUsers (root);
         addCurrencies (root);
         addCharts (root);
-        addJournals (root);
+//        addJournals (root);
         addTransactions (root);
         doc.setRootElement (root);
         return doc;
     }
 
-    public void export (OutputStream os) 
+    public void export (OutputStream os)
         throws IOException, SQLException, HibernateException
     {
         XMLOutputter out = new XMLOutputter (Format.getPrettyFormat ());
         out.output (getDocument(), os);
     }
 
-    public void export (PrintWriter writer) 
+    public void export (PrintWriter writer)
         throws IOException, SQLException, HibernateException
     {
         XMLOutputter out = new XMLOutputter (Format.getPrettyFormat ());
         out.output (getDocument(), writer);
     }
 
-    private void addCharts (Element parentElement) 
+    private void addCharts (Element parentElement)
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
         Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where parent is null order by code");
+            "from CompositeAccount acct where parent is null order by code");
         Iterator iter = q.list().iterator();
         while (iter.hasNext()) {
             Account acct = (Account) iter.next ();
@@ -103,12 +103,12 @@ public class Export {
         gls.close ();
     }
 
-    private void addTransactions (Element parentElement) 
+    private void addTransactions (Element parentElement)
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-            "from transacc in class org.jpos.gl.GLTransaction order by id"
+            "from GLTransaction transacc order by id"
         ).list().iterator();
         while (iter.hasNext()) {
             GLTransaction glt = (GLTransaction) iter.next ();
@@ -117,12 +117,12 @@ public class Export {
         gls.close ();
     }
 
-    private void addUsers (Element parentElement) 
+    private void addUsers (Element parentElement)
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-            "from gluser in class org.jpos.gl.GLUser order by id"
+            "from GLUser gluser order by id"
         ).list().iterator();
         while (iter.hasNext()) {
             GLUser user = (GLUser) iter.next ();
@@ -131,12 +131,12 @@ public class Export {
         gls.close ();
     }
 
-    private void addCurrencies (Element parentElement) 
+    private void addCurrencies (Element parentElement)
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-            "from currency in class org.jpos.gl.Currency order by id"
+            "from Currency currency order by id"
         ).list().iterator();
         while (iter.hasNext()) {
             Currency currency = (Currency) iter.next ();
@@ -144,11 +144,11 @@ public class Export {
         }
         gls.close ();
     }
-    private void addJournalRules 
-        (Session sess, Journal journal, Element parentElement) 
+    private void addJournalRules
+        (Session sess, Journal journal, Element parentElement)
         throws SQLException, HibernateException
     {
-        Query q = sess.createQuery ("from ruleinfo in class org.jpos.gl.RuleInfo where journal=:journal order by id");
+        Query q = sess.createQuery ("from RuleInfo ruleinfo where journal=:journal order by id");
         q.setParameter ("journal", journal);
         Iterator iter = q.list().iterator();
         while (iter.hasNext()) {
@@ -156,12 +156,12 @@ public class Export {
             parentElement.addContent (rule.toXML ());
         }
     }
-    private void addJournals (Element root) 
+    private void addJournals (Element root)
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-          "from journal in class org.jpos.gl.Journal order by id"
+          "from Journal journal  order by id"
         ).list().iterator();
 
         while (iter.hasNext()) {

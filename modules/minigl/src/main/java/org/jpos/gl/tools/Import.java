@@ -19,6 +19,7 @@
 package org.jpos.gl.tools;
 
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentException;
@@ -256,30 +257,31 @@ public class Import implements EntityResolver {
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.Account where code = :code and acct.root = :chart");
+            "SELECT acct FROM Account acct WHERE code = :code AND acct.root = :chart");
 
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setParameter ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         List l = q.getResultList();
         return l.size() == 1 ? ((Account) l.get (0)) : null;
     }
     private FinalAccount getFinalAccount
         (Session sess, Account chart, Element elem)
-        throws SQLException, HibernateException
+        throws HibernateException
     {
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where code = :code and acct.root = :root"
+        TypedQuery<FinalAccount> q = sess.createQuery (
+            "select fa from FinalAccount fa where fa.code = :code and fa.root = :root",
+                FinalAccount.class
         );
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setParameter ("root", chart.getId());
-        List l = q.getResultList();
-        return l.size() == 1 ? ((FinalAccount) l.get (0)) : null;
+        q.setParameter ("root", chart);
+        List<FinalAccount> l = q.getResultList();
+        return l.size() == 1 ? l.get (0) : null;
     }
     private CompositeAccount getChart (Session sess, String chartCode)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where code = :code and parent is null"
+            "select ca from CompositeAccount ca where ca.code = :code and ca.parent is null"
         );
         q.setParameter ("code", chartCode);
         List l = q.getResultList();
@@ -341,7 +343,7 @@ public class Import implements EntityResolver {
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from journal in class org.jpos.gl.Journal where name = :name"
+            "SELECT journal from Journal journal where journal.name = :name"
         );
         q.setParameter ("name", name);
         List l = q.getResultList();

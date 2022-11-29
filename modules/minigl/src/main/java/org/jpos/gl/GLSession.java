@@ -18,7 +18,6 @@
 
 package org.jpos.gl;
 
-import com.sun.jdi.LongType;
 import jakarta.persistence.criteria.*;
 import org.hibernate.*;
 import org.hibernate.exception.ConstraintViolationException;
@@ -261,7 +260,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query<Account> q = session.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where code=:code and parent is null", Account.class
+            "from CompositeAccount  acct where code=:code and parent is null", Account.class
         );
         q.setParameter ("code", code);
         Iterator<Account> iter = q.list().iterator();
@@ -278,7 +277,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         return session.createQuery(
-            "from acct in class org.jpos.gl.CompositeAccount where parent is null", Account.class
+            "from CompositeAccount  acct where parent is null", Account.class
         ).getResultList();
     }
 
@@ -295,13 +294,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Account where root=:chart and code=:code"
+        Query<Account> q = session.createQuery (
+            "from Account  acct where root=:chart and code=:code", Account.class
         );
-        q.setParameter ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (Account) (iter.hasNext() ? iter.next() : null);
+        Iterator<Account> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
 
     /**
@@ -410,7 +409,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where root=:chart and code=:code"
+            "from FinalAccount acct where root=:chart and code=:code"
         );
         q.setParameter ("chart", chart.getId());
         q.setParameter ("code", code);
@@ -429,7 +428,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where root=:chart"
+            "from FinalAccount acct where root=:chart"
         );
         q.setParameter ("chart", chart.getId());
         return (List<FinalAccount>) q.list();
@@ -444,7 +443,7 @@ public class GLSession {
     public List<CompositeAccount> getCompositeChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery(
-                "from acct in class org.jpos.gl.CompositeAccount where parent=:parent"
+                "from CompositeAccount acct where parent=:parent"
         );
         q.setParameter ("parent", parent);
         return (List<CompositeAccount>) q.list();
@@ -459,7 +458,7 @@ public class GLSession {
     public List<FinalAccount> getFinalChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery(
-                "from acct in class org.jpos.gl.FinalAccount where parent=:parent"
+                "from FinalAccount acct where parent=:parent"
         );
         q.setParameter ("parent", parent);
         return (List<FinalAccount>) q.list();
@@ -476,7 +475,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Account where root=:chart"
+            "from Account acct where root=:chart"
         );
         q.setParameter ("chart", chart.getId());
         return (List<Account>) q.list();
@@ -496,7 +495,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where root=:chart and code=:code"
+            "from CompositeAccount acct where root=:chart and code=:code"
         );
         q.setParameter ("chart", chart.getId());
         q.setParameter ("code", code);
@@ -566,7 +565,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         Query q = session.createQuery (
-            "from journal in class org.jpos.gl.Journal where name=:name"
+            "from Journal journal where name=:name"
         );
         q.setParameter ("name", name);
         Iterator iter = q.list().iterator();
@@ -588,7 +587,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Journal order by chart"
+            "from Journal acct order by chart"
         );
         return (List<Journal>) q.list();
     }
@@ -1157,7 +1156,7 @@ public class GLSession {
 
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("account"), acct));
-            predicates.add(criteriaBuilder.equal(root.get("layer"), toShortArray (layersCopy)));
+            predicates.add(root.get("layer").in(Arrays.asList(toShortArray(layersCopy))));
 
             if (maxId > 0L)
                 predicates.add(criteriaBuilder.equal(root.get("id"), maxId));
@@ -1388,7 +1387,7 @@ public class GLSession {
             ands.add(criteriaBuilder.equal(root.get("account"), acct));
         }
 
-        ands.add(criteriaBuilder.in(root.get("layer")).in((Object[]) toShortArray(layers)));
+        ands.add(root.get("layer").in(Arrays.asList(toShortArray(layers))));
 
         Join<GLEntry, GLTransaction> transaction = root.join("transaction");
         ands.add(criteriaBuilder.equal(transaction.get("journal"), journal));
@@ -1527,10 +1526,11 @@ public class GLSession {
         query = query.where(ands.toArray(new Predicate[]{}))
                         .orderBy(criteriaBuilder.desc(root.get("ref")));
 
-        return session.createQuery(query)
+        List<BalanceCache> caches = session.createQuery(query)
                         .setMaxResults(1)
-                        .getSingleResult();
-
+                        .getResultList();
+        if (caches.isEmpty()) return null;
+        return caches.get(0);
     }
 
 
@@ -1889,7 +1889,7 @@ public class GLSession {
         query = query.select(root);
 
         if (accounts.length > 0)
-            predicates.add(criteriaBuilder.in(root.get("account")).in(accounts));
+            predicates.add(root.get("account").in(Arrays.asList(accounts)));
 
         if (layers != null)
             predicates.add(criteriaBuilder.equal(root.get("layers"), layersToString(layers)));
@@ -2083,12 +2083,13 @@ public class GLSession {
             session.delete (sr.get());
         }
     }
-    private static Short[] toShortArray (short[] i) {
+
+    private static Short[] toShortArray(short[] i) {
         if (i == null)
             return new Short[0];
         Short[] sa = new Short[i.length];
-        for (int j=0; j<i.length; j++)
-            sa[j] = new Short(i[j]);
+        for (int j = 0; j < i.length; j++)
+            sa[j] = i[j];
         return sa;
     }
 

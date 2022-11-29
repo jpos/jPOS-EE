@@ -18,13 +18,12 @@
 
 package org.jpos.ee;
 
-import java.util.Date;
-import java.util.List;
-
-import org.bouncycastle.util.encoders.Base64;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.HibernateException;
 
-import javax.persistence.criteria.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Alejandro Revilla
@@ -32,32 +31,32 @@ import javax.persistence.criteria.*;
 public class UserManager extends DBManager<User> {
     private HashVersion version;
 
-    public UserManager (DB db) {
-        this (db, HashVersion.ONE);
+    public UserManager(DB db) {
+        this(db, HashVersion.ONE);
     }
 
-    public UserManager (DB db, HashVersion version) {
-        super (db, User.class);
+    public UserManager(DB db, HashVersion version) {
+        super(db, User.class);
         this.version = version;
     }
 
-    public void setPassword (User u, String clearpass) throws Exception {
+    public void setPassword(User u, String clearpass) throws Exception {
         setPassword(u, clearpass, null, version);
     }
 
-    public void setPassword (User u, String clearpass, User author) throws Exception {
+    public void setPassword(User u, String clearpass, User author) throws Exception {
         setPassword(u, clearpass, author, version);
     }
 
-    public void setPassword (User u, String clearpass, User author, HashVersion v) throws Exception {
+    public void setPassword(User u, String clearpass, User author, HashVersion v) throws Exception {
         if (u.getPasswordHash() != null)
             u.addPasswordHistoryValue(u.getPasswordHash());
         switch (v) {
             case ZERO:
-                setV0Password (u, clearpass);
+                setV0Password(u, clearpass);
                 break;
             case ONE:
-                setV1Password (u, clearpass);
+                setV1Password(u, clearpass);
                 break;
         }
         u.setPasswordChanged(new Date());
@@ -73,52 +72,51 @@ public class UserManager extends DBManager<User> {
      * @return all users
      * @throws HibernateException on low level hibernate related exception
      */
-    public List findAll () throws HibernateException {
+    public List findAll() throws HibernateException {
         return super.getAll();
     }
 
     @Override
     protected Predicate[] buildFilters(Root<User> root) {
-        return new Predicate[] {
+        return new Predicate[]{
                 db.session().getCriteriaBuilder().isFalse(root.get("deleted"))
         };
     }
 
-    public User getUserByNick (String nick)
-            throws HibernateException
-    {
+    public User getUserByNick(String nick)
+            throws HibernateException {
         return getUserByNick(nick, false);
     }
-    public User getUserByNick (String nick, boolean includeDeleted)
-        throws HibernateException
-    {
-        return getItemByParam("nick",nick,!includeDeleted);
+
+    public User getUserByNick(String nick, boolean includeDeleted)
+            throws HibernateException {
+        return getItemByParam("nick", nick, !includeDeleted);
     }
 
     /**
      * @param nick name.
      * @param pass hash
      * @return the user
-     * @throws BLException if invalid user/pass
+     * @throws BLException        if invalid user/pass
      * @throws HibernateException on low level hibernate related exception
      */
-    public User getUserByNick (String nick, String pass) throws Exception {
+    public User getUserByNick(String nick, String pass) throws Exception {
         User u = getUserByNick(nick);
-        assertNotNull (u, "User does not exist");
+        assertNotNull(u, "User does not exist");
         assertTrue(checkPassword(u, pass), "Invalid password");
         return u;
     }
 
     public User getUserById(long id, boolean includeDeleted) throws HibernateException {
-        return getItemByParam("id",id,!includeDeleted);
+        return getItemByParam("id", id, !includeDeleted);
     }
 
     public User getUserById(long id)
             throws HibernateException {
-        return getUserById(id,false);
+        return getUserById(id, false);
     }
 
-    public boolean checkPassword (User u, String clearpass) throws Exception {
+    public boolean checkPassword(User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid pass");
         String passwordHash = u.getPasswordHash();
         assertNotNull(passwordHash, "Password is null");
@@ -134,12 +132,12 @@ public class UserManager extends DBManager<User> {
     }
 
     /**
-     * @param u the user
+     * @param u         the user
      * @param clearpass new password in clear
      * @return true if password is in PasswordHistory
      */
-    public boolean checkNewPassword (User u, String clearpass) throws Exception {
-        if (checkPassword (u, clearpass)) {
+    public boolean checkNewPassword(User u, String clearpass) throws Exception {
+        if (checkPassword(u, clearpass)) {
             return false; // same password not allowed
         }
         for (PasswordHistory p : u.getPasswordhistory()) {
@@ -149,15 +147,14 @@ public class UserManager extends DBManager<User> {
                     if (checkV0Password(p.getValue(), u.getId(), clearpass))
                         return false;
                 case ONE:
-                    if (checkV1Password (p.getValue(), clearpass))
+                    if (checkV1Password(p.getValue(), clearpass))
                         return false;
             }
         }
         return true;
     }
 
-    public boolean upgradePassword (User u, String clearpass) throws Exception
-    {
+    public boolean upgradePassword(User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid pass");
         String passwordHash = u.getPasswordHash();
         assertNotNull(passwordHash, "Password is null");
@@ -177,12 +174,12 @@ public class UserManager extends DBManager<User> {
         this.version = version;
     }
 
-    private void setV1Password (User u, String clearpass) throws Exception {
+    private void setV1Password(User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid password");
-        u.setPasswordHash(HashVersion.ONE.hash(Long.toString(u.getId(),16), clearpass, HashVersion.ONE.getSalt()));
+        u.setPasswordHash(HashVersion.ONE.hash(Long.toString(u.getId(), 16), clearpass, HashVersion.ONE.getSalt()));
     }
 
-    private boolean checkV1Password (String passwordHash, String clearpass) throws Exception {
+    private boolean checkV1Password(String passwordHash, String clearpass) throws Exception {
         return HashVersion.ONE.check("", clearpass, passwordHash);
     }
 
@@ -191,18 +188,18 @@ public class UserManager extends DBManager<User> {
     }
 
     // HELPER METHODS
-    protected void assertNotNull (Object obj, String error) throws BLException {
+    protected void assertNotNull(Object obj, String error) throws BLException {
         if (obj == null)
-            throw new BLException (error);
-    }
-    protected void assertTrue (boolean condition, String error)
-            throws BLException
-    {
-        if (!condition)
-            throw new BLException (error);
+            throw new BLException(error);
     }
 
-    private void setV0Password (User u, String clearpass) throws Exception {
+    protected void assertTrue(boolean condition, String error)
+            throws BLException {
+        if (!condition)
+            throw new BLException(error);
+    }
+
+    private void setV0Password(User u, String clearpass) throws Exception {
         assertNotNull(clearpass, "Invalid password");
         u.setPasswordHash(HashVersion.ZERO.hash(Long.toString(u.getId()), clearpass, null));
     }

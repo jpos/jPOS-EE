@@ -18,13 +18,12 @@
 
 package org.jpos.qi.minigl;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
+import jakarta.persistence.criteria.*;
 import org.jpos.ee.DB;
 import org.jpos.ee.DBManager;
 import org.jpos.gl.Account;
 import org.jpos.gl.CompositeAccount;
 
-import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +33,12 @@ import java.util.Map;
  */
 public class AccountManager extends DBManager<Account> {
 
-    
+
     public AccountManager(DB db) {
-        super(db,Account.class);
+        super(db, Account.class);
     }
 
-    public List getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent, boolean onlyComposite) throws Exception {
+    public List<Account> getAllChildren(int offset, int limit, Map<String, Boolean> orders, Account parent, boolean onlyComposite) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery query;
         Root root;
@@ -52,9 +51,11 @@ public class AccountManager extends DBManager<Account> {
         }
         List<Order> orderList = new ArrayList<>();
         //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
+        for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
+            if (entry.getValue() == null || entry.getValue())
+                orderList.add(criteriaBuilder.asc(root.get(entry.getKey())));
+            else
+                orderList.add(criteriaBuilder.desc(root.get(entry.getKey())));
         }
         //Is child of parent
         Predicate p;
@@ -66,42 +67,42 @@ public class AccountManager extends DBManager<Account> {
         query.select(root);
         query.orderBy(orderList);
         query.where(p);
-        List<CompositeAccount> list = db.session().createQuery(query)
+        return (List<Account>) db.session().createQuery(query)
                 .setMaxResults(limit)
                 .setFirstResult(offset)
                 .getResultList();
-        return list;
     }
 
-    public List getAllChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
+    public List<Account> getAllChildren(int offset, int limit, Map<String, Boolean> orders, Account parent) {
         return getAllChildren(offset, limit, orders, parent, false);
     }
 
-    public List getAllCompositeChildren(int offset, int limit, Map<String,Boolean> orders, Account parent) throws Exception {
+    public List<Account> getAllCompositeChildren(int offset, int limit, Map<String, Boolean> orders, Account parent) {
         return getAllChildren(offset, limit, orders, parent, true);
     }
 
 
-    public List<CompositeAccount> getCompositeAccounts(int offset, int limit, Map<String,Boolean> orders) throws Exception {
+    public List<CompositeAccount> getCompositeAccounts(int offset, int limit, Map<String, Boolean> orders) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<CompositeAccount> query = criteriaBuilder.createQuery(CompositeAccount.class);
         Root<CompositeAccount> root = query.from(CompositeAccount.class);
         List<Order> orderList = new ArrayList<>();
         //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
+        for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
+            if (entry.getValue() == null || entry.getValue())
+                orderList.add(criteriaBuilder.asc(root.get(entry.getKey())));
+            else
+                orderList.add(criteriaBuilder.desc(root.get(entry.getKey())));
         }
         query.select(root);
         query.orderBy(orderList);
-        List<CompositeAccount> list = db.session().createQuery(query)
+        return db.session().createQuery(query)
                 .setMaxResults(limit)
                 .setFirstResult(offset)
                 .getResultList();
-        return list;
     }
 
-    public int getCompositeAccountsCount()  {
+    public int getCompositeAccountsCount() {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<CompositeAccount> root = query.from(CompositeAccount.class);
@@ -109,7 +110,7 @@ public class AccountManager extends DBManager<Account> {
         return db.session().createQuery(query).getSingleResult().intValue();
     }
 
-    public int getCompositeChildrenCount (Account parent) {
+    public int getCompositeChildrenCount(Account parent) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<CompositeAccount> root = query.from(CompositeAccount.class);

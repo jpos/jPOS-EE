@@ -18,11 +18,11 @@
 
 package org.jpos.gl.tools;
 
+import jakarta.persistence.Query;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.jdom2.Document;
@@ -259,8 +259,8 @@ public class Import implements EntityResolver {
             "from acct in class org.jpos.gl.Account where code = :code and acct.root = :chart");
 
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("chart", chart.getId());
-        List l = q.list();
+        q.setParameter ("chart", chart.getId());
+        List l = q.getResultList();
         return l.size() == 1 ? ((Account) l.get (0)) : null;
     }
     private FinalAccount getFinalAccount
@@ -271,8 +271,8 @@ public class Import implements EntityResolver {
             "from acct in class org.jpos.gl.FinalAccount where code = :code and acct.root = :root"
         );
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("root", chart.getId());
-        List l = q.list();
+        q.setParameter ("root", chart.getId());
+        List l = q.getResultList();
         return l.size() == 1 ? ((FinalAccount) l.get (0)) : null;
     }
     private CompositeAccount getChart (Session sess, String chartCode)
@@ -282,7 +282,7 @@ public class Import implements EntityResolver {
             "from acct in class org.jpos.gl.CompositeAccount where code = :code and parent is null"
         );
         q.setParameter ("code", chartCode);
-        List l = q.list();
+        List l = q.getResultList();
         return (CompositeAccount) ((l.size() > 0) ? l.get (0) : null);
     }
     private void createJournalRules
@@ -313,7 +313,7 @@ public class Import implements EntityResolver {
     {
         Query q = session.createQuery ("from GLUser u where u.nick=:nick");
         q.setParameter ("nick", nick);
-        List l = q.list();
+        List l = q.getResultList();
         if (l.size() == 0) {
             throw new IllegalArgumentException (
                 "Invalid nick '" + nick + "'"
@@ -344,7 +344,7 @@ public class Import implements EntityResolver {
             "from journal in class org.jpos.gl.Journal where name = :name"
         );
         q.setParameter ("name", name);
-        List l = q.list();
+        List l = q.getResultList();
         return (Journal) ((l.size() > 0) ? l.get (0) : null);
     }
     public InputSource resolveEntity (String publicId, String systemId) {

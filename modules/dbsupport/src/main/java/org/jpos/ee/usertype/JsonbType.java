@@ -43,7 +43,7 @@ import java.text.SimpleDateFormat;
  *
  * @author avolpe@fintech.works
  */
-public class JsonbType implements UserType {
+public class JsonbType implements UserType<Object> {
 
     private static ObjectMapper mapper =
             new ObjectMapper()
@@ -56,12 +56,12 @@ public class JsonbType implements UserType {
                     .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     @Override
-    public int[] sqlTypes() {
-        return new int[]{Types.JAVA_OBJECT};
+    public int getSqlType() {
+        return Types.OTHER;
     }
 
     @Override
-    public Class<ObjectNode> returnedClass() {
+    public Class returnedClass() {
         return ObjectNode.class;
     }
 
@@ -87,10 +87,10 @@ public class JsonbType implements UserType {
 
     @Override
     public Object nullSafeGet(ResultSet rs,
-                              String[] names,
+                              int position,
                               SharedSessionContractImplementor session,
                               Object owner) throws SQLException {
-        final String json = rs.getString(names[0]);
+        final String json = rs.getString(position);
         if (json == null) {
             return null;
         }

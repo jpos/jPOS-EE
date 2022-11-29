@@ -18,31 +18,30 @@
 
 package org.jpos.ee;
 
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.HibernateException;
 
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.*;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class ConsumerManager extends DBManager<Consumer> {
     private User user;
 
-    public ConsumerManager (DB db) {
-        super(db,Consumer.class);
+    public ConsumerManager(DB db) {
+        super(db, Consumer.class);
     }
 
     public ConsumerManager(DB db, User user) {
-        super(db,Consumer.class);
+        super(db, Consumer.class);
         this.user = user;
     }
 
-    public Consumer getById (String id) throws HibernateException
-    {
+    public Consumer getById(String id) throws HibernateException {
         return getItemByParam("id", id, true);
     }
 
-    public List<Consumer> getConsumers (User user) {
+    public List<Consumer> getConsumers(User user) {
         this.user = user;
         List<Consumer> consumers = getAll();
         this.user = null;
@@ -52,8 +51,8 @@ public class ConsumerManager extends DBManager<Consumer> {
     protected Predicate[] buildFilters(Root<Consumer> root) {
         Predicate notDeleted = db.session.getCriteriaBuilder().isFalse(root.get("deleted"));
         if (user != null) {
-            Predicate p = db.session().getCriteriaBuilder().equal(root.get("user"),user.getId());
-            return new Predicate[]{notDeleted,p};
+            Predicate p = db.session().getCriteriaBuilder().equal(root.get("user"), user.getId());
+            return new Predicate[]{notDeleted, p};
         }
         return new Predicate[]{notDeleted};
     }

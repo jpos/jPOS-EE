@@ -18,12 +18,12 @@
 
 package org.jpos.ee.converter;
 
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import org.jpos.util.Tags;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 
 @Converter(autoApply = true)
-public class TagsConverter implements AttributeConverter<Tags,String> {
+public class TagsConverter implements AttributeConverter<Tags, String> {
     @Override
     public String convertToDatabaseColumn(Tags tags) {
         return tags != null && tags.size() > 0 ? tags.toString() : "";

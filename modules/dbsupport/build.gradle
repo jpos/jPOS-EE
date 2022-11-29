@@ -5,9 +5,10 @@ dependencies {
     api libraries.hibernate_core
     api libraries.hibernate_envers
     api libraries.hibernate_c3p0
+    api libraries.hibernate_ant
     api libraries.c3p0 // force c3p0 version (temporary fix un Hibernate bumps up version)
-    api libraries.hibernate_ehcache
     api libraries.jta
+    api libraries.dom4j
     api libraries.jacksonDatabind
 }
 

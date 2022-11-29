@@ -494,13 +494,13 @@ public class DB implements Closeable {
                 info.addMessage("====  STATISTICS ====");
                 SessionStatistics statistics = session().getStatistics();
                 info.addMessage("====   ENTITIES  ====");
-                Set<EntityKey> entityKeys = statistics.getEntityKeys();
+                Set<EntityKey> entityKeys = (Set<EntityKey>) statistics.getEntityKeys();
                 for (EntityKey ek : entityKeys)
                 {
                     info.addMessage(String.format("[%s] %s", ek.getIdentifier(), ek.getEntityName()));
                 }
                 info.addMessage("==== COLLECTIONS ====");
-                Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
+                Set<CollectionKey> collectionKeys = (Set<CollectionKey>) statistics.getCollectionKeys();
                 for (CollectionKey ck : collectionKeys)
                 {
                     info.addMessage(String.format("[%s] %s", ck.getKey(), ck.getRole()));

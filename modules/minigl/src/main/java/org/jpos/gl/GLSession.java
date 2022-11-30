@@ -48,12 +48,12 @@ public class GLSession {
     private boolean strictAccountCodes = true;
     private NativeDialect nativeDialect = NativeDialect.ORM;
 
-    private static String POSTGRESQL_GET_BALANCES =
+    private static final String POSTGRESQL_GET_BALANCES =
       "SELECT SUM(CASE WHEN entry.credit='N' THEN entry.amount ELSE -entry.amount end) AS balance,\n" +
       " COUNT(entry.id) AS count\n" +
       " FROM transentry AS entry\n";
 
-    private static String MYSQL_GET_BALANCES =
+    private static final String MYSQL_GET_BALANCES =
       "SELECT SUM(if(entry.credit='N',entry.amount,-entry.amount)) AS balance,\n" +
         "  COUNT(entry.id) AS count\n" +
         "  from transentry as entry\n";
@@ -408,13 +408,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from FinalAccount acct where root=:chart and code=:code"
+        Query<FinalAccount> q = session.createQuery (
+            "from FinalAccount acct where root=:chart and code=:code", FinalAccount.class
         );
-        q.setParameter ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (FinalAccount) (iter.hasNext() ? iter.next() : null);
+        Iterator<FinalAccount> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
     /**
      * @param chart chart of accounts.
@@ -494,13 +494,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from CompositeAccount acct where root=:chart and code=:code"
+        Query<CompositeAccount> q = session.createQuery (
+            "from CompositeAccount acct where root=:chart and code=:code", CompositeAccount.class
         );
-        q.setParameter ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (CompositeAccount) (iter.hasNext() ? iter.next() : null);
+        Iterator<CompositeAccount> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
     /**
      * @param chartName chart of account's code.
@@ -799,18 +799,18 @@ public class GLSession {
             if (start != null)
                 restrictions.add(criteriaBuilder.greaterThanOrEqualTo(root.get(dateField), start));
             if (end != null)
-                restrictions.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), start));
+                restrictions.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), end));
         }
         if (searchString != null)
             restrictions.add(criteriaBuilder.like(root.get("detail"), "%" + searchString + "%"));
 
-        query = query.where(restrictions.toArray(new Predicate[] {}));
+        query.where(restrictions.toArray(new Predicate[] {}));
 
         Query<GLTransaction> toRet = db.session()
                 .createQuery(query);
-        if (pageSize > 0 && firstResult > 0) {
 
-            toRet = toRet.setFirstResult(firstResult)
+        if (pageSize > 0 && firstResult > 0) {
+            toRet.setFirstResult(firstResult)
                     .setMaxResults(pageSize);
         }
         return toRet;
@@ -1519,12 +1519,11 @@ public class GLSession {
         ands.add(criteriaBuilder.equal(root.get("journal"), journal));
         ands.add(criteriaBuilder.equal(root.get("account"), acct));
 
-
         if (layers != null)
             ands.add(criteriaBuilder.equal(root.get("layers"), layersToString(layers)));
 
-        query = query.where(ands.toArray(new Predicate[]{}))
-                        .orderBy(criteriaBuilder.desc(root.get("ref")));
+        query.where(ands.toArray(new Predicate[]{}));
+        query.orderBy(criteriaBuilder.desc(root.get("ref")));
 
         List<BalanceCache> caches = session.createQuery(query)
                         .setMaxResults(1)
@@ -2004,7 +2003,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         BigDecimal balance[] = { ZERO, ZERO };
-        Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
+        Iterator iter = (acct).getChildren().iterator();
         while (iter.hasNext()) {
             Account a = (Account) iter.next();
             BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
@@ -2025,16 +2024,14 @@ public class GLSession {
     }
     private Iterator findSummarizedGLEntries
         (Journal journal, Date start, Date end, boolean credit, short layer)
-        throws HibernateException, GLException
+        throws HibernateException
     {
         StringBuilder qs = new StringBuilder (
             "select entry.account, sum(entry.amount)" +
-            " from org.jpos.gl.GLEntry entry," +
-            " org.jpos.gl.GLTransaction txn" +
-            " where txn.id = entry.transaction" +
-            " and credit = :credit" +
-            " and txn.journal = :journal" +
-            " and entry.layer = :layer"
+            " from GLEntry entry join entry.transaction txn" +
+            " where credit = :credit" +
+            "   and txn.journal = :journal" +
+            "   and entry.layer = :layer"
         );
         boolean equalDate = start.equals (end);
         if (equalDate) {
@@ -2044,9 +2041,9 @@ public class GLSession {
             qs.append (" and txn.postDate <= :end");
         }
         qs.append (" group by entry.account");
-        Query q = session.createNativeQuery(qs.toString());
-        q.setParameter ("journal", journal.getId());
-        q.setParameter ("credit", credit ? "Y" : "N");
+        Query q = session.createQuery(qs.toString());
+        q.setParameter ("journal", journal);
+        q.setParameter ("credit", credit);
         q.setParameter ("layer", layer);
         if (equalDate)
             q.setParameter ("date", start);
@@ -2070,17 +2067,18 @@ public class GLSession {
             qs.append (" and postDate >= :start");
             qs.append (" and postDate <= :endDate");
         }
-        Query q = session.createQuery (qs.toString());
-        q.setParameter ("journal", journal.getId());
+        Query<GLTransaction> q = session.createQuery (qs.toString(), GLTransaction.class);
+        q.setParameter ("journal", journal);
         if (equalDate)
             q.setParameter ("date", start);
         else {
             q.setParameter ("start", start);
             q.setParameter ("endDate", end);
         }
-        ScrollableResults sr = q.scroll(ScrollMode.FORWARD_ONLY);
-        while (sr.next()) {
-            session.delete (sr.get());
+        try (ScrollableResults<GLTransaction> sr = q.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (sr.next()) {
+                session.delete(sr.get());
+            }
         }
     }
 

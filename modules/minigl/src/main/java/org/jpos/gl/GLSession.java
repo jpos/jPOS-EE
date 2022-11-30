@@ -1133,18 +1133,16 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
-        BigDecimal balance[] = { ZERO, Z };
+        BigDecimal[] balance = { ZERO, Z };
         short[] layersCopy = Arrays.copyOf(layers,layers.length);
         if (acct.getChildren() != null) {
             if (acct.isChart()) {
                 return getChartBalances
                     (journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
             }
-            Iterator iter = acct.getChildren().iterator();
-            while (iter.hasNext()) {
-                Account a = (Account) iter.next();
-                BigDecimal[] b = getBalancesORM (journal, a, date, inclusive, layersCopy, maxId);
-                balance[0] = balance[0].add (b[0]);
+            for (Account a : acct.getChildren()) {
+                BigDecimal[] b = getBalancesORM(journal, a, date, inclusive, layersCopy, maxId);
+                balance[0] = balance[0].add(b[0]);
                 // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating a failed to lazily initialize a collection
             }
         }
@@ -1159,7 +1157,7 @@ public class GLSession {
             predicates.add(root.get("layer").in(Arrays.asList(toShortArray(layersCopy))));
 
             if (maxId > 0L)
-                predicates.add(criteriaBuilder.equal(root.get("id"), maxId));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("id"), maxId));
 
             Join<GLEntry, GLTransaction> joinTransaction = root.join("transaction");
             predicates.add(criteriaBuilder.equal(joinTransaction.get("journal"), journal));
@@ -1580,10 +1578,8 @@ public class GLSession {
         BalanceCache bc = null;
         if (acct.isCompositeAccount()) {
             balance = ZERO;
-            Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
-            while (iter.hasNext()) {
-                Account a = (Account) iter.next();
-                balance = balance.add (createBalanceCache (journal, a, layers, maxId));
+            for (Account a : acct.getChildren()) {
+                balance = balance.add(createBalanceCache(journal, a, layers, maxId));
             }
         }
         else if (acct.isFinalAccount())

@@ -1426,7 +1426,7 @@ public class GLSession {
             maxEntry = entries.get(0).getId();
         }
 
-        initialBalance = getBalances(journal, acct, end, inclusive, layers, maxEntry);
+        initialBalance = getBalances(journal, acct, inclusive ? end : start, inclusive, layers, maxEntry);
 
 
         return new AccountDetail(journal, acct, initialBalance[0], start, end, entries, layers, ascendingOrder);

@@ -427,11 +427,11 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from FinalAccount acct where root=:chart"
+        Query<FinalAccount> q = session.createQuery (
+            "from FinalAccount acct where root=:chart", FinalAccount.class
         );
-        q.setParameter ("chart", chart.getId());
-        return (List<FinalAccount>) q.list();
+        q.setParameter ("chart", chart);
+        return q.getResultList();
     }
     /**
      * @param parent parent account.
@@ -442,11 +442,11 @@ public class GLSession {
      */
     public List<CompositeAccount> getCompositeChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery(
-                "from CompositeAccount acct where parent=:parent"
+        Query<CompositeAccount> q = session.createQuery(
+                "from CompositeAccount acct where parent=:parent", CompositeAccount.class
         );
         q.setParameter ("parent", parent);
-        return (List<CompositeAccount>) q.list();
+        return q.getResultList();
     }
     /**
      * @param parent parent account.
@@ -457,11 +457,11 @@ public class GLSession {
      */
     public List<FinalAccount> getFinalChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery(
-                "from FinalAccount acct where parent=:parent"
+        Query<FinalAccount> q = session.createQuery(
+                "from FinalAccount acct where parent=:parent", FinalAccount.class
         );
         q.setParameter ("parent", parent);
-        return (List<FinalAccount>) q.list();
+        return q.list();
     }
     /**
      * @param chart chart of accounts.
@@ -474,11 +474,11 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from Account acct where root=:chart"
+        Query<Account> q = session.createQuery (
+            "from Account acct where root=:chart", Account.class
         );
         q.setParameter ("chart", chart.getId());
-        return (List<Account>) q.list();
+        return q.list();
     }
 
     /**
@@ -890,7 +890,7 @@ public class GLSession {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), end));
         }
         if (searchString != null)
-            predicates.add(criteriaBuilder.equal(root.get("detail"), "%" + searchString + "%"));
+            predicates.add(criteriaBuilder.like(root.get("detail"), "%" + searchString + "%"));
         query = query.select(root.get("id"))
                 .where(predicates.toArray(new Predicate[]{}));
 
@@ -1150,16 +1150,16 @@ public class GLSession {
 
             CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
             CriteriaQuery<GLEntry> query = criteriaBuilder.createQuery(GLEntry.class);
-            Root<GLEntry> root = query.from(GLEntry.class);
+            Root<GLEntry> entry = query.from(GLEntry.class);
 
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(criteriaBuilder.equal(root.get("account"), acct));
-            predicates.add(root.get("layer").in(Arrays.asList(toShortArray(layersCopy))));
+            predicates.add(criteriaBuilder.equal(entry.get("account"), acct));
+            predicates.add(entry.get("layer").in(Arrays.asList(toShortArray(layersCopy))));
 
             if (maxId > 0L)
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("id"), maxId));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(entry.get("id"), maxId));
 
-            Join<GLEntry, GLTransaction> joinTransaction = root.join("transaction");
+            Join<GLEntry, GLTransaction> joinTransaction = entry.join("transaction");
             predicates.add(criteriaBuilder.equal(joinTransaction.get("journal"), journal));
             if (date != null) {
                 if (inclusive) {
@@ -1178,7 +1178,7 @@ public class GLSession {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
                 if (bcache != null && (maxId == 0 || bcache.getRef() <= maxId)) {
                     balance[0] = bcache.getBalance();
-                    predicates.add(criteriaBuilder.greaterThan(joinTransaction.get("id"), bcache.getRef()));
+                    predicates.add(criteriaBuilder.greaterThan(entry.get("id"), bcache.getRef()));
                 }
             }
             query = query.where(predicates.toArray(new Predicate[] {}));

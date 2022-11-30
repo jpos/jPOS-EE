@@ -1506,22 +1506,19 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.CHECKPOINT, journal);
-                CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<BalanceCache> query = criteriaBuilder.createQuery(BalanceCache.class);
-        Root<BalanceCache> root = query.from(BalanceCache.class);
-
-        query = query
-                .select(root);
+        Root<BalanceCache> bc = query.from(BalanceCache.class);
 
         List<Predicate> ands = new ArrayList<>();
-        ands.add(criteriaBuilder.equal(root.get("journal"), journal));
-        ands.add(criteriaBuilder.equal(root.get("account"), acct));
+        ands.add(criteriaBuilder.equal(bc.get("journal"), journal));
+        ands.add(criteriaBuilder.equal(bc.get("account"), acct));
 
         if (layers != null)
-            ands.add(criteriaBuilder.equal(root.get("layers"), layersToString(layers)));
+            ands.add(criteriaBuilder.equal(bc.get("layers"), layersToString(layers)));
 
         query.where(ands.toArray(new Predicate[]{}));
-        query.orderBy(criteriaBuilder.desc(root.get("ref")));
+        query.orderBy(criteriaBuilder.desc(bc.get("ref")));
 
         List<BalanceCache> caches = session.createQuery(query)
                         .setMaxResults(1)
@@ -1683,9 +1680,7 @@ public class GLSession {
         CriteriaQuery<GLUser> query = criteriaBuilder.createQuery(GLUser.class);
         Root<GLUser> root = query.from(GLUser.class);
 
-        query = query
-                .where(criteriaBuilder.equal(root.get("nick"), nick))
-                .select(root);
+        query.where(criteriaBuilder.equal(root.get("nick"), nick));
 
         return session.createQuery(query).uniqueResult();
     }
@@ -1739,9 +1734,7 @@ public class GLSession {
         CriteriaQuery<GLTransactionGroup> query = criteriaBuilder.createQuery(GLTransactionGroup.class);
         Root<GLTransactionGroup> root = query.from(GLTransactionGroup.class);
 
-        query = query
-                .where(criteriaBuilder.equal(root.get("name"), name))
-                .select(root);
+        query.where(criteriaBuilder.equal(root.get("name"), name));
 
         return db.session().createQuery(query)
                 .setMaxResults(1)
@@ -1893,7 +1886,7 @@ public class GLSession {
         else {
             predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("date"), start));
             if (end != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("date"), end));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("date"), end));
             }
         }
         List<Checkpoint> checkPoints = session
@@ -2093,8 +2086,7 @@ public class GLSession {
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<GLEntry> root = query.from(GLEntry.class);
 
-        query = query
-                .orderBy(criteriaBuilder.desc(root.get("id")))
+        query.orderBy(criteriaBuilder.desc(root.get("id")))
                 .select(root.get("id"));
 
         return db.session()

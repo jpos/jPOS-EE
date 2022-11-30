@@ -18,11 +18,12 @@
 
 package org.jpos.gl;
 
+import org.jdom2.Element;
+
+import java.text.ParseException;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Iterator;
-import java.text.ParseException;
-import org.jdom2.Element;
 
 /**
  * Composite Account 
@@ -34,7 +35,7 @@ import org.jdom2.Element;
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
 public class CompositeAccount extends Account {
-    Set children;
+    Set<Account> children;
     public CompositeAccount () {
         super ();
     }
@@ -52,21 +53,21 @@ public class CompositeAccount extends Account {
         setParent (parent);
         fromXML (elem);
     }
-    public void setChildren (Set children) {
+    public void setChildren (Set<Account> children) {
         this.children = children;
     }
-    public Set getChildren () {
+    public Set<Account> getChildren () {
         if (children == null)
-            children = new TreeSet();
+            children = new TreeSet<>();
         return children;
     }
     public Element toXML () {
         String tagName = getParent() == null ? 
             "chart-of-accounts" : "composite-account";
         Element elem = super.toXML (new Element (tagName));
-        Iterator iter = getChildren().iterator();
+        Iterator<Account> iter = getChildren().iterator();
         while (iter.hasNext()) {
-            Account acct = (Account) iter.next();
+            Account acct = iter.next();
             elem.addContent (acct.toXML ());
         }
         return elem;

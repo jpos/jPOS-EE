@@ -38,6 +38,7 @@ public final class CMFAmountTest
         BigDecimal expectedBdAmt= new BigDecimal("123456.78").negate();     // negative!
 
         assertEquals(0, bdAmt.compareTo(expectedBdAmt), "Expected amount '"+expectedBdAmt+"' but got '"+bdAmt+"'");
+        assertEquals("-123456.78{840}", am.toString());
     }
 
     @Test
@@ -51,6 +52,7 @@ public final class CMFAmountTest
         BigDecimal expectedBdAmt= new BigDecimal("123456.78");              // no sign, asssumes positive
 
         assertEquals(0, bdAmt.compareTo(expectedBdAmt), "Expected amount '"+expectedBdAmt+"' but got '"+bdAmt+"'");
+        assertEquals("123456.78{840}", am.toString());
     }
 
     @Test
@@ -59,6 +61,7 @@ public final class CMFAmountTest
         String outString = "D" + "840" + "2" +     "12345678";
         CMFAmount am = new CMFAmount(inpString);
         assertEquals(am.serialize(), outString);
+        assertEquals("-123456.78{840}", am.toString());
     }
 
     @Test
@@ -67,6 +70,7 @@ public final class CMFAmountTest
         String outString = "D" + "840" + "2" + "000012345678";
         CMFAmount am = new CMFAmount(inpString);
         assertEquals(am.serialize(true, 12), outString);
+        assertEquals("-123456.78{840}", am.toString());
     }
 
     @Test
@@ -75,6 +79,7 @@ public final class CMFAmountTest
         String outString = "C" + "840" + "2" + "12345678";
         CMFAmount am = new CMFAmount(inpString);
         assertEquals(am.serialize(), outString);
+        assertEquals("123456.78{840}", am.toString());
     }
 
     @Test
@@ -83,7 +88,6 @@ public final class CMFAmountTest
         String outString =       "840" + "2" + "000012345678";
         CMFAmount am = new CMFAmount(inpString);
         assertEquals(am.serialize(false, 12), outString);       // without sign (even though it was negative... just to test)
+        assertEquals("-123456.78{840}", am.toString());
     }
-
-
 }

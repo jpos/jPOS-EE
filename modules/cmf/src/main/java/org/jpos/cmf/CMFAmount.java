@@ -186,4 +186,9 @@ public class CMFAmount {
     public String serialize() {
         return serialize(true, DEFAULT_AMOUNT_LENGTH);
     }
+
+    @Override
+    public String toString() {
+        return amount + "{" + currency + "}";
+    }
 }

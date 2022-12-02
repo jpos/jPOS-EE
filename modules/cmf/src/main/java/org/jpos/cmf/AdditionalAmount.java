@@ -123,6 +123,11 @@ public class AdditionalAmount {
         return sb.toString();
     }
 
+    @Override
+    public String toString() {
+        return amount + String.format ("{%s,%s,%s,%d}", accountType, amountType, currencyCode, currencyMinorUnit);
+    }
+
     static AdditionalAmount parse(String data) {
         Objects.requireNonNull(data);
 

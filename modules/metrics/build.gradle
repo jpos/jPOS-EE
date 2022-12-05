@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: Metrics Module'
+
+dependencies {
+    implementation libraries.metrics
+    implementation libraries.metricsJvm
+    implementation libraries.metricsHealthChecks
+    implementation libraries.jpos
+}

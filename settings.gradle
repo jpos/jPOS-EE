@@ -46,6 +46,7 @@ include ':modules:core',
         ':modules:seqno',
         ':modules:db-flyway',
         ':modules:elasticsearch',
+        ':modules:metrics',
         ':modules:bom'
 
 

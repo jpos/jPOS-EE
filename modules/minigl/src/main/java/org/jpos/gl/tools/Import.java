@@ -22,7 +22,6 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -86,7 +85,7 @@ public class Import implements EntityResolver {
         System.exit (0);
     }
 
-    private void createSchema () throws HibernateException, DocumentException {
+    private void createSchema () throws HibernateException, JDOMException {
         DB db = new DB(configModifier);
         db.open();
         db.beginTransaction();
@@ -370,7 +369,7 @@ public class Import implements EntityResolver {
     }
     public void parse (String file)
       throws JDOMException, SQLException, HibernateException,
-      ParseException, IOException, GLException, DocumentException {
+      ParseException, IOException, GLException {
         SAXBuilder builder = new SAXBuilder (true);
         builder.setEntityResolver (this);
 

@@ -8,7 +8,6 @@ dependencies {
     api libraries.hibernate_ant
     api libraries.c3p0 // force c3p0 version (temporary fix un Hibernate bumps up version)
     api libraries.jta
-    api libraries.dom4j
     api libraries.jacksonDatabind
 }
 

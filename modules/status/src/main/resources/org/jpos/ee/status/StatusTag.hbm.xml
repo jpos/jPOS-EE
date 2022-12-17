@@ -18,7 +18,7 @@
   -->
 
 <!DOCTYPE hibernate-mapping
-  SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+  SYSTEM "http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
   <class name="org.jpos.ee.status.StatusTag" table="status_tag">

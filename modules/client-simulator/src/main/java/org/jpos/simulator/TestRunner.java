@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.*;
 
+import org.jpos.core.Environment;
 import org.jpos.iso.*;
 import org.jpos.iso.packager.XMLPackager;
 import org.jpos.util.Logger;
@@ -352,7 +353,7 @@ public class TestRunner
                 if (c instanceof ISOMsg) {
                     applyRequestProps ((ISOMsg) c, bsh);
                 } else if (c instanceof ISOField) {
-                    String value = (String) c.getValue();
+                    String value = Environment.get((String) c.getValue());
                     if (value.length() > 0) {
                         try {
                             if (value.charAt (0) == '!') {
@@ -360,6 +361,9 @@ public class TestRunner
                             }
                             else if (value.charAt (0) == '#') {
                                 m.set (i, ISOUtil.hex2byte(bsh.eval (value.substring(1)).toString()));
+                            } 
+                            else if (!value.equals(c.getValue())) {
+                                m.set (i, value);
                             }
                         } catch (NullPointerException e) {
                             m.unset (i);

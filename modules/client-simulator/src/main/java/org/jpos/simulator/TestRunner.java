@@ -22,6 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jpos.core.Environment;
 import org.jpos.iso.*;
@@ -43,6 +47,10 @@ public class TestRunner
     MUX mux;
     ISOPackager packager;
     Interpreter bsh;
+    
+    long timeout;
+    
+    private CountDownLatch finishLatch; 
     private static final String NL = System.getProperty("line.separator");
     public static final long TIMEOUT = 60000;
     public TestRunner () {
@@ -50,6 +58,7 @@ public class TestRunner
     }
     protected void initService() throws ISOException {
         String packagerClass = cfg.get("packager", null);
+        timeout = cfg.getLong ("timeout", TIMEOUT);
         if (packagerClass != null) {
             try {
                 packager = (ISOPackager) Class.forName(packagerClass).newInstance();
@@ -61,8 +70,24 @@ public class TestRunner
         }
     }
     protected void startService() {
-        for (int i=0; i<cfg.getInt("sessions", 1); i++)
-            new Thread(this).start();
+        int sessions = cfg.getInt("sessions", 1);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        finishLatch = new CountDownLatch(sessions);
+        for (int i=0; i<sessions; i++)
+            executor.execute(this);
+        
+        if (cfg.getBoolean ("shutdown")) {
+            Executors.newSingleThreadExecutor().execute( () -> {
+                try {
+                    if (!finishLatch.await(timeout, TimeUnit.MILLISECONDS)) {
+                        log.warn("Runners didn't finish before global timeout");
+                    }
+                } catch (InterruptedException e) {
+                    log.warn("interrupted while awaiting workers termination", e);
+                }
+                getServer().shutdown();
+            });
+        }
     }
     public void run () {
         try {
@@ -78,8 +103,7 @@ public class TestRunner
         } catch (Throwable t) {
             getLog().error (t);
         }
-        if (cfg.getBoolean ("shutdown"))
-            getServer().shutdown();
+        finishLatch.countDown();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh)
         throws ISOException, IOException, EvalError
@@ -147,7 +171,7 @@ public class TestRunner
         );
         ISOUtil.sleep (100);     // let the channel do its logging first
         if (cfg.getBoolean ("shutdown"))
-            evt.addMessage ("Shutting down");
+            evt.addMessage ("waiting for shutdown");
 
         Logger.log (evt);
     }
@@ -180,7 +204,7 @@ public class TestRunner
             if (to != null)
                 tc.setTimeout (Long.parseLong (to));
             else
-                tc.setTimeout (cfg.getLong ("timeout", TIMEOUT));
+                tc.setTimeout (timeout);
             l.add (tc);
 
         }

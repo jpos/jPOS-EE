@@ -49,8 +49,6 @@ public class TestRunner
     Interpreter bsh;
     
     long timeout;
-    
-    private CountDownLatch finishLatch; 
     private static final String NL = System.getProperty("line.separator");
     public static final long TIMEOUT = 60000;
     public TestRunner () {
@@ -72,14 +70,13 @@ public class TestRunner
     protected void startService() {
         int sessions = cfg.getInt("sessions", 1);
         ExecutorService executor = Executors.newCachedThreadPool();
-        finishLatch = new CountDownLatch(sessions);
         for (int i=0; i<sessions; i++)
             executor.execute(this);
-        
+        executor.shutdown();
         if (cfg.getBoolean ("shutdown")) {
             Executors.newSingleThreadExecutor().execute( () -> {
                 try {
-                    if (!finishLatch.await(timeout, TimeUnit.MILLISECONDS)) {
+                    if (!executor.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
                         log.warn("Runners didn't finish before global timeout");
                     }
                 } catch (InterruptedException e) {
@@ -103,7 +100,6 @@ public class TestRunner
         } catch (Throwable t) {
             getLog().error (t);
         }
-        finishLatch.countDown();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh)
         throws ISOException, IOException, EvalError

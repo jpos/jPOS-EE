@@ -23,9 +23,16 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class Response {
     private HttpResponseStatus status;
     private Object body;
+    private String contentType;
+
     public Response(HttpResponseStatus status, Object body) {
+        this(status, body, null);
+    }
+
+    public Response(HttpResponseStatus status, Object body, String contentType) {
         this.status = status;
         this.body = body;
+        this.contentType = contentType;
     }
 
     public HttpResponseStatus status() {
@@ -36,10 +43,15 @@ public class Response {
         return body;
     }
 
+    public String contentType() {
+        return contentType;
+    }
+
     @Override
     public String toString() {
         return "Response{" +
           "status=" + status +
+          "contentType="+ contentType +
           ", body=" + body +
           '}';
     }

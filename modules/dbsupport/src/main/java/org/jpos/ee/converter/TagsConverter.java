@@ -26,11 +26,15 @@ import javax.persistence.Converter;
 public class TagsConverter implements AttributeConverter<Tags,String> {
     @Override
     public String convertToDatabaseColumn(Tags tags) {
-        return tags != null && tags.size() > 0 ? tags.toString() : "";
+        return  tags == null ?
+                null :
+                tags.size() > 0 ? tags.toString() : "";
     }
 
     @Override
     public Tags convertToEntityAttribute(String dbData) {
-        return new Tags(dbData);
+        return  dbData != null ?
+                new Tags(dbData) :
+                null;
     }
 }

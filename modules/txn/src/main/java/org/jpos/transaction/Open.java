@@ -24,9 +24,6 @@ import org.jpos.ee.DB;
 
 import java.io.Serializable;
 
-import static org.jpos.transaction.TxnConstants.DB;
-import static org.jpos.transaction.TxnConstants.TX;
-
 public class Open extends TxnSupport {
     int timeout = 0;
     public int prepare (long id, Serializable o) {
@@ -39,8 +36,8 @@ public class Open extends TxnSupport {
             checkPoint (ctx);
             rc = PREPARED;
         } catch (Throwable t) {
-            error (t);
-            ctx.remove (DB); // "Close" participant checks 
+            ctx.log(t);
+            ctx.remove (DB); // "Close" participant checks
                              // for DB in Context
         }
         return rc | NO_JOIN | READONLY;

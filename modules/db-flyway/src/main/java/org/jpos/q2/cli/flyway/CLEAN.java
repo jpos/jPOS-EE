@@ -35,7 +35,7 @@ public class CLEAN extends FlywaySupport implements CLICommand{
         boolean superSure = false;
         boolean sure  = cli.confirm("Are you sure you want to Clean your database (Yes/No) ? ");
         if (sure)
-            superSure = cli.confirm("This action can not be reversed - still want to proceed (Yes/No) ? ");
+            superSure = cli.confirm("This action cannot be reversed - still want to proceed (Yes/No) ? ");
 
         if (superSure) {
             try {

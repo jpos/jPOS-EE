@@ -71,7 +71,7 @@ public class ADDUSER implements CLICommand {
             }
             User user = new User();
             user.setNick (args[1]);
-            user.setName (line.getOptionValue('N'));
+            user.setName (line.getOptionValue('n'));
             db.session().save(user);
             if (line.hasOption('p')) {
                 mgr.setPassword(user, line.getOptionValue('p'));

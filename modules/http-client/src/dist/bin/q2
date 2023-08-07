@@ -1,17 +1,19 @@
 #!/bin/sh
 
-cd `dirname $0`/.. || exit 1
+cd $(dirname $0)/.. || exit 1
 rm -f deploy/shutdown.xml
-exec java -server \
+
+if [ -f jpos.pid ] && ps -p $(cat jpos.pid) > /dev/null 2>&1
+then
+   echo "Process $(cat jpos.pid) is running"
+else
+  rm -f jpos.pid
+  exec java -server \
+    --add-opens java.base/java.lang=ALL-UNNAMED \
+    -XX:+IgnoreUnrecognizedVMOptions \
     -Xmx1G \
-    -Xloggc:log/gc.log \
-    -XX:+PrintGCDetails \
-    -XX:+PrintGCDateStamps \
-    -XX:+UseGCLogFileRotation \
-    -XX:NumberOfGCLogFiles=5 \
-    -XX:GCLogFileSize=2M \
-    -XX:NumberOfGCLogFiles=5 \
-    -Djava.net.preferIPv4Stack=true \
-    -Dcom.sun.management.jmxremote \
-    -jar jposee-@jarname@ --pid-file='jpos.pid' "$@"
+    -Xlog:gc:log/gc.log \
+    -Dcom.sun.management.jmxremote=true \
+    -jar jposee-@jarname@  --pid="jpos.pid" "$@"
+fi
 

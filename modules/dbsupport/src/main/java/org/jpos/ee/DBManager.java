@@ -263,16 +263,18 @@ public class DBManager<T> {
 
     @SafeVarargs
     protected final CriteriaQuery<T> createCriteriaQuery(boolean internalFilters, DBFilter<T>... filters) {
-        CriteriaQuery<T> query = createCriteriaQuery(internalFilters, (DBFilter<T>) null);
         CriteriaBuilder cb = db.session().getCriteriaBuilder();
+        CriteriaQuery<T> query = cb.createQuery(clazz);
         Root<T> root = query.from(clazz);
         Predicate combinedPredicate = cb.and(Arrays.stream(filters)
                     .filter(f -> f != null)
                     .map(f -> f.createPredicate(cb, root))
                     .toArray(Predicate[]::new));
-        Predicate restriction = query.getRestriction();
-        if (restriction != null) {
-            combinedPredicate = cb.and(restriction,combinedPredicate);
+        Predicate[] mgrFilters = buildFilters(root);
+        if (mgrFilters != null) {
+            Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
+            Predicate mgrPredicate = cb.and(nonNullPredicates);
+            combinedPredicate = cb.and(mgrPredicate, combinedPredicate);
         }
         query.distinct(true);
         return query.where(combinedPredicate);

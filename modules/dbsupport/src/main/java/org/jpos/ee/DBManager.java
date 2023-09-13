@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class DBManager<T> {
 
@@ -265,9 +266,16 @@ public class DBManager<T> {
         CriteriaQuery<T> query = createCriteriaQuery(internalFilters, (DBFilter<T>) null);
         CriteriaBuilder cb = db.session().getCriteriaBuilder();
         Root<T> root = query.from(clazz);
-
-        return query.where(query.getRestriction()
-                , cb.and(Arrays.stream(filters).map(f -> f.createPredicate(cb, root)).toArray(Predicate[]::new)));
+        Predicate combinedPredicate = cb.and(Arrays.stream(filters)
+                    .filter(f -> f != null)
+                    .map(f -> f.createPredicate(cb, root))
+                    .toArray(Predicate[]::new));
+        Predicate restriction = query.getRestriction();
+        if (restriction != null) {
+            combinedPredicate = cb.and(restriction,combinedPredicate);
+        }
+        query.distinct(true);
+        return query.where(combinedPredicate);
     }
 
     private CriteriaQuery<T> createQueryByParam(String param, Object value, boolean withFilter) {

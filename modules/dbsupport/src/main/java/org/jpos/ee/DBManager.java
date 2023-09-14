@@ -270,11 +270,13 @@ public class DBManager<T> {
                     .filter(f -> f != null)
                     .map(f -> f.createPredicate(cb, root))
                     .toArray(Predicate[]::new));
-        Predicate[] mgrFilters = buildFilters(root);
-        if (mgrFilters != null) {
-            Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
-            Predicate mgrPredicate = cb.and(nonNullPredicates);
-            combinedPredicate = cb.and(mgrPredicate, combinedPredicate);
+        if (internalFilters) {
+            Predicate[] mgrFilters = buildFilters(root);
+            if (mgrFilters != null) {
+                Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
+                Predicate mgrPredicate = cb.and(nonNullPredicates);
+                combinedPredicate = cb.and(mgrPredicate, combinedPredicate);
+            }
         }
         query.distinct(true);
         return query.where(combinedPredicate);

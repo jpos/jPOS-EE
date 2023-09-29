@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2021 jPOS Software SRL
+ * Copyright (C) 2000-2023 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,7 +18,6 @@
 
 package org.jpos.cmf;
 
-import org.apache.commons.lang3.BitField;
 import org.jpos.iso.ISOCurrency;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOUtil;
@@ -41,7 +40,7 @@ import java.util.Objects;
  *  {@link #serialize(boolean, int)}, that the lengths are in accordance and what you need.
  * </p>
  * <p><b>NOTE:</b>This class does not handle additional amounts (DE-054).
- * For that, use {@link AdditionalAmount} and {@link AdditionalAmountsWrapper}.
+ * For that, use {@link org.jpos.iso.AdditionalAmount} and {@link org.jpos.iso.AdditionalAmountsWrapper}.
  * </p>
  *
  */

@@ -27,7 +27,10 @@ import java.util.Objects;
 
 /**
  * Handles additional amounts field content - DE-054
+ *
+ * @deprecated Use {@link org.jpos.iso.AdditionalAmountsWrapper}
  */
+@Deprecated
 public final class AdditionalAmountsWrapper extends LinkedHashSet<AdditionalAmount> {
 
     private static final long serialVersionUID = 2526355280704001241L;

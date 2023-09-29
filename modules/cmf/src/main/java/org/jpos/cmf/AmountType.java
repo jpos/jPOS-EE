@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2021 jPOS Software SRL
+ * Copyright (C) 2000-2023 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,18 +18,21 @@
 
 package org.jpos.cmf;
 
+import org.jpos.iso.AdditionalAmountType;
+import org.jpos.iso.AdditionalAmountTypeConverter;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * See jPOS-CMF.pdf DE-054 <br>
- * Some extra entries are based on ISO-8583:2003
+ * Some extra entries are based on ISO-8583:2003 and other common specs.
  */
-public enum AmountType {
+public enum AmountType implements AdditionalAmountType {
     ISO_RESERVED("00"),
 
-    // Account related balances
+    // 0x..1x - Account related balances
     ACCOUNT_LEDGER_CURRENT_BALANCE("01"),
     ACCOUNT_AVAILABLE_BALANCE("02"),
     AMOUNT_OWING("03"),
@@ -118,11 +121,18 @@ public enum AmountType {
         this.code = code;
     }
 
-    @Override
-    public String toString() {
+    public String getCode() {
         return code;
     }
-    public String getCode() {
+
+    /** shorter alias for getCode, in the style of enum name(), required by {@link AdditionalAmountType} */
+    @Override
+    public String code() {
+        return code;
+    }
+
+    @Override
+    public String toString() {
         return code;
     }
 
@@ -132,4 +142,21 @@ public enum AmountType {
         if (ret == null) throw new IllegalArgumentException("Invalid amount type: " + code);
         return ret;
     }
+
+
+    // ----- inner converter (dummy, since this is from CMF to CMF, but left here as reference implementation)
+
+    public static AdditionalAmountTypeConverter CONVERTER = new AdditionalAmountTypeConverter() {
+        public String toCMF(String code) {
+            Objects.requireNonNull(code);
+            AmountType t = byCode.get(code.toUpperCase());
+            return t != null ? t.code() : null;
+        }
+
+        public String fromCMF(String cmfCode) {
+            Objects.requireNonNull(cmfCode);
+            AmountType t = byCode.get(cmfCode.toUpperCase());
+            return t != null ? t.code() : null;
+        }
+    };
 }

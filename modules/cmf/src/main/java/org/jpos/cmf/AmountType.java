@@ -43,6 +43,7 @@ public enum AmountType implements AdditionalAmountType {
     DESTINATION_ACCOUNT_AVAILABLE_BALANCE("08"),
     CREDIT_LINE("09"),
     AMOUNT_ON_HOLD("10"),
+    PREPAID_ONLINE_BILL_FEE("17"),                  // Mastercard
 
     // 2x - Card related amounts
     AMOUNT_REMAINING_THIS_CYCLE("20"),
@@ -51,17 +52,32 @@ public enum AmountType implements AdditionalAmountType {
     AMOUNT_CASH("40"),
     AMOUNT_GOODS_AND_SERVICES("41"),
     AMOUNT_SURCHARGE("42"),
+    TOTAL_CUMULATIVE_AMOUNT("43"),                  // Visa: total cumulative, for series of incremental transactions
+    AMOUNT_PRE_CURRENCY_CONVERSION("45"),           // Visa
 
     // 5x - Electronic benefit amounts
     BEGINNING_BALANCE("50"),
     PRE_AUTH_AMOUNT("51"),
+    CLIENT_PROVIDED_FEES("56"),                     // Visa
 
-    // custom CMF
+    // Visa, Mastercard, others, usually used for partials.
+    // Left as reference/placeholder/pragmatism here, but in jPOS-CMF is more appropriate to use DE-030
+    ORIGINAL_AMOUNT("57"),
+
+    // other custom mappings
     GRATUITY("80"),
     AMOUNT_TAXABLE("81"),
+    TRANSIT_AMOUNT("4T"),                           // Visa
 
+    // HEALTHCARE USA
+    HEALTHCARE_AMOUNT_COPAYMENT("3S"),              // Visa
+    HEALTHCARE_AMOUNT_ELIGIBILITY("4S"),            // Mastercard: 10
+    HEALTHCARE_AMOUNT_PRESCRIPTION("4U"),           // Mastercard: 11
+    HEALTHCARE_AMOUNT_VISION("4V"),                 // Mastercard: 12
+    HEALTHCARE_AMOUNT_CLINIC("4W"),                 // Visa: clinic/other qualified medical
+    HEALTHCARE_AMOUNT_DENTAL("4X"),                 // Visa
 
-    // PRIVATE RESERVED
+    // OTHER PRIVATE RESERVED (may be repurposed/renamed in the future)
     PRIVATE_RESERVED_1S("1S"),
     PRIVATE_RESERVED_1T("1T"),
     PRIVATE_RESERVED_1U("1U"),
@@ -80,7 +96,6 @@ public enum AmountType implements AdditionalAmountType {
     PRIVATE_RESERVED_2Y("2Y"),
     PRIVATE_RESERVED_2Z("2Z"),
 
-    PRIVATE_RESERVED_3S("3S"),
     PRIVATE_RESERVED_3T("3T"),
     PRIVATE_RESERVED_3U("3U"),
     PRIVATE_RESERVED_3V("3V"),
@@ -89,12 +104,6 @@ public enum AmountType implements AdditionalAmountType {
     PRIVATE_RESERVED_3Y("3Y"),
     PRIVATE_RESERVED_3Z("3Z"),
 
-    PRIVATE_RESERVED_4S("4S"),
-    PRIVATE_RESERVED_4T("4T"),
-    PRIVATE_RESERVED_4U("4U"),
-    PRIVATE_RESERVED_4V("4V"),
-    PRIVATE_RESERVED_4W("4W"),
-    PRIVATE_RESERVED_4X("4X"),
     PRIVATE_RESERVED_4Y("4Y"),
     PRIVATE_RESERVED_4Z("4Z"),
 
@@ -138,9 +147,7 @@ public enum AmountType implements AdditionalAmountType {
 
     public static AmountType fromCode(String code) {
         Objects.requireNonNull(code);
-        AmountType ret = byCode.get(code.toUpperCase());
-        if (ret == null) throw new IllegalArgumentException("Invalid amount type: " + code);
-        return ret;
+        return byCode.get(code.toUpperCase());
     }
 
 

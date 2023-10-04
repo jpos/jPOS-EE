@@ -23,6 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * @deprecated Use {@link org.jpos.cmf.CMFAdditionalAmount}
+ */
+@Deprecated
 @SuppressWarnings("WeakerAccess")
 public class AdditionalAmount {
 
@@ -111,16 +115,17 @@ public class AdditionalAmount {
 
         long absAmt= getAmount().movePointRight(getCurrencyMinorUnit()).abs().longValue();
 
-        @SuppressWarnings("StringBufferReplaceableByString")
-        StringBuilder sb = new StringBuilder();
-        sb.append(getAccountType());
-        sb.append(getAmountType().toString());
-        sb.append(getCurrencyCode());
-        sb.append(getCurrencyMinorUnit());
-        sb.append(getAmount().compareTo(BigDecimal.ZERO) >= 0 ? "C" : "D");
-        sb.append(StringUtils.leftPad(Long.toString(absAmt), 12, '0'));
+        return  getAccountType() +
+                getAmountType().toString() +
+                getCurrencyCode() +
+                getCurrencyMinorUnit() +
+                (getAmount().compareTo(BigDecimal.ZERO) >= 0 ? "C" : "D") +
+                StringUtils.leftPad(Long.toString(absAmt), 12, '0');
+    }
 
-        return sb.toString();
+    @Override
+    public String toString() {
+        return amount + String.format ("{%s,%s,%s,%d}", accountType, amountType, currencyCode, currencyMinorUnit);
     }
 
     static AdditionalAmount parse(String data) {

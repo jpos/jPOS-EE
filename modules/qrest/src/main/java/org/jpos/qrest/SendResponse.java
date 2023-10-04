@@ -101,8 +101,11 @@ public class SendResponse implements AbortParticipant, Configurable {
             Response response = (Response) r;
             byte[] responseBody;
             boolean isJson = false;
+
             try {
-                if (response.body() instanceof String)
+                if (response.body() instanceof byte[])
+                    responseBody = (byte[])response.body();
+                else if (response.body() instanceof String)
                     responseBody = String.valueOf(response.body()).getBytes();
                 else {
                     ObjectMapper m = ctx.get(MAPPER);
@@ -111,14 +114,19 @@ public class SendResponse implements AbortParticipant, Configurable {
                     responseBody = m.writeValueAsBytes(response.body());
                     isJson = true;
                 }
+
                 httpResponse = new DefaultFullHttpResponse(
                   version,
                   response.status(),
                   copiedBuffer(responseBody));
 
                 HttpHeaders httpHeaders = httpResponse.headers();
-                if (isJson)
+
+                if (response.contentType() != null)
+                    httpResponse.headers().set(CONTENT_TYPE, response.contentType());
+                else if (isJson)
                     httpResponse.headers().set(CONTENT_TYPE, APPLICATION_JSON);
+
                 if (corsHeader != null)
                     httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
             } catch (JsonProcessingException e) {

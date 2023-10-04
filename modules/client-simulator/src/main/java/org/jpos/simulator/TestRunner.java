@@ -22,7 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.jpos.core.Environment;
 import org.jpos.iso.*;
 import org.jpos.iso.packager.XMLPackager;
 import org.jpos.util.Logger;
@@ -42,6 +46,8 @@ public class TestRunner
     MUX mux;
     ISOPackager packager;
     Interpreter bsh;
+    
+    long timeout;
     private static final String NL = System.getProperty("line.separator");
     public static final long TIMEOUT = 60000;
     public TestRunner () {
@@ -49,6 +55,7 @@ public class TestRunner
     }
     protected void initService() throws ISOException {
         String packagerClass = cfg.get("packager", null);
+        timeout = cfg.getLong ("timeout", TIMEOUT);
         if (packagerClass != null) {
             try {
                 packager = (ISOPackager) Class.forName(packagerClass).newInstance();
@@ -60,8 +67,23 @@ public class TestRunner
         }
     }
     protected void startService() {
-        for (int i=0; i<cfg.getInt("sessions", 1); i++)
-            new Thread(this).start();
+        int sessions = cfg.getInt("sessions", 1);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for (int i=0; i<sessions; i++)
+            executor.execute(this);
+        executor.shutdown();
+        if (cfg.getBoolean ("shutdown")) {
+            Executors.newSingleThreadExecutor().execute( () -> {
+                try {
+                    if (!executor.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
+                        log.warn("Runners didn't finish before global timeout");
+                    }
+                } catch (InterruptedException e) {
+                    log.warn("interrupted while awaiting workers termination", e);
+                }
+                getServer().shutdown();
+            });
+        }
     }
     public void run () {
         try {
@@ -77,8 +99,6 @@ public class TestRunner
         } catch (Throwable t) {
             getLog().error (t);
         }
-        if (cfg.getBoolean ("shutdown"))
-            getServer().shutdown();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh)
         throws ISOException, IOException, EvalError
@@ -146,7 +166,7 @@ public class TestRunner
         );
         ISOUtil.sleep (100);     // let the channel do its logging first
         if (cfg.getBoolean ("shutdown"))
-            evt.addMessage ("Shutting down");
+            evt.addMessage ("waiting for shutdown");
 
         Logger.log (evt);
     }
@@ -179,7 +199,7 @@ public class TestRunner
             if (to != null)
                 tc.setTimeout (Long.parseLong (to));
             else
-                tc.setTimeout (cfg.getLong ("timeout", TIMEOUT));
+                tc.setTimeout (timeout);
             l.add (tc);
 
         }
@@ -352,7 +372,7 @@ public class TestRunner
                 if (c instanceof ISOMsg) {
                     applyRequestProps ((ISOMsg) c, bsh);
                 } else if (c instanceof ISOField) {
-                    String value = (String) c.getValue();
+                    String value = Environment.get((String) c.getValue());
                     if (value.length() > 0) {
                         try {
                             if (value.charAt (0) == '!') {
@@ -360,6 +380,9 @@ public class TestRunner
                             }
                             else if (value.charAt (0) == '#') {
                                 m.set (i, ISOUtil.hex2byte(bsh.eval (value.substring(1)).toString()));
+                            } 
+                            else if (!value.equals(c.getValue())) {
+                                m.set (i, value);
                             }
                         } catch (NullPointerException e) {
                             m.unset (i);

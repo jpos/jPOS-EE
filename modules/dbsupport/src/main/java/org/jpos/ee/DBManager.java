@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class DBManager<T> {
 
@@ -51,6 +52,32 @@ public class DBManager<T> {
             query.where(predicates);
         query.select(criteriaBuilder.count(root));
         return db.session().createQuery(query).getSingleResult().intValue();
+    }
+
+    public int getItemCount(DBFilter<T>... filters)  {
+        CriteriaBuilder cb = db.session().getCriteriaBuilder();
+        // CriteriaQuery<Card> query = createCriteriaQuery(false, (DBFilter<Card>) null);
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<T> root = countQuery.from(clazz);
+        Predicate combinedPredicate = cb.and(
+            Arrays.stream(filters)
+                .filter(f -> f != null)
+                .map(f -> f.createPredicate(cb, root))
+                .toArray(Predicate[]::new)
+        );
+
+        Predicate[] mgrFilters = buildFilters(root);
+        if (mgrFilters != null) {
+            Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
+            Predicate mgrPredicate = cb.and(nonNullPredicates);
+            combinedPredicate = cb.and(mgrPredicate, combinedPredicate);
+        }
+
+        countQuery.select(cb.count(root));
+        countQuery.where(combinedPredicate);
+        Long totalCount = db.session().createQuery(countQuery).getSingleResult();
+        return totalCount.intValue();
+
     }
 
     public List<T> getAll(int offset, int limit, Map<String,Boolean> orders) {
@@ -261,12 +288,23 @@ public class DBManager<T> {
 
     @SafeVarargs
     protected final CriteriaQuery<T> createCriteriaQuery(boolean internalFilters, DBFilter<T>... filters) {
-        CriteriaQuery<T> query = createCriteriaQuery(internalFilters, (DBFilter<T>) null);
         CriteriaBuilder cb = db.session().getCriteriaBuilder();
+        CriteriaQuery<T> query = cb.createQuery(clazz);
         Root<T> root = query.from(clazz);
-
-        return query.where(query.getRestriction()
-                , cb.and(Arrays.stream(filters).map(f -> f.createPredicate(cb, root)).toArray(Predicate[]::new)));
+        Predicate combinedPredicate = cb.and(Arrays.stream(filters)
+                    .filter(f -> f != null)
+                    .map(f -> f.createPredicate(cb, root))
+                    .toArray(Predicate[]::new));
+        if (internalFilters) {
+            Predicate[] mgrFilters = buildFilters(root);
+            if (mgrFilters != null) {
+                Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
+                Predicate mgrPredicate = cb.and(nonNullPredicates);
+                combinedPredicate = cb.and(mgrPredicate, combinedPredicate);
+            }
+        }
+        query.distinct(true);
+        return query.where(combinedPredicate);
     }
 
     private CriteriaQuery<T> createQueryByParam(String param, Object value, boolean withFilter) {

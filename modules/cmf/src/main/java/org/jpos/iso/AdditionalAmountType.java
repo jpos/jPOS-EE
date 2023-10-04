@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2021 jPOS Software SRL
+ * Copyright (C) 2000-2023 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,25 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee.converter;
+package org.jpos.iso;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-import org.jpos.util.Tags;
-
-@Converter(autoApply = true)
-public class TagsConverter implements AttributeConverter<Tags, String> {
-    @Override
-    public String convertToDatabaseColumn(Tags tags) {
-        return  tags == null ?
-                null :
-                tags.size() > 0 ? tags.toString() : "";
-    }
-
-    @Override
-    public Tags convertToEntityAttribute(String dbData) {
-        return  dbData != null ?
-                new Tags(dbData) :
-                null;
-    }
+public interface AdditionalAmountType {
+    String code();
+    String name();
 }

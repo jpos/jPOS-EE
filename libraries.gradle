@@ -1,11 +1,11 @@
 ext {
-    jposVersion = '2.1.8-SNAPSHOT'
+    jposVersion = '2.1.9-SNAPSHOT'
     slf4jVersion = '1.7.28'
     logbackVersion = '1.2.8'
     hibernateVersion = '6.1.5.Final'
     hibernateEhcacheVersion = '6.0.0.Alpha7'
     geronimoVersion = '1.1.1'
-    jettyVersion = '9.4.44.v20210927'
+    jettyVersion = '9.4.50.v20221201'
     servletApiVersion = '4.0.1'
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.1.5.Final'

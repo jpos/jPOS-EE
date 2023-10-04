@@ -23,8 +23,6 @@ import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
-import org.jpos.transaction.TransactionStatusEvent;
-import org.jpos.transaction.TransactionStatusListener;
 import org.jpos.util.NameRegistrar;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -103,7 +101,7 @@ public class HttpClientTest {
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
     }
 
-    @Test
+    @Test @Disabled("httpbin down")
     public void testBasicAuth() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", "http://httpbin.org/basic-auth/user/passwd");
@@ -116,7 +114,7 @@ public class HttpClientTest {
         assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
 
-    @Test
+    @Test @Disabled("httpbin down")
     public void testBasicAuthBadPasswd() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", "http://httpbin.org/basic-auth/user/passwd");

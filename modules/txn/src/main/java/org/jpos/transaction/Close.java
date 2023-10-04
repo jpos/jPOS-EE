@@ -47,16 +47,16 @@ public class Close extends TxnSupport implements AbortParticipant {
                         tx.commit ();
                         ctx.remove (TX); 
                     } catch (RuntimeException t) {
-                        error (t);
+                        ctx.log(t);
                         try {
                             tx.rollback();
                         } catch (RuntimeException rte) {
-                            error ("Rollback error", rte);
+                            ctx.log(rte);
                         }
                     }
                 }
             } catch (RuntimeException ex) {
-                error (ex);
+                ctx.log(ex);
             } finally {
                 db.close ();
             }

@@ -573,10 +573,14 @@ public class DB implements Closeable {
                     Space sp = SpaceFactory.getSpace("tspace:dbconfig");
                     String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
                     String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
-                    if (user != null)
+                    if (user != null) {
                         ssrb.applySetting("hibernate.connection.username", user);
-                    if (pass != null)
+                        dbProps.setProperty("hibernate.connection.username", user);
+                    }
+                    if (pass != null) {
                         ssrb.applySetting("hibernate.connection.password", pass);
+                        dbProps.setProperty("hibernate.connection.password", pass);
+                    }
                 }
                 MetadataSources mds = new MetadataSources(ssrb.build());
 

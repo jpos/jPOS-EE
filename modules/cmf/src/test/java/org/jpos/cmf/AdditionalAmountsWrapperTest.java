@@ -25,7 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@Deprecated
 public final class AdditionalAmountsWrapperTest {
 
     @Test
@@ -159,6 +159,19 @@ public final class AdditionalAmountsWrapperTest {
        assertFalse(wrapper.containsAmountType(AmountType.AMOUNT_REMAINING_THIS_CYCLE));
    }
 
+    @Test
+    public void toStringTest() {
+        AdditionalAmountsWrapper wrapper = new AdditionalAmountsWrapper();
+
+        AdditionalAmount as = new AdditionalAmount("00", new BigDecimal("200.00"), "840", AmountType.AMOUNT_SURCHARGE, 2);
+        AdditionalAmount ac = new AdditionalAmount("00", new BigDecimal("300.00"), "840", AmountType.AMOUNT_CASH, 2);
+        wrapper.add(as);
+        wrapper.add(ac);
+
+        assertEquals("200.00{00,42,840,2}", as.toString());
+        assertEquals("300.00{00,40,840,2}", ac.toString());
+        assertEquals("[200.00{00,42,840,2}, 300.00{00,40,840,2}]", wrapper.toString());
+    }
 }
 
 

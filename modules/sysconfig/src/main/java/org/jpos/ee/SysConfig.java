@@ -31,7 +31,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "sysconfig")
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONE)
 @SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
     @Id

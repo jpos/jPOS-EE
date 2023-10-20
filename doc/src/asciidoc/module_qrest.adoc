@@ -43,7 +43,7 @@ we've created a little **QRest** module that can be configured like this:
   <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" />  <9>
   <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" />
   <property name="enabled-cipher" value="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" />
-  <property name="enable-protocol" value="TLSv1.2" />                             <10>
+  <property name="enable-protocol" value="TLSv1.2" />                              <10>
   <property name="enable-protocol" value="TLSv1.3" />
   ...
   ...

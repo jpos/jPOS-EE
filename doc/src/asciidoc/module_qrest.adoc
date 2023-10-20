@@ -58,7 +58,7 @@ we've created a little **QRest** module that can be configured like this:
 <7> Store password
 <8> Key password
 <9> Enabled cipher suites (optional, defaults to 'all' if not present)
-<9> Enabled protocols (optional, defaults to 'all' if not present)
+<10> Enabled protocols (optional, defaults to 'all' if not present)
 
 Once the server receives an HTTP request, it creates a `org.jpos.transaction.Context`, places a reference to the http request
 (under the Constant name `REQUEST` defined in the `org.jpos.qrest.Constants` enum), and to the session in the `SESSION`

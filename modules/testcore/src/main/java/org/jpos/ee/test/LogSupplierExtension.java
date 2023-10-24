@@ -63,14 +63,13 @@ public class LogSupplierExtension implements BeforeEachCallback, ParameterResolv
      *
      * @param parameterContext the context for the parameter for which an argument should
      *                         be resolved; never {@code null}
-     * @param extensionContext the extension context for the {@code Executable}
-     *                         about to be invoked; never {@code null}
+     * @param ignored          unused
      * @return {@code true} if this resolver can resolve an argument for the parameter
      * @see #resolveParameter
      * @see ParameterContext
      */
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext ignored) throws ParameterResolutionException {
         return parameterContext.isAnnotated(LogSource.class) && parameterContext.getTarget().map(Object::getClass).filter(c -> c.isAssignableFrom(LogSource.class)).isPresent();
     }
 

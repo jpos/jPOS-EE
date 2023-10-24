@@ -9,13 +9,14 @@ In the following example, if the logger does not already exist, a default one, t
 ```java
 @ExtendWith(LogSupplierExtension.class)
 class LogTest {
-    @LogSource (logger="Q2", realm="log-test")
+    @LogSource(logger = "Q2", realm = "log-test")
     Log log;
-    
+
     @Test
-    public void testDebug(){
+    public void testDebug() {
         log.debug("debug called");
     }
+}
 ```
 
 

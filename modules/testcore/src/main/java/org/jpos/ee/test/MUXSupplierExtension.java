@@ -55,7 +55,7 @@ public class MUXSupplierExtension implements BeforeEachCallback, AfterEachCallba
      * @param afterAll if this is for an afterAll method unregister only static muxes otherwise only instences.
      */
     protected void tearDown(ExtensionContext context, boolean afterAll){
-        runOnFields(context, afterAll, (f, annotation) -> NameRegistrar.unregister("mux." + annotation.name()));
+        runOnFields(context, afterAll, (ignored, annotation) -> NameRegistrar.unregister("mux." + annotation.name()));
 
     }
     /**

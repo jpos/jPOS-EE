@@ -260,11 +260,16 @@ public class DB implements Closeable {
 
     private Properties loadProperties(String filename) throws IOException {
         Properties props = new Properties();
-        final String s = filename.replaceAll("/", "\\" + File.separator);
-        final File f = new File(s);
-        if (f.exists()) {
-            try (FileReader fr = new FileReader(f)) {
-                props.load(fr);
+        if (filename.startsWith("jar:") && filename.length()>4) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            props.load(cl.getResourceAsStream(filename.substring(4)));
+        } else {
+            final String s = filename.replaceAll("/", "\\" + File.separator);
+            final File f = new File(s);
+            if (f.exists()) {
+                try (FileReader fr = new FileReader(f)) {
+                    props.load(fr);
+                }
             }
         }
         return props;

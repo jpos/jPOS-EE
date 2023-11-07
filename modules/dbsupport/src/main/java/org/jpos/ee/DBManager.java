@@ -80,8 +80,11 @@ public class DBManager<T> {
         return totalCount.intValue();
 
     }
-
     public List<T> getAll(int offset, int limit, Map<String,Boolean> orders) {
+        return this.getAll(offset, limit, orders, null);
+    }
+
+    public List<T> getAll(int offset, int limit, Map<String,Boolean> orders, DBFilter<T>... filters) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(clazz);
         Root<T> root = query.from(clazz);
@@ -93,9 +96,21 @@ public class DBManager<T> {
                 orderList.add(order);
             }
         }
-        Predicate[] predicates = buildFilters(root);
-        if (predicates != null)
-            query.where(predicates);
+        Predicate combinedPredicate = null;
+        if (filters != null) {
+            combinedPredicate = criteriaBuilder.and(Arrays.stream(filters)
+                    .filter(f -> f != null)
+                    .map(f -> f.createPredicate(criteriaBuilder, root))
+                    .toArray(Predicate[]::new));
+        }
+        Predicate[] mgrFilters = buildFilters(root);
+        if (mgrFilters != null) {
+            Predicate[] nonNullPredicates = Arrays.stream(mgrFilters).filter(f -> f != null).toArray(Predicate[]::new);
+            Predicate mgrPredicate = criteriaBuilder.and(nonNullPredicates);
+            combinedPredicate = combinedPredicate != null ? criteriaBuilder.and(mgrPredicate, combinedPredicate) : mgrPredicate;
+        }
+        if (combinedPredicate != null)
+            query.where(combinedPredicate);
         query.select(root);
         query.orderBy(orderList);
         Query<T> queryImp = db.session().createQuery(query);

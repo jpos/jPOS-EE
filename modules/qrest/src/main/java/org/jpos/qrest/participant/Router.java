@@ -72,13 +72,14 @@ public class Router implements GroupSelector, XmlConfigurable {
     public void setConfiguration(Element e) throws ConfigurationException {
         try {
             for (Element r : e.getChildren("route")) {
+                String name = r.getAttributeValue("name");
                 routes.computeIfAbsent(
                   r.getAttributeValue("method"),
                   k -> new ArrayList<>()).add(
                     new Route<>(
                       r.getAttributeValue("path"),
                       r.getAttributeValue("method"),
-                      (t, s) -> r.getAttributeValue("name"))
+                      (t, s) -> name)
                 );
             }
         } catch (Throwable t) {

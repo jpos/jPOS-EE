@@ -29,6 +29,12 @@ subprojects {
     if (name != 'bom') {
         apply from: "${rootProject.projectDir}/subprojects.gradle"
     }
+    if (project.path.startsWith(':modules:iso20022-')) {
+        dependencies {
+            implementation libraries.xml_bind
+        }
+    }
+
 }
 
 // Configure IDEA to use Git

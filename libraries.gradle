@@ -27,6 +27,7 @@ ext {
     orgjsonVersion = '20200518'
     postgresqlEmbeddedVersion = '1.2.8'
     postgresqlBinVersion = '12.3.0'
+    xmlBindVersion="4.0.1"
 
     libraries = [
             //jUnit (Tests)
@@ -132,7 +133,8 @@ ext {
             liquibase: "org.liquibase:liquibase-core:${liquibaseVersion}",
 
             elk: "org.elasticsearch.client:elasticsearch-rest-high-level-client:${elkVersion}",
-            orgJson: "org.json:json:${orgjsonVersion}"
+            orgJson: "org.json:json:${orgjsonVersion}",
+            xml_bind: "jakarta.xml.bind:jakarta.xml.bind-api:${xmlBindVersion}"
     ]
 
     jsonSchemaValidatorLibs = [

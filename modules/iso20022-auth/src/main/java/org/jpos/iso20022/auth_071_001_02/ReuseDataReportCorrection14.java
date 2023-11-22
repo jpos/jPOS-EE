@@ -1,0 +1,274 @@
+/*
+ * jPOS Project [http://jpos.org]
+ * Copyright (C) 2000-2023 jPOS Software SRL
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.jpos.iso20022.auth_071_001_02;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.datatype.XMLGregorianCalendar;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for ReuseDataReportCorrection14 complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>{@code
+ * <complexType name="ReuseDataReportCorrection14">
+ *   <complexContent>
+ *     <restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       <sequence>
+ *         <element name="TechRcrdId" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}Max140Text" minOccurs="0"/>
+ *         <element name="RptgDtTm" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}ISODateTime"/>
+ *         <element name="CtrPty" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}CounterpartyData87"/>
+ *         <element name="CollCmpnt" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}CollateralType19" maxOccurs="unbounded" minOccurs="0"/>
+ *         <element name="EvtDay" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}ISODate"/>
+ *         <element name="FndgSrc" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}FundingSource3" maxOccurs="unbounded" minOccurs="0"/>
+ *         <element name="SplmtryData" type="{urn:iso:std:iso:20022:tech:xsd:auth.071.001.02}SupplementaryData1" maxOccurs="unbounded" minOccurs="0"/>
+ *       </sequence>
+ *     </restriction>
+ *   </complexContent>
+ * </complexType>
+ * }</pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ReuseDataReportCorrection14", propOrder = {
+    "techRcrdId",
+    "rptgDtTm",
+    "ctrPty",
+    "collCmpnt",
+    "evtDay",
+    "fndgSrc",
+    "splmtryData"
+})
+public class ReuseDataReportCorrection14 {
+
+    @XmlElement(name = "TechRcrdId")
+    protected String techRcrdId;
+    @XmlElement(name = "RptgDtTm", required = true)
+    @XmlSchemaType(name = "dateTime")
+    protected XMLGregorianCalendar rptgDtTm;
+    @XmlElement(name = "CtrPty", required = true)
+    protected CounterpartyData87 ctrPty;
+    @XmlElement(name = "CollCmpnt")
+    protected List<CollateralType19> collCmpnt;
+    @XmlElement(name = "EvtDay", required = true)
+    @XmlSchemaType(name = "date")
+    protected XMLGregorianCalendar evtDay;
+    @XmlElement(name = "FndgSrc")
+    protected List<FundingSource3> fndgSrc;
+    @XmlElement(name = "SplmtryData")
+    protected List<SupplementaryData1> splmtryData;
+
+    /**
+     * Gets the value of the techRcrdId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTechRcrdId() {
+        return techRcrdId;
+    }
+
+    /**
+     * Sets the value of the techRcrdId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTechRcrdId(String value) {
+        this.techRcrdId = value;
+    }
+
+    /**
+     * Gets the value of the rptgDtTm property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public XMLGregorianCalendar getRptgDtTm() {
+        return rptgDtTm;
+    }
+
+    /**
+     * Sets the value of the rptgDtTm property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public void setRptgDtTm(XMLGregorianCalendar value) {
+        this.rptgDtTm = value;
+    }
+
+    /**
+     * Gets the value of the ctrPty property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CounterpartyData87 }
+     *     
+     */
+    public CounterpartyData87 getCtrPty() {
+        return ctrPty;
+    }
+
+    /**
+     * Sets the value of the ctrPty property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CounterpartyData87 }
+     *     
+     */
+    public void setCtrPty(CounterpartyData87 value) {
+        this.ctrPty = value;
+    }
+
+    /**
+     * Gets the value of the collCmpnt property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the Jakarta XML Binding object.
+     * This is why there is not a {@code set} method for the collCmpnt property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getCollCmpnt().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CollateralType19 }
+     * 
+     * 
+     * @return
+     *     The value of the collCmpnt property.
+     */
+    public List<CollateralType19> getCollCmpnt() {
+        if (collCmpnt == null) {
+            collCmpnt = new ArrayList<>();
+        }
+        return this.collCmpnt;
+    }
+
+    /**
+     * Gets the value of the evtDay property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public XMLGregorianCalendar getEvtDay() {
+        return evtDay;
+    }
+
+    /**
+     * Sets the value of the evtDay property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public void setEvtDay(XMLGregorianCalendar value) {
+        this.evtDay = value;
+    }
+
+    /**
+     * Gets the value of the fndgSrc property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the Jakarta XML Binding object.
+     * This is why there is not a {@code set} method for the fndgSrc property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getFndgSrc().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link FundingSource3 }
+     * 
+     * 
+     * @return
+     *     The value of the fndgSrc property.
+     */
+    public List<FundingSource3> getFndgSrc() {
+        if (fndgSrc == null) {
+            fndgSrc = new ArrayList<>();
+        }
+        return this.fndgSrc;
+    }
+
+    /**
+     * Gets the value of the splmtryData property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the Jakarta XML Binding object.
+     * This is why there is not a {@code set} method for the splmtryData property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getSplmtryData().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link SupplementaryData1 }
+     * 
+     * 
+     * @return
+     *     The value of the splmtryData property.
+     */
+    public List<SupplementaryData1> getSplmtryData() {
+        if (splmtryData == null) {
+            splmtryData = new ArrayList<>();
+        }
+        return this.splmtryData;
+    }
+
+}

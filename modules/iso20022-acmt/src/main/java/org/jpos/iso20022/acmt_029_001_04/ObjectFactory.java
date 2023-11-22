@@ -1,0 +1,976 @@
+/*
+ * jPOS Project [http://jpos.org]
+ * Copyright (C) 2000-2023 jPOS Software SRL
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.jpos.iso20022.acmt_029_001_04;
+
+import javax.xml.namespace.QName;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlElementDecl;
+import jakarta.xml.bind.annotation.XmlRegistry;
+
+
+/**
+ * This object contains factory methods for each 
+ * Java content interface and Java element interface 
+ * generated in the org.jpos.iso20022.acmt_029_001_04 package. 
+ * <p>An ObjectFactory allows you to programmatically 
+ * construct new instances of the Java representation 
+ * for XML content. The Java representation of XML 
+ * content can consist of schema derived interfaces 
+ * and classes representing the binding of schema 
+ * type definitions, element declarations and model 
+ * groups.  Factory methods for each of these are 
+ * provided in this class.
+ * 
+ */
+@XmlRegistry
+public class ObjectFactory {
+
+    private static final QName _Document_QNAME = new QName("urn:iso:std:iso:20022:tech:xsd:acmt.029.001.04", "Document");
+
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.jpos.iso20022.acmt_029_001_04
+     * 
+     */
+    public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link Document }
+     * 
+     * @return
+     *     the new instance of {@link Document }
+     */
+    public Document createDocument() {
+        return new Document();
+    }
+
+    /**
+     * Create an instance of {@link AccountIdentification4Choice }
+     * 
+     * @return
+     *     the new instance of {@link AccountIdentification4Choice }
+     */
+    public AccountIdentification4Choice createAccountIdentification4Choice() {
+        return new AccountIdentification4Choice();
+    }
+
+    /**
+     * Create an instance of {@link AccountSchemeName1Choice }
+     * 
+     * @return
+     *     the new instance of {@link AccountSchemeName1Choice }
+     */
+    public AccountSchemeName1Choice createAccountSchemeName1Choice() {
+        return new AccountSchemeName1Choice();
+    }
+
+    /**
+     * Create an instance of {@link AccountSwitchCancelExistingPaymentV04 }
+     * 
+     * @return
+     *     the new instance of {@link AccountSwitchCancelExistingPaymentV04 }
+     */
+    public AccountSwitchCancelExistingPaymentV04 createAccountSwitchCancelExistingPaymentV04() {
+        return new AccountSwitchCancelExistingPaymentV04();
+    }
+
+    /**
+     * Create an instance of {@link AccountSwitchDetails1 }
+     * 
+     * @return
+     *     the new instance of {@link AccountSwitchDetails1 }
+     */
+    public AccountSwitchDetails1 createAccountSwitchDetails1() {
+        return new AccountSwitchDetails1();
+    }
+
+    /**
+     * Create an instance of {@link ActiveCurrencyAndAmount }
+     * 
+     * @return
+     *     the new instance of {@link ActiveCurrencyAndAmount }
+     */
+    public ActiveCurrencyAndAmount createActiveCurrencyAndAmount() {
+        return new ActiveCurrencyAndAmount();
+    }
+
+    /**
+     * Create an instance of {@link ActiveOrHistoricCurrencyAndAmount }
+     * 
+     * @return
+     *     the new instance of {@link ActiveOrHistoricCurrencyAndAmount }
+     */
+    public ActiveOrHistoricCurrencyAndAmount createActiveOrHistoricCurrencyAndAmount() {
+        return new ActiveOrHistoricCurrencyAndAmount();
+    }
+
+    /**
+     * Create an instance of {@link AddressType3Choice }
+     * 
+     * @return
+     *     the new instance of {@link AddressType3Choice }
+     */
+    public AddressType3Choice createAddressType3Choice() {
+        return new AddressType3Choice();
+    }
+
+    /**
+     * Create an instance of {@link BranchAndFinancialInstitutionIdentification6 }
+     * 
+     * @return
+     *     the new instance of {@link BranchAndFinancialInstitutionIdentification6 }
+     */
+    public BranchAndFinancialInstitutionIdentification6 createBranchAndFinancialInstitutionIdentification6() {
+        return new BranchAndFinancialInstitutionIdentification6();
+    }
+
+    /**
+     * Create an instance of {@link BranchData3 }
+     * 
+     * @return
+     *     the new instance of {@link BranchData3 }
+     */
+    public BranchData3 createBranchData3() {
+        return new BranchData3();
+    }
+
+    /**
+     * Create an instance of {@link CashAccount40 }
+     * 
+     * @return
+     *     the new instance of {@link CashAccount40 }
+     */
+    public CashAccount40 createCashAccount40() {
+        return new CashAccount40();
+    }
+
+    /**
+     * Create an instance of {@link CashAccount41 }
+     * 
+     * @return
+     *     the new instance of {@link CashAccount41 }
+     */
+    public CashAccount41 createCashAccount41() {
+        return new CashAccount41();
+    }
+
+    /**
+     * Create an instance of {@link CashAccountType2Choice }
+     * 
+     * @return
+     *     the new instance of {@link CashAccountType2Choice }
+     */
+    public CashAccountType2Choice createCashAccountType2Choice() {
+        return new CashAccountType2Choice();
+    }
+
+    /**
+     * Create an instance of {@link CategoryPurpose1Choice }
+     * 
+     * @return
+     *     the new instance of {@link CategoryPurpose1Choice }
+     */
+    public CategoryPurpose1Choice createCategoryPurpose1Choice() {
+        return new CategoryPurpose1Choice();
+    }
+
+    /**
+     * Create an instance of {@link Cheque11 }
+     * 
+     * @return
+     *     the new instance of {@link Cheque11 }
+     */
+    public Cheque11 createCheque11() {
+        return new Cheque11();
+    }
+
+    /**
+     * Create an instance of {@link ChequeDeliveryMethod1Choice }
+     * 
+     * @return
+     *     the new instance of {@link ChequeDeliveryMethod1Choice }
+     */
+    public ChequeDeliveryMethod1Choice createChequeDeliveryMethod1Choice() {
+        return new ChequeDeliveryMethod1Choice();
+    }
+
+    /**
+     * Create an instance of {@link ClearingSystemIdentification2Choice }
+     * 
+     * @return
+     *     the new instance of {@link ClearingSystemIdentification2Choice }
+     */
+    public ClearingSystemIdentification2Choice createClearingSystemIdentification2Choice() {
+        return new ClearingSystemIdentification2Choice();
+    }
+
+    /**
+     * Create an instance of {@link ClearingSystemMemberIdentification2 }
+     * 
+     * @return
+     *     the new instance of {@link ClearingSystemMemberIdentification2 }
+     */
+    public ClearingSystemMemberIdentification2 createClearingSystemMemberIdentification2() {
+        return new ClearingSystemMemberIdentification2();
+    }
+
+    /**
+     * Create an instance of {@link Contact4 }
+     * 
+     * @return
+     *     the new instance of {@link Contact4 }
+     */
+    public Contact4 createContact4() {
+        return new Contact4();
+    }
+
+    /**
+     * Create an instance of {@link CreditTransferTransaction51 }
+     * 
+     * @return
+     *     the new instance of {@link CreditTransferTransaction51 }
+     */
+    public CreditTransferTransaction51 createCreditTransferTransaction51() {
+        return new CreditTransferTransaction51();
+    }
+
+    /**
+     * Create an instance of {@link CreditorReferenceInformation2 }
+     * 
+     * @return
+     *     the new instance of {@link CreditorReferenceInformation2 }
+     */
+    public CreditorReferenceInformation2 createCreditorReferenceInformation2() {
+        return new CreditorReferenceInformation2();
+    }
+
+    /**
+     * Create an instance of {@link CreditorReferenceType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link CreditorReferenceType1Choice }
+     */
+    public CreditorReferenceType1Choice createCreditorReferenceType1Choice() {
+        return new CreditorReferenceType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link CreditorReferenceType2 }
+     * 
+     * @return
+     *     the new instance of {@link CreditorReferenceType2 }
+     */
+    public CreditorReferenceType2 createCreditorReferenceType2() {
+        return new CreditorReferenceType2();
+    }
+
+    /**
+     * Create an instance of {@link DateAndPlaceOfBirth1 }
+     * 
+     * @return
+     *     the new instance of {@link DateAndPlaceOfBirth1 }
+     */
+    public DateAndPlaceOfBirth1 createDateAndPlaceOfBirth1() {
+        return new DateAndPlaceOfBirth1();
+    }
+
+    /**
+     * Create an instance of {@link DatePeriod2 }
+     * 
+     * @return
+     *     the new instance of {@link DatePeriod2 }
+     */
+    public DatePeriod2 createDatePeriod2() {
+        return new DatePeriod2();
+    }
+
+    /**
+     * Create an instance of {@link DirectDebitInstructionDetails2 }
+     * 
+     * @return
+     *     the new instance of {@link DirectDebitInstructionDetails2 }
+     */
+    public DirectDebitInstructionDetails2 createDirectDebitInstructionDetails2() {
+        return new DirectDebitInstructionDetails2();
+    }
+
+    /**
+     * Create an instance of {@link DiscountAmountAndType1 }
+     * 
+     * @return
+     *     the new instance of {@link DiscountAmountAndType1 }
+     */
+    public DiscountAmountAndType1 createDiscountAmountAndType1() {
+        return new DiscountAmountAndType1();
+    }
+
+    /**
+     * Create an instance of {@link DiscountAmountType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link DiscountAmountType1Choice }
+     */
+    public DiscountAmountType1Choice createDiscountAmountType1Choice() {
+        return new DiscountAmountType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link DocumentAdjustment1 }
+     * 
+     * @return
+     *     the new instance of {@link DocumentAdjustment1 }
+     */
+    public DocumentAdjustment1 createDocumentAdjustment1() {
+        return new DocumentAdjustment1();
+    }
+
+    /**
+     * Create an instance of {@link DocumentLineIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link DocumentLineIdentification1 }
+     */
+    public DocumentLineIdentification1 createDocumentLineIdentification1() {
+        return new DocumentLineIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link DocumentLineInformation1 }
+     * 
+     * @return
+     *     the new instance of {@link DocumentLineInformation1 }
+     */
+    public DocumentLineInformation1 createDocumentLineInformation1() {
+        return new DocumentLineInformation1();
+    }
+
+    /**
+     * Create an instance of {@link DocumentLineType1 }
+     * 
+     * @return
+     *     the new instance of {@link DocumentLineType1 }
+     */
+    public DocumentLineType1 createDocumentLineType1() {
+        return new DocumentLineType1();
+    }
+
+    /**
+     * Create an instance of {@link DocumentLineType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link DocumentLineType1Choice }
+     */
+    public DocumentLineType1Choice createDocumentLineType1Choice() {
+        return new DocumentLineType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link EndPoint1Choice }
+     * 
+     * @return
+     *     the new instance of {@link EndPoint1Choice }
+     */
+    public EndPoint1Choice createEndPoint1Choice() {
+        return new EndPoint1Choice();
+    }
+
+    /**
+     * Create an instance of {@link FinancialIdentificationSchemeName1Choice }
+     * 
+     * @return
+     *     the new instance of {@link FinancialIdentificationSchemeName1Choice }
+     */
+    public FinancialIdentificationSchemeName1Choice createFinancialIdentificationSchemeName1Choice() {
+        return new FinancialIdentificationSchemeName1Choice();
+    }
+
+    /**
+     * Create an instance of {@link FinancialInstitutionIdentification18 }
+     * 
+     * @return
+     *     the new instance of {@link FinancialInstitutionIdentification18 }
+     */
+    public FinancialInstitutionIdentification18 createFinancialInstitutionIdentification18() {
+        return new FinancialInstitutionIdentification18();
+    }
+
+    /**
+     * Create an instance of {@link Frequency1 }
+     * 
+     * @return
+     *     the new instance of {@link Frequency1 }
+     */
+    public Frequency1 createFrequency1() {
+        return new Frequency1();
+    }
+
+    /**
+     * Create an instance of {@link Frequency37Choice }
+     * 
+     * @return
+     *     the new instance of {@link Frequency37Choice }
+     */
+    public Frequency37Choice createFrequency37Choice() {
+        return new Frequency37Choice();
+    }
+
+    /**
+     * Create an instance of {@link Garnishment3 }
+     * 
+     * @return
+     *     the new instance of {@link Garnishment3 }
+     */
+    public Garnishment3 createGarnishment3() {
+        return new Garnishment3();
+    }
+
+    /**
+     * Create an instance of {@link GarnishmentType1 }
+     * 
+     * @return
+     *     the new instance of {@link GarnishmentType1 }
+     */
+    public GarnishmentType1 createGarnishmentType1() {
+        return new GarnishmentType1();
+    }
+
+    /**
+     * Create an instance of {@link GarnishmentType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link GarnishmentType1Choice }
+     */
+    public GarnishmentType1Choice createGarnishmentType1Choice() {
+        return new GarnishmentType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link GenericAccountIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link GenericAccountIdentification1 }
+     */
+    public GenericAccountIdentification1 createGenericAccountIdentification1() {
+        return new GenericAccountIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link GenericFinancialIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link GenericFinancialIdentification1 }
+     */
+    public GenericFinancialIdentification1 createGenericFinancialIdentification1() {
+        return new GenericFinancialIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link GenericIdentification30 }
+     * 
+     * @return
+     *     the new instance of {@link GenericIdentification30 }
+     */
+    public GenericIdentification30 createGenericIdentification30() {
+        return new GenericIdentification30();
+    }
+
+    /**
+     * Create an instance of {@link GenericOrganisationIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link GenericOrganisationIdentification1 }
+     */
+    public GenericOrganisationIdentification1 createGenericOrganisationIdentification1() {
+        return new GenericOrganisationIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link GenericPersonIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link GenericPersonIdentification1 }
+     */
+    public GenericPersonIdentification1 createGenericPersonIdentification1() {
+        return new GenericPersonIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link InstructionForCreditorAgent3 }
+     * 
+     * @return
+     *     the new instance of {@link InstructionForCreditorAgent3 }
+     */
+    public InstructionForCreditorAgent3 createInstructionForCreditorAgent3() {
+        return new InstructionForCreditorAgent3();
+    }
+
+    /**
+     * Create an instance of {@link LocalInstrument2Choice }
+     * 
+     * @return
+     *     the new instance of {@link LocalInstrument2Choice }
+     */
+    public LocalInstrument2Choice createLocalInstrument2Choice() {
+        return new LocalInstrument2Choice();
+    }
+
+    /**
+     * Create an instance of {@link MessageIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link MessageIdentification1 }
+     */
+    public MessageIdentification1 createMessageIdentification1() {
+        return new MessageIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link NameAndAddress16 }
+     * 
+     * @return
+     *     the new instance of {@link NameAndAddress16 }
+     */
+    public NameAndAddress16 createNameAndAddress16() {
+        return new NameAndAddress16();
+    }
+
+    /**
+     * Create an instance of {@link OrganisationIdentification29 }
+     * 
+     * @return
+     *     the new instance of {@link OrganisationIdentification29 }
+     */
+    public OrganisationIdentification29 createOrganisationIdentification29() {
+        return new OrganisationIdentification29();
+    }
+
+    /**
+     * Create an instance of {@link OrganisationIdentificationSchemeName1Choice }
+     * 
+     * @return
+     *     the new instance of {@link OrganisationIdentificationSchemeName1Choice }
+     */
+    public OrganisationIdentificationSchemeName1Choice createOrganisationIdentificationSchemeName1Choice() {
+        return new OrganisationIdentificationSchemeName1Choice();
+    }
+
+    /**
+     * Create an instance of {@link OtherContact1 }
+     * 
+     * @return
+     *     the new instance of {@link OtherContact1 }
+     */
+    public OtherContact1 createOtherContact1() {
+        return new OtherContact1();
+    }
+
+    /**
+     * Create an instance of {@link Party38Choice }
+     * 
+     * @return
+     *     the new instance of {@link Party38Choice }
+     */
+    public Party38Choice createParty38Choice() {
+        return new Party38Choice();
+    }
+
+    /**
+     * Create an instance of {@link PartyIdentification135 }
+     * 
+     * @return
+     *     the new instance of {@link PartyIdentification135 }
+     */
+    public PartyIdentification135 createPartyIdentification135() {
+        return new PartyIdentification135();
+    }
+
+    /**
+     * Create an instance of {@link PaymentIdentification6 }
+     * 
+     * @return
+     *     the new instance of {@link PaymentIdentification6 }
+     */
+    public PaymentIdentification6 createPaymentIdentification6() {
+        return new PaymentIdentification6();
+    }
+
+    /**
+     * Create an instance of {@link PaymentInstruction38 }
+     * 
+     * @return
+     *     the new instance of {@link PaymentInstruction38 }
+     */
+    public PaymentInstruction38 createPaymentInstruction38() {
+        return new PaymentInstruction38();
+    }
+
+    /**
+     * Create an instance of {@link PaymentTypeInformation26 }
+     * 
+     * @return
+     *     the new instance of {@link PaymentTypeInformation26 }
+     */
+    public PaymentTypeInformation26 createPaymentTypeInformation26() {
+        return new PaymentTypeInformation26();
+    }
+
+    /**
+     * Create an instance of {@link PersonIdentification13 }
+     * 
+     * @return
+     *     the new instance of {@link PersonIdentification13 }
+     */
+    public PersonIdentification13 createPersonIdentification13() {
+        return new PersonIdentification13();
+    }
+
+    /**
+     * Create an instance of {@link PersonIdentificationSchemeName1Choice }
+     * 
+     * @return
+     *     the new instance of {@link PersonIdentificationSchemeName1Choice }
+     */
+    public PersonIdentificationSchemeName1Choice createPersonIdentificationSchemeName1Choice() {
+        return new PersonIdentificationSchemeName1Choice();
+    }
+
+    /**
+     * Create an instance of {@link PostalAddress24 }
+     * 
+     * @return
+     *     the new instance of {@link PostalAddress24 }
+     */
+    public PostalAddress24 createPostalAddress24() {
+        return new PostalAddress24();
+    }
+
+    /**
+     * Create an instance of {@link ProxyAccountIdentification1 }
+     * 
+     * @return
+     *     the new instance of {@link ProxyAccountIdentification1 }
+     */
+    public ProxyAccountIdentification1 createProxyAccountIdentification1() {
+        return new ProxyAccountIdentification1();
+    }
+
+    /**
+     * Create an instance of {@link ProxyAccountType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link ProxyAccountType1Choice }
+     */
+    public ProxyAccountType1Choice createProxyAccountType1Choice() {
+        return new ProxyAccountType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link Purpose2Choice }
+     * 
+     * @return
+     *     the new instance of {@link Purpose2Choice }
+     */
+    public Purpose2Choice createPurpose2Choice() {
+        return new Purpose2Choice();
+    }
+
+    /**
+     * Create an instance of {@link ReferredDocumentInformation7 }
+     * 
+     * @return
+     *     the new instance of {@link ReferredDocumentInformation7 }
+     */
+    public ReferredDocumentInformation7 createReferredDocumentInformation7() {
+        return new ReferredDocumentInformation7();
+    }
+
+    /**
+     * Create an instance of {@link ReferredDocumentType3Choice }
+     * 
+     * @return
+     *     the new instance of {@link ReferredDocumentType3Choice }
+     */
+    public ReferredDocumentType3Choice createReferredDocumentType3Choice() {
+        return new ReferredDocumentType3Choice();
+    }
+
+    /**
+     * Create an instance of {@link ReferredDocumentType4 }
+     * 
+     * @return
+     *     the new instance of {@link ReferredDocumentType4 }
+     */
+    public ReferredDocumentType4 createReferredDocumentType4() {
+        return new ReferredDocumentType4();
+    }
+
+    /**
+     * Create an instance of {@link RegulatoryAuthority2 }
+     * 
+     * @return
+     *     the new instance of {@link RegulatoryAuthority2 }
+     */
+    public RegulatoryAuthority2 createRegulatoryAuthority2() {
+        return new RegulatoryAuthority2();
+    }
+
+    /**
+     * Create an instance of {@link RegulatoryReporting3 }
+     * 
+     * @return
+     *     the new instance of {@link RegulatoryReporting3 }
+     */
+    public RegulatoryReporting3 createRegulatoryReporting3() {
+        return new RegulatoryReporting3();
+    }
+
+    /**
+     * Create an instance of {@link RemittanceAmount2 }
+     * 
+     * @return
+     *     the new instance of {@link RemittanceAmount2 }
+     */
+    public RemittanceAmount2 createRemittanceAmount2() {
+        return new RemittanceAmount2();
+    }
+
+    /**
+     * Create an instance of {@link RemittanceAmount3 }
+     * 
+     * @return
+     *     the new instance of {@link RemittanceAmount3 }
+     */
+    public RemittanceAmount3 createRemittanceAmount3() {
+        return new RemittanceAmount3();
+    }
+
+    /**
+     * Create an instance of {@link RemittanceInformation21 }
+     * 
+     * @return
+     *     the new instance of {@link RemittanceInformation21 }
+     */
+    public RemittanceInformation21 createRemittanceInformation21() {
+        return new RemittanceInformation21();
+    }
+
+    /**
+     * Create an instance of {@link RemittanceLocation6 }
+     * 
+     * @return
+     *     the new instance of {@link RemittanceLocation6 }
+     */
+    public RemittanceLocation6 createRemittanceLocation6() {
+        return new RemittanceLocation6();
+    }
+
+    /**
+     * Create an instance of {@link ResponseDetails1 }
+     * 
+     * @return
+     *     the new instance of {@link ResponseDetails1 }
+     */
+    public ResponseDetails1 createResponseDetails1() {
+        return new ResponseDetails1();
+    }
+
+    /**
+     * Create an instance of {@link ServiceLevel8Choice }
+     * 
+     * @return
+     *     the new instance of {@link ServiceLevel8Choice }
+     */
+    public ServiceLevel8Choice createServiceLevel8Choice() {
+        return new ServiceLevel8Choice();
+    }
+
+    /**
+     * Create an instance of {@link StructuredRegulatoryReporting3 }
+     * 
+     * @return
+     *     the new instance of {@link StructuredRegulatoryReporting3 }
+     */
+    public StructuredRegulatoryReporting3 createStructuredRegulatoryReporting3() {
+        return new StructuredRegulatoryReporting3();
+    }
+
+    /**
+     * Create an instance of {@link StructuredRemittanceInformation17 }
+     * 
+     * @return
+     *     the new instance of {@link StructuredRemittanceInformation17 }
+     */
+    public StructuredRemittanceInformation17 createStructuredRemittanceInformation17() {
+        return new StructuredRemittanceInformation17();
+    }
+
+    /**
+     * Create an instance of {@link SupplementaryData1 }
+     * 
+     * @return
+     *     the new instance of {@link SupplementaryData1 }
+     */
+    public SupplementaryData1 createSupplementaryData1() {
+        return new SupplementaryData1();
+    }
+
+    /**
+     * Create an instance of {@link SupplementaryDataEnvelope1 }
+     * 
+     * @return
+     *     the new instance of {@link SupplementaryDataEnvelope1 }
+     */
+    public SupplementaryDataEnvelope1 createSupplementaryDataEnvelope1() {
+        return new SupplementaryDataEnvelope1();
+    }
+
+    /**
+     * Create an instance of {@link TaxAmount3 }
+     * 
+     * @return
+     *     the new instance of {@link TaxAmount3 }
+     */
+    public TaxAmount3 createTaxAmount3() {
+        return new TaxAmount3();
+    }
+
+    /**
+     * Create an instance of {@link TaxAmountAndType1 }
+     * 
+     * @return
+     *     the new instance of {@link TaxAmountAndType1 }
+     */
+    public TaxAmountAndType1 createTaxAmountAndType1() {
+        return new TaxAmountAndType1();
+    }
+
+    /**
+     * Create an instance of {@link TaxAmountType1Choice }
+     * 
+     * @return
+     *     the new instance of {@link TaxAmountType1Choice }
+     */
+    public TaxAmountType1Choice createTaxAmountType1Choice() {
+        return new TaxAmountType1Choice();
+    }
+
+    /**
+     * Create an instance of {@link TaxAuthorisation1 }
+     * 
+     * @return
+     *     the new instance of {@link TaxAuthorisation1 }
+     */
+    public TaxAuthorisation1 createTaxAuthorisation1() {
+        return new TaxAuthorisation1();
+    }
+
+    /**
+     * Create an instance of {@link TaxData1 }
+     * 
+     * @return
+     *     the new instance of {@link TaxData1 }
+     */
+    public TaxData1 createTaxData1() {
+        return new TaxData1();
+    }
+
+    /**
+     * Create an instance of {@link TaxInformation10 }
+     * 
+     * @return
+     *     the new instance of {@link TaxInformation10 }
+     */
+    public TaxInformation10 createTaxInformation10() {
+        return new TaxInformation10();
+    }
+
+    /**
+     * Create an instance of {@link TaxParty1 }
+     * 
+     * @return
+     *     the new instance of {@link TaxParty1 }
+     */
+    public TaxParty1 createTaxParty1() {
+        return new TaxParty1();
+    }
+
+    /**
+     * Create an instance of {@link TaxParty2 }
+     * 
+     * @return
+     *     the new instance of {@link TaxParty2 }
+     */
+    public TaxParty2 createTaxParty2() {
+        return new TaxParty2();
+    }
+
+    /**
+     * Create an instance of {@link TaxPeriod3 }
+     * 
+     * @return
+     *     the new instance of {@link TaxPeriod3 }
+     */
+    public TaxPeriod3 createTaxPeriod3() {
+        return new TaxPeriod3();
+    }
+
+    /**
+     * Create an instance of {@link TaxRecord3 }
+     * 
+     * @return
+     *     the new instance of {@link TaxRecord3 }
+     */
+    public TaxRecord3 createTaxRecord3() {
+        return new TaxRecord3();
+    }
+
+    /**
+     * Create an instance of {@link TaxRecordDetails3 }
+     * 
+     * @return
+     *     the new instance of {@link TaxRecordDetails3 }
+     */
+    public TaxRecordDetails3 createTaxRecordDetails3() {
+        return new TaxRecordDetails3();
+    }
+
+    /**
+     * Create an instance of {@link TransferInstruction1 }
+     * 
+     * @return
+     *     the new instance of {@link TransferInstruction1 }
+     */
+    public TransferInstruction1 createTransferInstruction1() {
+        return new TransferInstruction1();
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Document }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Document }{@code >}
+     */
+    @XmlElementDecl(namespace = "urn:iso:std:iso:20022:tech:xsd:acmt.029.001.04", name = "Document")
+    public JAXBElement<Document> createDocument(Document value) {
+        return new JAXBElement<>(_Document_QNAME, Document.class, null, value);
+    }
+
+}

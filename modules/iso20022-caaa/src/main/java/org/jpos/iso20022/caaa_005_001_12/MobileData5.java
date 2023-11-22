@@ -1,0 +1,219 @@
+/*
+ * jPOS Project [http://jpos.org]
+ * Copyright (C) 2000-2023 jPOS Software SRL
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.jpos.iso20022.caaa_005_001_12;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for MobileData5 complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>{@code
+ * <complexType name="MobileData5">
+ *   <complexContent>
+ *     <restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       <sequence>
+ *         <element name="MobCtryCd" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}Min2Max3AlphaText" minOccurs="0"/>
+ *         <element name="MobNtwkCd" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}Min2Max3NumericText" minOccurs="0"/>
+ *         <element name="MobMskdMSISDN" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}Max35Text" minOccurs="0"/>
+ *         <element name="Glctn" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}Geolocation1" minOccurs="0"/>
+ *         <element name="SnstvMobData" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}SensitiveMobileData1" minOccurs="0"/>
+ *         <element name="PrtctdMobData" type="{urn:iso:std:iso:20022:tech:xsd:caaa.005.001.12}ContentInformationType35" minOccurs="0"/>
+ *       </sequence>
+ *     </restriction>
+ *   </complexContent>
+ * </complexType>
+ * }</pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "MobileData5", propOrder = {
+    "mobCtryCd",
+    "mobNtwkCd",
+    "mobMskdMSISDN",
+    "glctn",
+    "snstvMobData",
+    "prtctdMobData"
+})
+public class MobileData5 {
+
+    @XmlElement(name = "MobCtryCd")
+    protected String mobCtryCd;
+    @XmlElement(name = "MobNtwkCd")
+    protected String mobNtwkCd;
+    @XmlElement(name = "MobMskdMSISDN")
+    protected String mobMskdMSISDN;
+    @XmlElement(name = "Glctn")
+    protected Geolocation1 glctn;
+    @XmlElement(name = "SnstvMobData")
+    protected SensitiveMobileData1 snstvMobData;
+    @XmlElement(name = "PrtctdMobData")
+    protected ContentInformationType35 prtctdMobData;
+
+    /**
+     * Gets the value of the mobCtryCd property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getMobCtryCd() {
+        return mobCtryCd;
+    }
+
+    /**
+     * Sets the value of the mobCtryCd property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setMobCtryCd(String value) {
+        this.mobCtryCd = value;
+    }
+
+    /**
+     * Gets the value of the mobNtwkCd property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getMobNtwkCd() {
+        return mobNtwkCd;
+    }
+
+    /**
+     * Sets the value of the mobNtwkCd property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setMobNtwkCd(String value) {
+        this.mobNtwkCd = value;
+    }
+
+    /**
+     * Gets the value of the mobMskdMSISDN property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getMobMskdMSISDN() {
+        return mobMskdMSISDN;
+    }
+
+    /**
+     * Sets the value of the mobMskdMSISDN property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setMobMskdMSISDN(String value) {
+        this.mobMskdMSISDN = value;
+    }
+
+    /**
+     * Gets the value of the glctn property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Geolocation1 }
+     *     
+     */
+    public Geolocation1 getGlctn() {
+        return glctn;
+    }
+
+    /**
+     * Sets the value of the glctn property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Geolocation1 }
+     *     
+     */
+    public void setGlctn(Geolocation1 value) {
+        this.glctn = value;
+    }
+
+    /**
+     * Gets the value of the snstvMobData property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link SensitiveMobileData1 }
+     *     
+     */
+    public SensitiveMobileData1 getSnstvMobData() {
+        return snstvMobData;
+    }
+
+    /**
+     * Sets the value of the snstvMobData property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link SensitiveMobileData1 }
+     *     
+     */
+    public void setSnstvMobData(SensitiveMobileData1 value) {
+        this.snstvMobData = value;
+    }
+
+    /**
+     * Gets the value of the prtctdMobData property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ContentInformationType35 }
+     *     
+     */
+    public ContentInformationType35 getPrtctdMobData() {
+        return prtctdMobData;
+    }
+
+    /**
+     * Sets the value of the prtctdMobData property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ContentInformationType35 }
+     *     
+     */
+    public void setPrtctdMobData(ContentInformationType35 value) {
+        this.prtctdMobData = value;
+    }
+
+}

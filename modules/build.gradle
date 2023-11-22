@@ -1,0 +1,6 @@
+// The :modules project is just a container and shouldn't be built or have any artifacts
+// published, so we're disabling all tasks for it, and also flagging it as not producing a jar
+
+project.tasks.forEach{it.enabled = false}
+jar.enabled = false
+

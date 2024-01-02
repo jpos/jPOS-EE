@@ -374,6 +374,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 return put;
             case "GET":
                 return new HttpGet(url);
+            case "DELETE":
+                return new HttpDelete(url);
         }
         ctx.log ("Invalid request method");
         return null;

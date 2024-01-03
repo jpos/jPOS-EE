@@ -357,7 +357,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         return sb.toString();
     }
 
-    private HttpRequestBase getHttpRequest(Context ctx) {    
+    private HttpRequestBase getHttpRequest(Context ctx) {
     	Consumer<HttpEntityEnclosingRequestBase> setBody = (HttpEntityEnclosingRequestBase request) -> {
 	        String payload = ctx.getString(requestName);
 	        if (payload != null) {

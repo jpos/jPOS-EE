@@ -31,6 +31,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.function.Consumer;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -356,26 +357,32 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         return sb.toString();
     }
 
-    private HttpRequestBase getHttpRequest(Context ctx) {
+    private HttpRequestBase getHttpRequest(Context ctx) {    
+    	Consumer<HttpEntityEnclosingRequestBase> setBody = (HttpEntityEnclosingRequestBase request) -> {
+	        String payload = ctx.getString(requestName);
+	        if (payload != null) {
+	            request.setEntity(new StringEntity(payload, getContentType(ctx)));
+	        }
+    	};
         String url = getURL(ctx);
         String payload;
         switch (ctx.getString(methodName)) {
             case "POST":
                 HttpPost post = new HttpPost(url);
-                payload = ctx.getString(requestName);
-                if (payload != null)
-                    post.setEntity(new StringEntity(payload, getContentType(ctx)));
+                setBody.accept(post);
                 return post;
             case "PUT":
                 HttpPut put = new HttpPut(url);
-                payload = ctx.getString(requestName);
-                if (payload != null)
-                    put.setEntity(new StringEntity(payload, getContentType(ctx)));
+                setBody.accept(put);
                 return put;
             case "GET":
                 return new HttpGet(url);
             case "DELETE":
                 return new HttpDelete(url);
+            case "PATCH":
+                HttpPatch patch = new HttpPatch(url);
+                setBody.accept(patch);
+                return patch;
         }
         ctx.log ("Invalid request method");
         return null;

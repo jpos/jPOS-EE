@@ -151,16 +151,15 @@ ext {
             libraries.jetty_websocket_jsr356,
             libraries.jetty_security,
             libraries.jetty_continuation,
-            libraries.jetty_rewrite
+            libraries.jetty_rewrite,
+            libraries.jetty_servlets,
+            libraries.jetty_util
     ]
-
     /*
             libraries.jetty_plus,
             libraries.jetty_jndi,
             libraries.jetty_annotations,
             libraries.jetty_policy,
-
-            libraries.jetty_servlets,
             libraries.jetty_ajp
     */
 }

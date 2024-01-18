@@ -4,7 +4,7 @@ ext {
     logbackVersion = '1.2.8'
     hibernateVersion = '5.6.11.Final'
     geronimoVersion = '1.1.1'
-    jettyVersion = '9.4.50.v20221201'
+    jettyVersion = '9.4.53.v20231009'
     servletApiVersion = '4.0.1'
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.1.5.Final'
@@ -151,16 +151,15 @@ ext {
             libraries.jetty_websocket_jsr356,
             libraries.jetty_security,
             libraries.jetty_continuation,
-            libraries.jetty_rewrite
+            libraries.jetty_rewrite,
+            libraries.jetty_servlets,
+            libraries.jetty_util
     ]
-
     /*
             libraries.jetty_plus,
             libraries.jetty_jndi,
             libraries.jetty_annotations,
             libraries.jetty_policy,
-
-            libraries.jetty_servlets,
             libraries.jetty_ajp
     */
 }

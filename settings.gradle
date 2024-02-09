@@ -1,52 +1,60 @@
-include ':modules:core',
-        ':modules:cmf',
-        ':modules:freemarker-decorator',
-        ':modules:syslog',
-        ':modules:sysconfig',
-        ':modules:resultcode',
-        ':modules:txn',
-        ':modules:dbsupport',
-        ':modules:logback',
-        ':modules:db-mysql',
-        ':modules:db-mssql',
-        ':modules:db-postgresql',
-        ':modules:db-h2',
-        ':modules:minigl',
-        ':modules:eeuser',
-        ':modules:status',
-        ':modules:mail',
-        ':modules:jetty',
-        ':modules:saf',
-        ':modules:saf-monitor',
-        ':modules:things',
-        ':modules:server-simulator',
-        ':modules:client-simulator',
-        ':modules:quartz',
-        ':modules:visitor',
-        ':modules:rspace',
-        ':modules:rest-testbed',
-        ':modules:testbed',
-        ':modules:eerest',
-        ':modules:eeresttest',
-        ':modules:fsdmsgx',
-        ':modules:groovy',
-        ':modules:qi-core',
-        ':modules:qi-eeuser',
-        ':modules:qi-sysconfig',
-        ':modules:qi-minigl',
-        ':modules:binlog',
-        ':modules:binlog-quartz',
-        ':modules:cryptoservice',
-        ':modules:qrest',
-        ':modules:cryptoserver',
-        ':modules:iso-http-client',
-        ':modules:iso-http-server',
-        ':modules:iso-http-servlet',
-        ':modules:http-client',
-        ':modules:seqno',
-        ':modules:db-flyway',
-        ':modules:elasticsearch',
-        ':modules:bom'
+pluginManagement {
+    repositories {
+        mavenLocal();
+        gradlePluginPortal()
+    }
+}
+
+include  ':modules:core'
+
+// include  ':modules:cmf'
+// include  ':modules:freemarker-decorator'
+// include  ':modules:syslog'
+// include  ':modules:sysconfig'
+// include  ':modules:resultcode'
+// include  ':modules:txn'
+// include  ':modules:dbsupport'
+// include  ':modules:logback'
+// include  ':modules:db-mysql'
+// include  ':modules:db-mssql'
+// include  ':modules:db-postgresql'
+// include  ':modules:db-h2'
+// include  ':modules:minigl'
+// include  ':modules:eeuser'
+// include  ':modules:status'
+// include  ':modules:mail'
+// include  ':modules:jetty'
+// include  ':modules:saf'
+// include  ':modules:saf-monitor'
+// include  ':modules:things'
+// include  ':modules:server-simulator'
+// include  ':modules:client-simulator'
+// include  ':modules:quartz'
+// include  ':modules:visitor'
+// include  ':modules:rspace'
+// include  ':modules:rest-testbed'
+// include  ':modules:testbed'
+// include  ':modules:eerest'
+// include  ':modules:eeresttest'
+// include  ':modules:fsdmsgx'
+// include  ':modules:groovy'
+// include  ':modules:qi-core'
+// include  ':modules:qi-eeuser'
+// include  ':modules:qi-sysconfig'
+// include  ':modules:qi-minigl'
+// include  ':modules:binlog'
+// include  ':modules:binlog-quartz'
+// include  ':modules:cryptoservice'
+// include  ':modules:qrest'
+// include  ':modules:cryptoserver'
+// include  ':modules:iso-http-client'
+// include  ':modules:iso-http-server'
+// include  ':modules:iso-http-servlet'
+// include  ':modules:http-client'
+// include  ':modules:seqno'
+// include  ':modules:db-flyway'
+// include  ':modules:elasticsearch'
+// include  ':modules:bom'
 
 
 rootProject.name = 'jposee'

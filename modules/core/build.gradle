@@ -1,12 +1,9 @@
 description = 'jPOS-EE :: Core Module'
 
-configurations {
-    all*.exclude module: 'commons-logging'
-    all*.exclude module: 'junit'
-}
+apply plugin: 'org.jpos.jposapp'
 
 dependencies {
     api libraries.jpos
-    api libraries.joda_time
+    // api libraries.joda_time
 }
 

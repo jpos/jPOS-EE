@@ -7,6 +7,7 @@ pluginManagement {
 
 include  ':modules:core'
 include  ':modules:cmf'
+include  ':modules:saf'
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -37,7 +38,6 @@ dependencyResolutionManagement {
 // include  ':modules:status'
 // include  ':modules:mail'
 // include  ':modules:jetty'
-// include  ':modules:saf'
 // include  ':modules:saf-monitor'
 // include  ':modules:things'
 // include  ':modules:server-simulator'

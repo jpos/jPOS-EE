@@ -5,8 +5,6 @@ dependencies {
     api libraries.commons_lang
 
     testImplementation libraries.junit
+    testRuntimeOnly libraries.junit_runtime
 }
-
-
-apply from: "${rootProject.projectDir}/jpos-app.gradle"
 

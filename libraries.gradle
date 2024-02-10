@@ -30,7 +30,8 @@ ext {
 
     libraries = [
             //jUnit (Tests)
-            junit: 'org.junit.jupiter:junit-jupiter:5.5.2',
+            junit: 'org.junit.jupiter:junit-jupiter:5.9.2',
+            junit_runtime: 'org.junit.platform:junit-platform-launcher',
 
             //jPOS
             jpos: "org.jpos:jpos:${jposVersion}",

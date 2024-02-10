@@ -1,9 +1,6 @@
 description = 'jPOS-EE :: Core Module'
 
-apply plugin: 'org.jpos.jposapp'
-
 dependencies {
     api libraries.jpos
-    // api libraries.joda_time
 }
 

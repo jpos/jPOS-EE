@@ -6,8 +6,8 @@ pluginManagement {
 }
 
 include  ':modules:core'
+include  ':modules:cmf'
 
-// include  ':modules:cmf'
 // include  ':modules:freemarker-decorator'
 // include  ':modules:syslog'
 // include  ':modules:sysconfig'

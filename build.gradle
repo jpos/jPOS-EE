@@ -4,8 +4,8 @@ plugins {
 }
 
 
-if (file('libraries.gradle').exists())
-    apply from: 'libraries.gradle'
+// if (file('libraries.gradle').exists())
+//   apply from: 'libraries.gradle'
 
 allprojects {
     group = 'org.jpos.ee'

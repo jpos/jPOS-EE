@@ -1,6 +1,6 @@
 description = 'jPOS-EE :: Core Module'
 
 dependencies {
-    api libraries.jpos
+    api libs.jpos
 }
 

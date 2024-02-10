@@ -15,6 +15,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'org.jpos.jposapp'
     java {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -26,6 +27,17 @@ subprojects {
     }
     base {
         archivesName="jposee-${project.name}"
+    }
+    test {
+        useJUnitPlatform() 
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+        systemProperty 'user.language', 'en'
+        if (!(System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS") == "true" &&
+                (OperatingSystem.current().isMacOsX() || OperatingSystem.current().isWindows()))) {
+            maxParallelForks = Runtime.runtime.availableProcessors()
+        }
     }
 }
 
@@ -41,6 +53,7 @@ idea {
         languageLevel = '21'
     }
 }
+
 
 
 // apply from: 'libraries.gradle'

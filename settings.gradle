@@ -8,6 +8,19 @@ pluginManagement {
 include  ':modules:core'
 include  ':modules:cmf'
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            library ('jpos', 'org.jpos', 'jpos').version('3.0.0-SNAPSHOT')
+            library ('commonsLang3', 'org.apache.commons', 'commons-lang3').version('3.14.0')
+        }
+        testlibs {
+            library ('junit','org.junit.jupiter', 'junit-jupiter').version('5.10.2')
+            library ('junitRuntime', 'org.junit.platform', 'junit-platform-launcher').version('1.10.2')
+        }
+    }
+}
+
 // include  ':modules:freemarker-decorator'
 // include  ':modules:syslog'
 // include  ':modules:sysconfig'

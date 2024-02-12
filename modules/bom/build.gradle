@@ -4,16 +4,16 @@ description = 'jPOS-EE :: BOM'
 
 dependencies {
     constraints {
-        println "bom {"
+        // println "bom {"
         libs.properties.sort().each{ k,v->
             if (v instanceof org.gradle.api.internal.provider.TransformBackedProvider) { // there has to be a better way
                 if (!k.startsWith("junit")) {
-                    println "  ${k}:${v.get()}"
+                    // println "  ${k}:${v.get()}"
                     api v
                 }
             } 
         }
-        println "}"
+        // println "}"
     }
 }
 

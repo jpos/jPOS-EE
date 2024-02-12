@@ -2,10 +2,10 @@ description = 'jPOS-EE :: Logback Support Module'
 
 dependencies {
     api project(':modules:core')
-    api libraries.slf4j_api
-    api libraries.jcl_over_slf4j
-    api libraries.log4j_over_slf4j
-    api libraries.jul_to_slf4j
-    api libraries.logback
+    api libs.slf4j
+    api libs.jclOverSlf4j
+    api libs.log4jOverSlf4j
+    api libs.julToSlf4j
+    api libs.logback
 }
 

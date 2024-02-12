@@ -1,9 +1,12 @@
 description = 'jPOS-EE :: Quartz integration'
 
 dependencies {
-    api libraries.jpos
-    api (libraries.quartz) {
-        exclude group: 'c3p0', module: 'c3p0'
+    api libs.jpos
+    api (libs.quartz) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude group: 'jakarta.xml.bind', module: 'jakarta.xml.bind-api'
     }
+    api libs.slf4j
+    // api libs.jakartaBind
 }
 

@@ -10,6 +10,7 @@ include  ':modules:cmf'
 include  ':modules:saf'
 include  ':modules:quartz'
 include  ':modules:bom'
+include  ':modules:logback'
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -27,7 +28,6 @@ dependencyResolutionManagement {
 // include  ':modules:resultcode'
 // include  ':modules:txn'
 // include  ':modules:dbsupport'
-// include  ':modules:logback'
 // include  ':modules:db-mysql'
 // include  ':modules:db-mssql'
 // include  ':modules:db-postgresql'

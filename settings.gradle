@@ -8,16 +8,15 @@ pluginManagement {
 include  ':modules:core'
 include  ':modules:cmf'
 include  ':modules:saf'
+include  ':modules:quartz'
+include  ':modules:bom'
 
 dependencyResolutionManagement {
     versionCatalogs {
-        libs {
-            library ('jpos', 'org.jpos', 'jpos').version('3.0.0-SNAPSHOT')
-            library ('commonsLang3', 'org.apache.commons', 'commons-lang3').version('3.14.0')
-        }
         testlibs {
-            library ('junit','org.junit.jupiter', 'junit-jupiter').version('5.10.2')
-            library ('junitRuntime', 'org.junit.platform', 'junit-platform-launcher').version('1.10.2')
+            testlibs {
+               from(files("gradle/testlibs.versions.toml"))
+            }
         }
     }
 }
@@ -42,7 +41,6 @@ dependencyResolutionManagement {
 // include  ':modules:things'
 // include  ':modules:server-simulator'
 // include  ':modules:client-simulator'
-// include  ':modules:quartz'
 // include  ':modules:visitor'
 // include  ':modules:rspace'
 // include  ':modules:rest-testbed'
@@ -67,7 +65,6 @@ dependencyResolutionManagement {
 // include  ':modules:seqno'
 // include  ':modules:db-flyway'
 // include  ':modules:elasticsearch'
-// include  ':modules:bom'
 
 
 rootProject.name = 'jposee'

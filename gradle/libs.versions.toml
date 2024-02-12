@@ -1,0 +1,18 @@
+[versions]
+jpos = "3.0.0-SNAPSHOT"
+commonsLang3 = "3.14.0"
+quartz = "2.5.0-rc1"
+slf4j = "2.0.12"
+jakartaBind = "4.0.1"
+junit = "5.10.2"
+junitRuntime = "1.10.2"
+
+[libraries]
+jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
+commonsLang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
+quartz = { module = "org.quartz-scheduler:quartz", version.ref = "quartz" }
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+jakartaBind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaBind" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junitRuntime = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitRuntime" }
+

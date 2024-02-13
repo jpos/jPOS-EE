@@ -1,17 +1,18 @@
 description = 'jPOS-EE :: QRest'
 
 dependencies {
-    api libraries.jpos
-    api libraries.jacksonDatabind
-    api libraries.nettyHandler
-    api libraries.nettyCodecHttp
-    api libraries.freemarker
-    api jsonSchemaValidatorLibs
-    testImplementation libraries.junit
-    testImplementation libraries.restAssured
+    api libs.jpos
+    api libs.jacksonDatabind
+    api libs.nettyHandler
+    api libs.nettyCodecHttp
+    api libs.freemarker
+    api libs.jsonSchemaValidator
+    api libs.guava
+    api libs.jakartaActivation
+ 
+    testImplementation testlibs.junit
+    testImplementation testlibs.restAssured
 }
-
-apply from: "${rootProject.projectDir}/jpos-app.gradle"
 
 test {
     dependsOn('installApp')

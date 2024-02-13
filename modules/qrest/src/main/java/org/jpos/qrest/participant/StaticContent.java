@@ -28,13 +28,13 @@ import java.util.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.*;
+import jakarta.activation.MimetypesFileTypeMap;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionParticipant;
 
-import javax.activation.MimetypesFileTypeMap;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;

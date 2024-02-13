@@ -39,8 +39,8 @@ subprojects {
     }
     repositories {
         mavenCentral()
-        mavenLocal()
         maven { url = uri('https://jpos.org/maven') }
+        mavenLocal()
     }
     base {
         archivesName="jposee-${project.name}"

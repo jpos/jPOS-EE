@@ -11,6 +11,7 @@ include  ':modules:saf'
 include  ':modules:quartz'
 include  ':modules:bom'
 include  ':modules:logback'
+include  ':modules:qrest'
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -56,7 +57,6 @@ dependencyResolutionManagement {
 // include  ':modules:binlog'
 // include  ':modules:binlog-quartz'
 // include  ':modules:cryptoservice'
-// include  ':modules:qrest'
 // include  ':modules:cryptoserver'
 // include  ':modules:iso-http-client'
 // include  ':modules:iso-http-server'

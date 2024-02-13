@@ -1,9 +1,10 @@
 [versions]
 junit = "5.10.2"
 junitRuntime = "1.10.2"
+restAssured = '5.4.0'
 
 [libraries]
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junitRuntime = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitRuntime" }
-
+restAssured = { module = 'io.rest-assured:rest-assured', version.ref='restAssured' } 
 

@@ -7,6 +7,12 @@ jakartaBind = "4.0.1"
 junit = "5.10.2"
 junitRuntime = "1.10.2"
 logback = '1.4.14'
+jacksonDatabind = '2.16.1'
+netty = '4.1.106.Final'
+freemarker = '2.3.32'
+jsonSchemaValidator = '2.2.14'
+guava = '33.0.0-jre'
+jakartaActivation = '2.0.1'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -14,11 +20,17 @@ commonsLang3 = { module = "org.apache.commons:commons-lang3", version.ref = "com
 quartz = { module = "org.quartz-scheduler:quartz", version.ref = "quartz" }
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junitRuntime = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitRuntime" }
-
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 jakartaBind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaBind" }
 jclOverSlf4j = { module='org.slf4j:jcl-over-slf4j', version.ref = 'slf4j' }
 log4jOverSlf4j = { module='org.slf4j:log4j-over-slf4j', version.ref = 'slf4j' }
 julToSlf4j = { module='org.slf4j:jul-to-slf4j', version.ref = 'slf4j' }
 logback = { module='ch.qos.logback:logback-classic', version.ref = 'logback' }
+jacksonDatabind = { module='com.fasterxml.jackson.core:jackson-databind', version.ref = 'jacksonDatabind' }
+nettyHandler = { module = 'io.netty:netty-handler', version.ref = 'netty' }
+nettyCodecHttp = { module = 'io.netty:netty-codec-http', version.ref = 'netty' }
+freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' }
+jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
+guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
+jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
 

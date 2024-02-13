@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import io.netty.handler.codec.http.*;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
-import org.jpos.core.ConfigurationException;
 import org.jpos.q2.Q2;
 import org.jpos.q2.iso.QMUX;
 import org.jpos.qrest.Response;
@@ -35,7 +34,6 @@ import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
 import org.jpos.transaction.TransactionParticipant;
-import org.jpos.util.Caller;
 import org.jpos.util.NameRegistrar;
 
 import static org.jpos.qrest.Constants.REQUEST;
@@ -127,7 +125,6 @@ public class Q2Info implements TransactionParticipant, Configurable {
         m.put ("rxPending", mux.getRXPending());
         m.put ("rxUnhandled", mux.getRXUnhandled());
         m.put ("rxForwarded", mux.getRXForwarded());
-        m.put ("metrics", mux.getMetrics().metrics());
         long last = mux.getLastTxnTimestampInMillis();
         if (last > 0) {
             m.put("last", new Date(last));
@@ -179,8 +176,6 @@ public class Q2Info implements TransactionParticipant, Configurable {
         m.put ("TPSPeak", txnmgr.getTPSPeak());
         m.put ("TPSPeakWhen", txnmgr.getTPSPeakWhen());
         m.put ("TPSElapsed", txnmgr.getTPSElapsed());
-        if (txnmgr.getMetrics() != null)
-            m.put ("metrics", txnmgr.getMetrics().metrics());
         return m;
     }
 

@@ -17,6 +17,7 @@ jetty = '12.0.6'
 jetty11 = '11.0.20'
 jetty9 = '9.4.53.v20231009'
 webSocketApi = '1.1'
+httpAsyncClient = '4.1.5'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -55,3 +56,4 @@ webSocketApi = { module = 'javax.websocket:javax.websocket-api', version.ref = '
 #jettyWebsocketJsr356 = { module = 'org.eclipse.jetty.websocket:javax-websocket-server-impl', version.ref = 'jetty9'  }
 #jettyServlets = { module = 'org.eclipse.jetty:jetty-servlets', version.ref = 'jetty11'  }
 #jettyContinuation = { module = 'org.eclipse.jetty:jetty-continuation', version.ref = 'jetty9'  }
+httpAsyncClient = { module = 'org.apache.httpcomponents:httpasyncclient', version.ref = 'httpAsyncClient' }

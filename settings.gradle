@@ -13,6 +13,7 @@ include  ':modules:bom'
 include  ':modules:logback'
 include  ':modules:qrest'
 include  ':modules:jetty'
+include  ':modules:http-client'
 
 dependencyResolutionManagement {
     versionCatalogs {

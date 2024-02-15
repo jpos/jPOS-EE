@@ -1,12 +1,10 @@
 description = 'jPOS-EE :: QRest Client'
 
 dependencies {
-    api libraries.jpos
-    api libraries.httpAsyncClient
+    api libs.jpos
+    api libs.httpAsyncClient
     testImplementation project(':modules:qrest')
 }
-
-apply from: "${rootProject.projectDir}/jpos-app.gradle"
 
 test {
     dependsOn('installApp')

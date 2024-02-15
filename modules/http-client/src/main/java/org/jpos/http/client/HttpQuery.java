@@ -18,28 +18,6 @@
 
 package org.jpos.http.client;
 
-import static org.jpos.util.Logger.log;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.function.Consumer;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import javax.security.cert.CertificateExpiredException;
-
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -51,29 +29,44 @@ import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-
+import org.jpos.core.Configurable;
+import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.transaction.AbortParticipant;
+import org.jpos.transaction.Context;
 import org.jpos.util.Destroyable;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
-import org.jpos.core.Configurable;
-import org.jpos.core.Configuration;
-import org.jpos.transaction.Context;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import static org.jpos.util.Logger.log;
 
 
 @SuppressWarnings("unused")
@@ -117,6 +110,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         super();
     }
 
+    @Override
     public int prepare (long id, Serializable o) {
         Context ctx = (Context) o;
 
@@ -130,7 +124,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
         //config example <property name="httpVersionName" value="1.1"/>
         HttpVersion definedVersion = null;
         String httpVersion = getVersion(ctx);
-        if(httpVersion != null && httpVersion.length() > 0) {
+        if(httpVersion != null && !httpVersion.isEmpty()) {
             String[] majmin = httpVersion.split("\\.");                 // split into major and minor version numbers
             definedVersion = new HttpVersion(Integer.parseInt(majmin[0]),
                                              majmin.length > 1 ? Integer.parseInt(majmin[1]) : 0);            // default to minor 0 if it can't be split
@@ -187,7 +181,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 }
 
                 ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
-                ctx.resume();
+                ctx.resume(PREPARED);
             }
 
             @Override
@@ -198,18 +192,19 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 //      java.net.ConnectException: Timeout connecting to [mydomain.com/xxx.xxx.xxx.xxx:ppp]
                 //      java.net.SocketTimeoutException: ... (when no HTTP response)
                 ctx.log(ex);
-                ctx.resume();
+                ctx.resume(ABORTED);
             }
 
             @Override
             public void cancelled() {
-                ctx.resume();
+                ctx.resume(ABORTED);
             }
         });
 
         return PREPARED | PAUSE | NO_JOIN | READONLY;
     }
 
+    @Override
     public int prepareForAbort (long id, Serializable o) {
         if (cfg.getBoolean ("on-abort", false))
             return prepare (id, o);
@@ -324,10 +319,11 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
                 }
 
                 public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    // ignored
                 }
 
                 public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    log(new LogEvent(certs.toString() + " " + authType));
+                    log(new LogEvent(Arrays.toString(certs) + " " + authType));
                 }
             }
         };
@@ -350,7 +346,7 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             ctx.getString (urlName, url)
         );
         String params = ctx.getString (paramsName, "");
-        if (params.length() > 0) {
+        if (!params.isEmpty()) {
             sb.append ('?');
             sb.append (params);
         }

@@ -18,12 +18,12 @@
 
 package org.jpos.q2.jetty;
 
-import java.io.FileInputStream;
 import java.util.StringTokenizer;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.resource.PathResourceFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
@@ -32,22 +32,20 @@ import org.jpos.security.SensitiveString;
 
 public class Jetty extends QBeanSupport implements JettyMBean {
     private String config;
-    private Server server;
+    private Server jettyServer;
     private SensitiveString keystorePassword;
 
     @Override
     public void initService() throws Exception {
-        server = new Server();
+        jettyServer = new Server();
         StringTokenizer st = new StringTokenizer(config, ", ");
         while (st.hasMoreElements()) {
-            FileInputStream fis = new FileInputStream(st.nextToken());
-            @SuppressWarnings("deprecation")
-            XmlConfiguration xml = new XmlConfiguration(fis);
-            xml.configure(server);
+            XmlConfiguration xml = new XmlConfiguration(new PathResourceFactory().newResource(st.nextToken()));
+            xml.configure(jettyServer);
             if (keystorePassword != null && 
-                    keystorePassword.get() != null && 
-                    keystorePassword.get().trim().length() > 0) {                    
-                for (Connector connector : server.getConnectors()) {
+                    keystorePassword.get() != null &&
+                    !keystorePassword.get().trim().isEmpty()) {
+                for (Connector connector : jettyServer.getConnectors()) {
                     SslConnectionFactory connFactory = connector.getConnectionFactory(SslConnectionFactory.class);
                     if (connFactory != null) {
                         connFactory.getSslContextFactory().setKeyStorePassword(keystorePassword.get());
@@ -70,12 +68,12 @@ public class Jetty extends QBeanSupport implements JettyMBean {
 
     @Override
     public void startService() throws Exception {
-        server.start();
+        jettyServer.start();
     }
 
     @Override
     public void stopService() throws Exception {
-        server.stop();
+        jettyServer.stop();
     }
 
     @Override

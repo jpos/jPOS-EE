@@ -13,6 +13,10 @@ freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'
 jakartaActivation = '2.0.1'
+jetty = '12.0.6'
+jetty11 = '11.0.20'
+jetty9 = '9.4.53.v20231009'
+webSocketApi = '1.1'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -33,4 +37,21 @@ freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' 
 jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
-
+jettyServer = { module = 'org.eclipse.jetty:jetty-server', version.ref = 'jetty' }
+jettyXml = { module = 'org.eclipse.jetty:jetty-xml', version.ref = 'jetty' }
+jettyDeploy = { module = 'org.eclipse.jetty:jetty-deploy', version.ref = 'jetty' }
+jettyJmx = { module = 'org.eclipse.jetty:jetty-jmx', version.ref = 'jetty' }
+jettySecurity = { module = 'org.eclipse.jetty:jetty-security', version.ref = 'jetty' }
+jettyRewrite = { module = 'org.eclipse.jetty:jetty-rewrite', version.ref = 'jetty' }
+jettyUtil = { module = 'org.eclipse.jetty:jetty-util', version.ref = 'jetty' }
+jettyPlus = { module = 'org.eclipse.jetty:jetty-plus', version.ref = 'jetty' }
+jettyJndi = { module = 'org.eclipse.jetty:jetty-jndi', version.ref = 'jetty' }
+jettyPolicy = { module = 'org.eclipse.jetty:jetty-policy', version.ref = 'jetty' }
+jettyAjp = { module = 'org.eclipse.jetty:jetty-ajp', version.ref = 'jetty' }
+webSocketApi = { module = 'javax.websocket:javax.websocket-api', version.ref = 'webSocketApi' }
+#jettyWebapp = { module = 'org.eclipse.jetty:jetty-webapp', version.ref = 'jetty11'  }
+#jettyAnnotations = { module = 'org.eclipse.jetty:jetty-annotations', version.ref = 'jetty11'  }
+#jettyWebsocket = { module = 'org.eclipse.jetty.websocket:websocket-server', version.ref = 'jetty9'  }
+#jettyWebsocketJsr356 = { module = 'org.eclipse.jetty.websocket:javax-websocket-server-impl', version.ref = 'jetty9'  }
+#jettyServlets = { module = 'org.eclipse.jetty:jetty-servlets', version.ref = 'jetty11'  }
+#jettyContinuation = { module = 'org.eclipse.jetty:jetty-continuation', version.ref = 'jetty9'  }

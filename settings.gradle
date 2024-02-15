@@ -12,6 +12,7 @@ include  ':modules:quartz'
 include  ':modules:bom'
 include  ':modules:logback'
 include  ':modules:qrest'
+include  ':modules:jetty'
 
 dependencyResolutionManagement {
     versionCatalogs {

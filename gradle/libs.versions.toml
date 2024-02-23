@@ -13,6 +13,10 @@ freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'
 jakartaActivation = '2.0.1'
+hibernate = '6.4.4.Final'
+dom4j = '2.1.4'
+jdbcPostgresql = '42.7.1'
+agroal = '2.3'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -33,4 +37,10 @@ freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' 
 jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
+hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
+hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernate' }
+hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
+dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
+jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }
+agroal = { module = 'io.agroal:agroal-pool', version.ref='agroal' }
 

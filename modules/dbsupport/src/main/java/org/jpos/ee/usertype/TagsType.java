@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2021 jPOS Software SRL
+ * Copyright (C) 2000-2023 jPOS Software SRL
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,75 +18,49 @@
 
 package org.jpos.ee.usertype;
 
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
+import org.jpos.util.Tags;
 
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Objects;
 
-import org.jpos.util.Tags;
-
-public class TagsType implements UserType {
-    private static int[] TYPES = { Types.VARCHAR };
+public class TagsType implements UserType<Tags> {
 
     @Override
-    public int[] sqlTypes() {
-        return TYPES;
+    public int getSqlType() {
+        return Types.VARCHAR;
     }
 
     @Override
-    public Class returnedClass() {
+    public Class<Tags> returnedClass() {
         return Tags.class;
     }
 
     @Override
-    public boolean equals(Object a, Object b) throws HibernateException {
-        return (a == b) || ((a != null) && (b != null) && (a.equals(b)));
+    public boolean equals(Tags x, Tags y) {
+        return Objects.equals(x, y);
     }
 
     @Override
-    public int hashCode(Object o) throws HibernateException {
-        return o.hashCode();
+    public int hashCode(Tags x) {
+        return x.hashCode();
     }
 
-    /**
-     * Retrieve an instance of the mapped class from a JDBC resultset. Implementors
-     * should handle possibility of null values.
-     *
-     * @param rs      a JDBC result set
-     * @param names   the column names
-     * @param session
-     * @param owner   the containing entity  @return Object
-     * @throws HibernateException
-     * @throws SQLException
-     */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
-        String tags = rs.getString(names[0]);
+    public Tags nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws SQLException {
+        String tags = rs.getString(position);
         if (rs.wasNull())
             return null;
         return new Tags(tags);
     }
 
-    /**
-     * Write an instance of the mapped class to a prepared statement. Implementors
-     * should handle possibility of null values. A multi-column type should be written
-     * to parameters starting from <tt>index</tt>.
-     *
-     * @param st      a JDBC prepared statement
-     * @param value   the object to write
-     * @param index   statement parameter index
-     * @param session
-     * @throws HibernateException
-     * @throws SQLException
-     */
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+    public void nullSafeSet(PreparedStatement st, Tags value, int index, SharedSessionContractImplementor session) throws SQLException {
         if (value==null) {
             st.setNull(index, Types.VARCHAR);
         } else {
@@ -95,11 +69,8 @@ public class TagsType implements UserType {
     }
 
     @Override
-    public Object deepCopy(Object value) throws HibernateException {
-        if (value == null)
-            return null;
+    public Tags deepCopy(Tags value) {
         return new Tags(value.toString());
-
     }
 
     @Override
@@ -108,20 +79,12 @@ public class TagsType implements UserType {
     }
 
     @Override
-    public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable) value;
+    public Serializable disassemble(Tags value) {
+        return value.toString();
     }
 
     @Override
-    public Object assemble(Serializable cached, Object owner) throws HibernateException {
-        return cached;
-    }
-
-    @Override
-    public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        if (original != null)
-            return new Tags(original.toString());
+    public Tags assemble(Serializable cached, Object owner) {
         return null;
     }
 }
-

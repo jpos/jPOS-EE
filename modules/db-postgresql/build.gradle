@@ -2,5 +2,5 @@ description = 'jPOS-EE :: PostgreSQL support'
 
 dependencies {
     api project(':modules:dbsupport')
-    api libraries.jdbcPostgresql
+    api libs.jdbcPostgresql
 }

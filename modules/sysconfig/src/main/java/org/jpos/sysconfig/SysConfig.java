@@ -16,20 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.sysconfig;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import javax.persistence.*;
+import org.hibernate.annotations.*;
+import org.jpos.ee.usertype.TagsType;
+import org.jpos.ee.Cloneable;
+import org.jpos.util.Tags;
 
 @Entity
 @Table(name = "sysconfig")
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONE)
+@Cache(usage = CacheConcurrencyStrategy.NONE)
+@Comment("General purpose System Configuration")
 @SuppressWarnings("unused")
 public class SysConfig extends Cloneable implements Serializable {
     @Id
@@ -38,25 +43,15 @@ public class SysConfig extends Cloneable implements Serializable {
 
     @Column(length=8000)
     private String value;
-
-    @Column(length=64)
-    private String readPerm;
-
-    @Column(length=64)
-    private String writePerm;
-
-    public SysConfig(String id, String value, String readPerm, String writePerm) {
-        this.id = id;
-        this.value = value;
-        this.readPerm = readPerm;
-        this.writePerm = writePerm;
-    }
     public SysConfig() {
         super();
     }
-
     public SysConfig(String id) {
         this.id = id;
+    }
+    public SysConfig(String id, String value) {
+        this.id = id;
+        this.value = value;
     }
 
     public String getId() {
@@ -74,39 +69,23 @@ public class SysConfig extends Cloneable implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
-
-    public String getReadPerm() {
-        return this.readPerm;
-    }
-
-    public void setReadPerm(String readPerm) {
-        this.readPerm = readPerm;
-    }
-
-    public String getWritePerm() {
-        return this.writePerm;
-    }
-
-    public void setWritePerm(String writePerm) {
-        this.writePerm = writePerm;
-    }
-
+    @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("id", getId())
-            .toString();
+        return "SysConfig{" +
+          "id='" + id + '\'' +
+          '}';
     }
 
-    public boolean equals(Object other) {
-        if ( !(other instanceof SysConfig) ) return false;
-        SysConfig castOther = (SysConfig) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SysConfig sysConfig = (SysConfig) o;
+        return Objects.equals(id, sysConfig.id);
     }
+
+    @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
+        return Objects.hash(id);
     }
 }

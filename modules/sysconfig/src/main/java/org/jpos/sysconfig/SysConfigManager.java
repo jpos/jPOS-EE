@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.sysconfig;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -26,10 +26,10 @@ import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
-import org.hibernate.type.IntegerType;
 
-import javax.persistence.criteria.*;
-
+import jakarta.persistence.criteria.*;
+import org.jpos.ee.DB;
+import org.jpos.ee.DBManager;
 @SuppressWarnings("unused")
 public class SysConfigManager extends DBManager<SysConfig> {
     private String prefix = "";
@@ -94,7 +94,7 @@ public class SysConfigManager extends DBManager<SysConfig> {
                 name = prefix + name;
             SysConfig cfg = db.session().get (SysConfig.class, name);
             if (cfg != null) {
-                db.session().delete(cfg);
+                db.session().remove(cfg);
                 return true;
             }
         } catch (HibernateException e) {
@@ -108,16 +108,12 @@ public class SysConfigManager extends DBManager<SysConfig> {
         try {
             if (prefix != null)
                 queryString = prefix + queryString;
-            Query query = db.session().createQuery (
-                "from sysconfig in class org.jpos.ee.SysConfig where id like :queryString order by id"
+            Query<SysConfig> query = db.session().createQuery (
+                "from org.jpos.sysconfig.SysConfig sysconfig in class org.jpos.sysconfig.SysConfig where sysconfig.id like :queryString order by sysconfig.id", SysConfig.class
             );
             query.setParameter ("queryString", queryString);
-            List l = query.list();
-            values = new SysConfig[l.size()];
-            Iterator iter = l.iterator();
-            for (int i=0; iter.hasNext(); i++) {
-                values[i] = (SysConfig) iter.next();
-            }
+            List<SysConfig> l = query.list();
+            values = l.toArray(new SysConfig[0]);
         } catch (HibernateException e) {
             db.getLog().warn (e);
             values = new SysConfig[0];
@@ -145,23 +141,20 @@ public class SysConfigManager extends DBManager<SysConfig> {
 
     @SuppressWarnings("unchecked")
     public Iterator<SysConfig> iterator() {
-        Query query;
+        Query<SysConfig> query;
         if (prefix != null) {
             query = db.session().createQuery (
-                "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
+                "from sysconfig in class org.jpos.sysconfig.SysConfig where id like :name order by id", SysConfig.class
             );
             query.setParameter ("name", prefix + "%");
         } else {
             query = db.session().createQuery (
-                "from sysconfig in class org.jpos.ee.SysConfig order by id"
+                "from sysconfig in class org.jpos.sysconfig.SysConfig order by id", SysConfig.class
             );
         }
-        return (Iterator<SysConfig>) query.list().iterator();        
+        return query.list().iterator();
     }
     public void put (String name, String value) {
-        put (name, value, null, null);
-    }
-    public void put (String name, String value, String readPerm, String writePerm) {
         SysConfig cfg;
         if (prefix != null)
             name = prefix + name;
@@ -180,11 +173,9 @@ public class SysConfigManager extends DBManager<SysConfig> {
                 cfg.setId (name);
                 saveIt = true;
             }
-            cfg.setReadPerm (readPerm);
-            cfg.setWritePerm (writePerm);
             cfg.setValue (value);
             if (saveIt)
-                db.session().save (cfg);
+                db.session().persist (cfg);
             if (autoCommit)
                 tx.commit();
         } catch (HibernateException e) {
@@ -236,9 +227,11 @@ public class SysConfigManager extends DBManager<SysConfig> {
         String queryString = "select max(length(id)) as maxidlen from sysconfig";
         if (prefix != null)
             queryString += " where id like :query";
-        NativeQuery query =  db.session().createNativeQuery(queryString);
+        NativeQuery<Integer> query =  db.session().createNativeQuery(queryString, Integer.class);
         if (prefix != null)
             query.setParameter ("query", prefix + "%");
-        return (int) query.addScalar("maxidlen",  IntegerType.INSTANCE).getSingleResult();
+
+        Integer result = query.getSingleResult();
+        return result != null ? result : 0;
     }
 }

@@ -12,6 +12,10 @@ include  ':modules:quartz'
 include  ':modules:bom'
 include  ':modules:logback'
 include  ':modules:qrest'
+include  ':modules:dbsupport'
+include  ':modules:db-postgresql'
+include  ':modules:sysconfig'
+// include  ':modules:dbtest'
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -25,10 +29,8 @@ dependencyResolutionManagement {
 
 // include  ':modules:freemarker-decorator'
 // include  ':modules:syslog'
-// include  ':modules:sysconfig'
 // include  ':modules:resultcode'
 // include  ':modules:txn'
-// include  ':modules:dbsupport'
 // include  ':modules:db-mysql'
 // include  ':modules:db-mssql'
 // include  ':modules:db-postgresql'

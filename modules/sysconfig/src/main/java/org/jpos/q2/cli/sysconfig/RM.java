@@ -19,7 +19,7 @@
 package org.jpos.q2.cli.sysconfig;
 
 import org.jpos.ee.DB;
-import org.jpos.ee.SysConfigManager;
+import org.jpos.sysconfig.SysConfigManager;
 import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 import org.jpos.q2.cli.SYSCONFIG;

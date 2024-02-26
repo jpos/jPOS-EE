@@ -1,6 +1,8 @@
-package org.jpos.ee;
+package org.jpos.sysconfig;
 
 import org.jpos.core.EnvironmentProvider;
+import org.jpos.ee.DBAction;
+
 import java.util.Objects;
 
 public class SysConfigEnvironmentProvider implements EnvironmentProvider {

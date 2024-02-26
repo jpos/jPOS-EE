@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.sysconfig;
 
 import org.jdom2.Element;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.SimpleConfiguration;
+import org.jpos.ee.DB;
 import org.jpos.q2.ConfigurationFactory;
 
 import java.io.File;

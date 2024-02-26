@@ -178,7 +178,7 @@ public class DB implements Closeable {
         sessionFactories.clear();
     }
 
-    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException, InterruptedException {
+    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, InterruptedException, DocumentException {
         Metadata md = getMetadata();
         try {
             newSessionSem.acquireUninterruptibly();
@@ -198,19 +198,14 @@ public class DB implements Closeable {
         }
     }
 
-    private void configureMappings(Configuration cfg) throws ConfigurationException, IOException {
-        try {
-            List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
-            for (String moduleConfig : moduleConfigs) {
-                addMappings(cfg, moduleConfig);
-            }
-        } catch (DocumentException e) {
-            throw new ConfigurationException("Could not parse mappings document", e);
+    private void configureMappings(Configuration cfg) throws ConfigurationException, IOException, DocumentException {
+        List<String> moduleConfigs = ModuleUtils.getModuleEntries("META-INF/org/jpos/ee/modules/");
+        for (String moduleConfig : moduleConfigs) {
+            addMappings(cfg, moduleConfig);
         }
     }
 
-    private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, DocumentException
-    {
+    private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, DocumentException {
         Element module = readMappingElements(moduleConfig);
         if (module != null)
         {
@@ -488,45 +483,39 @@ public class DB implements Closeable {
     }
 
     @SuppressWarnings({"unchecked"})
-    public void printStats()
-    {
-        if (getLog() != null)
-        {
+    public void printStats() {
+        if (getLog() != null) {
             LogEvent info = getLog().createInfo();
 
-            if (session != null)
-            {
+            if (session != null) {
                 info.addMessage("====  STATISTICS ====");
                 SessionStatistics statistics = session().getStatistics();
+
                 info.addMessage("====   ENTITIES  ====");
-                Set<EntityKey> entityKeys = statistics.getEntityKeys();
-                for (EntityKey ek : entityKeys)
-                {
-                    info.addMessage(String.format("[%s] %s", ek.getIdentifier(), ek.getEntityName()));
+                for (Object o : statistics.getEntityKeys()) {
+                    if (o instanceof EntityKey ek)
+                        info.addMessage(String.format("[%s] %s", ek.getIdentifier(), ek.getEntityName()));
                 }
                 info.addMessage("==== COLLECTIONS ====");
-                Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
-                for (CollectionKey ck : collectionKeys)
-                {
-                    info.addMessage(String.format("[%s] %s", ck.getKey(), ck.getRole()));
+                for (Object o : statistics.getCollectionKeys()) {
+                    if (o instanceof CollectionKey ck)
+                        info.addMessage(String.format("[%s] %s", ck.getKey(), ck.getRole()));
                 }
                 info.addMessage("=====================");
             }
-            else
-            {
+            else {
                 info.addMessage("Session is not open");
             }
             Logger.log(info);
         }
     }
-
-
+    
     @Override
     public String toString() {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
     }
 
-    private Metadata getMetadata() throws IOException, ConfigurationException, DocumentException, InterruptedException {
+    private Metadata getMetadata() throws IOException, ConfigurationException, InterruptedException, DocumentException {
         Semaphore mdSem = mdSems.get(configModifier);
         if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
             throw new RuntimeException ("Unable to acquire lock");

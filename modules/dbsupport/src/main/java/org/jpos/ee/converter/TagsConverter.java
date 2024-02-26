@@ -19,8 +19,8 @@
 package org.jpos.ee.converter;
 
 import org.jpos.util.Tags;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
 public class TagsConverter implements AttributeConverter<Tags,String> {

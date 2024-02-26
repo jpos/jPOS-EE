@@ -18,16 +18,15 @@
 
 package org.jpos.ee;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
+// import org.hibernate.query.criteria.internal.OrderImpl;
 
-import javax.persistence.NoResultException;
-import javax.persistence.criteria.*;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.*;
 import org.hibernate.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class DBManager<T> {
 
@@ -91,10 +90,9 @@ public class DBManager<T> {
         List<Order> orderList = new ArrayList<>();
         //ORDERS
         if (orders != null) {
-            for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
-                OrderImpl order = new OrderImpl(root.get(entry.getKey()), entry.getValue());
-                orderList.add(order);
-            }
+            orders.forEach((key, value) ->
+              orderList.add(value ? criteriaBuilder.asc(root.get(key)) : criteriaBuilder.desc(root.get(key)))
+            );
         }
         Predicate combinedPredicate = null;
         if (filters != null) {

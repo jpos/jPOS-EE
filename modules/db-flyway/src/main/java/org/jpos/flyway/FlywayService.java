@@ -55,8 +55,8 @@ public class FlywayService extends QBeanSupport implements XmlConfigurable {
                         getLog().info("FLYWAY: repair done");
                         break;
                     case "migrate":
-                        int count = flyway.migrate();
-                        getLog().info ("FLYWAY: applied " + count + " migration(s)");
+                        var result = flyway.migrate();
+                        getLog().info ("FLYWAY: applied " + result.migrationsExecuted + " migration(s)");
                         break;
                     case "validate":
                         flyway.validate();

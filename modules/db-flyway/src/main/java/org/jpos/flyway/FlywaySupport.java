@@ -37,8 +37,10 @@ public class FlywaySupport implements LogCreator, Log {
     protected Flyway getFlyway(String configModifier, String args[]) {
         LogFactory.setFallbackLogCreator(this);
         Properties p = new DB(configModifier).getProperties();
+
         FluentConfiguration config = Flyway.configure()
           .configuration(getConfigurationProperties())
+          .locations("classpath:db/migration")
           .dataSource(
             p.getProperty("hibernate.connection.url"),
             p.getProperty("hibernate.connection.username"),
@@ -82,6 +84,11 @@ public class FlywaySupport implements LogCreator, Log {
         e.printStackTrace(System.err);
     }
 
+    @Override
+    public void notice(String message) {
+        System.out.println(message);
+    }
+
     private boolean has (String[] args, String arg) {
         return Arrays.asList(args).contains(arg);
     }
@@ -104,10 +111,6 @@ public class FlywaySupport implements LogCreator, Log {
           ConfigUtils.ENCODING,
           ConfigUtils.ERROR_OVERRIDES,
           ConfigUtils.GROUP,
-          ConfigUtils.IGNORE_FUTURE_MIGRATIONS,
-          ConfigUtils.IGNORE_MISSING_MIGRATIONS,
-          ConfigUtils.IGNORE_IGNORED_MIGRATIONS,
-          ConfigUtils.IGNORE_PENDING_MIGRATIONS,
           ConfigUtils.INIT_SQL,
           ConfigUtils.INSTALLED_BY,
           ConfigUtils.LICENSE_KEY,
@@ -136,8 +139,6 @@ public class FlywaySupport implements LogCreator, Log {
           ConfigUtils.URL,
           ConfigUtils.USER,
           ConfigUtils.VALIDATE_ON_MIGRATE,
-          ConfigUtils.ORACLE_SQLPLUS,
-          ConfigUtils.ORACLE_SQLPLUS_WARN,
           ConfigUtils.JAR_DIRS,
           ConfigUtils.CONFIGURATIONS
         };

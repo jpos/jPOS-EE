@@ -11,6 +11,11 @@ allprojects {
     group = 'org.jpos.ee'
     version = '3.0.0-SNAPSHOT'
     apply plugin: 'idea'
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
 }
 
 subprojects {

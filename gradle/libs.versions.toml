@@ -17,6 +17,7 @@ hibernate = '6.4.4.Final'
 dom4j = '2.1.4'
 jdbcPostgresql = '42.7.2'
 agroal = '2.3'
+flyway = '6.0.4'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -43,4 +44,5 @@ hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', versi
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
 jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }
 agroal = { module = 'io.agroal:agroal-pool', version.ref='agroal' }
+flyway = { module = 'org.flywaydb:flyway-core', version.ref='flyway' }
 

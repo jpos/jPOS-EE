@@ -15,6 +15,7 @@ include  ':modules:qrest'
 include  ':modules:dbsupport'
 include  ':modules:db-postgresql'
 include  ':modules:sysconfig'
+include  ':modules:db-flyway'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -65,7 +66,6 @@ dependencyResolutionManagement {
 // include  ':modules:iso-http-servlet'
 // include  ':modules:http-client'
 // include  ':modules:seqno'
-// include  ':modules:db-flyway'
 // include  ':modules:elasticsearch'
 
 

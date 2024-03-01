@@ -13,7 +13,7 @@ ext {
     guavaVersion = '31.0.1-jre'
     jacksonVersion = '2.10.5.1'
     groovyVersion = '3.0.4'
-    jlineVersion = '2.14.6'
+    jlineVersion = '3.23.0'
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.14.1'
     nettyVersion = '4.1.73.Final'

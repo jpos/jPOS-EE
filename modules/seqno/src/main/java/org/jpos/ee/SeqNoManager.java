@@ -20,7 +20,8 @@ package org.jpos.ee;
 
 import org.hibernate.LockMode;
 import org.jpos.iso.ISOUtil;
-import javax.persistence.LockTimeoutException;
+import jakarta.persistence.LockTimeoutException;
+import org.jpos.util.Chronometer;
 
 /**
  * SeqNoManager can be used to manage application level sequencers and both synchronous as well as asynchronous locking.
@@ -37,11 +38,25 @@ import javax.persistence.LockTimeoutException;
  */
 public class SeqNoManager {
     private DB db;
+    private long timeout;
 
     public SeqNoManager(DB db) {
         this.db = db;
+        timeout = 5000L;
     }
 
+    public SeqNoManager(DB db, long timeout) {
+        this.db = db;
+        this.timeout = timeout;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
 
     /* Synchronous methods */
 
@@ -177,7 +192,8 @@ public class SeqNoManager {
 
     private SeqNo getOrCreate(String id, long initialValue) {
         SeqNo seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
-        if (seq == null) {
+        Chronometer cron = new Chronometer();
+        while (seq == null && cron.elapsed() <= timeout) {
             create (id, initialValue);
             seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
         }
@@ -189,7 +205,7 @@ public class SeqNoManager {
             db.open();
             db.beginTransaction();
             SeqNo seq = new SeqNo(id, initialValue);
-            db.session().save(seq);
+            db.session().persist(seq);
             db.commit();
         } catch (Exception ignored) { }
     }

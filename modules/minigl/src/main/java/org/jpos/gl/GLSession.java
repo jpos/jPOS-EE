@@ -361,6 +361,7 @@ public class GLSession {
             throw new GLException (sb.toString());
         }
         acct.setRoot (parent.getRoot());
+        acct.setParent (parent);
         try {
             session.save (acct);
             session.flush();
@@ -368,7 +369,6 @@ public class GLSession {
             e.fillInStackTrace();
             throw new GLException("Duplicate code", e);
         }
-        acct.setParent (parent);
         if (!fast)
             parent.getChildren().add (acct);
     }

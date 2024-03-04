@@ -18,10 +18,6 @@
 
 package org.jpos.ee;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.hibernate.*;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -37,6 +33,10 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.Environment;
 import org.jpos.ee.support.ModuleUtils;
@@ -152,7 +152,7 @@ public class DB implements Closeable {
             if (sf instanceof SessionFactoryImpl) {
                 dialect = ((SessionFactoryImpl) sf).getJdbcServices().getDialect();
             }
-        } catch (IOException | ConfigurationException | DocumentException | InterruptedException e) {
+        } catch (IOException | ConfigurationException | InterruptedException | JDOMException e) {
             throw new RuntimeException("Could not configure session factory", e);
         } finally {
             sfSem.release();
@@ -178,7 +178,7 @@ public class DB implements Closeable {
         sessionFactories.clear();
     }
 
-    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, DocumentException, InterruptedException {
+    private SessionFactory newSessionFactory() throws IOException, ConfigurationException, InterruptedException, JDOMException {
         Metadata md = getMetadata();
         try {
             newSessionSem.acquireUninterruptibly();
@@ -204,19 +204,17 @@ public class DB implements Closeable {
             for (String moduleConfig : moduleConfigs) {
                 addMappings(cfg, moduleConfig);
             }
-        } catch (DocumentException e) {
+        } catch (JDOMException e) {
             throw new ConfigurationException("Could not parse mappings document", e);
         }
     }
 
-    private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, DocumentException
-    {
+    private void addMappings(Configuration cfg, String moduleConfig) throws ConfigurationException, IOException, JDOMException {
         Element module = readMappingElements(moduleConfig);
         if (module != null)
         {
-            for (Iterator l = module.elementIterator("mapping"); l.hasNext(); )
+            for (Element mapping: module.getChildren("mapping"))
             {
-                Element mapping = (Element) l.next();
                 parseMapping(cfg, mapping, moduleConfig);
             }
         }
@@ -224,8 +222,8 @@ public class DB implements Closeable {
 
     private void parseMapping(Configuration cfg, Element mapping, String moduleName) throws ConfigurationException
     {
-        final String resource = mapping.attributeValue("resource");
-        final String clazz = mapping.attributeValue("class");
+        final String resource = mapping.getAttributeValue("resource");
+        final String clazz = mapping.getAttributeValue("class");
 
         if (resource != null)
         {
@@ -248,14 +246,20 @@ public class DB implements Closeable {
         }
     }
 
-    private Element readMappingElements(String moduleConfig) throws DocumentException
-    {
-        SAXReader reader = new SAXReader();
+    private Element readMappingElements(String moduleConfig) throws IOException, JDOMException {
+        SAXBuilder builder = createSAXBuilder();
 
         final URL url = getClass().getClassLoader().getResource(moduleConfig);
         assert url != null;
-        final Document doc = reader.read(url);
-        return doc.getRootElement().element("mappings");
+        final Document doc = builder.build(url);
+        return doc.getRootElement().getChild("mappings");
+    }
+
+    private SAXBuilder createSAXBuilder () {
+        SAXBuilder builder = new SAXBuilder ();
+        builder.setFeature("http://xml.org/sax/features/namespaces", true);
+        builder.setFeature("http://apache.org/xml/features/xinclude", true);
+        return builder;
     }
 
     private Properties loadProperties(String filename) throws IOException {
@@ -281,7 +285,7 @@ public class DB implements Closeable {
      * @param outputFile optional output file (may be null)
      * @param create     true to actually issue the create statements
      */
-    public void createSchema(String outputFile, boolean create) throws HibernateException, DocumentException {
+    public void createSchema(String outputFile, boolean create) throws HibernateException, JDOMException {
         try {
             // SchemaExport export = new SchemaExport(getMetadata());
             SchemaExport export = new SchemaExport();
@@ -499,13 +503,13 @@ public class DB implements Closeable {
                 info.addMessage("====  STATISTICS ====");
                 SessionStatistics statistics = session().getStatistics();
                 info.addMessage("====   ENTITIES  ====");
-                Set<EntityKey> entityKeys = statistics.getEntityKeys();
+                Set<EntityKey> entityKeys = (Set<EntityKey>) statistics.getEntityKeys();
                 for (EntityKey ek : entityKeys)
                 {
                     info.addMessage(String.format("[%s] %s", ek.getIdentifier(), ek.getEntityName()));
                 }
                 info.addMessage("==== COLLECTIONS ====");
-                Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
+                Set<CollectionKey> collectionKeys = (Set<CollectionKey>) statistics.getCollectionKeys();
                 for (CollectionKey ck : collectionKeys)
                 {
                     info.addMessage(String.format("[%s] %s", ck.getKey(), ck.getRole()));
@@ -526,7 +530,7 @@ public class DB implements Closeable {
         return "DB{" + (configModifier != null ? configModifier : "") + '}';
     }
 
-    private Metadata getMetadata() throws IOException, ConfigurationException, DocumentException, InterruptedException {
+    private Metadata getMetadata() throws IOException, ConfigurationException, InterruptedException, JDOMException {
         Semaphore mdSem = mdSems.get(configModifier);
         if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
             throw new RuntimeException ("Unable to acquire lock");
@@ -605,14 +609,12 @@ public class DB implements Closeable {
         return md;
     }
 
-    private void addMappings(MetadataSources mds, String moduleConfig) throws ConfigurationException, DocumentException
-    {
+    private void addMappings(MetadataSources mds, String moduleConfig) throws ConfigurationException, IOException, JDOMException {
         Element module = readMappingElements(moduleConfig);
         if (module != null)
         {
-            for (Iterator l = module.elementIterator("mapping"); l.hasNext(); )
+            for (Element mapping : module.getChildren("mapping"))
             {
-                Element mapping = (Element) l.next();
                 parseMapping(mds, mapping, moduleConfig);
             }
         }
@@ -620,8 +622,8 @@ public class DB implements Closeable {
 
     private void parseMapping (MetadataSources mds, Element mapping, String moduleName) throws ConfigurationException
     {
-        final String resource = mapping.attributeValue("resource");
-        final String clazz = mapping.attributeValue("class");
+        final String resource = mapping.getAttributeValue("resource");
+        final String clazz = mapping.getAttributeValue("class");
         if (resource != null)
             mds.addResource(resource);
         else if (clazz != null)

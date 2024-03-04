@@ -19,9 +19,9 @@
 package org.jpos.ee.usertype;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
+import org.jpos.util.Tags;
 
 import java.io.Serializable;
 import java.sql.PreparedStatement;
@@ -29,14 +29,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.jpos.util.Tags;
-
 public class TagsType implements UserType {
-    private static int[] TYPES = { Types.VARCHAR };
 
     @Override
-    public int[] sqlTypes() {
-        return TYPES;
+    public int getSqlType() {
+        return Types.VARCHAR;
     }
 
     @Override
@@ -59,15 +56,15 @@ public class TagsType implements UserType {
      * should handle possibility of null values.
      *
      * @param rs      a JDBC result set
-     * @param names   the column names
+     * @param position   the column position
      * @param session
      * @param owner   the containing entity  @return Object
      * @throws HibernateException
      * @throws SQLException
      */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
-        String tags = rs.getString(names[0]);
+    public Object nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+        String tags = rs.getString(position);
         if (rs.wasNull())
             return null;
         return new Tags(tags);

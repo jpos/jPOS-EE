@@ -38,9 +38,9 @@
         <property name="hibernate.c3p0.timeout">300</property>
         <property name="hibernate.c3p0.max_statements">300</property>
         <property name="hibernate.c3p0.idle_test_period">3000</property>
-        <property name="hibernate.cache.use_structured_entries">true</property>
-        <property name="hibernate.cache.use_query_cache">true</property>
-        <property name="hibernate.cache.use_second_level_cache">true</property>
-        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</property>
+<!--        <property name="hibernate.cache.use_structured_entries">true</property>-->
+<!--        <property name="hibernate.cache.use_query_cache">true</property>-->
+<!--        <property name="hibernate.cache.use_second_level_cache">true</property>-->
+<!--        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</property>-->
     </session-factory>
 </hibernate-configuration>

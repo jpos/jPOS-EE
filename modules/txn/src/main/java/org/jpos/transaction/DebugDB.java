@@ -37,7 +37,7 @@ public class DebugDB implements AbortParticipant {
 
         Session session = db.session();
         SessionStatistics statistics = session.getStatistics();
-        Set<EntityKey> entityKeys = statistics.getEntityKeys();
+        Set<EntityKey> entityKeys = (Set<EntityKey>) statistics.getEntityKeys();
         ctx.log (String.format ("ENTITIES:  (%d)", statistics.getEntityCount()));
         for (EntityKey ek : entityKeys) {
             Object obj = session.get(ek.getEntityName(), ek.getIdentifier());
@@ -45,7 +45,7 @@ public class DebugDB implements AbortParticipant {
             ctx.log(String.format("[%s] %s %s", ek.getIdentifier(), ek.getEntityName(), lockMode));
         }
         ctx.log ("==== COLLECTIONS ====");
-        Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
+        Set<CollectionKey> collectionKeys = (Set<CollectionKey>) statistics.getCollectionKeys();
         for (CollectionKey ck : collectionKeys) {
             ctx.log(String.format("[%s] %s", ck.getKey(), ck.getRole()));
         }

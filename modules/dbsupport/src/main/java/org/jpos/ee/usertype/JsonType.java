@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
@@ -37,8 +36,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 
-public class JsonType implements UserType {
-    private static int[] TYPES = { Types.VARCHAR };
+public class JsonType implements UserType<Object> {
 
     private static ObjectMapper mapper =
       new ObjectMapper()
@@ -51,8 +49,8 @@ public class JsonType implements UserType {
         .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     @Override
-    public int[] sqlTypes() {
-        return TYPES;
+    public int getSqlType() {
+        return Types.VARCHAR;
     }
 
     @Override
@@ -70,20 +68,21 @@ public class JsonType implements UserType {
         return x.hashCode();
     }
 
+
     /**
      * Retrieve an instance of the mapped class from a JDBC resultset. Implementors
      * should handle possibility of null values.
      *
      * @param rs      a JDBC result set
-     * @param names   the column names
+     * @param position   the column position
      * @param session
      * @param owner   the containing entity  @return Object
      * @throws HibernateException
      * @throws SQLException
      */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
-        String json = rs.getString(names[0]);
+    public Object nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+        String json = rs.getString(position);
         if (rs.wasNull())
             return null;
         try {

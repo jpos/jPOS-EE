@@ -18,22 +18,16 @@
 
 package org.jpos.gl;
 
+import jakarta.persistence.criteria.*;
+import org.hibernate.*;
+import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.query.Query;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
+import org.jpos.ee.DB;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
-import java.math.BigDecimal;
-import java.util.concurrent.DelayQueue;
-
-import org.hibernate.*;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
-import org.hibernate.type.LongType;
-
-
-import org.jpos.ee.DB;
 
 /**
  * MiniGL facility entry point.
@@ -54,12 +48,12 @@ public class GLSession {
     private boolean strictAccountCodes = true;
     private NativeDialect nativeDialect = NativeDialect.ORM;
 
-    private static String POSTGRESQL_GET_BALANCES =
+    private static final String POSTGRESQL_GET_BALANCES =
       "SELECT SUM(CASE WHEN entry.credit='N' THEN entry.amount ELSE -entry.amount end) AS balance,\n" +
       " COUNT(entry.id) AS count\n" +
       " FROM transentry AS entry\n";
 
-    private static String MYSQL_GET_BALANCES =
+    private static final String MYSQL_GET_BALANCES =
       "SELECT SUM(if(entry.credit='N',entry.amount,-entry.amount)) AS balance,\n" +
         "  COUNT(entry.id) AS count\n" +
         "  from transentry as entry\n";
@@ -265,12 +259,12 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where code=:code and parent is null"
+        Query<Account> q = session.createQuery (
+            "from CompositeAccount  acct where code=:code and parent is null", Account.class
         );
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (Account) (iter.hasNext() ? iter.next() : null);
+        Iterator<Account> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
     /**
      * @return List of charts of accounts.
@@ -282,10 +276,9 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery(
-            "from acct in class org.jpos.gl.CompositeAccount where parent is null"
-        );
-        return q.list();
+        return session.createQuery(
+            "from CompositeAccount  acct where parent is null", Account.class
+        ).getResultList();
     }
 
     /**
@@ -301,13 +294,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Account where root=:chart and code=:code"
+        Query<Account> q = session.createQuery (
+            "from Account  acct where root=:chart and code=:code", Account.class
         );
-        q.setLong ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (Account) (iter.hasNext() ? iter.next() : null);
+        Iterator<Account> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
 
     /**
@@ -415,13 +408,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where root=:chart and code=:code"
+        Query<FinalAccount> q = session.createQuery (
+            "from FinalAccount acct where root=:chart and code=:code", FinalAccount.class
         );
-        q.setLong ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (FinalAccount) (iter.hasNext() ? iter.next() : null);
+        Iterator<FinalAccount> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
     /**
      * @param chart chart of accounts.
@@ -434,11 +427,11 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where root=:chart"
+        Query<FinalAccount> q = session.createQuery (
+            "from FinalAccount acct where root=:chart", FinalAccount.class
         );
-        q.setLong ("chart", chart.getId());
-        return (List<FinalAccount>) q.list();
+        q.setParameter ("chart", chart);
+        return q.getResultList();
     }
     /**
      * @param parent parent account.
@@ -449,11 +442,11 @@ public class GLSession {
      */
     public List<CompositeAccount> getCompositeChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery(
-                "from acct in class org.jpos.gl.CompositeAccount where parent=:parent"
+        Query<CompositeAccount> q = session.createQuery(
+                "from CompositeAccount acct where parent=:parent", CompositeAccount.class
         );
         q.setParameter ("parent", parent);
-        return (List<CompositeAccount>) q.list();
+        return q.getResultList();
     }
     /**
      * @param parent parent account.
@@ -464,11 +457,11 @@ public class GLSession {
      */
     public List<FinalAccount> getFinalChildren (Account parent) throws HibernateException, GLException {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery(
-                "from acct in class org.jpos.gl.FinalAccount where parent=:parent"
+        Query<FinalAccount> q = session.createQuery(
+                "from FinalAccount acct where parent=:parent", FinalAccount.class
         );
         q.setParameter ("parent", parent);
-        return (List<FinalAccount>) q.list();
+        return q.list();
     }
     /**
      * @param chart chart of accounts.
@@ -481,11 +474,11 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Account where root=:chart"
+        Query<Account> q = session.createQuery (
+            "from Account acct where root=:chart", Account.class
         );
-        q.setLong ("chart", chart.getId());
-        return (List<Account>) q.list();
+        q.setParameter ("chart", chart.getId());
+        return q.list();
     }
 
     /**
@@ -501,13 +494,13 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Query q = session.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where root=:chart and code=:code"
+        Query<CompositeAccount> q = session.createQuery (
+            "from CompositeAccount acct where root=:chart and code=:code", CompositeAccount.class
         );
-        q.setLong ("chart", chart.getId());
+        q.setParameter ("chart", chart);
         q.setParameter ("code", code);
-        Iterator iter = q.list().iterator();
-        return (CompositeAccount) (iter.hasNext() ? iter.next() : null);
+        Iterator<CompositeAccount> iter = q.list().iterator();
+        return iter.hasNext() ? iter.next() : null;
     }
     /**
      * @param chartName chart of account's code.
@@ -572,7 +565,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         Query q = session.createQuery (
-            "from journal in class org.jpos.gl.Journal where name=:name"
+            "from Journal journal where name=:name"
         );
         q.setParameter ("name", name);
         Iterator iter = q.list().iterator();
@@ -594,7 +587,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.READ);
         Query q = session.createQuery (
-            "from acct in class org.jpos.gl.Journal order by chart"
+            "from Journal acct order by chart"
         );
         return (List<Journal>) q.list();
     }
@@ -604,10 +597,14 @@ public class GLSession {
      * @see org.jpos.gl.Currency
      */
     public List<String> getCurrencyCodes() {
-        return db.session()
-                .createCriteria(Currency.class)
-                .setProjection(Projections.id())
-                .list();
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<String> query = criteriaBuilder.createQuery(String.class);
+        Root<Currency> root = query.from(Currency.class);
+
+        query = query
+                .select(root.get("id"));
+
+        return db.session().createQuery(query).getResultList();
     }
 
     /**
@@ -749,7 +746,7 @@ public class GLSession {
      * @return list of transactions
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public Criteria createFindTransactionsCriteria
+    public Query<GLTransaction> createFindTransactionsCriteria
         (Journal journal, Date start, Date end, String searchString,
      boolean findByPostDate, int pageNumber, int pageSize)
             throws HibernateException, GLException
@@ -774,7 +771,7 @@ public class GLSession {
      * @return list of transactions
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public Criteria createFindTransactionsCriteriaByRange
+    public Query<GLTransaction> createFindTransactionsCriteriaByRange
         (Journal journal, Date start, Date end, String searchString,
      boolean findByPostDate, int firstResult, int pageSize)
             throws HibernateException, GLException
@@ -787,25 +784,36 @@ public class GLSession {
             if (end != null)
                 end   = Util.ceil (end);
         }
-        Criteria crit = session.createCriteria (GLTransaction.class)
-                .add (Restrictions.eq ("journal", journal));
+
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<GLTransaction> query = criteriaBuilder.createQuery(GLTransaction.class);
+        Root<GLTransaction> root = query.from(GLTransaction.class);
+
+        List<Predicate> restrictions = new ArrayList<>();
+
+        restrictions.add(criteriaBuilder.equal(root.get("journal"), journal));
 
         if (start != null && start.equals (end))
-            crit.add (Restrictions.eq (dateField, start));
+            restrictions.add(criteriaBuilder.equal(root.get(dateField), start));
         else {
             if (start != null)
-                crit.add (Restrictions.ge (dateField, start));
+                restrictions.add(criteriaBuilder.greaterThanOrEqualTo(root.get(dateField), start));
             if (end != null)
-                crit.add (Restrictions.le (dateField, end));
+                restrictions.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), end));
         }
         if (searchString != null)
-            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
+            restrictions.add(criteriaBuilder.like(root.get("detail"), "%" + searchString + "%"));
+
+        query.where(restrictions.toArray(new Predicate[] {}));
+
+        Query<GLTransaction> toRet = db.session()
+                .createQuery(query);
 
         if (pageSize > 0 && firstResult > 0) {
-            crit.setMaxResults (pageSize);
-            crit.setFirstResult (firstResult);
+            toRet.setFirstResult(firstResult)
+                    .setMaxResults(pageSize);
         }
-        return crit;
+        return toRet;
     }
 
     /**
@@ -819,13 +827,13 @@ public class GLSession {
      * @return list of transactions
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public List findTransactions
+    public List<GLTransaction> findTransactions
         (Journal journal, Date start, Date end, String searchString,
          boolean findByPostDate, int pageNumber, int pageSize)
         throws HibernateException, GLException
     {
-        return createFindTransactionsCriteria
-            (journal, start, end, searchString, findByPostDate,  pageNumber, pageSize).list();
+        return createFindTransactionsCriteria(journal, start, end, searchString, findByPostDate,  pageNumber, pageSize)
+                .getResultList();
     }
 
     /**
@@ -853,37 +861,45 @@ public class GLSession {
      * @return list of transactions' ids
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public List findTransactionsIds
+    public List<Long> findTransactionsIds
         (Journal journal, Date start, Date end, String searchString,
          boolean findByPostDate, int pageNumber, int pageSize)
-            throws HibernateException, GLException
-    {
-        checkPermission (GLPermission.READ, journal);
+            throws HibernateException, GLException {
+        checkPermission(GLPermission.READ, journal);
         String dateField = findByPostDate ? "postDate" : "timestamp";
         if (findByPostDate) {
             if (start != null)
-                start = Util.floor (start);
+                start = Util.floor(start);
             if (end != null)
-                end   = Util.ceil (end);
+                end = Util.ceil(end);
         }
-        Criteria crit = session.createCriteria (GLTransaction.class)
-            .add (Restrictions.eq ("journal", journal));
-        crit.setProjection(Projections.id());
-        if (start != null && start.equals (end))
-            crit.add (Restrictions.eq (dateField, start));
-        else {
+
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<GLTransaction> root = query.from(GLTransaction.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(criteriaBuilder.equal(root.get("journal"), journal));
+
+        if (start != null && start.equals(end))
+            predicates.add(criteriaBuilder.equal(root.get(dateField), start));
+        else{
             if (start != null)
-                crit.add (Restrictions.ge (dateField, start));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(dateField), start));
             if (end != null)
-                crit.add (Restrictions.le (dateField, end));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), end));
         }
         if (searchString != null)
-            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
+            predicates.add(criteriaBuilder.like(root.get("detail"), "%" + searchString + "%"));
+        query = query.select(root.get("id"))
+                .where(predicates.toArray(new Predicate[]{}));
+
+        Query<Long> toRet = session.createQuery(query);
         if (pageSize > 0 && pageNumber > 0) {
-            crit.setMaxResults (pageSize);
-            crit.setFirstResult (pageSize * (pageNumber - 1));
+            toRet = toRet.setMaxResults(pageSize)
+                    .setFirstResult(pageSize * (pageNumber - 1));
         }
-        return crit.list();
+        return toRet.getResultList();
     }
 
     /**
@@ -907,20 +923,28 @@ public class GLSession {
             if (end != null)
                 end   = Util.ceil (end);
         }
-        Criteria crit = session.createCriteria (GLTransaction.class)
-            .add (Restrictions.eq ("journal", journal));
-        crit.setProjection(Projections.rowCount());
-        if (start != null && start.equals (end))
-            crit.add (Restrictions.eq (dateField, start));
-        else {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<GLTransaction> root = query.from(GLTransaction.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(criteriaBuilder.equal(root.get("journal"), journal));
+
+        if (start != null && start.equals(end))
+            predicates.add(criteriaBuilder.equal(root.get(dateField), start));
+        else{
             if (start != null)
-                crit.add (Restrictions.ge (dateField, start));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(dateField), start));
             if (end != null)
-                crit.add (Restrictions.le (dateField, end));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(dateField), end));
         }
         if (searchString != null)
-            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
-        return (Long)crit.uniqueResult();
+            predicates.add(criteriaBuilder.equal(root.get("detail"), "%" + searchString + "%"));
+        query = query
+                .where(predicates.toArray(new Predicate[]{}))
+                .select(criteriaBuilder.count(root.get("id")));
+
+        return session.createQuery(query).getSingleResult();
     }
 
     /**
@@ -934,7 +958,7 @@ public class GLSession {
      * @param journal the journal.
      * @param acct the account.
      * @return current balance.
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public BigDecimal getBalance (Journal journal, Account acct)
         throws HibernateException, GLException
@@ -1007,7 +1031,7 @@ public class GLSession {
         }
         return maxBalance == null ? ZERO : maxBalance;
     }
-    
+
     /**
      * Current Balance for account in a given journal.
      * @param journal the journal.
@@ -1109,51 +1133,56 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
-        BigDecimal balance[] = { ZERO, Z };
+        BigDecimal[] balance = { ZERO, Z };
         short[] layersCopy = Arrays.copyOf(layers,layers.length);
         if (acct.getChildren() != null) {
             if (acct.isChart()) {
                 return getChartBalances
                     (journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
             }
-            Iterator iter = acct.getChildren().iterator();
-            while (iter.hasNext()) {
-                Account a = (Account) iter.next();
-                BigDecimal[] b = getBalancesORM (journal, a, date, inclusive, layersCopy, maxId);
-                balance[0] = balance[0].add (b[0]);
+            for (Account a : acct.getChildren()) {
+                BigDecimal[] b = getBalancesORM(journal, a, date, inclusive, layersCopy, maxId);
+                balance[0] = balance[0].add(b[0]);
                 // session.evict (a); FIXME this conflicts with r251 (cascade=evict generating a failed to lazily initialize a collection
             }
         }
         else if (acct.isFinalAccount()) {
-            Criteria entryCrit = session.createCriteria (GLEntry.class)
-                .add (Restrictions.eq ("account", acct))
-                .add (Restrictions.in ("layer", (Object[])toShortArray (layersCopy)));
-            if (maxId > 0L)
-                entryCrit.add (Restrictions.le ("id", maxId));
 
-            Criteria txnCrit = entryCrit.createCriteria ("transaction")
-                    .add (Restrictions.eq ("journal", journal));
+            CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+            CriteriaQuery<GLEntry> query = criteriaBuilder.createQuery(GLEntry.class);
+            Root<GLEntry> entry = query.from(GLEntry.class);
+
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.equal(entry.get("account"), acct));
+            predicates.add(entry.get("layer").in(Arrays.asList(toShortArray(layersCopy))));
+
+            if (maxId > 0L)
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(entry.get("id"), maxId));
+
+            Join<GLEntry, GLTransaction> joinTransaction = entry.join("transaction");
+            predicates.add(criteriaBuilder.equal(joinTransaction.get("journal"), journal));
             if (date != null) {
                 if (inclusive) {
-                    txnCrit.add (Restrictions.lt ("postDate", Util.tomorrow (date)));
+                    predicates.add(criteriaBuilder.lessThan(joinTransaction.get("postDate"), Util.tomorrow(date)));
                 }
                 else {
-                    date = Util.floor (date);
-                    txnCrit.add (Restrictions.lt ("postDate", date));
+                    date = Util.floor(date);
+                    predicates.add(criteriaBuilder.lessThan(joinTransaction.get("postDate"), date));
                 }
                 Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layersCopy);
                 if (chkp != null) {
                     balance[0] = chkp.getBalance();
-                    txnCrit.add (Restrictions.ge ("postDate", chkp.getDate()));
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(joinTransaction.get("postDate"), chkp.getDate()));
                 }
             } else if (!ignoreBalanceCache) {
                 BalanceCache bcache = getBalanceCache (journal, acct, layersCopy);
                 if (bcache != null && (maxId == 0 || bcache.getRef() <= maxId)) {
                     balance[0] = bcache.getBalance();
-                    entryCrit.add (Restrictions.gt("id", bcache.getRef()));
+                    predicates.add(criteriaBuilder.greaterThan(entry.get("id"), bcache.getRef()));
                 }
             }
-            List l = txnCrit.list();
+            query = query.where(predicates.toArray(new Predicate[] {}));
+            List<GLEntry> l = session.createQuery(query).getResultList();
             balance[0] = applyEntries (balance[0], l);
             balance[1] = new BigDecimal (l.size()); // hint for checkpoint
         }
@@ -1252,7 +1281,7 @@ public class GLSession {
         qs.append(')');
         select.append(qs);
 
-        Query q = session.createSQLQuery(select.toString());
+        Query q = session.createNativeQuery(select.toString());
         q.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         if (acct.isFinalAccount() || acct.isChart())
             q.setParameter("acctId", acct.getId());
@@ -1328,59 +1357,78 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
-        Criteria crit = session.createCriteria (GLEntry.class);
 
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<GLEntry> query = criteriaBuilder.createQuery(GLEntry.class);
+        Root<GLEntry> root = query.from(GLEntry.class);
+
+        query = query
+                .select(root);
+
+
+        List<Predicate> ands = new ArrayList<>();
         boolean hasChildren = false;
         if (acct.isCompositeAccount()) {
-            Disjunction dis = Restrictions.disjunction();
-            for (Long l : getChildren (acct)) {
-                hasChildren = true;
-                dis.add (Restrictions.idEq(l));
-            }
-            if (hasChildren) {
-                Criteria subCrit = crit.createCriteria(("account"));
-                subCrit.add (dis);
+            List<Predicate> disjuntions = new ArrayList<>();
+            List<Long> childrenIds = getChildren(acct);
+            hasChildren = !childrenIds.isEmpty();
+
+            if (!childrenIds.isEmpty()) {
+                Join<GLEntry, Account> joinAccount = root.join("account");
+                for (Long l : getChildren (acct)) {
+                    disjuntions.add(criteriaBuilder.equal(joinAccount.get("id"), l));
+                }
+                ands.add(criteriaBuilder.or(disjuntions.toArray(new Predicate[]{})));
             }
         }
         if (!hasChildren) {
-            crit.add (Restrictions.eq ("account", acct));
+            ands.add(criteriaBuilder.equal(root.get("account"), acct));
         }
 
-        crit.add (Restrictions.in ("layer", (Object[])toShortArray (layers)));
-        crit = crit.createCriteria ("transaction")
-            .add (Restrictions.eq ("journal", journal));
+        ands.add(root.get("layer").in(Arrays.asList(toShortArray(layers))));
+
+        Join<GLEntry, GLTransaction> transaction = root.join("transaction");
+        ands.add(criteriaBuilder.equal(transaction.get("journal"), journal));
 
         if (start != null || (start == null && ascendingOrder)) {
             start = Util.floor(start);
-            crit.add (Restrictions.ge ("postDate", start));
+            ands.add(criteriaBuilder.greaterThanOrEqualTo(transaction.get("postDate"), start));
         }
         if (end != null || (end == null && ascendingOrder)) {
             end = Util.ceil(end);
-            crit.add (Restrictions.le ("postDate", end));
+            ands.add(criteriaBuilder.lessThanOrEqualTo(transaction.get("postDate"), end));
         }
 
-        if (maxResults > 0)
-            crit.setMaxResults(maxResults);
 
         long maxEntry = 0L;
-        List <GLEntry>  entries;
-        BigDecimal initialBalance[];
+        BigDecimal[] initialBalance;
+        boolean inclusive = false;
         if (ascendingOrder) {
-            crit.addOrder (Order.asc ("postDate"));
-            crit.addOrder (Order.asc ("timestamp"));
-            crit.addOrder (Order.asc ("id"));
-            entries = crit.list();
-            initialBalance = getBalances(journal, acct, start, false, layers, maxEntry);
+            query.orderBy(
+                    criteriaBuilder.asc(transaction.get("postDate")),
+                    criteriaBuilder.asc(transaction.get("timestamp")),
+                    criteriaBuilder.asc(transaction.get("id"))
+            );
         } else {
-            crit.addOrder (Order.desc ("postDate"));
-            crit.addOrder (Order.desc ("timestamp"));
-            crit.addOrder (Order.desc ("id"));
-            entries = crit.list();
-            if (entries.size() > 0) {
-                maxEntry = entries.get(0).getId();
-            }
-            initialBalance = getBalances(journal, acct, end, true, layers, maxEntry);
+            inclusive = true;
+            query.orderBy(
+                    criteriaBuilder.desc(transaction.get("postDate")),
+                    criteriaBuilder.desc(transaction.get("timestamp")),
+                    criteriaBuilder.desc(transaction.get("id"))
+            );
         }
+
+        Query<GLEntry> finalQuery = session.createQuery(query.where(ands.toArray(new Predicate[]{})));
+        if (maxResults > 0) finalQuery = finalQuery.setMaxResults(maxResults);
+
+        List <GLEntry>  entries = finalQuery.getResultList();
+        if (inclusive && !entries.isEmpty()) {
+            maxEntry = entries.get(0).getId();
+        }
+
+        initialBalance = getBalances(journal, acct, inclusive ? end : start, inclusive, layers, maxEntry);
+
+
         return new AccountDetail(journal, acct, initialBalance[0], start, end, entries, layers, ascendingOrder);
     }
 
@@ -1458,16 +1506,25 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.CHECKPOINT, journal);
-        Criteria crit = session.createCriteria (BalanceCache.class)
-            .add (Restrictions.eq ("journal", journal))
-            .add (Restrictions.eq ("account", acct));
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<BalanceCache> query = criteriaBuilder.createQuery(BalanceCache.class);
+        Root<BalanceCache> bc = query.from(BalanceCache.class);
+
+        List<Predicate> ands = new ArrayList<>();
+        ands.add(criteriaBuilder.equal(bc.get("journal"), journal));
+        ands.add(criteriaBuilder.equal(bc.get("account"), acct));
 
         if (layers != null)
-           crit.add (Restrictions.eq ("layers", layersToString(layers)));
+            ands.add(criteriaBuilder.equal(bc.get("layers"), layersToString(layers)));
 
-        crit.addOrder (Order.desc ("ref"));
-        crit.setMaxResults (1);
-        return (BalanceCache) crit.uniqueResult();
+        query.where(ands.toArray(new Predicate[]{}));
+        query.orderBy(criteriaBuilder.desc(bc.get("ref")));
+
+        List<BalanceCache> caches = session.createQuery(query)
+                        .setMaxResults(1)
+                        .getResultList();
+        if (caches.isEmpty()) return null;
+        return caches.get(0);
     }
 
 
@@ -1518,10 +1575,8 @@ public class GLSession {
         BalanceCache bc = null;
         if (acct.isCompositeAccount()) {
             balance = ZERO;
-            Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
-            while (iter.hasNext()) {
-                Account a = (Account) iter.next();
-                balance = balance.add (createBalanceCache (journal, a, layers, maxId));
+            for (Account a : acct.getChildren()) {
+                balance = balance.add(createBalanceCache(journal, a, layers, maxId));
             }
         }
         else if (acct.isFinalAccount())
@@ -1621,9 +1676,13 @@ public class GLSession {
     }
     public GLUser getUser (String nick) throws HibernateException
     {
-        return (GLUser) session.createCriteria (GLUser.class)
-                .add (Restrictions.eq ("nick", nick))
-                .uniqueResult();
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<GLUser> query = criteriaBuilder.createQuery(GLUser.class);
+        Root<GLUser> root = query.from(GLUser.class);
+
+        query.where(criteriaBuilder.equal(root.get("nick"), nick));
+
+        return session.createQuery(query).uniqueResult();
     }
     /**
      * set a journal's lockDate
@@ -1653,30 +1712,33 @@ public class GLSession {
             sb.append (" and layers = :layers");
 
         Query query = session.createQuery (sb.toString())
-                .setEntity ("journal", journal);
+                .setParameter ("journal", journal);
         if (account != null)
-            query.setEntity ("account", account);
+            query.setParameter ("account", account);
         if (layers != null)
-            query.setString ("layers", layersToString (layers));
+            query.setParameter ("layers", layersToString (layers));
 
         query.executeUpdate();
     }
 
     public GLTransactionGroup createGroup (String name, List<GLTransaction> transactions) {
         GLTransactionGroup group = new GLTransactionGroup (name);
-        Set txns = new HashSet();
-        for (GLTransaction t : transactions)
-            txns.add (t);
+        Set<GLTransaction> txns = new HashSet<>(transactions);
         group.setTransactions(txns);
-        session().save (group);
+        session().save(group);
         return group;
     }
 
-    public GLTransactionGroup findTransactionGroup (String name) {
-        Criteria crit = session.createCriteria (GLTransactionGroup.class)
-                .add (Restrictions.eq ("name", name));
-        crit.setMaxResults (1);
-        return (GLTransactionGroup) crit.uniqueResult();
+    public GLTransactionGroup findTransactionGroup(String name) {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<GLTransactionGroup> query = criteriaBuilder.createQuery(GLTransactionGroup.class);
+        Root<GLTransactionGroup> root = query.from(GLTransactionGroup.class);
+
+        query.where(criteriaBuilder.equal(root.get("name"), name));
+
+        return db.session().createQuery(query)
+                .setMaxResults(1)
+                .getSingleResult();
     }
 
     public BigDecimal getBalance
@@ -1780,13 +1842,13 @@ public class GLSession {
         }
         return accounts;
     }
-    private List getAccountHierarchyIds (Account acct)
+    private List<Long> getAccountHierarchyIds (Account acct)
         throws GLException
     {
         if (acct == null)
             throw new GLException ("Invalid entry - account is null");
         Account p = acct;
-        List<Long> l = new ArrayList<Long>();
+        List<Long> l = new ArrayList<>();
         while (p != null) {
             l.add (p.getId());
             p = p.getParent();
@@ -1805,33 +1867,39 @@ public class GLSession {
         (Journal journal, Account[] accounts, Date start, Date end, short[] layers)
         throws HibernateException
     {
-        Criteria crit = session.createCriteria (Checkpoint.class)
-            .add (Restrictions.eq ("journal", journal));
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Checkpoint> query = criteriaBuilder.createQuery(Checkpoint.class);
+        Root<Checkpoint> root = query.from(Checkpoint.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(criteriaBuilder.equal(root.get("journal"), journal));
+
+        query = query.select(root);
+
         if (accounts.length > 0)
-            crit = crit.add (Restrictions.in ("account", (Object[])accounts));
+            predicates.add(root.get("account").in(Arrays.asList(accounts)));
 
         if (layers != null)
-            crit.add (Restrictions.eq ("layers", layersToString(layers)));
+            predicates.add(criteriaBuilder.equal(root.get("layers"), layersToString(layers)));
         if (start.equals (end))
-            crit.add (Restrictions.eq ("date", start));
+            predicates.add(criteriaBuilder.equal(root.get("date"), start));
         else {
-            crit.add (Restrictions.ge ("date", start));
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("date"), start));
             if (end != null) {
-                crit.add (Restrictions.le ("date", end));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("date"), end));
             }
         }
-        Iterator iter = crit.list().iterator();
-        while (iter.hasNext()) {
-            Checkpoint cp = (Checkpoint) iter.next();
-            session.delete (cp);
+        List<Checkpoint> checkPoints = session
+                .createQuery(query.where(predicates.toArray(new Predicate[]{})))
+                .getResultList();
+        for (Checkpoint checkpoint: checkPoints) {
+            session.delete (checkpoint);
         }
     }
-    private BigDecimal applyEntries (BigDecimal balance, List entries)
+    private BigDecimal applyEntries (BigDecimal balance, List<GLEntry> entries)
         throws GLException
     {
-        Iterator iter = entries.iterator();
-        while (iter.hasNext()) {
-            GLEntry entry = (GLEntry) iter.next();
+        for(GLEntry entry: entries) {
             if (entry.isIncrease ()) {
                 balance = balance.add (entry.getAmount());
             }
@@ -1866,20 +1934,19 @@ public class GLSession {
         return impl;
     }
     private void addRules
-        (Map<String,Object> ruleMap, Journal journal, List acctHierarchy, int offset)
+        (Map<String,Object> ruleMap, Journal journal, List<Long> acctHierarchy, int offset)
         throws HibernateException
     {
-        Query q = session.createQuery (
-            "from org.jpos.gl.RuleInfo where journal=:journal and account in (:accts) order by id"
+        Query<RuleInfo> q = session.createQuery (
+            "from org.jpos.gl.RuleInfo where journal=:journal and account in (:accts) order by id",
+                RuleInfo.class
         );
         q.setParameter ("journal", journal);
-        q.setParameterList ("accts", acctHierarchy, new LongType());
+        q.setParameterList ("accts", acctHierarchy, Long.class);
         q.setCacheable (true);
         q.setCacheRegion ("rules");
-        Iterator iter = q.iterate();
 
-        while (iter.hasNext()) {
-            RuleInfo ri  = (RuleInfo) iter.next();
+        for (RuleInfo ri: q.list()) {
             RuleEntry k  = new RuleEntry (ri, ri.getAccount());
             RuleEntry re = (RuleEntry) ruleMap.get (k.getKey());
             if (re == null)
@@ -1888,12 +1955,10 @@ public class GLSession {
             re.addOffset (offset);
         }
     }
-    private void applyRules (GLTransaction txn, Collection rules)
+    private void applyRules (GLTransaction txn, Collection<RuleEntry> rules)
         throws HibernateException, GLException
     {
-        Iterator iter = rules.iterator();
-        while (iter.hasNext()) {
-            RuleEntry re = (RuleEntry) iter.next();
+        for (RuleEntry re: rules) {
             RuleInfo  ri = re.getRuleInfo();
             JournalRule rule = (JournalRule) getRuleImpl (ri.getClazz());
             rule.check (
@@ -1905,24 +1970,20 @@ public class GLSession {
     private Collection getRules (GLTransaction txn)
         throws HibernateException, GLException
     {
-        Map<String,Object> map = new LinkedHashMap<String,Object> ();
+        Map<String,Object> map = new LinkedHashMap<> ();
         Journal journal   = txn.getJournal();
 
-        Query q = session.createQuery (
-          "from org.jpos.gl.RuleInfo where journal=:journal and account is null order by id"
+        Query<RuleInfo> q = session.createQuery (
+          "from org.jpos.gl.RuleInfo where journal=:journal and account is null order by id", RuleInfo.class
         );
         q.setParameter ("journal", journal);
-        Iterator iter = q.list().iterator();
-        while (iter.hasNext()) {
-            RuleInfo  ri = (RuleInfo) iter.next();
+        for (RuleInfo ri: q.getResultList()) {
             RuleEntry re = new RuleEntry (ri);
             map.put (re.getKey(), re);
         }
-        iter = txn.getEntries().iterator();
-        for (int i=0; iter.hasNext(); i++) {
-            GLEntry entry = (GLEntry) iter.next();
-            addRules (map, journal,
-                getAccountHierarchyIds (entry.getAccount()), i);
+        for (int i = 0; i < txn.getEntries().size(); i++) {
+            GLEntry entry = txn.getEntries().get(i);
+            addRules(map, journal, getAccountHierarchyIds(entry.getAccount()), i);
         }
         return map.values();
     }
@@ -1931,7 +1992,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         BigDecimal balance[] = { ZERO, ZERO };
-        Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
+        Iterator iter = (acct).getChildren().iterator();
         while (iter.hasNext()) {
             Account a = (Account) iter.next();
             BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
@@ -1952,16 +2013,14 @@ public class GLSession {
     }
     private Iterator findSummarizedGLEntries
         (Journal journal, Date start, Date end, boolean credit, short layer)
-        throws HibernateException, GLException
+        throws HibernateException
     {
-        StringBuffer qs = new StringBuffer (
+        StringBuilder qs = new StringBuilder (
             "select entry.account, sum(entry.amount)" +
-            " from org.jpos.gl.GLEntry entry," +
-            " org.jpos.gl.GLTransaction txn" +
-            " where txn.id = entry.transaction" +
-            " and credit = :credit" +
-            " and txn.journal = :journal" +
-            " and entry.layer = :layer"
+            " from GLEntry entry join entry.transaction txn" +
+            " where credit = :credit" +
+            "   and txn.journal = :journal" +
+            "   and entry.layer = :layer"
         );
         boolean equalDate = start.equals (end);
         if (equalDate) {
@@ -1971,17 +2030,17 @@ public class GLSession {
             qs.append (" and txn.postDate <= :end");
         }
         qs.append (" group by entry.account");
-        Query q = session.createQuery (qs.toString());
-        q.setLong ("journal", journal.getId());
-        q.setParameter ("credit", credit ? "Y" : "N");
-        q.setShort ("layer", layer);
+        Query q = session.createQuery(qs.toString());
+        q.setParameter ("journal", journal);
+        q.setParameter ("credit", credit);
+        q.setParameter ("layer", layer);
         if (equalDate)
             q.setParameter ("date", start);
         else {
             q.setParameter ("start", start);
             q.setParameter ("end", end);
         }
-        return q.iterate();
+        return q.list().iterator();
     }
     private void deleteGLTransactions (Journal journal, Date start, Date end)
         throws HibernateException, GLException
@@ -1997,35 +2056,45 @@ public class GLSession {
             qs.append (" and postDate >= :start");
             qs.append (" and postDate <= :endDate");
         }
-        Query q = session.createQuery (qs.toString());
-        q.setLong ("journal", journal.getId());
+        Query<GLTransaction> q = session.createQuery (qs.toString(), GLTransaction.class);
+        q.setParameter ("journal", journal);
         if (equalDate)
             q.setParameter ("date", start);
         else {
             q.setParameter ("start", start);
             q.setParameter ("endDate", end);
         }
-        ScrollableResults sr = q.scroll(ScrollMode.FORWARD_ONLY);
-        while (sr.next()) {
-            session.delete (sr.get(0));
+        try (ScrollableResults<GLTransaction> sr = q.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (sr.next()) {
+                session.delete(sr.get());
+            }
         }
     }
-    private static Short[] toShortArray (short[] i) {
+
+    private static Short[] toShortArray(short[] i) {
         if (i == null)
             return new Short[0];
         Short[] sa = new Short[i.length];
-        for (int j=0; j<i.length; j++)
-            sa[j] = new Short(i[j]);
+        for (int j = 0; j < i.length; j++)
+            sa[j] = i[j];
         return sa;
     }
 
     private long getMaxGLEntryId () {
-        Criteria crit = session.createCriteria (GLEntry.class);
-        crit.addOrder (Order.desc ("id"));
-        crit.setMaxResults (1);
-        GLEntry entry = (GLEntry) crit.uniqueResult();
-        return entry != null ? entry.getId() : 0L;
+
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        Root<GLEntry> root = query.from(GLEntry.class);
+
+        query.orderBy(criteriaBuilder.desc(root.get("id")))
+                .select(root.get("id"));
+
+        return db.session()
+                .createQuery(query)
+                .setMaxResults(1)
+                .getSingleResult();
     }
+
     private long getSafeMaxGLEntryId() {
         return Math.max (getMaxGLEntryId()-SAFE_WINDOW, 0L);
     }

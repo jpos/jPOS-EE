@@ -18,59 +18,65 @@
 
 package org.jpos.ee;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import org.hibernate.HibernateException;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.query.criteria.internal.OrderImpl;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-
 @SuppressWarnings("unused")
 public class RevisionManager extends DBManager<Revision> {
 
-    public RevisionManager (DB db) {
-        super(db,Revision.class);
+    public RevisionManager(DB db) {
+        super(db, Revision.class);
     }
-    @SuppressWarnings("unchecked")
-    public List<Revision> getRevisionsByRef (String ref)
-        throws HibernateException
-    {
-        Criteria crit = db.session().createCriteria (Revision.class)
-            .add (Restrictions.eq ("ref", ref))
-            .addOrder (Order.desc("id"));
-        return (List<Revision>) crit.list();
+
+    public List<Revision> getRevisionsByRef(String ref) throws HibernateException {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Revision> query = criteriaBuilder.createQuery(Revision.class);
+        Root<Revision> root = query.from(Revision.class);
+
+        query = query
+                .where(criteriaBuilder.equal(root.get("ref"), ref))
+                .orderBy(criteriaBuilder.desc(root.get("id")))
+                .select(root);
+
+        return db.session.createQuery(query).getResultList();
     }
-    @SuppressWarnings("unchecked")
-    public List<Revision> getRevisionsByAuthor (User author)
-        throws HibernateException
-    {
-        Criteria crit = db.session().createCriteria (Revision.class)
-            .add (Restrictions.eq ("author", author))
-            .addOrder (Order.desc("id"));
-        return (List<Revision>) crit.list();
+
+    public List<Revision> getRevisionsByAuthor(User author)
+            throws HibernateException {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Revision> query = criteriaBuilder.createQuery(Revision.class);
+        Root<Revision> root = query.from(Revision.class);
+
+        query = query
+                .where(criteriaBuilder.equal(root.get("author"), author))
+                .orderBy(criteriaBuilder.desc(root.get("id")))
+                .select(root);
+
+        return db.session.createQuery(query).getResultList();
     }
 
     //overridden to avoid LazyInitializationExc
     @Override
-    public List<Revision> getAll(int offset, int limit, Map<String,Boolean> orders) {
+    public List<Revision> getAll(int offset, int limit, Map<String, Boolean> orders) {
         CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
         CriteriaQuery<Revision> query = criteriaBuilder.createQuery(Revision.class);
         Root<Revision> root = query.from(Revision.class);
         // To avoid LazyInitializationExc
         root.fetch("author");
-        List<javax.persistence.criteria.Order> orderList = new ArrayList<>();
+        List<jakarta.persistence.criteria.Order> orderList = new ArrayList<>();
         //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
+        for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
+            if (entry.getValue() == null || entry.getValue())
+                orderList.add(criteriaBuilder.asc(root.get(entry.getKey())));
+            else
+                orderList.add(criteriaBuilder.desc(root.get(entry.getKey())));
         }
         query.select(root);
         query.orderBy(orderList);
@@ -81,22 +87,21 @@ public class RevisionManager extends DBManager<Revision> {
     }
 
 
-
     /**
      * factory method used to create a Revision associated with this user.
      *
      * @param author the revision author
-     * @param ref associated with this revision
-     * @param info information
+     * @param ref    associated with this revision
+     * @param info   information
      * @return a revision entry
      */
-    public Revision createRevision (User author, String ref, String info) {
+    public Revision createRevision(User author, String ref, String info) {
         Revision re = new Revision();
-        re.setDate (new Date());
-        re.setInfo (info);
-        re.setRef (ref);
-        re.setAuthor (author);
-        db.save (re);
+        re.setDate(new Date());
+        re.setInfo(info);
+        re.setRef(ref);
+        re.setAuthor(author);
+        db.save(re);
         return re;
     }
 }

@@ -22,8 +22,8 @@ import org.jpos.ee.DB;
 import org.jpos.ee.DBManager;
 import org.jpos.gl.GLTransaction;
 
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.util.Date;
 
 public class GLTransactionManager extends DBManager<GLTransaction> {

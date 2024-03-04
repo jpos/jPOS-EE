@@ -20,7 +20,7 @@ package org.jpos.ee;
 
 import org.hibernate.LockMode;
 import org.jpos.iso.ISOUtil;
-import javax.persistence.LockTimeoutException;
+import jakarta.persistence.LockTimeoutException;
 
 /**
  * SeqNoManager can be used to manage application level sequencers and both synchronous as well as asynchronous locking.

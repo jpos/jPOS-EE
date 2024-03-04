@@ -5,6 +5,7 @@ dependencies {
     api project(':modules:logback')
     api project(':modules:dbsupport')
     api libraries.commons_lang
+    implementation 'xerces:xercesImpl:2.12.2'
     testImplementation project(':modules:db-h2')
     testImplementation project(':modules:db-postgresql')
     testImplementation libraries.postgresql_embedded

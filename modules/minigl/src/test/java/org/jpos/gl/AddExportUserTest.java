@@ -21,7 +21,7 @@ package org.jpos.gl;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.jpos.ee.DB;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +47,7 @@ public class AddExportUserTest extends TestBase {
         sess.close ();
     }
 
-    private GLUser getUser (Session session, String nick) 
+    private GLUser getUser (Session session, String nick)
         throws HibernateException
     {
         Query q = session.createQuery ("from GLUser u where u.nick=:nick");

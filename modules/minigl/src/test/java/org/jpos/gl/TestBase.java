@@ -99,7 +99,8 @@ public abstract class TestBase {
     }
     @AfterAll
     public static void tearDownBase () throws Exception {
-        gls.close();
+        if (gls != null)
+            gls.close();
         if (pg != null) {
             pg.close();
         }

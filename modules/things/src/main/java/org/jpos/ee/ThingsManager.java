@@ -18,10 +18,11 @@
 
 package org.jpos.ee;
 
-import org.hibernate.Criteria;
-import org.hibernate.Query;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
+
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,170 +31,197 @@ import java.util.List;
 @SuppressWarnings({"unused", "JpaQueryApiInspection"})
 public class ThingsManager {
     DB db;
+
     public ThingsManager(DB db) {
         super();
         this.db = db;
     }
-    public Thing create (String type) {
-        Thing thing = new Thing (type);
-        db.save (thing);
+
+    public Thing create(String type) {
+        Thing thing = new Thing(type);
+        db.save(thing);
         return thing;
     }
-    public Thing get (long id) {
-        return (Thing) db.session().get (Thing.class, id);
+
+    public Thing get(long id) {
+        return (Thing) db.session().get(Thing.class, id);
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> getAll (String type) {
-        Criteria crit = db.session().createCriteria (Thing.class)
-            .add (Restrictions.eq ("type", type));
-        return (List<Thing>) crit.list();
+
+    public List<Thing> getAll(String type) {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Thing> query = criteriaBuilder.createQuery(Thing.class);
+        Root<Thing> root = query.from(Thing.class);
+
+        query = query
+                .where(criteriaBuilder.equal(root.get("type"), type))
+                .select(root);
+
+        return db.session.createQuery(query).getResultList();
     }
-    @SuppressWarnings("unchecked")
-    public Thing getLast (String type) {
-        Criteria crit = db.session().createCriteria (Thing.class)
-            .add (Restrictions.eq ("type", type))
-            .addOrder(Order.desc("id"));
-        List<Thing> l = crit.list();
+
+    public Thing getLast(String type) {
+        CriteriaBuilder criteriaBuilder = db.session().getCriteriaBuilder();
+        CriteriaQuery<Thing> query = criteriaBuilder.createQuery(Thing.class);
+        Root<Thing> root = query.from(Thing.class);
+
+        query = query
+                .where(criteriaBuilder.equal(root.get("type"), type))
+                .orderBy(criteriaBuilder.desc(root.get("id")))
+                .select(root);
+
+        List<Thing> l = db.session.createQuery(query).getResultList();
         return l.size() > 0 ? l.get(0) : null;
     }
+
     // === String ==============================================================
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByStringName (String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-string-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+    public List<Thing> listByStringName(String type, String name) {
+        return db.session().createNamedQuery("list-by-string-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .getResultList();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByStringValue (String type, String value) {
-        Query query = db.session().getNamedQuery ("list-by-string-value")
-            .setString ("type", type)
-            .setString ("value", value);
-        return (List<Thing>) query.list();
+
+    public List<Thing> listByStringValue(String type, String value) {
+        return db.session().createNamedQuery("list-by-string-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByStringNameValue (String type, String name, String value) {
-        Query query = db.session().getNamedQuery ("list-by-string-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setString ("value", value);
-        return (List<Thing>) query.list();
+
+    public List<Thing> listByStringNameValue(String type, String name, String value) {
+        return db.session().createNamedQuery("list-by-string-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value)
+                .list();
     }
+
     // === Text ==============================================================
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByTextName (String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-text-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+    public List<Thing> listByTextName(String type, String name) {
+        return db.session().createNamedQuery("list-by-text-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByTextValue (String type, String value) {
-        Query query = db.session().getNamedQuery ("list-by-text-value")
-            .setString ("type", type)
-            .setString ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByTextValue(String type, String value) {
+        return db.session().createNamedQuery("list-by-text-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByTextNameValue (String type, String name, String value) {
-        Query query = db.session().getNamedQuery ("list-by-text-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setString ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByTextNameValue(String type, String name, String value) {
+        return db.session().createNamedQuery("list-by-text-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value)
+                .getResultList();
     }
+
     // === Long ==============================================================
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByLongName (String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-long-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+
+    public List<Thing> listByLongName(String type, String name) {
+        return db.session().createNamedQuery("list-by-long-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .getResultList();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByLongValue (String type, long value) {
-        Query query = db.session().getNamedQuery ("list-by-long-value")
-            .setString ("type", type)
-            .setLong ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByLongValue(String type, long value) {
+        return db.session().createNamedQuery("list-by-long-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value, Long.class)
+                .getResultList();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByLongNameValue (String type, String name, long value) {
-        Query query = db.session().getNamedQuery ("list-by-long-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setLong ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByLongNameValue(String type, String name, long value) {
+        return db.session().createNamedQuery("list-by-long-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value, Long.class)
+                .list();
     }
+
     // === Date ==============================================================
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByDateName (String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-date-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+
+    public List<Thing> listByDateName(String type, String name) {
+        return db.session().createNamedQuery("list-by-date-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByDateValue (String type, Date value) {
-        Query query = db.session().getNamedQuery ("list-by-date-value")
-            .setString ("type", type)
-            .setDate ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByDateValue(String type, Date value) {
+        return db.session().createNamedQuery("list-by-date-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value, TemporalType.DATE)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByDateNameValue (String type, String name, Date value) {
-        Query query = db.session().getNamedQuery ("list-by-date-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setDate ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByDateNameValue(String type, String name, Date value) {
+        return db.session().createNamedQuery("list-by-date-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value, TemporalType.DATE)
+                .list();
     }
 
     // === Timestamp ==============================================================
-    @SuppressWarnings("unchecked")
+
     public List<Thing> listByTimestampName(String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-timestamp-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+        return db.session().createNamedQuery("list-by-timestamp-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByTimestampValue (String type, Date value) {
-        Query query = db.session().getNamedQuery ("list-by-timestamp-value")
-            .setString ("type", type)
-            .setTimestamp ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByTimestampValue(String type, Date value) {
+        return db.session().createNamedQuery("list-by-timestamp-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value, TemporalType.TIMESTAMP)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByTimestampNameValue (String type, String name, Date value) {
-        Query query = db.session().getNamedQuery ("list-by-timestamp-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setTimestamp ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByTimestampNameValue(String type, String name, Date value) {
+        return db.session().createNamedQuery("list-by-timestamp-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value, TemporalType.TIMESTAMP)
+                .list();
     }
 
     // === BigDecimal ==============================================================
-    @SuppressWarnings("unchecked")
+
     public List<Thing> listByBigDecimalName(String type, String name) {
-        Query query = db.session().getNamedQuery ("list-by-big-decimal-name")
-            .setString ("type", type)
-            .setString ("name", name);
-        return (List<Thing>) query.list();
+        return db.session().createNamedQuery("list-by-big-decimal-name", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByBigDecimalValue (String type, BigDecimal value) {
-        Query query = db.session().getNamedQuery ("list-by-big-decimal-value")
-            .setString ("type", type)
-            .setBigDecimal ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByBigDecimalValue(String type, BigDecimal value) {
+        return db.session().createNamedQuery("list-by-big-decimal-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("value", value, BigDecimal.class)
+                .list();
     }
-    @SuppressWarnings("unchecked")
-    public List<Thing> listByBigDecimalNameValue (String type, String name, BigDecimal value) {
-        Query query = db.session().getNamedQuery ("list-by-big-decimal-name-value")
-            .setString ("type", type)
-            .setString ("name", name)
-            .setBigDecimal ("value", value);
-        return (List<Thing>) query.list();
+
+
+    public List<Thing> listByBigDecimalNameValue(String type, String name, BigDecimal value) {
+        return db.session().createNamedQuery("list-by-big-decimal-name-value", Thing.class)
+                .setParameter("type", type)
+                .setParameter("name", name)
+                .setParameter("value", value, BigDecimal.class)
+                .list();
     }
 }

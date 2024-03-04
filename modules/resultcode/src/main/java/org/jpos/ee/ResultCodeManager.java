@@ -18,16 +18,12 @@
 
 package org.jpos.ee;
 
-import java.util.List;
-import java.util.Iterator;
-import java.sql.SQLException;
-import org.jpos.util.Logger;
-import org.jpos.util.LogEvent;
-import org.jpos.core.Configuration;
-import org.hibernate.Query;
-import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
+import org.jpos.util.LogEvent;
+import org.jpos.util.Logger;
+
+import java.util.List;
 
 public class ResultCodeManager {
     DB db;
@@ -38,8 +34,8 @@ public class ResultCodeManager {
     }
     public ResultCode get (long id) {
         try {
-            return (ResultCode) db.session().load (
-                ResultCode.class, new Long(id)
+            return db.session().load (
+                ResultCode.class, id
             );
         } catch (ObjectNotFoundException e) {
             LogEvent evt = db.getLog().createWarn ();
@@ -53,19 +49,17 @@ public class ResultCodeManager {
     }
     public ResultCode get (String rc) {
         try {
-            List l = ResultCodeFinder.findByMnemonic (db.session(), rc);
-            if (l.size() == 0) {
+            List<ResultCode> l = ResultCodeFinder.findByMnemonic (db.session(), rc);
+            if (l.isEmpty()) {
                 LogEvent evt = db.getLog().createWarn ();
                 evt.addMessage (
                     "error loading unconfigured result code '" + rc + "'"
                 );
                 Logger.log (evt);
             } else {
-                return (ResultCode) l.get(0);
+                return l.get(0);
             }
         } catch (HibernateException e) {
-            db.getLog().warn (e);
-        } catch (SQLException e) {
             db.getLog().warn (e);
         }
         return null;
@@ -75,7 +69,7 @@ public class ResultCodeManager {
         return resultCode != null ? resultCode : defRc;
     }
     public ResultCodeInfo getInfo (ResultCode rc, String locale) {
-        return (ResultCodeInfo) rc.getLocales().get(locale);
+        return rc.getLocales().get(locale);
     }
     public ResultCodeInfo getInfo (String rc, String locale) {
         ResultCode resultCode = get (rc);

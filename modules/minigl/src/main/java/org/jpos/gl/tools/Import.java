@@ -18,11 +18,11 @@
 
 package org.jpos.gl.tools;
 
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.jdom2.Document;
@@ -85,7 +85,7 @@ public class Import implements EntityResolver {
         System.exit (0);
     }
 
-    private void createSchema () throws HibernateException, DocumentException {
+    private void createSchema () throws HibernateException, JDOMException {
         DB db = new DB(configModifier);
         db.open();
         db.beginTransaction();
@@ -256,33 +256,34 @@ public class Import implements EntityResolver {
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.Account where code = :code and acct.root = :chart");
+            "SELECT acct FROM Account acct WHERE code = :code AND acct.root = :chart");
 
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("chart", chart.getId());
-        List l = q.list();
+        q.setParameter ("chart", chart);
+        List l = q.getResultList();
         return l.size() == 1 ? ((Account) l.get (0)) : null;
     }
     private FinalAccount getFinalAccount
         (Session sess, Account chart, Element elem)
-        throws SQLException, HibernateException
+        throws HibernateException
     {
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where code = :code and acct.root = :root"
+        TypedQuery<FinalAccount> q = sess.createQuery (
+            "select fa from FinalAccount fa where fa.code = :code and fa.root = :root",
+                FinalAccount.class
         );
         q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("root", chart.getId());
-        List l = q.list();
-        return l.size() == 1 ? ((FinalAccount) l.get (0)) : null;
+        q.setParameter ("root", chart);
+        List<FinalAccount> l = q.getResultList();
+        return l.size() == 1 ? l.get (0) : null;
     }
     private CompositeAccount getChart (Session sess, String chartCode)
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where code = :code and parent is null"
+            "select ca from CompositeAccount ca where ca.code = :code and ca.parent is null"
         );
         q.setParameter ("code", chartCode);
-        List l = q.list();
+        List l = q.getResultList();
         return (CompositeAccount) ((l.size() > 0) ? l.get (0) : null);
     }
     private void createJournalRules
@@ -313,7 +314,7 @@ public class Import implements EntityResolver {
     {
         Query q = session.createQuery ("from GLUser u where u.nick=:nick");
         q.setParameter ("nick", nick);
-        List l = q.list();
+        List l = q.getResultList();
         if (l.size() == 0) {
             throw new IllegalArgumentException (
                 "Invalid nick '" + nick + "'"
@@ -341,10 +342,10 @@ public class Import implements EntityResolver {
         throws SQLException, HibernateException
     {
         Query q = sess.createQuery (
-            "from journal in class org.jpos.gl.Journal where name = :name"
+            "SELECT journal from Journal journal where journal.name = :name"
         );
         q.setParameter ("name", name);
-        List l = q.list();
+        List l = q.getResultList();
         return (Journal) ((l.size() > 0) ? l.get (0) : null);
     }
     public InputSource resolveEntity (String publicId, String systemId) {
@@ -368,7 +369,7 @@ public class Import implements EntityResolver {
     }
     public void parse (String file)
       throws JDOMException, SQLException, HibernateException,
-      ParseException, IOException, GLException, DocumentException {
+      ParseException, IOException, GLException {
         SAXBuilder builder = new SAXBuilder (true);
         builder.setEntityResolver (this);
 

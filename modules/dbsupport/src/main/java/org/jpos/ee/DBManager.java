@@ -18,11 +18,10 @@
 
 package org.jpos.ee;
 
-import org.hibernate.query.criteria.internal.OrderImpl;
-
-import javax.persistence.NoResultException;
-import javax.persistence.criteria.*;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.*;
 import org.hibernate.query.Query;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,8 +91,10 @@ public class DBManager<T> {
         //ORDERS
         if (orders != null) {
             for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
-                OrderImpl order = new OrderImpl(root.get(entry.getKey()), entry.getValue());
-                orderList.add(order);
+                if (entry.getValue() == null || entry.getValue())
+                    orderList.add(criteriaBuilder.asc(root.get(entry.getKey())));
+                else
+                    orderList.add(criteriaBuilder.desc(root.get(entry.getKey())));
             }
         }
         Predicate combinedPredicate = null;
@@ -117,10 +118,9 @@ public class DBManager<T> {
         if (limit != -1) {
             queryImp.setMaxResults(limit);
         }
-        List<T> list = queryImp
+        return queryImp
                 .setFirstResult(offset)
                 .getResultList();
-        return list;
     }
 
     public List<T> getAll() {
@@ -157,10 +157,9 @@ public class DBManager<T> {
             if (limit != -1) {
                 queryImp.setMaxResults(limit);
             }
-            List<T> list = queryImp
+            return queryImp
                     .setFirstResult(offset)
                     .getResultList();
-            return list;
         } catch (NoResultException nre) {
             return null;
         }

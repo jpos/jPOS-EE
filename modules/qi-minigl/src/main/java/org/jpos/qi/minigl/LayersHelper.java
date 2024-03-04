@@ -26,10 +26,6 @@ import org.jpos.gl.Layer;
 import org.jpos.qi.QI;
 import org.jpos.qi.QIHelper;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +39,7 @@ public class LayersHelper extends QIHelper {
     }
 
     @Override
-    public Stream getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
+    public Stream<Layer> getAll(int offset, int limit, Map<String, Boolean> orders) throws Exception {
         List<Layer> all = DB.exec(db -> {
             LayerManager mgr = new LayerManager(db);
             return mgr.getAll(offset,limit,orders);

@@ -26,7 +26,7 @@ import org.jpos.ee.SysConfigManager;
 import org.jpos.qi.QI;
 import org.jpos.qi.QIHelper;
 
-import javax.persistence.NoResultException;
+import jakarta.persistence.NoResultException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -41,7 +41,7 @@ public class SysConfigHelper extends QIHelper {
 
     public SysConfig getSysConfig (String param) {
         try {
-            return (SysConfig) DB.exec((db) -> {
+            return DB.exec((db) -> {
                         SysConfigManager mgr = new SysConfigManager(db, prefix);
                         return mgr.getItemByParam("id", param, false);
                     }
@@ -57,7 +57,7 @@ public class SysConfigHelper extends QIHelper {
     @Override
     public boolean updateEntity (Binder binder) throws BLException {
         try {
-            return (boolean) DB.execWithTransaction((db) -> {
+            return DB.execWithTransaction((db) -> {
                 SysConfig oldSysConfig = (SysConfig) ((SysConfig) getOriginalEntity()).clone();
                 binder.writeBean(getOriginalEntity());
                 SysConfig s = (SysConfig) getOriginalEntity();

@@ -67,6 +67,7 @@ public class SeqNoTest {
         int runs = 20;
         List<Thread> tl = new ArrayList<>();
         Random r = new Random();
+        next(0L);
         for (int i=0; i<runs; i++) {
             Thread t = new Thread(() -> {
                 next(10 + Math.abs(r.nextLong()) % 100);
@@ -77,6 +78,7 @@ public class SeqNoTest {
         for (Thread t : tl) {
             t.join();
         }
+        runs++;
         assertEquals(++runs, next(1L), "seq value incorrect");
         reset();
         assertEquals(1L, next(1L), "reset failed");
@@ -86,6 +88,7 @@ public class SeqNoTest {
     @Test
     public void testAsyncLock() throws InterruptedException {
         int runs = 20;
+
         List<Thread> tl = new ArrayList<>();
         Random r = new Random();
         for (int i=0; i<runs; i++) {

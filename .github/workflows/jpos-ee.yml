@@ -37,7 +37,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-results
-        path: jpos/build/reports/tests/*
+        path: modules/*/build/reports/tests/*
 #    - name: Check minigl postgres
 #      run: ./gradlew :modules:minigl:clean :modules:minigl:check --rerun-tasks --info
 #      if: runner.os != 'Windows'

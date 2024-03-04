@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * SeqNo can be used to manage application level sequencers and both synchronous as well as asynchronous locking.
@@ -48,6 +48,7 @@ public class SeqNo extends Cloneable implements Serializable {
     @Column(length=128)
     private String id;
 
+    @Column(name = "`value`")
     private long value;
     private long lockedBy;
     private long lockUntil;

@@ -40,7 +40,7 @@ jobs:
         path: jpos/build/reports/tests/*
 #    - name: Check minigl postgres
 #      run: ./gradlew :modules:minigl:clean :modules:minigl:check --rerun-tasks --info
-3      if: runner.os != 'Windows'
+#      if: runner.os != 'Windows'
       env:
         TERM: dumb
         GRADLE_OPTS: -Dtest.minigl_db_driver=postgres

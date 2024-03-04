@@ -3,7 +3,6 @@ description = 'jPOS-EE :: SeqNo'
 dependencies {
     api project(':modules:dbsupport')
     testImplementation project(':modules:db-h2')
-    // api project(':modules:db-mysql')
 }
 
 
@@ -13,7 +12,7 @@ ext {
 
 task jposeeSetup(dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
-    main = 'org.jpos.q2.install.Install'
+    mainClass = 'org.jpos.q2.install.Install'
     args = ["--quiet", "--force", "--outputDir=" + testRuntimeDir]
 }
 
@@ -23,4 +22,3 @@ test {
     workingDir testRuntimeDir
 }
 
-apply from: "${rootProject.projectDir}/jpos-app.gradle"

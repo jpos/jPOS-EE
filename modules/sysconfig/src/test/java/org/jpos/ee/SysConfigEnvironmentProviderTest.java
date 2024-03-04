@@ -1,5 +1,6 @@
 package org.jpos.ee;
 
+import org.jpos.sysconfig.SysConfigEnvironmentProvider;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

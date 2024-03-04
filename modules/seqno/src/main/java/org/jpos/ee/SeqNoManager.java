@@ -201,12 +201,12 @@ public class SeqNoManager {
     }
 
     private void create (String id, long initialValue) {
-        try (DB db = new DB()) {
-            db.open();
-            db.beginTransaction();
-            SeqNo seq = new SeqNo(id, initialValue);
-            db.session().persist(seq);
-            db.commit();
-        } catch (Exception ignored) { }
+        try {
+            DB.execWithTransaction(db -> {
+                SeqNo seq = new SeqNo(id, initialValue);
+                db.session().persist(seq);
+                return seq;
+            });
+        } catch (Exception ignored) {}
     }
 }

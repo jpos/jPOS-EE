@@ -4,7 +4,7 @@ dependencies {
     api project(':modules:core')
     api libs.hibernate
     api libs.jacksonDatabind
-    implementation libs.dom4j
+    api libs.dom4j
     implementation libs.hibernateToolsOrm
     implementation libs.agroal
 }

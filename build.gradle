@@ -28,10 +28,10 @@ subprojects {
                 events "passed", "skipped", "failed"
             }
             systemProperty 'user.language', 'en'
-            if (!(System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS") == "true" &&
-                    (OperatingSystem.current().isMacOsX() || OperatingSystem.current().isWindows()))) {
-                maxParallelForks = Runtime.runtime.availableProcessors()
-            }
+//            if (!(System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS") == "true" &&
+//                    (OperatingSystem.current().isMacOsX() || OperatingSystem.current().isWindows()))) {
+//                maxParallelForks = Runtime.runtime.availableProcessors()
+//            }
         }
         dependencies {
             testImplementation testlibs.junit

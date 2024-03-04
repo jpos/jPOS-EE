@@ -113,7 +113,7 @@ ext {
             groovySql: "org.codehaus.groovy:groovy-sql:${groovyVersion}",
 
             // Jline
-            jline: "jline:jline:${jlineVersion}",
+            jline: "org.jline:jline:${jlineVersion}",
 
             // Jackson
             jacksonDatabind: "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",

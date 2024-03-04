@@ -2,7 +2,8 @@ description = 'jPOS-EE :: SeqNo'
 
 dependencies {
     api project(':modules:dbsupport')
-    testImplementation project(':modules:db-h2')
+    testImplementation project(':modules:db-postgresql')
+    testImplementation libs.testcontainersPostgresql
 }
 
 
@@ -10,10 +11,9 @@ ext {
     testRuntimeDir = "$buildDir/runtime" as File
 }
 
-task jposeeSetup(dependsOn: 'classes', type: JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'org.jpos.q2.install.Install'
-    args = ["--quiet", "--force", "--outputDir=" + testRuntimeDir]
+task jposeeSetup(type: Copy) {
+    from 'src/test/cfg/db.properties' 
+    into "$buildDir/runtime/cfg"
 }
 
 test {

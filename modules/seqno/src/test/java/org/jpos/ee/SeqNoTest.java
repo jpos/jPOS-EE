@@ -20,6 +20,7 @@ package org.jpos.ee;
 
 import org.dom4j.DocumentException;
 import org.jpos.iso.ISOUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -27,11 +28,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SeqNoTest {
+    private static final PostgreSQLContainer<?> DB_CONTAINER =
+      new PostgreSQLContainer<>("postgres:16")
+        .withDatabaseName("jposee")
+        .withUsername("jpos")
+        .withPassword("password")
+        .withReuse(true);
+
     @BeforeAll
     public static void setUp() throws DocumentException {
+        DB_CONTAINER.start();
+        System.setProperty("db.connection", DB_CONTAINER.getJdbcUrl());
+        System.setProperty("db.username", DB_CONTAINER.getUsername());
+        System.setProperty("db.password", DB_CONTAINER.getPassword());
+        System.setProperty("db.driver", "org.postgresql.Driver");
         System.setProperty("db.create.enabled", "YES");
         try (DB db = new DB()) {
             db.createSchema(null, true);
@@ -39,6 +54,11 @@ public class SeqNoTest {
         System.setProperty("db.create.enabled", "NO");
     }
 
+    @AfterAll
+    public static void tearDown() {
+        if (DB_CONTAINER != null)
+            DB_CONTAINER.stop();
+    }
     @Test
     public void testNewSeqNoWithDefault() {
         try (DB db = new DB()) {

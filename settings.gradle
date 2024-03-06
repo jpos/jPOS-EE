@@ -20,6 +20,7 @@ include  ':modules:db-flyway'
 include  ':modules:seqno'
 include  ':modules:binlog'
 include  ':modules:binlog-quartz'
+include  ':modules:server-simulator'
 
 // include  ':modules:dbtest'
 
@@ -39,7 +40,6 @@ dependencyResolutionManagement {
 // include  ':modules:txn'
 // include  ':modules:db-mysql'
 // include  ':modules:db-mssql'
-// include  ':modules:db-postgresql'
 // include  ':modules:minigl'
 // include  ':modules:eeuser'
 // include  ':modules:status'
@@ -47,7 +47,6 @@ dependencyResolutionManagement {
 // include  ':modules:jetty'
 // include  ':modules:saf-monitor'
 // include  ':modules:things'
-// include  ':modules:server-simulator'
 // include  ':modules:client-simulator'
 // include  ':modules:visitor'
 // include  ':modules:rspace'

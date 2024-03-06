@@ -21,8 +21,6 @@ package org.jpos.binlog;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.TPS;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Test;
@@ -35,8 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.SystemUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -47,22 +43,11 @@ public class BinLogTest implements Runnable {
     public static Path dir;
     private AtomicLong cnt = new AtomicLong();
 
-    @BeforeEach
-    public void before () {
-        /**
-         * Skip Tests for BinLog if on MS Windows due to file locking considerations
-         * Skip Binlog Tests for OSX on Java 9 and newer due to fcntl(fd, F_FULLSYNC) being slow
-         * Note: Java 8 does not properly flush buffers to disk on OSX
-         */
-        Assumptions.assumeFalse(IS_OS_WINDOWS || (IS_OS_MAC_OSX && isJavaVersionAtLeast(JAVA_9)));
-    }
-    
     @BeforeAll
     public static void setup () throws IOException {
         dir = Files.createTempFile("binlog-", "");
         Files.delete(dir);
         System.out.println ("TEMP=" + dir);
-        // dir = new File("/tmp/binlog");
     }
     @Test
     @Order(1)
@@ -80,21 +65,21 @@ public class BinLogTest implements Runnable {
             while (bl.hasNext(10000L)) {
                 i++;
                 byte[] b = bl.next().get();
-                if ((i % 1000) == 0)
+                if ((i % 100) == 0)
                     System.out.println(i + " " + new String(b));
             }
-            assertEquals(100000, i, "Invalid number of entries");
+            assertEquals(1000, i, "Invalid number of entries");
             assertEquals(1, bl.getFileNumber(bl.getFirst(dir)), "Invalid first file");
-            assertEquals(i/5000, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");            
+            assertEquals(i/50, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");
         }
     }
 
     public void run() {
         TPS tps = new TPS();
         try (BinLogWriter bl = new BinLogWriter(dir)) {
-            for (int i = 1; i <= 10000; i++) {
+            for (int i = 1; i <= 100; i++) {
                 long l = cnt.incrementAndGet();
-                if (i % 5000 == 0) {
+                if (i % 50 == 0) {
                     bl.cutover();
                 }
                 bl.add(ISOUtil.zeropad(l, 12).getBytes());

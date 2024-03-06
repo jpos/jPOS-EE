@@ -19,6 +19,8 @@ include  ':modules:sysconfig'
 include  ':modules:db-flyway'
 include  ':modules:seqno'
 include  ':modules:binlog'
+include  ':modules:binlog-quartz'
+
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -59,7 +61,6 @@ dependencyResolutionManagement {
 // include  ':modules:qi-eeuser'
 // include  ':modules:qi-sysconfig'
 // include  ':modules:qi-minigl'
-// include  ':modules:binlog-quartz'
 // include  ':modules:cryptoservice'
 // include  ':modules:cryptoserver'
 // include  ':modules:iso-http-client'

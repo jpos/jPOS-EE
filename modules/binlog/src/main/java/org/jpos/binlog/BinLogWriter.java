@@ -69,11 +69,12 @@ public class BinLogWriter extends BinLog {
      * @throws IOException on error
      */
     public BinLog.Ref add(byte[] record) throws IOException {
-        synchronized(mutex) {
+        try {
+            mutex.lock();
             checkCutover(true);
             AsynchronousFileChannel channel = raf;
             Future<FileLock> lockfut = channel.lock();
-            FileLock lock = null;
+            FileLock lock;
             try {
                 lock = lockfut.get();
             } catch (InterruptedException e) {
@@ -105,6 +106,8 @@ public class BinLogWriter extends BinLog {
             } else {
                 throw new IOException ("Failed to acquire file lock");
             }
+        } finally {
+            mutex.unlock();
         }
     }
 
@@ -113,7 +116,8 @@ public class BinLogWriter extends BinLog {
      * @throws IOException on error
      */
     public void cutover () throws IOException {
-        synchronized(mutex) {
+        try {
+            mutex.lock();
             checkCutover(true);
             AsynchronousFileChannel channel = raf;
             Future<FileLock> lockfut = channel.lock();
@@ -169,6 +173,8 @@ public class BinLogWriter extends BinLog {
             } else {
                 throw new IOException ("Failed to acquire file lock");
             }
+        } finally {
+            mutex.unlock();
         }
     }
 }

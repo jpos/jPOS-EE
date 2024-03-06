@@ -28,6 +28,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.*;
 import java.security.SecureRandom;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.*;
@@ -82,11 +83,11 @@ public abstract class BinLog implements AutoCloseable {
     protected static final long FIRST_EVENT_OFFSET = TAIL_OFFSET + RESERVED_LEN + Long.BYTES;
     private static SecureRandom numberGenerator = new SecureRandom();
     private OpenOption[] mode;
-    private static Map<String,Object> mutexs = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,ReentrantLock> mutexs = Collections.synchronizedMap(new HashMap<>());
     protected Path dir;
     protected int fileNumber;
     protected AsynchronousFileChannel raf;
-    protected final Object mutex;
+    protected final ReentrantLock mutex;
 
     private static final Pattern fileNamePatternRegX = Pattern.compile("^(.*/)?([\\d]{8})\\.dat$");
     private static final DirectoryStream.Filter<Path> filePattern = new DirectoryStream.Filter<Path>() {
@@ -105,8 +106,9 @@ public abstract class BinLog implements AutoCloseable {
      * @throws IOException on error
      */
     protected BinLog(Path dir, boolean create) throws IOException {
-        mutexs.putIfAbsent(dir.toAbsolutePath().toString(), new Object());
-        mutex = mutexs.get(dir.toAbsolutePath().toString());
+        String dirString = dir.toAbsolutePath().toString();
+        mutexs.putIfAbsent(dirString, new ReentrantLock());
+        mutex = mutexs.get(dirString);
         if ((Files.exists(dir) && !Files.isDirectory(dir))|| (!Files.exists(dir) && !create))
             throw new IOException ("Invalid directory '" + dir.toString() + "'");
         else

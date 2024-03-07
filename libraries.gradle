@@ -12,7 +12,7 @@ ext {
     jsonSchemaVersion = '2.2.11'
     guavaVersion = '31.0.1-jre'
     jacksonVersion = '2.10.5.1'
-    groovyVersion = '3.0.4'
+    groovyVersion = '3.0.21'
     jlineVersion = '3.23.0'
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.14.1'

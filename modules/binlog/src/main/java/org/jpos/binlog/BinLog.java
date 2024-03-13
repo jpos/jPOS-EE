@@ -22,12 +22,15 @@ import org.jpos.iso.ISOUtil;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.*;
 import java.security.SecureRandom;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -171,8 +174,7 @@ public abstract class BinLog implements AutoCloseable {
 
     private int getNextFileIndex() throws IOException {
         ByteBuffer index = readBuffer(raf, "NEXT_LOG_INDEX_OFFSET", 4, NEXT_LOG_INDEX_OFFSET);
-        int next = index.getInt();
-        return next;
+        return index.getInt();
     }
 
     /**
@@ -237,9 +239,7 @@ public abstract class BinLog implements AutoCloseable {
             if (read != bufferSize) {
                 throw new IOException("Failed to read " + bufferSize + " byte " + name + ", return: " + read);
             }
-        } catch (InterruptedException e) {
-            throw new IOException (e.getMessage());
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new IOException (e.getMessage());
         }
         buffer.flip();
@@ -387,8 +387,8 @@ public abstract class BinLog implements AutoCloseable {
         OPEN((short)0),
         CLOSED((short)1);
 
-        private short val;
-        private static Map<Integer,Status> map = new HashMap<>();
+        private final short val;
+        private static final Map<Integer,Status> map = new HashMap<>();
         static {
             for (Status s : Status.values()) {
                 map.put (s.intValue(), s);
@@ -412,6 +412,7 @@ public abstract class BinLog implements AutoCloseable {
      * Reference to a BinLog entry
      */
     public static class Ref implements Serializable {
+        @Serial
         private static final long serialVersionUID = 4201380716050124987L;
         private int fileNumber;
         private long offset;
@@ -483,6 +484,7 @@ public abstract class BinLog implements AutoCloseable {
      * Provides access to a binlog entry
      */
     public static class Entry implements Serializable {
+        @Serial
         private static final long serialVersionUID = 4841830838031550274L;
         private Ref ref;
         private byte[] data;
@@ -511,6 +513,40 @@ public abstract class BinLog implements AutoCloseable {
          */
         public byte[] get() {
             return data;
+        }
+    }
+
+    public static class QueueEntry {
+        private byte[] record;
+        private Ref ref;
+        private CompletableFuture<BinLog.Ref> future;
+
+        public QueueEntry(byte[] record) {
+            this.record = record;
+            this.future = new CompletableFuture<>();
+        }
+
+        public byte[] record () {
+            return record;
+        }
+        public Ref ref(Ref ref) {
+            this.ref = ref;
+            return ref;
+        }
+        public void complete () {
+            future.complete(ref);
+        }
+
+        public Future<BinLog.Ref> future() {
+            return future;
+        }
+
+        @Override
+        public String toString() {
+            return "QueueEntry{" +
+              "ref=" + ref +
+              ", future=" + future +
+              '}';
         }
     }
 }

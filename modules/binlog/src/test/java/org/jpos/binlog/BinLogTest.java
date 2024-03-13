@@ -31,6 +31,11 @@ import org.junit.jupiter.api.Order;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,10 +47,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class BinLogTest implements Runnable {
     public static Path dir;
     private AtomicLong cnt = new AtomicLong();
+    private static ExecutorService executor;
+    private static TPS tps = new TPS();
 
     @BeforeAll
     public static void setup () throws IOException {
         dir = Files.createTempFile("binlog-", "");
+        executor = Executors.newVirtualThreadPerTaskExecutor();
         Files.delete(dir);
         System.out.println ("TEMP=" + dir);
     }
@@ -57,8 +65,8 @@ public class BinLogTest implements Runnable {
             assertNull(w.getLastClosed(dir), "Found last closed file");
             assertEquals(1, w.getFileNumber(w.getFirst(dir)), "Invalid first file");
         }
-        for (int i=0; i<10; i++) {
-            new Thread(this).start();
+        for (int i=0; i<100; i++) {
+            executor.submit(this);
         }
         try (BinLogReader bl = new BinLogReader(dir)) {
             int i = 0;
@@ -68,24 +76,29 @@ public class BinLogTest implements Runnable {
                 if ((i % 100) == 0)
                     System.out.println(i + " " + new String(b));
             }
-            assertEquals(1000, i, "Invalid number of entries");
+            assertEquals(10000, i, "Invalid number of entries");
             assertEquals(1, bl.getFileNumber(bl.getFirst(dir)), "Invalid first file");
-            assertEquals(i/50, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");
+            assertEquals(100, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");
         }
     }
 
     public void run() {
-        TPS tps = new TPS();
+        List<Future<BinLog.Ref>> futures = new ArrayList<>();
         try (BinLogWriter bl = new BinLogWriter(dir)) {
             for (int i = 1; i <= 100; i++) {
                 long l = cnt.incrementAndGet();
-                if (i % 50 == 0) {
-                    bl.cutover();
-                }
-                bl.add(ISOUtil.zeropad(l, 12).getBytes());
+                futures.add (
+                  bl.queue(ISOUtil.zeropad(l, 12).getBytes())
+                );
                 tps.tick();
             }
+            bl.flush();
+            for (Future<BinLog.Ref> f : futures) {
+                if (!f.isDone())
+                    throw new IllegalStateException("Future " + f + " !done");
+            }
             tps.dump(System.out, "");
+            bl.cutover();
         } catch (Throwable e) {
             e.printStackTrace(System.err);
         }

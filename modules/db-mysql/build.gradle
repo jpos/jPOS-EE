@@ -2,5 +2,7 @@ description = 'jPOS-EE :: MySql support'
 
 dependencies {
     api project(':modules:dbsupport')
-    api libraries.jdbcMysql
+    api libs.jdbcMysql
+    api libs.flywayMysql
 }
+

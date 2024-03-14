@@ -16,8 +16,9 @@ jakartaActivation = '2.0.1'
 hibernate = '6.4.4.Final'
 dom4j = '2.1.4'
 jdbcPostgresql = '42.7.2'
+jdbcMysql = '8.0.33'
 agroal = '2.3'
-flyway = '10.8.1'
+flyway = '10.9.1'
 h2 = '2.2.224'
 testcontainers = '1.19.6'
 
@@ -45,6 +46,7 @@ hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.r
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
 jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }
+jdbcMysql = { module = 'mysql:mysql-connector-java', version.ref='jdbcMysql' }
 agroal = { module = 'io.agroal:agroal-pool', version.ref='agroal' }
 flyway = { module = 'org.flywaydb:flyway-core', version.ref='flyway' }
 flywayPostgresql = { module = 'org.flywaydb:flyway-database-postgresql', version.ref='flyway' }

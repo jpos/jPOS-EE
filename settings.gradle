@@ -21,6 +21,7 @@ include  ':modules:seqno'
 include  ':modules:binlog'
 include  ':modules:binlog-quartz'
 include  ':modules:server-simulator'
+include  ':modules:client-simulator'
 
 // include  ':modules:dbtest'
 
@@ -47,7 +48,6 @@ dependencyResolutionManagement {
 // include  ':modules:jetty'
 // include  ':modules:saf-monitor'
 // include  ':modules:things'
-// include  ':modules:client-simulator'
 // include  ':modules:visitor'
 // include  ':modules:rspace'
 // include  ':modules:rest-testbed'

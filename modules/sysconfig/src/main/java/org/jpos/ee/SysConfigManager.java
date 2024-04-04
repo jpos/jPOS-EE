@@ -18,6 +18,7 @@
 
 package org.jpos.ee;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import org.hibernate.query.NativeQuery;
@@ -222,6 +223,14 @@ public class SysConfigManager extends DBManager<SysConfig> {
         String v = get (name);
         return v.length() == 0 ? def :
             (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes"));
+    }
+
+    public BigDecimal getBigDecimal (String name, BigDecimal def) {
+        String v = get (name);
+        return v != null ? new BigDecimal(v.trim()) : def;
+    }
+    public BigDecimal getBigDecimal (String name) {
+        return getBigDecimal (name, BigDecimal.ZERO);
     }
     public int getMaxIdLength() {
         String queryString = "select max(length(id)) as maxidlen from sysconfig";

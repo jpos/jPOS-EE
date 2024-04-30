@@ -18,14 +18,14 @@
 
 package org.jpos.ee;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Table(name = "realm", uniqueConstraints={@UniqueConstraint(columnNames={"name"}, name="UK_realm_name")})
+@Table(name = "realm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"}, name = "UK_realm_name")})
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Realm extends Cloneable implements Serializable {
     private static final long serialVersionUID = -5382324365781372973L;
@@ -34,10 +34,10 @@ public class Realm extends Cloneable implements Serializable {
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(length=64)
+    @Column(length = 64)
     private String name;
 
-    @Column(length=8000)
+    @Column(length = 8000)
     private String description;
 
     public Long getId() {
@@ -82,10 +82,10 @@ public class Realm extends Cloneable implements Serializable {
     @Override
     public String toString() {
         return "Realm{" +
-          "id=" + id +
-          ", name='" + name + '\'' +
-          ", description='" + description + '\'' +
-          '}';
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 
     @Override
@@ -94,8 +94,8 @@ public class Realm extends Cloneable implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         Realm realm = (Realm) o;
         return Objects.equals(id, realm.id) &&
-          Objects.equals(name, realm.name) &&
-          Objects.equals(description, realm.description);
+                Objects.equals(name, realm.name) &&
+                Objects.equals(description, realm.description);
     }
 
     @Override

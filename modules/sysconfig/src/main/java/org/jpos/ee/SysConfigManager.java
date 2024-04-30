@@ -26,9 +26,8 @@ import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
-import org.hibernate.type.IntegerType;
 
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 
 @SuppressWarnings("unused")
 public class SysConfigManager extends DBManager<SysConfig> {
@@ -236,9 +235,9 @@ public class SysConfigManager extends DBManager<SysConfig> {
         String queryString = "select max(length(id)) as maxidlen from sysconfig";
         if (prefix != null)
             queryString += " where id like :query";
-        NativeQuery query =  db.session().createNativeQuery(queryString);
+        NativeQuery<Integer> query =  db.session().createNativeQuery(queryString, Integer.class);
         if (prefix != null)
             query.setParameter ("query", prefix + "%");
-        return (int) query.addScalar("maxidlen",  IntegerType.INSTANCE).getSingleResult();
+        return query.addScalar("maxidlen", Integer.class).getSingleResult();
     }
 }

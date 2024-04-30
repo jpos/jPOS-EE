@@ -18,7 +18,6 @@
 
 package org.jpos.ee;
 
-import org.dom4j.DocumentException;
 import org.jpos.iso.ISOUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SeqNoTest {
     @BeforeAll
-    public static void setUp() throws DocumentException {
+    public static void setUp() throws Exception {
         System.setProperty("db.create.enabled", "YES");
         try (DB db = new DB()) {
             db.createSchema(null, true);

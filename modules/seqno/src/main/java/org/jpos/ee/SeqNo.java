@@ -18,12 +18,14 @@
 
 package org.jpos.ee;
 
-import java.io.Serializable;
-import java.util.Objects;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * SeqNo can be used to manage application level sequencers and both synchronous as well as asynchronous locking.

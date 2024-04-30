@@ -19,19 +19,14 @@
 package org.jpos.ee.status;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysLog;
 import org.jpos.ee.SysLogManager;
 
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Alejandro Revilla
@@ -39,14 +34,14 @@ import java.util.Set;
 public class StatusManager {
     DB db;
     SysLogManager syslog;
-    public static final Map severity = new HashMap();
+    public static final Map<String, Integer> severity = new HashMap();
 
     static {
-        severity.put (Status.OK,       new Integer (SysLog.INFO));
-        severity.put (Status.OFF,      new Integer (SysLog.INFO));
-        severity.put (Status.WARN,     new Integer (SysLog.WARN));
-        severity.put (Status.ERROR,    new Integer (SysLog.ERROR));
-        severity.put (Status.CRITICAL, new Integer (SysLog.CRITICAL));
+        severity.put (Status.OK,       SysLog.INFO);
+        severity.put (Status.OFF,      SysLog.INFO);
+        severity.put (Status.WARN,     SysLog.WARN);
+        severity.put (Status.ERROR,    SysLog.ERROR);
+        severity.put (Status.CRITICAL, SysLog.CRITICAL);
     }
 
     public StatusManager (DB db) {
@@ -312,10 +307,10 @@ public class StatusManager {
         }
     }
 
-    public List findByExpired(boolean expired) throws SQLException, HibernateException {
-        Query q = db.session().createQuery ("from org.jpos.ee.status.Status where expired=:expired");
-        q.setBoolean ("expired", expired);
-        return q.list();
+    public List<Status> findByExpired(boolean expired) throws HibernateException {
+        return db.session().createQuery ("from org.jpos.ee.status.Status where expired=:expired", Status.class)
+                .setParameter("expired", expired)
+                .getResultList() ;
     }
     private void purgeEvents (Set events, int maxEvents) {
         if (maxEvents > 0) { 

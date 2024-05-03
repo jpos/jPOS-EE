@@ -33,7 +33,7 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 	private int size;
 	private boolean padLeft = true;
 	private boolean padright = false;
-	private Byte padCharacter = new Byte((byte) 0x20); //space
+	private Byte padCharacter = Byte.valueOf((byte) 0x20); //space
 	private APCICompliance compliance = new NoCompliance();
 
 	public FixedFieldPackager(String name,int size,Interpreter interpretter) {

@@ -20,10 +20,14 @@ package org.jpos.qrest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Response {
     private HttpResponseStatus status;
     private Object body;
     private String contentType;
+    private Map<String, String> headers;
 
     public Response(HttpResponseStatus status, Object body) {
         this(status, body, null);
@@ -33,6 +37,7 @@ public class Response {
         this.status = status;
         this.body = body;
         this.contentType = contentType;
+        this.headers = new HashMap<>();
     }
 
     public HttpResponseStatus status() {
@@ -45,6 +50,10 @@ public class Response {
 
     public String contentType() {
         return contentType;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
     @Override

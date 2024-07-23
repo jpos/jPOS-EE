@@ -7,7 +7,7 @@
 | *Who*          | The jPOS Software team.
 | *Where*        | Directory modules/http-client
 | *Why*          | Lightweight asynchronous Http Participant
-| *Status*       | Experimental
+| *Status*       | Production grade
 | *License*      | <<appendix_license,GNU Affero General Public License version 3>>
 |=================================================================
 

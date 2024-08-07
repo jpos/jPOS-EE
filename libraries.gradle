@@ -17,7 +17,7 @@ ext {
     restAssuredVersion = '2.9.0'
     vaadinVersion = '8.14.1'
     nettyVersion = '4.1.110.Final'
-    httpAsyncClientVersion = '4.5.14'
+    httpAsyncClientVersion = '4.1.5'
     mysqlJDBCVersion = '8.0.33'
     c3p0Version = '0.9.5.5'
     postgresJDBCVersion = '42.7.3'

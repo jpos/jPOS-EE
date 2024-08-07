@@ -5,7 +5,7 @@ ext {
     hibernateVersion = '5.6.15.Final'
     geronimoVersion = '1.1.1'
     jettyVersion = '9.4.54.v20240208'
-    servletApiVersion = '4.0.1'
+    servletApiVersion = '3.1.0'
     websocketApiVersion = '1.1'
     jgroupsVersion = '4.1.5.Final'
     jaxrsVersion = '2.1.1'

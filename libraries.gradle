@@ -6,7 +6,7 @@ ext {
     geronimoVersion = '1.1.1'
     jettyVersion = '9.4.54.v20240208'
     servletApiVersion = '3.1.0'
-    websocketApiVersion = '1.0'
+    websocketApiVersion = '1.1'
     jgroupsVersion = '4.1.5.Final'
     jaxrsVersion = '2.1.1'
     jsonSchemaVersion = '2.2.11'

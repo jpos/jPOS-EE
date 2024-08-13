@@ -21,7 +21,7 @@ include  ':modules:seqno'
 include  ':modules:binlog'
 include  ':modules:binlog-quartz'
 include  ':modules:server-simulator'
-
+include  ':modules:http-client'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -65,7 +65,6 @@ dependencyResolutionManagement {
 // include  ':modules:iso-http-client'
 // include  ':modules:iso-http-server'
 // include  ':modules:iso-http-servlet'
-// include  ':modules:http-client'
 // include  ':modules:elasticsearch'
 
 

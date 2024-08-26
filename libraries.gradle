@@ -75,9 +75,6 @@ ext {
             //Mail
             javax_mail: 'javax.mail:javax.mail-api:1.6.2',
 
-            //SSHD
-            sshd: 'org.apache.sshd:sshd-core:2.13.2',
-
             //Servlet API
             servlet_api: "javax.servlet:javax.servlet-api:${servletApiVersion}",
 

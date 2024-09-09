@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.syslog;
 
 import java.util.Date;
 
+import org.jpos.ee.DB;
+import org.jpos.ee.DBManager;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 import org.hibernate.Transaction;
@@ -106,10 +108,10 @@ public class SysLogManager extends DBManager<SysLog> {
             }
             if (autoCommit) {
                 Transaction tx = db.beginTransaction ();
-                db.session().save (evt);
+                db.session().persist (evt);
                 tx.commit ();
             } else {
-                db.session().save (evt);
+                db.session().persist (evt);
             }
             if (autoClose)
                 db.close ();
@@ -159,13 +161,11 @@ public class SysLogManager extends DBManager<SysLog> {
     }
     public SysLog get (long id) {
         try {
-            return db.session().load (SysLog.class, new Long (id));
+            return db.session().getReference(SysLog.class, id);
         } catch (Throwable e) {
             db.getLog().error (e);
         } 
         return null;
     }
-
-
 }
 

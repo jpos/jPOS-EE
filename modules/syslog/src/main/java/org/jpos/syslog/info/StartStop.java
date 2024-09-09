@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee.info;
+package org.jpos.syslog.info;
 
-import org.jpos.ee.SysLog;
-import org.jpos.ee.SysLogManager;
+import org.jpos.syslog.SysLog;
+import org.jpos.syslog.SysLogManager;
 import org.jpos.q2.QBeanAsyncSupport;
 import org.jpos.util.DateUtil;
 

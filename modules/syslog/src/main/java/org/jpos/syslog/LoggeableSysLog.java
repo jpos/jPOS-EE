@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.syslog;
+
 import org.jpos.util.Loggeable;
 import java.io.PrintStream;
 

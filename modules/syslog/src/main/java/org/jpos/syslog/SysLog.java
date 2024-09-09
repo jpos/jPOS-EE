@@ -16,19 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.ee;
+package org.jpos.syslog;
+
+import jakarta.persistence.*;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalTime;
 import java.util.Date;
+import java.util.Objects;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
+@Entity
+@SoftDelete
+@Table(name = "syslog")
+@Cache(usage = CacheConcurrencyStrategy.NONE)
+@Comment("System audit log")
 @SuppressWarnings("unused")
 public class SysLog implements Serializable {
-    private Long id;
-    private Date date;
+    @Id
+    @GeneratedValue (strategy = GenerationType.SEQUENCE)
+    private long id;
+
+    private Instant date;
+
     private boolean deleted;
     private String source;
     private String type;
@@ -129,21 +142,23 @@ public class SysLog implements Serializable {
         this.trace = trace;
     }
 
+    @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("id", getId())
-            .toString();
+        return "SysLog{" +
+          "id=" + id +
+          '}';
     }
-    public boolean equals(Object other) {
-        if ( !(other instanceof SysLog) ) return false;
-        SysLog castOther = (SysLog) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SysLog sysLog = (SysLog) o;
+        return Objects.equals(id, sysLog.id);
     }
+
+    @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
+        return Objects.hash(id);
     }
 }

@@ -185,7 +185,7 @@ public class Q2Info implements TransactionParticipant, Configurable {
         routes.add(new Route<>(prefix + "/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
         routes.add(new Route<>(prefix + "/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
         routes.add(new Route<>(prefix + "/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
-        routes.add(new Route<>(prefix + "/q2/started**", "GET", (t,s) -> mapOf("started", new Date(System.currentTimeMillis() - q2.getUptime()))));
+        // routes.add(new Route<>(prefix + "/q2/started**", "GET", (t,s) -> mapOf("started", q2.getUptime())));
         routes.add(new Route<>(prefix + "/q2/diskspace**", "GET", (t,s) -> diskspace()));
         routes.add(new Route<>(prefix + "/q2/mux/{muxname}/connected", "GET", (t,s) -> connected(t,s)));    // like below, but returns HTTP code 503 if mux not connected
         routes.add(new Route<>(prefix + "/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));

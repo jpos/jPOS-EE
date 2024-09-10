@@ -1,6 +1,7 @@
 
 <module name="syslog">
     <mappings>
-        <mapping class="org.jpos.syslog.SysLog.class"/>
+        <mapping class="org.jpos.syslog.SysLog"/>
     </mappings>
 </module>
+

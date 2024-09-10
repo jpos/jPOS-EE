@@ -18,7 +18,7 @@
 
 package org.jpos.syslog;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.jpos.ee.DB;
 import org.jpos.ee.DBManager;
@@ -93,7 +93,7 @@ public class SysLogManager extends DBManager<SysLog> {
     {
         SysLog evt = new SysLog ();
         try {
-            evt.setDate (new Date());
+            evt.setDate (Instant.now());
             evt.setSource (source);
             evt.setType (type);
             evt.setSeverity (severity);

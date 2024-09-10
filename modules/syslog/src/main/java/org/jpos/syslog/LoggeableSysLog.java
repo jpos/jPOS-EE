@@ -29,8 +29,6 @@ public class LoggeableSysLog implements Loggeable {
     public void dump (PrintStream p, String indent) {
         String newIndent = indent + "   ";
         p.println (indent + "<syslog>");
-        if (evt.isDeleted())
-            p.println (newIndent + "<deleted />" );
         p.println (newIndent + "<date>"     + evt.getDate()     + "</date>");
         p.println (newIndent + "<source>"   + evt.getSource()+ "</source>");
         p.println (newIndent + "<type>"     + evt.getType() + "</type>");
@@ -46,4 +44,3 @@ public class LoggeableSysLog implements Loggeable {
         p.println (indent + "</syslog>");
     }
 }
-

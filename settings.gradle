@@ -23,6 +23,7 @@ include  ':modules:binlog'
 include  ':modules:binlog-quartz'
 include  ':modules:server-simulator'
 include  ':modules:client-simulator'
+include  ':modules:syslog'
 
 // include  ':modules:dbtest'
 
@@ -37,7 +38,6 @@ dependencyResolutionManagement {
 }
 
 // include  ':modules:freemarker-decorator'
-// include  ':modules:syslog'
 // include  ':modules:resultcode'
 // include  ':modules:txn'
 // include  ':modules:db-mssql'

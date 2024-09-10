@@ -25,8 +25,6 @@ import org.hibernate.annotations.Cache;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalTime;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -39,10 +37,7 @@ public class SysLog implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.SEQUENCE)
     private long id;
-
     private Instant date;
-
-    private boolean deleted;
     private String source;
     private String type;
     private int severity;
@@ -72,20 +67,12 @@ public class SysLog implements Serializable {
         this.id = id;
     }
 
-    public Date getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Instant date) {
         this.date = date;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
     }
 
     public String getSource() {

@@ -56,7 +56,7 @@ public class Decrypt implements TransactionParticipant, Configurable {
             String jsonStr = request.content().toString(CharsetUtil.UTF_8);
             ctx.log (jsonStr);
             @SuppressWarnings("unchecked")
-            Map<String,String> m = (Map<String,String>) mapper.readValue(jsonStr, Map.class);
+            Map<String,String> m = mapper.readValue(jsonStr, Map.class);
             UUID keyId = UUID.fromString(m.get("kid"));
             byte[] encoded = decoder.decode(m.get("cryptogram"));
             byte[] b = cs.aesDecrypt(jobId, keyId, encoded);

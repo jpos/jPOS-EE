@@ -24,7 +24,8 @@ include  ':modules:binlog-quartz'
 include  ':modules:server-simulator'
 include  ':modules:client-simulator'
 include  ':modules:syslog'
-
+include  ':modules:cryptoservice'
+include  ':modules:cryptoserver'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -60,8 +61,6 @@ dependencyResolutionManagement {
 // include  ':modules:qi-eeuser'
 // include  ':modules:qi-sysconfig'
 // include  ':modules:qi-minigl'
-// include  ':modules:cryptoservice'
-// include  ':modules:cryptoserver'
 // include  ':modules:iso-http-client'
 // include  ':modules:iso-http-server'
 // include  ':modules:iso-http-servlet'

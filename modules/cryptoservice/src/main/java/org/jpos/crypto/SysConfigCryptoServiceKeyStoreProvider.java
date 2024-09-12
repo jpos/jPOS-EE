@@ -19,7 +19,7 @@
 package org.jpos.crypto;
 
 import org.jpos.ee.DB;
-import org.jpos.ee.SysConfigManager;
+import org.jpos.sysconfig.SysConfigManager;
 
 public class SysConfigCryptoServiceKeyStoreProvider implements CryptoServiceKeyStoreProvider {
     @Override
@@ -30,7 +30,7 @@ public class SysConfigCryptoServiceKeyStoreProvider implements CryptoServiceKeyS
                 if (mgr.get(id, null) != null)
                     throw new KeyAlreadyExistsException();
                 
-                mgr.put(id, value, "security.read", "security.write");
+                mgr.put(id, value);
                 return true;
             });
         } catch (Exception e) {

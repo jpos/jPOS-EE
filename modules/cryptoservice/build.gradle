@@ -1,7 +1,7 @@
 description = 'jPOS-EE :: CryptoService'
 
 dependencies {
-    api libraries.jpos
+    api libs.jpos
     api project(':modules:sysconfig')
 }
 

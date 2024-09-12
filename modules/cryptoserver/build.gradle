@@ -1,15 +1,13 @@
 description = 'jPOS-EE :: Crypto Server'
 
 dependencies {
-    testImplementation libraries.junit
-    testImplementation libraries.restAssured
+    testImplementation libs.junit
+    testImplementation testlibs.restAssured
     api project(':modules:qrest')
     api project(':modules:cryptoservice')
     api project(':modules:db-mysql')
     api project(':modules:logback')
 }
-
-apply from: "${rootProject.projectDir}/jpos-app.gradle"
 
 test {
     dependsOn('installApp')

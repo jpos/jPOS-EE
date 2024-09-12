@@ -18,7 +18,6 @@
 
 package org.jpos.cryptoserver.participant;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -52,7 +51,7 @@ public class Encrypt implements TransactionParticipant, Configurable {
             String jsonStr = request.content().toString(CharsetUtil.UTF_8);
             ctx.log (jsonStr);
             @SuppressWarnings("unchecked")
-            Map<String,String> m = (Map<String,String>) mapper.readValue(jsonStr, Map.class);
+            Map<String,String> m = mapper.readValue(jsonStr, Map.class);
 
             SecureData sd = cs.aesEncrypt(m.get("text").getBytes());
 

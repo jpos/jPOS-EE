@@ -20,18 +20,17 @@ package org.jpos.ee;
 
 import java.io.Serializable;
 import java.util.List;
-import java.sql.SQLException;
 
-import org.hibernate.*;
-import org.hibernate.type.Type;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 
 /** Automatically generated Finder class for ResultCodeInfoFinder.
  * @author Hibernate FinderGenerator  **/
 public class ResultCodeInfoFinder implements Serializable {
 
-    public static List findAll(Session session) throws SQLException, HibernateException {
+    public static List<ResultCodeInfo> findAll(Session session) throws HibernateException {
         return session.createQuery(
-            "from ResultCodeInfo in class org.jpos.ee.ResultCodeInfo"
+            "from ResultCodeInfo in class org.jpos.ee.ResultCodeInfo", ResultCodeInfo.class
         ).list();
     }
 }

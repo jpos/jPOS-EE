@@ -1,6 +1,6 @@
 pluginManagement {
     repositories {
-        mavenLocal();
+        mavenLocal()
         gradlePluginPortal()
     }
 }
@@ -27,6 +27,7 @@ include  ':modules:syslog'
 include  ':modules:cryptoservice'
 include  ':modules:cryptoserver'
 include  ':modules:http-client'
+include  ':modules:resultcode'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -40,7 +41,6 @@ dependencyResolutionManagement {
 }
 
 // include  ':modules:freemarker-decorator'
-// include  ':modules:resultcode'
 // include  ':modules:txn'
 // include  ':modules:db-mssql'
 // include  ':modules:minigl'

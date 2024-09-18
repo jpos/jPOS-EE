@@ -1,6 +1,6 @@
 [versions]
 jpos = "3.0.0-SNAPSHOT"
-commonsLang3 = "3.14.0"
+commonsLang3 = "3.17.0"
 quartz = "2.5.0-rc1"
 slf4j = "2.0.12"
 jakartaBind = "4.0.1"

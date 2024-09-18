@@ -82,7 +82,7 @@ public class GROOVY implements CLICommand
     // It would be nice to have it configurable for jPOS purposes, or even per-Q2 app
     // One option is to subclass Groovysh and @Override run()
     // Another option is to fork groovy-core, do a proper enhancement, and send a Pull Request
-    ish.getHistory().flush();
+    // ish.getHistory().flush();
   }
 
 }

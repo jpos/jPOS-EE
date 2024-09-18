@@ -20,25 +20,26 @@ package org.jpos.ee;
 
 import java.io.Serializable;
 import java.util.List;
-import java.sql.SQLException;
 
-import org.hibernate.*;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 /** Automatically generated Finder class for ResultCodeFinder.
  * @author Hibernate FinderGenerator  **/
 public class ResultCodeFinder implements Serializable {
 
-    public static List findByMnemonic(Session session, java.lang.String mnemonic) throws SQLException, HibernateException {
-        Query q = session.createQuery (
-            "from org.jpos.ee.ResultCode as resultcode where resultcode.mnemonic=:mnemonic"
+    public static List<ResultCode> findByMnemonic(Session session, java.lang.String mnemonic) throws HibernateException {
+        Query<ResultCode> q = session.createQuery (
+            "from org.jpos.ee.ResultCode as resultcode where resultcode.mnemonic=:mnemonic", ResultCode.class
         );
         q.setParameter ("mnemonic", mnemonic);
         return q.list();
     }
 
-    public static List findAll(Session session) throws SQLException, HibernateException {
+    public static List<ResultCode> findAll(Session session) throws HibernateException {
         return session.createQuery(
-            "from ResultCode in class org.jpos.ee.ResultCode"
+            "from ResultCode in class org.jpos.ee.ResultCode", ResultCode.class
         ).list();
     }
 }

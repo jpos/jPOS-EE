@@ -72,7 +72,7 @@ public class ADDUSER implements CLICommand {
             User user = new User();
             user.setNick (args[1]);
             user.setName (line.getOptionValue('n'));
-            db.session().save(user);
+            db.session().persist(user);
             if (line.hasOption('p')) {
                 mgr.setPassword(user, line.getOptionValue('p'));
             }
@@ -98,7 +98,7 @@ public class ADDUSER implements CLICommand {
         return shl;
     }
 
-    private void showHelp (CLIContext cli, String args[], Options options) {
+    private void showHelp (CLIContext cli, String[] args, Options options) {
         PrintWriter pw = new PrintWriter (cli.getOutputStream());
         HelpFormatter helpFormatter = new HelpFormatter ();
         helpFormatter.printHelp (args[0] + "<nick> [options]", options);

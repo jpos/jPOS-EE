@@ -21,16 +21,17 @@ package org.jpos.ee;
 import java.util.Date;
 import java.util.List;
 
-import org.bouncycastle.util.encoders.Base64;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.HibernateException;
 
-import javax.persistence.criteria.*;
 
 /**
  * @author Alejandro Revilla
  */
 public class UserManager extends DBManager<User> {
     private HashVersion version;
+    private static final String INVALID_PASSWORD = "Invalid password";
 
     public UserManager (DB db) {
         this (db, HashVersion.ONE);
@@ -52,13 +53,10 @@ public class UserManager extends DBManager<User> {
     public void setPassword (User u, String clearpass, User author, HashVersion v) throws Exception {
         if (u.getPasswordHash() != null)
             u.addPasswordHistoryValue(u.getPasswordHash());
-        switch (v) {
-            case ZERO:
-                setV0Password (u, clearpass);
-                break;
-            case ONE:
-                setV1Password (u, clearpass);
-                break;
+        if (v == HashVersion.ZERO) {
+            setV0Password(u, clearpass);
+        } else if (v == HashVersion.ONE) {
+            setV1Password(u, clearpass);
         }
         u.setPasswordChanged(new Date());
         u.setForcePasswordChange(false);
@@ -66,14 +64,14 @@ public class UserManager extends DBManager<User> {
         if (author == null)
             author = u;
         revmgr.createRevision(author, "user." + u.getId(), "Password changed");
-        db.session().saveOrUpdate(u);
+        db.session().persist(u);
     }
 
     /**
      * @return all users
      * @throws HibernateException on low level hibernate related exception
      */
-    public List findAll () throws HibernateException {
+    public List<User> findAll () throws HibernateException {
         return super.getAll();
     }
 
@@ -105,7 +103,7 @@ public class UserManager extends DBManager<User> {
     public User getUserByNick (String nick, String pass) throws Exception {
         User u = getUserByNick(nick);
         assertNotNull (u, "User does not exist");
-        assertTrue(checkPassword(u, pass), "Invalid password");
+        assertTrue(checkPassword(u, pass), INVALID_PASSWORD);
         return u;
     }
 
@@ -124,11 +122,10 @@ public class UserManager extends DBManager<User> {
         assertNotNull(passwordHash, "Password is null");
         HashVersion v = HashVersion.getVersion(passwordHash);
         assertTrue(v != HashVersion.UNKNOWN, "Unknown password");
-        switch (v) {
-            case ZERO:
-                return checkV0Password(passwordHash, u.getId(), clearpass);
-            case ONE:
-                return checkV1Password(passwordHash, clearpass);
+        if (v == HashVersion.ZERO) {
+            return checkV0Password(passwordHash, u.getId(), clearpass);
+        } else if (v == HashVersion.ONE) {
+            return checkV1Password(passwordHash, clearpass);
         }
         return false;
     }
@@ -144,14 +141,12 @@ public class UserManager extends DBManager<User> {
         }
         for (PasswordHistory p : u.getPasswordhistory()) {
             HashVersion v = HashVersion.getVersion(p.getValue());
-            switch (v) {
-                case ZERO:
-                    if (checkV0Password(p.getValue(), u.getId(), clearpass))
-                        return false;
-                case ONE:
-                    if (checkV1Password (p.getValue(), clearpass))
-                        return false;
-            }
+            if (v == HashVersion.ZERO) {
+                if (checkV0Password(p.getValue(), u.getId(), clearpass))
+                    return false;
+            } else if (v == HashVersion.ONE && checkV1Password(p.getValue(), clearpass))
+                    return false;
+
         }
         return true;
     }
@@ -178,7 +173,7 @@ public class UserManager extends DBManager<User> {
     }
 
     private void setV1Password (User u, String clearpass) throws Exception {
-        assertNotNull(clearpass, "Invalid password");
+        assertNotNull(clearpass, INVALID_PASSWORD);
         u.setPasswordHash(HashVersion.ONE.hash(Long.toString(u.getId(),16), clearpass, HashVersion.ONE.getSalt()));
     }
 
@@ -203,7 +198,7 @@ public class UserManager extends DBManager<User> {
     }
 
     private void setV0Password (User u, String clearpass) throws Exception {
-        assertNotNull(clearpass, "Invalid password");
+        assertNotNull(clearpass, INVALID_PASSWORD);
         u.setPasswordHash(HashVersion.ZERO.hash(Long.toString(u.getId()), clearpass, null));
     }
 }

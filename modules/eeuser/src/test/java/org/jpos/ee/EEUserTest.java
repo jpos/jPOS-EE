@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class EEUserTest {
+class EEUserTest {
     DB db;
     @BeforeEach
     public void setUp() throws Exception {
@@ -38,13 +38,13 @@ public class EEUserTest {
     }
 
     @Test
-    public void tests() throws Exception {
+    void tests() throws Exception {
         createRealms();
         createUser();
         checkUser();
     }
 
-    private void createRealms() throws Exception {
+    private void createRealms() {
         db.beginTransaction();
         db.save(new Realm("TEST"));
         db.save(new Realm("PROD"));
@@ -57,14 +57,12 @@ public class EEUserTest {
         user.setNick("admin");
         user.setName("User Administrator");
         user.setActive(true);
-        db.session().save(user);
+        db.session().persist(user);
         UserManager mgr = new UserManager(db, HashVersion.ZERO);
         mgr.setPassword(user, "test", null);
 
         RealmManager rmgr = new RealmManager(db);
         Realm testRealm = rmgr.getRealmByName("TEST");
-        Realm prodRealm = rmgr.getRealmByName("PROD");
-
 
         Role r = createRole(db, null, "admin", "login", "admin");
         user.getRoles().add(r);
@@ -85,10 +83,6 @@ public class EEUserTest {
         assertTrue(u.hasPermission("login"), "User has 'login' permission");
         assertTrue(u.hasPermission("admin"), "User has 'admin' permission");
         assertTrue(u.hasPermission("role.admin"), "User has 'admin' role");
-
-//        for (Role r : u.getRoles()) {
-//            System.out.println("Role " + r.getName() + "-> " + r.getActivePermissions());
-//        }
 
         assertTrue(u.hasPermission("TEST:testread"), "User has 'TEST:testread");
         assertTrue(u.hasPermission("TEST:admin"), "User has 'TEST:admin");

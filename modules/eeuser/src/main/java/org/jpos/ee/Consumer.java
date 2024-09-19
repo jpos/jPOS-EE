@@ -38,8 +38,8 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
 
     public Consumer() {
         super();
-        roles = new LinkedHashSet<Role> ();
-        props = new LinkedHashMap<String,String>();
+        roles = new LinkedHashSet<> ();
+        props = new LinkedHashMap<>();
     }
     public String getId() {
         return id;
@@ -130,7 +130,7 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     public String getRolesAsString () {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
-            if (sb.length() > 0)
+            if (!sb.isEmpty())
                 sb.append (", ");
             sb.append (r.getName());
         }
@@ -140,7 +140,7 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
         this.props = props;
     }
     public Map<String,String> getProps () {
-        return (props = props == null ? new HashMap<String,String> () : props);
+        return Objects.requireNonNullElseGet(props, HashMap::new);
     }
     public void set (String prop, String value) {
         getProps().put (prop, value);
@@ -162,8 +162,7 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     }
 
     public boolean equals(Object other) {
-        if ( !(other instanceof Consumer) ) return false;
-        Consumer castOther = (Consumer) other;
+        if ( !(other instanceof Consumer castOther) ) return false;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();

@@ -38,7 +38,7 @@ public class RMROLE implements CLICommand {
             RoleManager rm = new RoleManager(db);
             Role r = rm.getRoleByName(args[1]);
             if (r != null)
-                db.session().delete(r);
+                db.session().remove(r);
             db.commit();
             cli.println (r != null ? "Role " + r + " has been deleted" : "Role not found");
         } catch (Exception e) {

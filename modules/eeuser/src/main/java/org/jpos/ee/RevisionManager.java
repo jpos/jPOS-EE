@@ -23,15 +23,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.query.criteria.internal.OrderImpl;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import org.hibernate.query.Query;
 
 @SuppressWarnings("unused")
 public class RevisionManager extends DBManager<Revision> {
@@ -39,23 +36,21 @@ public class RevisionManager extends DBManager<Revision> {
     public RevisionManager (DB db) {
         super(db,Revision.class);
     }
-    @SuppressWarnings("unchecked")
+
     public List<Revision> getRevisionsByRef (String ref)
         throws HibernateException
     {
-        Criteria crit = db.session().createCriteria (Revision.class)
-            .add (Restrictions.eq ("ref", ref))
-            .addOrder (Order.desc("id"));
-        return (List<Revision>) crit.list();
+        Query<Revision> q = db.session().createQuery("from revision where ref = :ref order by id desc");
+        q.setParameter("ref", ref);
+        return q.list();
     }
-    @SuppressWarnings("unchecked")
+
     public List<Revision> getRevisionsByAuthor (User author)
         throws HibernateException
     {
-        Criteria crit = db.session().createCriteria (Revision.class)
-            .add (Restrictions.eq ("author", author))
-            .addOrder (Order.desc("id"));
-        return (List<Revision>) crit.list();
+        Query<Revision> q = db.session().createQuery("from revision where author = :author order by id desc");
+        q.setParameter("author", author);
+        return q.list();
     }
 
     //overridden to avoid LazyInitializationExc
@@ -66,12 +61,11 @@ public class RevisionManager extends DBManager<Revision> {
         Root<Revision> root = query.from(Revision.class);
         // To avoid LazyInitializationExc
         root.fetch("author");
-        List<javax.persistence.criteria.Order> orderList = new ArrayList<>();
+        List<jakarta.persistence.criteria.Order> orderList = new ArrayList<>();
         //ORDERS
-        for (Map.Entry<String,Boolean> entry : orders.entrySet()) {
-            OrderImpl order = new OrderImpl(root.get(entry.getKey()),entry.getValue());
-            orderList.add(order);
-        }
+        orders.forEach((key, value) ->
+                orderList.add(Boolean.TRUE.equals(value) ? criteriaBuilder.asc(root.get(key)) : criteriaBuilder.desc(root.get(key)))
+        );
         query.select(root);
         query.orderBy(orderList);
         return db.session().createQuery(query)
@@ -79,7 +73,6 @@ public class RevisionManager extends DBManager<Revision> {
                 .setFirstResult(offset)
                 .getResultList();
     }
-
 
 
     /**

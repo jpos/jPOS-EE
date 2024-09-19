@@ -20,7 +20,9 @@ package org.jpos.ee;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -28,6 +30,7 @@ import java.util.Objects;
 @Table(name = "realm", uniqueConstraints={@UniqueConstraint(columnNames={"name"}, name="UK_realm_name")})
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Realm extends Cloneable implements Serializable {
+    @Serial
     private static final long serialVersionUID = -5382324365781372973L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

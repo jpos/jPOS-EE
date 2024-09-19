@@ -85,7 +85,7 @@ public class ADDCONSUMER implements CLICommand {
             c.setId(id);
             c.setUser(u);
             c.setHash(HashVersion.ONE.hash(Long.toString(c.getUser().getId(),16), secret, HashVersion.ONE.getSalt()));
-            db.session().save(c);
+            db.session().persist(c);
             if (rr != null)
                 Collections.addAll(c.getRoles(), rr);
             c.setActive(true);
@@ -108,7 +108,7 @@ public class ADDCONSUMER implements CLICommand {
         return shl;
     }
 
-    private void showHelp (CLIContext cli, String args[], Options options) {
+    private void showHelp (CLIContext cli, String[] args, Options options) {
         PrintWriter pw = new PrintWriter (cli.getOutputStream());
         HelpFormatter helpFormatter = new HelpFormatter ();
         helpFormatter.printHelp (args[0] + "[options]", options);

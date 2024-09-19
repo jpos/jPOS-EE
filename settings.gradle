@@ -27,6 +27,7 @@ include  ':modules:cryptoservice'
 include  ':modules:cryptoserver'
 include  ':modules:http-client'
 include  ':modules:resultcode'
+include  ':modules:eeuser'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -43,7 +44,6 @@ dependencyResolutionManagement {
 // include  ':modules:txn'
 // include  ':modules:db-mssql'
 // include  ':modules:minigl'
-// include  ':modules:eeuser'
 // include  ':modules:status'
 // include  ':modules:mail'
 // include  ':modules:jetty'

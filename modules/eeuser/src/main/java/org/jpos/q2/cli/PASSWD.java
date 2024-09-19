@@ -24,7 +24,6 @@ import org.jpos.q2.CLICommand;
 import org.jpos.q2.CLIContext;
 
 import java.io.PrintWriter;
-import java.util.Collections;
 
 @SuppressWarnings("unused")
 public class PASSWD implements CLICommand {
@@ -56,7 +55,7 @@ public class PASSWD implements CLICommand {
             }
 
             mgr.setPassword(user, line.getOptionValue('p'));
-            db.session().save(user);
+            db.session().persist(user);
             db.commit();
             cli.println ("User '" + user.getNickAndId() + "': password changed.");
         } catch (Exception e) {
@@ -76,7 +75,7 @@ public class PASSWD implements CLICommand {
         return shl;
     }
 
-    private void showHelp (CLIContext cli, String args[], Options options) {
+    private void showHelp (CLIContext cli, String[] args, Options options) {
         PrintWriter pw = new PrintWriter (cli.getOutputStream());
         HelpFormatter helpFormatter = new HelpFormatter ();
         helpFormatter.printHelp (args[0] + "<nick> [options]", options);

@@ -18,10 +18,10 @@
 
 package org.jpos.ee;
 
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.HibernateException;
 
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.*;
 
 @SuppressWarnings("unused")

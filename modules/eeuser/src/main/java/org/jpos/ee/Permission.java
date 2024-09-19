@@ -38,7 +38,7 @@ public class Permission implements Serializable {
         return name;
     }
     public boolean equals (Object obj) {
-        return this == obj || obj instanceof Permission && this.getName().equals(((Permission) obj).getName());
+        return this == obj || (obj instanceof Permission o) && this.getName().equals(o.getName());
     }
     public String toString () {
         return getName ();

@@ -46,8 +46,8 @@ public class User extends Cloneable implements Serializable, SoftDelete {
 
     public User() {
         super();
-        roles    = new LinkedHashSet<Role> ();
-        passwordhistory = new LinkedList<PasswordHistory> ();
+        roles    = new LinkedHashSet<> ();
+        passwordhistory = new LinkedList<> ();
     }
     public String getNick() {
         return nick;
@@ -191,7 +191,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public String getRolesAsString () {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
-            if (sb.length() > 0)
+            if (!sb.isEmpty())
                 sb.append (", ");
             sb.append (r.getName());
         }
@@ -201,7 +201,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
             if (r.getRealm() != null) {
-                if (sb.length() > 0)
+                if (!sb.isEmpty())
                     sb.append (", ");
                 sb.append (r.getRealm().getName());
             }
@@ -218,14 +218,14 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     }
     public void prunePasswordHistoryValue (int numPasswordHistoryValue) {
         while (passwordhistory.size() > numPasswordHistoryValue) {
-            passwordhistory.remove(0);
+            passwordhistory.removeFirst();
          }               
      }
     public void setProps (Map<String,String> props) {
         this.props = props;
     }
     public Map<String,String> getProps () {
-        return (props = props == null ? new HashMap<String,String> () : props);
+        return Objects.requireNonNullElseGet(props, HashMap::new);
     }
     public void set (String prop, String value) {
         getProps().put (prop, value);
@@ -247,8 +247,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
             .toString();
     }
     public boolean equals(Object other) {
-        if ( !(other instanceof User) ) return false;
-        User castOther = (User) other;
+        if ( !(other instanceof User castOther) ) return false;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();
@@ -265,7 +264,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public String getNickAndId() {
         StringBuilder sb = new StringBuilder (getNick());
         sb.append ('(');
-        sb.append (Long.toString(getId()));
+        sb.append (getId());
         sb.append (')');
         return sb.toString();
     }

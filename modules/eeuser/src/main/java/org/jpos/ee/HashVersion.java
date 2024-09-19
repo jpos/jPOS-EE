@@ -28,6 +28,7 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
 public enum HashVersion {
     UNKNOWN((byte)0xFF, 0, 0, 0, null) {
@@ -58,7 +59,7 @@ public enum HashVersion {
     },
     ONE((byte) 1,100000,2048, 388, Base64.decode("K7f2dgQQHK5CW6Wz+CscUA==")) {
         @Override
-        public String hash (String seed, String secret, byte[] salt) throws Exception {
+        public String hash (String seed, String secret, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
             if (salt == null) {
                 salt = ONE.genSalt();
             }
@@ -76,19 +77,19 @@ public enum HashVersion {
         @Override
         public boolean check (String seed, String secret, String hash) throws Exception {
             byte[] b = Base64.decode(hash);
-            byte[] salt = new byte[ONE.getSalt().length];
-            System.arraycopy (b, 1, salt, 0, salt.length);
-            String computedHash = ONE.hash(seed, secret, ONE.getSalt(salt));
+            byte[] s = new byte[ONE.getSalt().length];
+            System.arraycopy (b, 1, s, 0, s.length);
+            String computedHash = ONE.hash(seed, secret, ONE.getSalt(s));
             return computedHash.equals(hash);
         }
 
     };
 
-    private byte version;
-    private int iterations;
-    private int keylength;
-    private int encodedLength;
-    private byte[] salt;
+    private final byte version;
+    private final int iterations;
+    private final int keylength;
+    private final int encodedLength;
+    private final byte[] salt;
 
     HashVersion (byte version, int iterations, int keylength, int encodedLength, byte[] salt) {
         this.version = version;
@@ -136,14 +137,14 @@ public enum HashVersion {
     public abstract String hash (String seed, String secret, byte[] salt) throws Exception;
     public abstract boolean check (String seed, String secret, String hash) throws Exception;
 
-    private byte[] genSalt () throws NoSuchAlgorithmException {
+    private byte[] genSalt () {
         return genSalt(salt.length);
     }
 
-    private byte[] genSalt(int len) throws NoSuchAlgorithmException {
+    private byte[] genSalt(int len) {
         SecureRandom sr = new SecureRandom();
-        byte[] salt = new byte[len];
-        sr.nextBytes(salt);
-        return salt;
+        byte[] s = new byte[len];
+        sr.nextBytes(s);
+        return s;
     }
 }

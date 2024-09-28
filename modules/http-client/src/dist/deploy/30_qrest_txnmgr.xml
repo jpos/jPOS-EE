@@ -8,6 +8,7 @@
     <route path="/q2**" method="GET" name="q2"/>
     <route path="/q2**" method="POST" name="q2"/>
     <route path="/bad**" method="GET" name="invalid"/>
+    <route path="/delete**" method="DELETE" name="invalid"/>
   </participant>
 
   <group name="q2">

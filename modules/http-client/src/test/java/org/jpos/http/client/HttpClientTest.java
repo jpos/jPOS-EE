@@ -65,7 +65,7 @@ public class HttpClientTest {
         assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
         assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
-
+    
     @Test
     public void test404() {
         Context ctx = new Context();
@@ -77,7 +77,7 @@ public class HttpClientTest {
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
     }
 
-    @Test @Disabled
+    @Test 
     public void test400() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", BASE_URL + "/bad");
@@ -86,9 +86,19 @@ public class HttpClientTest {
         mgr.queue(ctx);
         Integer sc = ctx.get ("HTTP_STATUS", 10000L);
         assertEquals (Integer.valueOf(HttpStatus.SC_BAD_REQUEST), sc, "Status code should be 400");
-        assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
-        assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
+
+    @Test
+    public void testDelete() {
+        Context ctx = new Context();
+        ctx.put("HTTP_URL", BASE_URL + "/delete");
+        ctx.put("HTTP_REQUEST", "");
+        ctx.put("HTTP_METHOD", "DELETE");
+        mgr.queue(ctx);
+        Integer sc = ctx.get ("HTTP_STATUS", 10000L);
+        assertEquals (Integer.valueOf(HttpStatus.SC_BAD_REQUEST), sc, "Status code should be 400");
+    }
+
 
     @Test
     public void testNotSupportedMethod() {

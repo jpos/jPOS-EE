@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd `dirname $0`/.. || exit 1
+rm -f deploy/shutdown.xml
+java -server \
+    -XX:+IgnoreUnrecognizedVMOptions \
+    -Dappname=jPOSEE-testbed \
+    -Duser.name=apr \
+    -Dcom.sun.management.jmxremote \
+    -Xlog:gc:log/gc.log \
+    --add-opens java.base/java.lang=ALL-UNNAMED \
+    -Dorg.mortbay.xml.XmlParser.NotValidating=true \
+    -Xmx1G -Xms1G \
+    -jar jposee-@jarname@ "$@"
+

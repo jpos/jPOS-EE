@@ -18,8 +18,6 @@
 
 package org.jpos.ee.status;
 
-import java.net.Socket;
-import java.io.IOException;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
@@ -31,17 +29,16 @@ public class ChannelMonitor extends Log implements TwoWayMonitorTask, Configurab
     Configuration cfg;
     String serviceName;
     public String checkService () {
-        boolean rc = false;
         ChannelAdaptor channel;
         try {
-            channel = (ChannelAdaptor) NameRegistrar.get (serviceName);
+            channel = NameRegistrar.get (serviceName);
         } catch (NameRegistrar.NotFoundException e) {
-            return Status.ERROR + " channel '" + serviceName + "' not found.";
+            return StatusBase.ERROR + " channel '" + serviceName + "' not found.";
         }
         if (channel.isConnected())
-            return Status.OK + " Connected";
+            return StatusBase.OK + " Connected";
         else
-            return Status.ERROR + " Not connected";
+            return StatusBase.ERROR + " Not connected";
     }
     public String command (String command) {
         String response = "Unknown command";

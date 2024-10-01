@@ -23,6 +23,6 @@ public interface TwoWayMonitorTask extends MonitorTask {
      * @param command the command to be executed
      * @return string to place in the 'command' column for next call (may be null)
      */
-    public String command (String command);
+    String command(String command);
 }
 

@@ -49,6 +49,7 @@ public class StatusRevision extends Revision implements Serializable {
         this.status = status;
     }
 
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())

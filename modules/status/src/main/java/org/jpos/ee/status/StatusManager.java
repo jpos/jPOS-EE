@@ -19,13 +19,12 @@
 package org.jpos.ee.status;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.jpos.ee.DB;
-import org.jpos.ee.SysLog;
-import org.jpos.ee.SysLogManager;
+import org.jpos.syslog.SysLog;
+import org.jpos.syslog.SysLogManager;
 
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,14 +38,14 @@ import java.util.Set;
 public class StatusManager {
     DB db;
     SysLogManager syslog;
-    public static final Map severity = new HashMap();
+    public static final Map<String, Integer> severity = new HashMap<>();
 
     static {
-        severity.put (Status.OK,       new Integer (SysLog.INFO));
-        severity.put (Status.OFF,      new Integer (SysLog.INFO));
-        severity.put (Status.WARN,     new Integer (SysLog.WARN));
-        severity.put (Status.ERROR,    new Integer (SysLog.ERROR));
-        severity.put (Status.CRITICAL, new Integer (SysLog.CRITICAL));
+        severity.put (StatusBase.OK,       SysLog.INFO);
+        severity.put (StatusBase.OFF,      SysLog.INFO);
+        severity.put (StatusBase.WARN,     SysLog.WARN);
+        severity.put (StatusBase.ERROR,    SysLog.ERROR);
+        severity.put (StatusBase.CRITICAL, SysLog.CRITICAL);
     }
 
     public StatusManager (DB db) {
@@ -60,7 +59,7 @@ public class StatusManager {
      * @param detail optional detail information
      */
     public void touch (String id, String state, String detail) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Transaction tx = db.beginTransaction();
         Status status = touch (id, state, detail, tx);
@@ -75,7 +74,7 @@ public class StatusManager {
      * @param groupName group name
      */
     public void touch (String id, String state, String detail, String groupName) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Transaction tx = db.beginTransaction();
         Status status = touch (id, state, detail, tx, groupName);
@@ -90,7 +89,7 @@ public class StatusManager {
      * @param tx transaction 
      */
     public Status touch (String id, String state, String detail, Transaction tx) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         return touch(id, state, detail, tx, null);
     }
@@ -103,11 +102,11 @@ public class StatusManager {
      * @param groupName group name
      */
     public Status touch (String id, String state, String detail, Transaction tx, String groupName) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Status status = getStatus (id, true);
         if (state == null) {
-            state = Status.ERROR;
+            state = StatusBase.ERROR;
             if (detail == null)
                 detail = "";
             detail = detail + " invalid state (null)";
@@ -116,10 +115,10 @@ public class StatusManager {
 
         String previousState = status.getState();
         if ((status.getMaxEvents() > 0 || status.getMaxEvents() == -1 ) && previousState != null && !state.equals (previousState)) {
-            Set events = status.getEvents();
+            Set<SysLog> events = status.getEvents();
             if (events != null) {
                 purgeEvents (events, status.getMaxEvents());
-                StringBuffer transition = new StringBuffer();
+                StringBuilder transition = new StringBuilder();
                 transition.append (status.getState());
                 transition.append ("-->");
                 transition.append (state);
@@ -146,9 +145,9 @@ public class StatusManager {
      */
     public int getSysLogSeverity (String state) {
         if (state != null) {
-            Integer sev = (Integer) severity.get (state);
+            Integer sev = severity.get (state);
             if (sev != null)
-                return sev.intValue();
+                return sev;
         }
         return SysLog.ERROR;
     }
@@ -159,7 +158,7 @@ public class StatusManager {
      * <!-- @param info optional information -->
      */
     public void touch (String key, String state)
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         touch (key, state, null);
     }
@@ -168,7 +167,7 @@ public class StatusManager {
      * @param create if true and status doesn't exist, a new status with an optional name would be created.
      */
     public Status getStatus (String id, boolean create) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         return getStatus(id, create, null);
     }
@@ -179,7 +178,7 @@ public class StatusManager {
      * @param groupName group name to be used if a new status is created.
      */
     public Status getStatus (String id, boolean create, String groupName) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         String name = "";
         int sp = id.indexOf (" ");
@@ -187,12 +186,12 @@ public class StatusManager {
             name = id.substring (sp + 1);
             id = id.substring (0, sp);
         }
-        Status s = (Status) db.session().get(Status.class, id);
+        Status s = db.session().get(Status.class, id);
         if (s == null && create) {
             s = new Status ();
             s.setId (id);
-            s.setName (name.length() > 0 ? name : id);
-            s.setTimeoutState (Status.OFF);
+            s.setName (name.isEmpty() ? id : name);
+            s.setTimeoutState (StatusBase.OFF);
             s.setGroupName (groupName != null ? groupName : "Unfiled");
             db.save (s);
         }
@@ -206,7 +205,7 @@ public class StatusManager {
      * @return command or null
      */
     public String getNextCommand (String id) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Status status = getStatus (id, false);
         if (status != null)
@@ -214,7 +213,7 @@ public class StatusManager {
         return null;
     }
     public void setNextCommand (String id, String command) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Transaction tx = db.beginTransaction();
         Status status = getStatus (id, false);
@@ -228,15 +227,15 @@ public class StatusManager {
      * @param response response to be logged in revision history - may be null
      */
     public void setResponse (String id, String response) 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         Transaction tx = db.beginTransaction();
         Status status = getStatus (id, false);
         if (status != null && status.getCommand() != null && response != null && (status.getMaxEvents() > 0 || status.getMaxEvents() == -1  )) {
-            Set events = status.getEvents();
+            Set<SysLog> events = status.getEvents();
             if (events != null) { 
                 purgeEvents (events, status.getMaxEvents());
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append (status.getCommand());
                 sb.append (" = ");
                 sb.append (response);
@@ -249,7 +248,8 @@ public class StatusManager {
                 );
             }
         }
-        status.setCommand (null);   // command has been processed
+        if (status != null)
+            status.setCommand (null);   // command has been processed
         tx.commit();
         db.session().evict (status);
     }
@@ -258,7 +258,7 @@ public class StatusManager {
      * check if a status is expired, and create appropriate syslog event
      * @param status Status instance
      */
-    public void check (Status status) throws HibernateException, SQLException
+    public void check (Status status) throws HibernateException
     {
         Transaction tx = null;
         try {
@@ -268,20 +268,20 @@ public class StatusManager {
                 String timeoutState = status.getTimeoutState();
                 String detail = status.getDetail();
                 if (state == null)
-                    state = Status.ERROR;
+                    state = StatusBase.ERROR;
                 if (timeoutState == null)
-                    timeoutState = Status.ERROR;
+                    timeoutState = StatusBase.ERROR;
                 if (detail == null)
                     detail = "(timeout)";
                 else
                     detail = detail + " (timeout)";
-                StringBuffer transition = new StringBuffer();
+                StringBuilder transition = new StringBuilder();
                 if (!state.equals (timeoutState)) {
                     transition.append (state);
                     transition.append ("-->");
                     transition.append (timeoutState);
                 }
-                Set events = status.getEvents();
+                Set<SysLog> events = status.getEvents();
                 purgeEvents (events, status.getMaxEvents());
                 if (status.getMaxEvents() > 0 || status.getMaxEvents() == -1) {
                     events.add (
@@ -305,22 +305,21 @@ public class StatusManager {
      * check if unexpired status entries became expired, and create 
      * appropriate syslog event.
      */
-    public void check () throws HibernateException, SQLException {
-        Iterator iter = findByExpired(false).iterator();
-        while (iter.hasNext()) {
-            check ((Status) iter.next());
+    public void check () throws HibernateException {
+        for (Status status : findByExpired(false)) {
+            check(status);
         }
     }
 
-    public List findByExpired(boolean expired) throws SQLException, HibernateException {
-        Query q = db.session().createQuery ("from org.jpos.ee.status.Status where expired=:expired");
-        q.setBoolean ("expired", expired);
+    public List<Status> findByExpired(boolean expired) throws HibernateException {
+        Query<Status> q = db.session().createQuery ("from org.jpos.ee.status.Status where expired=:expired", Status.class);
+        q.setParameter ("expired", expired);
         return q.list();
     }
-    private void purgeEvents (Set events, int maxEvents) {
+    private void purgeEvents (Set<SysLog> events, int maxEvents) {
         if (maxEvents > 0) { 
             int rmcount = events.size() - maxEvents + 1;
-            Iterator iter = events.iterator();
+            Iterator<SysLog> iter = events.iterator();
             for (; rmcount > 0 && iter.hasNext(); rmcount--) {
                 iter.next();
                 iter.remove ();

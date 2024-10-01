@@ -21,8 +21,9 @@ package org.jpos.ee.status;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-import java.util.Iterator;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jpos.syslog.SysLog;
 
 
 /** @author Hibernate CodeGenerator */
@@ -65,19 +66,19 @@ public class Status extends org.jpos.ee.status.StatusBase implements Serializabl
     private int maxEvents;
 
     /** persistent field */
-    private Set events;
+    private Set<SysLog> events;
 
     /** persistent field */
-    private Set revisions;
+    private Set<StatusRevision> revisions;
 
-    private Set tags;
+    private Set<StatusTag> tags;
 
     /** default constructor */
     public Status() {
     }
 
     /** minimal constructor */
-    public Status(String id, Set events, Set revisions) {
+    public Status(String id, Set<SysLog> events, Set<StatusRevision> revisions) {
         this.id = id;
         this.events = events;
         this.revisions = revisions;
@@ -179,36 +180,35 @@ public class Status extends org.jpos.ee.status.StatusBase implements Serializabl
         this.maxEvents = maxEvents;
     }
 
-    public Set getEvents() {
+    public Set<SysLog> getEvents() {
         return this.events;
     }
 
-    public void setEvents(Set events) {
+    public void setEvents(Set<SysLog> events) {
         this.events = events;
     }
 
-    public Set getRevisions() {
+    public Set<StatusRevision> getRevisions() {
         return this.revisions;
     }
 
-    public void setTags (Set tags) {
+    public void setTags (Set<StatusTag> tags) {
         this.tags = tags;
     }
-    public Set getTags () {
+    public Set<StatusTag> getTags () {
         return this.tags;
     }
     public String getTagsAsString () {
-        StringBuffer sb = new StringBuffer();
-        Iterator it = getTags().iterator();
-        while (it.hasNext()) {
-            if (sb.length()>0) {
+        StringBuilder sb = new StringBuilder();
+        getTags().forEach(tag -> {
+            if (!sb.isEmpty()) {
                 sb.append(" ");
-            }   
-            sb.append(((StatusTag)it.next()).getTag());
-        }   
+            }
+            sb.append(tag.getTag());
+        });
         return sb.toString();
     }
-    public void setRevisions(Set revisions) {
+    public void setRevisions(Set<StatusRevision> revisions) {
         this.revisions = revisions;
     }
 

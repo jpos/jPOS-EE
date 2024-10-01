@@ -47,7 +47,7 @@ public class Ping extends Log implements MonitorTask, Configurable {
             detail = " " + msg;
         }
         long elapsed = System.currentTimeMillis() - start;
-        return (rc ? Status.OK : Status.WARN) + detail 
+        return (rc ? StatusBase.OK : StatusBase.WARN) + detail
             + " time=" + elapsed + "ms";
     }
     public void setConfiguration (Configuration cfg) 

@@ -19,7 +19,7 @@
 package org.jpos.ee.status;
 
 import java.util.Date;
-import java.sql.SQLException;
+
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 
@@ -34,12 +34,15 @@ public class Heartbeat extends QBeanSupport implements Runnable {
     long interval;
     String statusId;
 
+    @Override
     public void initService () throws Exception {
         db = new DB();
         mgr = new StatusManager (db);
         interval = cfg.getLong ("interval", 60000L);
         initStatus();
     }
+
+    @Override
     public void startService() {
         new Thread (this).start();
     }
@@ -50,9 +53,9 @@ public class Heartbeat extends QBeanSupport implements Runnable {
                 db.open ();
                 if (cfg.getBoolean ("check", true))
                     mgr.check ();
-                mgr.touch (statusId, Status.OK, getDetail (start, i));
-            } catch (Throwable t) {
-                getLog().error (t);
+                mgr.touch (statusId, StatusBase.OK, getDetail (start, i));
+            } catch (Exception e) {
+                getLog().error (e);
                 ISOUtil.sleep (1000);
             } finally {
                 close();
@@ -81,7 +84,7 @@ public class Heartbeat extends QBeanSupport implements Runnable {
         return sb.toString();
     }
     private void initStatus() 
-        throws HibernateException, SQLException
+        throws HibernateException
     {
         try {
             db.open ();
@@ -92,7 +95,7 @@ public class Heartbeat extends QBeanSupport implements Runnable {
                 if (s== null) s = mgr.getStatus (statusId, true);
                 s.setName (cfg.get ("status-name", statusId));
                 s.setGroupName (cfg.get ("status-group", ""));
-                s.setTimeoutState (cfg.get ("on-timeout", Status.OFF));
+                s.setTimeoutState (cfg.get ("on-timeout", StatusBase.OFF));
                 s.setTimeout (cfg.getLong ("status-timeout", 360000L));
                 s.setLastTick (new Date());
                 tx.commit();

@@ -19,6 +19,6 @@
 package org.jpos.ee.status;
 
 public interface MonitorTask {
-    public String checkService ();
+    String checkService();
 }
 

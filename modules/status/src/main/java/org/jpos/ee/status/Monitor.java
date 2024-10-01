@@ -18,11 +18,9 @@
 
 package org.jpos.ee.status;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Iterator;
-import java.util.ArrayList;
+
 import org.jpos.ee.DB;
 import org.jpos.q2.QFactory;
 import org.jpos.q2.QBeanSupport;
@@ -40,32 +38,27 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
     Element config;
     Timer timer;
 
+    @Override
     public void initService () {
         db = new DB();
         mgr = new StatusManager (db);
         timer = new Timer (true);
-        Iterator iter = config.getChildren ("monitor").iterator();
-        List handlers = new ArrayList();
-        while (iter.hasNext()) {
-            Element e = (Element) iter.next();
+        config.getChildren ("monitor").forEach(e -> {
             try {
                 registerTask (e);
             } catch (ConfigurationException ex) {
                 getLog().error (ex);
             }
-        }
+        });
     }
+
+    @Override
     public void destroyService() {
         getLog().info ("Cancelling timer");
         timer.cancel();
     }
-    private void close() {
-        try {
-            db.close();
-        } catch (HibernateException e) {
-            getLog().error (e);
-        }
-    }
+
+    @Override
     public void setConfiguration (Element config) {
         this.config = config;
     }
@@ -98,59 +91,71 @@ public class Monitor extends QBeanSupport implements XmlConfigurable {
             throw new ConfigurationException (e);
         }
     }
-    private synchronized void touch (String id, String detail) {
-        int sp = detail.indexOf (" ");
-        String state = Status.OFF;
-        if (sp > 0 && detail.length() > sp) {
-            state = detail.substring (0, sp);
-            detail = detail.substring (++sp);
-        }
-        try {
-            db.open ();
-            mgr.touch (id, state, detail);
-        } catch (Throwable t) {
-            getLog().error (t);
-        } finally {
-            close();
-        }
-    }
-    private synchronized String getNextCommand (String id) {
-        try {
-            db.open ();
-            return mgr.getNextCommand (id);
-        } catch (Throwable t) {
-            getLog().error (t);
-        } finally {
-            close();
-        }
-        return null;
-    }
-    private synchronized void setResponse (String id, String response) {
-        try {
-            db.open ();
-            mgr.setResponse (id, response);
-        } catch (Throwable t) {
-            getLog().error (t);
-        } finally {
-            close();
-        }
-    }
     public class MonitorTimerTask extends TimerTask {
         String id;
         MonitorTask task;
-        public MonitorTimerTask (String id, MonitorTask task) {
+
+        public MonitorTimerTask(String id, MonitorTask task) {
             super();
             this.id = id;
             this.task = task;
         }
+
         public void run() {
-            if (task instanceof TwoWayMonitorTask) {
-                String command = getNextCommand (id);
-                if (command != null) 
-                    setResponse (id, 
-                            ((TwoWayMonitorTask)task).command (command));
+            if (task instanceof TwoWayMonitorTask t) {
+                String command = getNextCommand(id);
+                if (command != null)
+                    setResponse(id, t.command(command));
             }
-            touch (id, task.checkService());
+            touch(id, task.checkService());
+        }
+
+        private synchronized void touch(String id, String detail) {
+            int sp = detail.indexOf(" ");
+            String state = StatusBase.OFF;
+            if (sp > 0 && detail.length() > sp) {
+                state = detail.substring(0, sp);
+                detail = detail.substring(++sp);
+            }
+            try {
+                db.open();
+                mgr.touch(id, state, detail);
+            } catch (Exception e) {
+                getLog().error(e);
+            } finally {
+                close();
+            }
+        }
+
+        private synchronized String getNextCommand(String id) {
+            try {
+                db.open();
+                return mgr.getNextCommand(id);
+            } catch (Exception e) {
+                getLog().error(e);
+            } finally {
+                close();
+            }
+            return null;
+        }
+
+        private synchronized void setResponse(String id, String response) {
+            try {
+                db.open();
+                mgr.setResponse(id, response);
+            } catch (Exception e) {
+                getLog().error(e);
+            } finally {
+                close();
+            }
+        }
+
+        private void close() {
+            try {
+                db.close();
+            } catch (HibernateException e) {
+                getLog().error(e);
+            }
         }
     }
 }

@@ -38,7 +38,7 @@ public abstract class StatusBase {
     public static final String CRITICAL = "CRITICAL";
     public static final String[] possibleStates = { OFF, OK, WARN, ERROR, CRITICAL };
 
-    public static final Map icons = new HashMap();
+    public static final Map<String, String> icons = new HashMap<>();
 
     static {
         icons.put (OK,       "green.gif");
@@ -51,14 +51,14 @@ public abstract class StatusBase {
     public abstract String getState();
     public abstract Date getLastTick();
     public abstract long getTimeout();
-    public abstract Set getRevisions();
+    public abstract Set<StatusRevision> getRevisions();
     public abstract String getValidCommands();
 
     public String getIconName() {
         String state = getState();
         String icon  = null;
         if (state != null)
-            icon = (String) icons.get (state);
+            icon = icons.get (state);
         return icon != null ? icon : "red.gif";
     }
     /**

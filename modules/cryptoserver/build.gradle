@@ -5,7 +5,7 @@ dependencies {
     testImplementation libraries.restAssured
     api project(':modules:qrest')
     api project(':modules:cryptoservice')
-    api project(':modules:db-mysql')
+    api project(':modules:db-postgresql')
     api project(':modules:logback')
 }
 

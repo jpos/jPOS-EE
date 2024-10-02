@@ -21,7 +21,6 @@ package org.jpos.space;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.core.ConfigurationException;
 import org.jpos.util.NameRegistrar;
-import org.jdom2.Element;
 
 /**
  * RemoteSpaceAdaptor
@@ -35,6 +34,8 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
     public ReplicatedSpaceAdaptor () {
         super ();
     }
+
+    @Override
     public void initService() throws ConfigurationException {
         Space sp  = SpaceFactory.getSpace (cfg.get ("space", ""));
         rspaceUri = cfg.get ("rspace", "rspace");
@@ -53,6 +54,8 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
             throw new ConfigurationException (t);
         }
     }
+
+    @Override
     protected void stopService () throws Exception {
         if (rs != null)
             rs.close();

@@ -1,7 +1,7 @@
 description = 'jPOS-EE :: RSpace Module'
 
 dependencies {
-    api libraries.jpos
-    api libraries.jgroups
+    api libs.jpos
+    api libs.jgroups
 }
 

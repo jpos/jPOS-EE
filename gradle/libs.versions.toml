@@ -22,6 +22,7 @@ flyway = '10.9.1'
 h2 = '2.2.224'
 testcontainers = '1.19.6'
 httpAsyncClient = '4.1.5'
+jgroups = '5.3.11.Final'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -55,3 +56,4 @@ flywayMysql = { module = 'org.flywaydb:flyway-mysql', version.ref='flyway' }
 h2 = { module = 'com.h2database:h2', version.ref='h2' }
 testcontainersPostgresql = { module = 'org.testcontainers:postgresql', version.ref='testcontainers' }
 httpAsyncClient = { module = 'org.apache.httpcomponents:httpasyncclient', version.ref = 'httpAsyncClient' }
+jgroups = { module = 'org.jgroups:jgroups', version.ref = 'jgroups' }

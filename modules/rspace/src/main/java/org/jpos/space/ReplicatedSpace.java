@@ -23,15 +23,12 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
+
+import org.jgroups.*;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.Log;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
-import org.jgroups.JChannel;
-import org.jgroups.View;
-import org.jgroups.Message;
-import org.jgroups.Address;
-import org.jgroups.Receiver;
 
 @SuppressWarnings("unchecked")
 public class ReplicatedSpace 
@@ -79,7 +76,7 @@ public class ReplicatedSpace
     {
         this (sp, groupName, configFile, null, null, false, false);
     }
-    public void close() throws IOException {
+    public void close() {
         block();
         channel.close();
     }
@@ -90,7 +87,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.OUT, key, value, timeout);
-            channel.send (new Message (null, r));
+            channel.send (new BytesMessage(null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not out " + key);
@@ -105,7 +102,7 @@ public class ReplicatedSpace
         getCoordinator();
         try {
             Request r = new Request (Request.PUSH, key, value, timeout);
-            channel.send (new Message (null, r));
+            channel.send (new BytesMessage (null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not push " + key);
@@ -120,7 +117,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.PUT, key, value, timeout);
-            channel.send (new Message (null, r));
+            channel.send (new BytesMessage (null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not put " + key);
@@ -146,7 +143,9 @@ public class ReplicatedSpace
             obj = null;
         return obj;
     }
-    public void receive (Message msg) { 
+
+    @Override
+    public void receive (Message msg) {
         LogEvent evt = null;
         Object obj = msg.getObject();
         if (trace && logger != null) {
@@ -155,8 +154,7 @@ public class ReplicatedSpace
                 evt.addMessage (" object: " + obj.toString());
             }
         }
-        if (obj instanceof Request) {
-            Request r = (Request) obj;
+        if (obj instanceof Request r) {
             switch (r.type) {
                 case Request.OUT:
                     if (r.timeout != 0)
@@ -390,6 +388,7 @@ public class ReplicatedSpace
         //
     }
     /** Block sending and receiving of messages until ViewAccepted is called */
+    @Override
     public void block () {
         this.view = null;
     }
@@ -410,6 +409,7 @@ public class ReplicatedSpace
 
     }
 
+    @Override
     public void viewAccepted (View view) {
         this.view = view;
         if (logger != null) {
@@ -418,18 +418,16 @@ public class ReplicatedSpace
             Logger.log (evt);
         }
         if (replicate && isCoordinator() && view.getMembers().size() > 1 && sp instanceof TSpace) {
-            new Thread () {
-                public void run() {
-                    info ("New node joined, sending full Space");
-                    send (null,
-                        new Request (
-                            Request.SPACE_COPY, 
-                            null,
-                            ((TSpace)sp).getEntries()
-                        )
-                    );
-                }
-            }.start();
+            new Thread (() -> {
+                info ("New node joined, sending full Space");
+                send (null,
+                    new Request (
+                        Request.SPACE_COPY,
+                        null,
+                        ((TSpace)sp).getEntries()
+                    )
+                );
+            }).start();
         }
     }
     public boolean isCoordinator () {
@@ -448,17 +446,17 @@ public class ReplicatedSpace
         return "DummyState".getBytes();
     }
     private void commitOff() {
-        if (sp instanceof JDBMSpace) 
-            ((JDBMSpace)sp).setAutoCommit(false);
+        if (sp instanceof JDBMSpace jdbmSpace)
+            jdbmSpace.setAutoCommit(false);
     }
     private void commitOn() {
-        if (sp instanceof JDBMSpace) 
-            ((JDBMSpace)sp).setAutoCommit(true);
+        if (sp instanceof JDBMSpace jdbmSpace)
+            jdbmSpace.setAutoCommit(true);
     }
     private void send (Address destination, Request r) 
     {
         try {
-            channel.send (new Message (destination, r));
+            channel.send (new BytesMessage (destination, r));
         } catch (Exception e) {
             error (e);
         }
@@ -468,7 +466,7 @@ public class ReplicatedSpace
         while (true) {
             Address coordinator = getCoordinator();
             try {
-                channel.send (new Message (coordinator, r));
+                channel.send (new BytesMessage (coordinator, r));
                 break;
             } catch (Exception e) {
                 error ("error " + e.getMessage() + ", retrying");

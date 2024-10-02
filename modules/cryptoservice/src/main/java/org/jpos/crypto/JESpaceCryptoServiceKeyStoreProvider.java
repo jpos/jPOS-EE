@@ -29,7 +29,12 @@ public class JESpaceCryptoServiceKeyStoreProvider implements CryptoServiceKeySto
     
     @Override
     public void put(String id, String value) throws CryptoServiceKeyStoreException {
-        if (sp.rdp(id) != null) {
+        put (id, value, false);
+    }
+
+    @Override
+    public void put(String id, String value, boolean override) throws CryptoServiceKeyStoreException {
+        if (!override && sp.rdp(id) != null) {
             throw new KeyAlreadyExistsException();
         }
         sp.put(id, value);

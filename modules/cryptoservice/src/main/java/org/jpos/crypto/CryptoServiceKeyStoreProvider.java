@@ -27,9 +27,9 @@ public interface CryptoServiceKeyStoreProvider {
      *
      * @param id key Id
      * @param value key value
-     * @throws KeyAlreadyExistsException if id already exists in the store.
+     * @throws KeyAlreadyExistsException if id already exists in the store and override is false
      */
-    void put(String id, String value) throws CryptoServiceKeyStoreException;
+    void put(String id, String value, boolean override) throws CryptoServiceKeyStoreException;
 
     /**
      * Get key value
@@ -37,4 +37,15 @@ public interface CryptoServiceKeyStoreProvider {
      * @return key's value or null
      */
     String get (String id) throws CryptoServiceKeyStoreException;
+
+    /**
+     * Places an encrypted key in the store.
+     *
+     * @param id key Id
+     * @param value key value
+     * @throws KeyAlreadyExistsException if id already exists in the store.
+     */
+    default void put(String id, String value) throws CryptoServiceKeyStoreException {
+        put (id, value, false);
+    }
 }

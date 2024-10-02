@@ -22,14 +22,15 @@ import org.jpos.ee.DB;
 import org.jpos.ee.SysConfigManager;
 
 public class SysConfigCryptoServiceKeyStoreProvider implements CryptoServiceKeyStoreProvider {
+
     @Override
-    public void put(String id, String value) throws CryptoServiceKeyStoreException {
+    public void put(String id, String value, boolean override) throws CryptoServiceKeyStoreException {
         try {
             DB.execWithTransaction(db -> {
                 SysConfigManager mgr = new SysConfigManager(db, "key.");
-                if (mgr.get(id, null) != null)
+                if (!override && mgr.get(id, null) != null)
                     throw new KeyAlreadyExistsException();
-                
+
                 mgr.put(id, value, "security.read", "security.write");
                 return true;
             });

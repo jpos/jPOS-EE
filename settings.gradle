@@ -29,6 +29,7 @@ include  ':modules:http-client'
 include  ':modules:resultcode'
 include  ':modules:eeuser'
 include  ':modules:status'
+include  ':modules:rspace'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -50,7 +51,6 @@ dependencyResolutionManagement {
 // include  ':modules:saf-monitor'
 // include  ':modules:things'
 // include  ':modules:visitor'
-// include  ':modules:rspace'
 // include  ':modules:rest-testbed'
 // include  ':modules:testbed'
 // include  ':modules:eerest'

@@ -192,6 +192,17 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
         }
     }
 
+    public void rekey(UUID keyId) throws Exception {
+        if (isLocked())
+            throw new SecurityException("CryptoService is locked");
+        registerKey(
+          keyId.toString(),
+          new String(pgpEncrypt(keyId.toString(),
+          getKey(keyId, unlock.get().toCharArray()).getEncoded())),
+          true
+        );
+    }
+
     /**
      * Lock the CryptoService
      */
@@ -257,7 +268,7 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     private void renewKey () throws Exception {
         UUID id = UUID.randomUUID();
         SecretKey sk = generateKey();
-        registerKey(id.toString(), new String(pgpEncrypt(id.toString(), sk.getEncoded())));
+        registerKey(id.toString(), new String(pgpEncrypt(id.toString(), sk.getEncoded())), false);
         sem.acquire();
         this.id = id;
         this.sk = sk;
@@ -267,8 +278,8 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
         sem.release();
     }
 
-    private void registerKey(String k, String v) throws Exception {
-        ksProvider.put(k, v);
+    private void registerKey(String k, String v, boolean override) throws Exception {
+        ksProvider.put(k, v, override);
         LogEvent evt = getLog().createLogEvent("security");
         evt.addMessage("<id>" + k + "</id>");
         evt.addMessage(System.lineSeparator() + v);
@@ -290,7 +301,6 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
           passPhrase
         );
         return new SecretKeySpec(key, 0, key.length, "AES");
-
     }
 
     private byte[] decrypt (SecretKey sk, IvParameterSpec iv, byte[] cryptogram)
@@ -317,7 +327,6 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
           a.getMostSignificantBits() ^ b.getMostSignificantBits(),
           a.getLeastSignificantBits() ^ b.getLeastSignificantBits());
     }
-
 
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {

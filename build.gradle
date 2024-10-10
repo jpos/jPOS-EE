@@ -23,6 +23,7 @@ subprojects {
     if (name != 'bom') {
         apply plugin: 'java-library'
         apply plugin: 'org.jpos.jposapp'
+        apply from: "${rootProject.projectDir}/subprojects.gradle"
         test {
             useJUnitPlatform() 
             testLogging {
@@ -39,11 +40,6 @@ subprojects {
             testRuntimeOnly testlibs.junitRuntime
         }
     }
-    java {
-        sourceCompatibility = JavaVersion.VERSION_22
-        targetCompatibility = JavaVersion.VERSION_22
-        withSourcesJar()
-    }
     repositories {
         mavenCentral()
         maven { url = uri('https://jpos.org/maven') }
@@ -51,6 +47,11 @@ subprojects {
     }
     base {
         archivesName="jposee-${project.name}"
+    }
+    java {
+        sourceCompatibility = JavaVersion.VERSION_23
+        targetCompatibility = JavaVersion.VERSION_23
+        withSourcesJar()
     }
 }
 
@@ -63,7 +64,7 @@ idea {
                 }.mapping.@vcs = 'Git'
             }
         }
-        languageLevel = '21'
+        languageLevel = '23'
     }
 }
 

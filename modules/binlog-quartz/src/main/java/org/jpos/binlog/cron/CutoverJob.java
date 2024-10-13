@@ -19,7 +19,7 @@
 package org.jpos.binlog.cron;
 
 import org.jpos.binlog.BinLogWriter;
-import org.jpos.q2.QuartzJobSupport;
+import org.jpos.quartz.QuartzJobSupport;
 
 @SuppressWarnings("unused")
 public class CutoverJob extends QuartzJobSupport {

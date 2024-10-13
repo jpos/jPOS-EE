@@ -12,7 +12,7 @@ extraJavaModuleInfo {
 
 dependencies {
     implementation libs.jpos
-    implementation libs.quartz
     implementation libs.slf4j
+    api libs.quartz
 }
 

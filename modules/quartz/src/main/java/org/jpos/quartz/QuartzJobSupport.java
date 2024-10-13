@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2;
+package org.jpos.quartz;
 
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.q2.QFactory;
 import org.jpos.util.Log;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

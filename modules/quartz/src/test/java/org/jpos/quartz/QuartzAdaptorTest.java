@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2;
+package org.jpos.quartz;
 
 import org.jdom2.Element;
 import org.jpos.core.SimpleConfiguration;
+import org.jpos.q2.Q2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

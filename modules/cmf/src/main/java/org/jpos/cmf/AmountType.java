@@ -18,8 +18,8 @@
 
 package org.jpos.cmf;
 
-import org.jpos.iso.AdditionalAmountType;
-import org.jpos.iso.AdditionalAmountTypeConverter;
+import org.jpos.cmf.iso.AdditionalAmountType;
+import org.jpos.cmf.iso.AdditionalAmountTypeConverter;
 
 import java.util.HashMap;
 import java.util.Map;

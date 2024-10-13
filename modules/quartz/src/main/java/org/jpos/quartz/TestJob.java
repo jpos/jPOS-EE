@@ -16,9 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.iso;
+package org.jpos.quartz;
 
-public interface AdditionalAmountType {
-    String code();
-    String name();
+import org.jpos.core.annotation.Config;
+
+public class TestJob extends QuartzJobSupport {
+    @Config("message")
+    private String message;
+
+    public void run() {
+        getLog().info(message);
+    }
 }
+

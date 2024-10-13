@@ -2,8 +2,6 @@ description = 'jPOS-EE :: CMF Utils'
 
 dependencies {
     api libs.jpos
-    api libs.commonsLang3
-
     testImplementation testlibs.junit
     testRuntimeOnly testlibs.junitRuntime
 }

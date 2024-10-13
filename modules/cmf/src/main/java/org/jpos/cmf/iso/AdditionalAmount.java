@@ -16,44 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.cmf;
-
-import org.apache.commons.lang3.StringUtils;
+package org.jpos.cmf.iso;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
-/**
- * @deprecated Use {@link org.jpos.cmf.CMFAdditionalAmount}
- */
-@Deprecated
-@SuppressWarnings("WeakerAccess")
-public class AdditionalAmount {
-
-    public final static int SERIALIZED_DATA_LENGTH = 21;
-
+public abstract class AdditionalAmount {
     private String accountType;
-    private AmountType amountType;
+    private String amountType;
     private BigDecimal amount;
     private String currencyCode;
     private int currencyMinorUnit;
 
-    public AdditionalAmount(String accountType, BigDecimal amount, String currencyCode,
-                            AmountType amountType, int currencyMinorUnit) {
+    public AdditionalAmount() {
+    }
+
+    protected AdditionalAmount(String accountType, BigDecimal amount, String currencyCode,
+                            String amountType, int currencyMinorUnit) {
 
         setAccountType(accountType);
         setAmount(amount);
         setCurrencyCode(currencyCode);
-        setAmountType(amountType);
+        setAmountTypeCode(amountType);
         setCurrencyMinorUnit(currencyMinorUnit);
     }
+
+    public abstract String serialize();
 
     public String getAccountType() {
         return accountType;
     }
 
     public void setAccountType(String accountType) {
-
         Objects.requireNonNull(accountType);
 
         if (accountType.length() != 2)
@@ -62,11 +56,14 @@ public class AdditionalAmount {
         this.accountType = accountType;
     }
 
-    public AmountType getAmountType() {
+    /**
+     * @return The internal amount type 2-char string
+     */
+    public String getAmountTypeCode() {
         return amountType;
     }
 
-    public void setAmountType(AmountType amountType) {
+    public void setAmountTypeCode(String amountType) {
         Objects.requireNonNull(amountType);
         this.amountType = amountType;
     }
@@ -85,7 +82,6 @@ public class AdditionalAmount {
     }
 
     public void setCurrencyCode(String currencyCode) {
-
         Objects.requireNonNull(currencyCode);
 
         if (currencyCode.length() != 3)
@@ -99,54 +95,16 @@ public class AdditionalAmount {
     }
 
     public void setCurrencyMinorUnit(int currencyMinorUnit) {
-
         if (currencyMinorUnit < 0 || currencyMinorUnit > 9)
             throw new IllegalArgumentException("Invalid currency minor unit value");
 
         this.currencyMinorUnit = currencyMinorUnit;
     }
 
-    public String serialize() {
-        if (getAmountType() == null)
-            throw new IllegalStateException("Amount type not set");
-
-        if (getAmount() == null)
-            throw new IllegalStateException("Amount not set");
-
-        long absAmt= getAmount().movePointRight(getCurrencyMinorUnit()).abs().longValue();
-
-        return  getAccountType() +
-                getAmountType().toString() +
-                getCurrencyCode() +
-                getCurrencyMinorUnit() +
-                (getAmount().compareTo(BigDecimal.ZERO) >= 0 ? "C" : "D") +
-                StringUtils.leftPad(Long.toString(absAmt), 12, '0');
-    }
-
     @Override
     public String toString() {
-        return amount + String.format ("{%s,%s,%s,%d}", accountType, amountType, currencyCode, currencyMinorUnit);
+        return getClass().getSimpleName() +
+            String.format (" {%s,%s,%s,%d,%s}", accountType, amountType, currencyCode, currencyMinorUnit, amount);
     }
 
-    static AdditionalAmount parse(String data) {
-        Objects.requireNonNull(data);
-
-        if (data.length() != SERIALIZED_DATA_LENGTH)
-            throw new IllegalArgumentException("Invalid data length");
-
-        String accountType = StringUtils.mid(data, 0, 2);
-        AmountType amountType = AmountType.fromCode(StringUtils.mid(data, 2, 2));
-        String currencyCode = StringUtils.mid(data, 4, 3);
-        int minorUnit = Integer.parseInt(StringUtils.mid(data, 7, 1));
-        BigDecimal amount = new BigDecimal(StringUtils.right(data, 12)).movePointLeft(minorUnit);
-        String amountSign = StringUtils.mid(data, 8, 1);
-
-        if (!"C.D".contains(amountSign))
-            throw new IllegalArgumentException("Invalid amount sign");
-
-        if ("D".equalsIgnoreCase(amountSign))
-            amount = amount.negate();
-
-        return new AdditionalAmount(accountType, amount, currencyCode, amountType, minorUnit);
-    }
 }

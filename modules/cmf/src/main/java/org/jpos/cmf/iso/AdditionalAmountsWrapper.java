@@ -16,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.iso;
-
-import org.apache.commons.lang3.StringUtils;
+package org.jpos.cmf.iso;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -53,10 +51,10 @@ public class AdditionalAmountsWrapper extends LinkedHashSet<AdditionalAmount> {
         AdditionalAmountsWrapper amounts = new AdditionalAmountsWrapper();
 
         for (int i = 0; i < data.length(); i += amtLength) {
-            AdditionalAmount amount = parser.apply(StringUtils.mid(data, i, amtLength));
+            String amountData = data.substring(i, i + amtLength);
+            AdditionalAmount amount = parser.apply(amountData);
             amounts.add(amount);
         }
-
         return amounts;
     }
 

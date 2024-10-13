@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2;
+package org.jpos.quartz;
 
 import org.jdom2.Element;
 import org.jpos.core.Configurable;
@@ -29,6 +29,7 @@ import org.jpos.util.LogSource;
 import org.jpos.util.Logger;
 import org.jpos.util.NameRegistrar;
 import org.quartz.*;
+import org.jpos.q2.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Date;

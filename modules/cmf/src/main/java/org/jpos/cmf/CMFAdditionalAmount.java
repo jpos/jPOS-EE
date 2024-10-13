@@ -18,8 +18,9 @@
 
 package org.jpos.cmf;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jpos.iso.AdditionalAmount;
+// import org.apache.commons.lang3.StringUtils;
+import org.jpos.cmf.iso.AdditionalAmount;
+import org.jpos.iso.ISOUtil;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -54,7 +55,7 @@ public class CMFAdditionalAmount extends AdditionalAmount {
                 getCurrencyCode() +
                 getCurrencyMinorUnit() +
                 (getAmount().compareTo(BigDecimal.ZERO) >= 0 ? "C" : "D") +
-                StringUtils.leftPad(Long.toString(absAmt), 12, '0');
+                ISOUtil.zeropad(absAmt, 12);
     }
 
     public static AdditionalAmount parse(String data) {
@@ -63,13 +64,13 @@ public class CMFAdditionalAmount extends AdditionalAmount {
         if (data.length() != SERIALIZED_DATA_LENGTH)
             throw new IllegalArgumentException("Invalid data length");
 
-        String accountType = StringUtils.mid(data, 0, 2);
-        String amountType = StringUtils.mid(data, 2, 2);
-        String currencyCode = StringUtils.mid(data, 4, 3);
-        int minorUnit = Integer.parseInt(StringUtils.mid(data, 7, 1));
+        String accountType = data.substring(0, 2);
+        String amountType = data.substring(2, 4);
+        String currencyCode = data.substring(4, 7);
+        int minorUnit = Integer.parseInt(data.substring(7, 8));
 
-        String amountSign = StringUtils.mid(data, 8, 1);
-        BigDecimal amount = new BigDecimal(StringUtils.right(data, 12)).movePointLeft(minorUnit);
+        String amountSign = data.substring(8,9);
+        BigDecimal amount = new BigDecimal(data.substring(data.length() - 12)).movePointLeft(minorUnit);
 
         if (!"C.D".contains(amountSign))
             throw new IllegalArgumentException("Invalid amount sign");

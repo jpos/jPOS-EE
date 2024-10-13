@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.util;
+package org.jpos.ee.support;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;

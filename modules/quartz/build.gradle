@@ -1,12 +1,18 @@
+plugins {
+    id 'org.gradlex.extra-java-module-info' version '1.9'
+}
+
 description = 'jPOS-EE :: Quartz integration'
 
+extraJavaModuleInfo {
+    failOnMissingModuleInfo.set(false)
+    automaticModule('org.quartz-scheduler:quartz', 'org.quartz')
+}
+
+
 dependencies {
-    api libs.jpos
-    api (libs.quartz) {
-        exclude group: 'org.slf4j', module: 'slf4j-api'
-        exclude group: 'jakarta.xml.bind', module: 'jakarta.xml.bind-api'
-    }
-    api libs.slf4j
-    // api libs.jakartaBind
+    implementation libs.jpos
+    implementation libs.quartz
+    implementation libs.slf4j
 }
 

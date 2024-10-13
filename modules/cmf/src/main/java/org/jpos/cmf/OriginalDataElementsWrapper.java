@@ -18,10 +18,12 @@
 
 package org.jpos.cmf;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.jpos.iso.ISODate;
+import org.jpos.iso.ISOUtil;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
 
@@ -29,8 +31,9 @@ import java.util.Objects;
  * Handles original data elements field content - DE-056
  */
 public final class OriginalDataElementsWrapper {
-
     private static final int MAX_FIELD_LENGTH = 41;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
 
     private String originalMTI;
     private long originalSTAN;
@@ -52,7 +55,9 @@ public final class OriginalDataElementsWrapper {
         try {
             setOriginalMTI(fieldValue.substring(0, 4));
             setOriginalSTAN(Long.parseLong(fieldValue.substring(4, 16)));
-            setOriginalLocalDate(DateUtils.parseDate(fieldValue.substring(16, 30), "yyyyMMddHHmmss"));
+
+            LocalDateTime localDateTime = LocalDateTime.parse(fieldValue.substring(16, 30), DATE_FORMATTER);
+            setOriginalLocalDate(Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant()));
             setOriginalAcquiringInstCode(fieldValue.substring(30));
         }
         catch (Exception e) {
@@ -64,19 +69,19 @@ public final class OriginalDataElementsWrapper {
     public String serialize() {
         StringBuilder r = new StringBuilder();
 
-        if (StringUtils.isNotBlank(getOriginalMTI()))
-            r.append(StringUtils.leftPad(getOriginalMTI(), 4, '0'));
+        if (originalMTI != null && !originalMTI.isBlank())
+            r.append(String.format("%04d", Integer.parseInt(originalMTI)));
         else
             r.append("0000");
 
-        r.append(StringUtils.leftPad(Long.toString(getOriginalSTAN()), 12, '0'));
+        r.append(ISOUtil.zeropad(getOriginalSTAN(), 12));
 
         if (getOriginalLocalDate() != null)
             r.append(ISODate.formatDate(getOriginalLocalDate(), "yyyyMMddHHmmss"));
         else
-            r.append(StringUtils.repeat('0', 14));
+            r.append(ISOUtil.zeropad(0L,14));
 
-        if (StringUtils.isNotBlank(getOriginalAcquiringInstCode()))
+        if (originalAcquiringInstCode != null && !originalAcquiringInstCode.isBlank())
             r.append(getOriginalAcquiringInstCode());
 
         return r.toString();
@@ -87,8 +92,7 @@ public final class OriginalDataElementsWrapper {
     }
 
     public void setOriginalMTI(String originalMTI) {
-
-        if (StringUtils.isBlank(originalMTI))
+        if (originalMTI == null || originalMTI.isBlank())
             throw new NullPointerException("originalMTI cannot be null or empty");
 
         if (originalMTI.length() != 4)

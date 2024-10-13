@@ -16,16 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.q2;
+package org.jpos.cmf.iso;
 
-import org.jpos.core.annotation.Config;
+public interface AdditionalAmountTypeConverter {
+    /**
+     * Convert from an Additional Amount Type 2-digit code in an 8583 spec into the equivalent jPOS-CMF spec.
+     * @return may return null if this code is not mapped by CMF.
+     */
+    String toCMF(String code);
 
-public class TestJob extends QuartzJobSupport {
-    @Config("message")
-    private String message;
-
-    public void run() {
-        getLog().info(message);
-    }
+    /**
+     * Convert from an Additional Amount Type  2-digit code in an jPOS-CMF into the equivalent of another 8583 spec.
+     * @return may return null if the CMF code is not mapped by the external 8583 spec.
+     */
+    String fromCMF(String cmfCode);
 }
-

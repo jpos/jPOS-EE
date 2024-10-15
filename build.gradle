@@ -1,113 +1,175 @@
 plugins {
-    id 'org.jpos.jposapp' version '0.0.10'
+    id 'org.jpos.jposapp' version '0.0.11'
     id 'idea'
     id 'org.gradlex.extra-java-module-info' version '1.9'
 }
 
+import org.gradle.internal.os.OperatingSystem
 
-// if (file('libraries.gradle').exists())
-//   apply from: 'libraries.gradle'
+evaluate(new File("${project.projectDir}/VERSION"))
 
 allprojects {
-    group = 'org.jpos.ee'
-    version = '3.0.0-SNAPSHOT'
     apply plugin: 'idea'
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-        }
-    }
+    apply plugin: 'eclipse'
 }
 
 subprojects {
-    apply from: "${rootProject.projectDir}/publishing.gradle"
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    group = 'org.jpos.ee'
+    version = binding.variables.get("PROJECT_VERSION") ?: "0.0.1"
     if (name != 'bom') {
         apply plugin: 'java-library'
+        apply plugin: 'project-report'
         apply plugin: 'org.jpos.jposapp'
-        apply from: "${rootProject.projectDir}/subprojects.gradle"
+
+        [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
+        def isSnapshot = version.contains("SNAPSHOT")
+        def mavenCentralRepo = isSnapshot ?
+            'https://oss.sonatype.org/content/repositories/snapshots/' :
+            'https://oss.sonatype.org/service/local/staging/deploy/maven2';
+        configurations.implementation.transitive = true
+        javadoc.failOnError = false
+
+        java {
+            withJavadocJar()
+            withSourcesJar()
+            sourceCompatibility = JavaVersion.VERSION_23
+            targetCompatibility = JavaVersion.VERSION_23
+        }
+
+        tasks.withType(JavaCompile) {
+            options.release = JavaVersion.VERSION_23.ordinal()
+        }
+        repositories {
+            mavenCentral()
+            maven { url = uri('https://jpos.org/maven') }
+            mavenLocal()
+        }
+        if (project.hasProperty("lint")) {
+            // gradle -Plint ...
+            tasks.withType(JavaCompile) {
+                options.compilerArgs << "-Xlint:preview" << "-Xlint:unchecked" << "-Xlint:deprecation"
+            } 
+        }
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    pom {
+                        name = 'jPOS Project'
+                        description = """
+        jPOS is an ISO-8583 based financial transaction 
+        library/framework that can be customized and 
+        extended in order to implement financial interchanges.
+    """
+                        url = "https://jpos.org"
+                        organization {
+                            name = 'jPOS.org'
+                            url = 'https://jpos.org'
+                        }
+                        issueManagement {
+                            system = 'Github Issues'
+                            url = 'https://github.com/jpos/jPOS-EE/issues'
+                        }
+                        scm {
+                            url = "http://github.com/jpos/jPOS-EE"
+                            connection = "scm:git:https://github.com/jpos/jPOS-EE.git"
+                            developerConnection = "scm:git:git@github.com:jpos/jPOS-EE.git"
+                        }
+                        licenses {
+                            license {
+                                name = 'GNU AFFERO GENERAL PUBLIC LICENSE'
+                                url = 'http://www.gnu.org/licenses/agpl-v3.html'
+                                comments = 'See http://jpos.org/license for more details.'
+                                distribution = 'repo'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = 'jpos-team'
+                                name = 'jPOS Development Team'
+                                email = 'info@jpos.org'
+                            }
+                        }
+                    }
+                    groupId = 'org.jpos.ee'
+                    artifactId="jposee-${project.name}"
+                    from components.java
+                }
+            }
+            repositories {
+                maven {
+                    def releasesRepoUrl = mavenCentralRepo
+                    def snapshotsRepoUrl = 'file:///opt/local/maven'
+                    url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+                    if (!isSnapshot) {
+                        credentials {
+                            if (project.hasProperty("mavenCentralUsername"))
+                                username = mavenCentralUsername
+                            if (project.hasProperty("mavenCentralPassword"))
+                                password = mavenCentralPassword
+                        }
+                    }
+                }
+            }
+        }
+
+        signing {
+            required { !isSnapshot }
+            sign publishing.publications.mavenJava
+        }
+
+        javadoc {
+            configure(options) {
+                windowTitle = "jPOS-EE ${project.version}"
+                header = "<b>jPOS-EE ${project.version}</b>"
+                linkSource = true
+                links(
+                    'https://docs.oracle.com/en/java/javase/23/docs/api'
+                )
+                tags(
+                    'apiNote:a:API Note:',
+                    'implSpec:a:Implementation Requirements:',
+                    'implNote:a:Implementation Note:'
+                )
+            }
+        }
+
         test {
-            useJUnitPlatform() 
+            useJUnitPlatform()
             testLogging {
                 events "passed", "skipped", "failed"
             }
             systemProperty 'user.language', 'en'
-//            if (!(System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS") == "true" &&
-//                    (OperatingSystem.current().isMacOsX() || OperatingSystem.current().isWindows()))) {
-//                maxParallelForks = Runtime.runtime.availableProcessors()
-//            }
+            if (!(System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS") == "true" &&
+                    (OperatingSystem.current().isMacOsX() || OperatingSystem.current().isWindows()))) {
+                maxParallelForks = Runtime.runtime.availableProcessors()
+            }
         }
-        dependencies{
-            testImplementation testlibs.junit
-            testRuntimeOnly testlibs.junitRuntime
-        }
-    }
-    repositories {
-        mavenCentral()
-        maven { url = uri('https://jpos.org/maven') }
-        mavenLocal()
-    }
-    base {
-        archivesName="jposee-${project.name}"
-    }
-    java {
-        sourceCompatibility = JavaVersion.VERSION_23
-        targetCompatibility = JavaVersion.VERSION_23
-        withSourcesJar()
     }
 }
 
+// Configure IDEA to use Git
 idea {
     project {
         ipr {
-            withXml {
-                provider -> provider.node.component.find {
-                    it.@name == 'VcsDirectoryMappings'
-                }.mapping.@vcs = 'Git'
+            withXml { 
+                provider -> provider.node.component.find { 
+                    it.@name == 'VcsDirectoryMappings' 
+                }.mapping.@vcs = 'Git' 
             }
         }
         languageLevel = '23'
     }
 }
 
-
-
-// apply from: 'libraries.gradle'
-
-
-// buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//    dependencies {
-//        classpath 'org.owasp:dependency-check-gradle:6.1.5'
-//    }
-//}
-
-//allprojects {
-//    apply plugin: 'idea'
-//    apply plugin: 'eclipse'
-//    apply plugin: 'org.owasp.dependencycheck'
-
-//    group = 'org.jpos.ee'
-//    version = '3.0.0-SNAPSHOT'
-//    gradle.projectsEvaluated {
-//        tasks.withType(JavaCompile) {
-//            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-//        }
-//    }
-//}
-
-// subprojects {
-//     apply from: "${rootProject.projectDir}/publishing.gradle"
-//     if (name != 'bom') {
-//         apply from: "${rootProject.projectDir}/subprojects.gradle"
-//     }
-// }
-
-// Configure IDEA to use Git
-// idea.project.ipr {
-//  withXml { provider ->
-//    provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
-//  }
-// }
+task aggregatedJavadoc (type: Javadoc, description: "Aggregated Javadocs") {
+    source subprojects.collect {project ->
+        project.sourceSets.main.allJava
+    }
+    destinationDir = new File(buildDir, 'docs/javadoc')
+    classpath = files(subprojects.collect {project ->
+        project.sourceSets.main.compileClasspath})
+    failOnError = false
+}
 

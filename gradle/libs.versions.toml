@@ -37,6 +37,7 @@ log4jOverSlf4j = { module='org.slf4j:log4j-over-slf4j', version.ref = 'slf4j' }
 julToSlf4j = { module='org.slf4j:jul-to-slf4j', version.ref = 'slf4j' }
 logback = { module='ch.qos.logback:logback-classic', version.ref = 'logback' }
 jacksonDatabind = { module='com.fasterxml.jackson.core:jackson-databind', version.ref = 'jacksonDatabind' }
+jacksonDataTypeJSR310 = { module='com.fasterxml.jackson.datatype:jackson-datatype-jsr310', version.ref = 'jacksonDatabind' }
 nettyHandler = { module = 'io.netty:netty-handler', version.ref = 'netty' }
 nettyCodecHttp = { module = 'io.netty:netty-codec-http', version.ref = 'netty' }
 freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' }
@@ -57,3 +58,10 @@ h2 = { module = 'com.h2database:h2', version.ref='h2' }
 testcontainersPostgresql = { module = 'org.testcontainers:postgresql', version.ref='testcontainers' }
 httpAsyncClient = { module = 'org.apache.httpcomponents:httpasyncclient', version.ref = 'httpAsyncClient' }
 jgroups = { module = 'org.jgroups:jgroups', version.ref = 'jgroups' }
+
+[bundles]
+jackson = [
+    "jacksonDatabind",
+    "jacksonDataTypeJSR310"
+]
+

@@ -4,6 +4,7 @@ dependencies {
     api libs.jpos
     api libs.httpAsyncClient
     testImplementation project(':modules:qrest')
+    testImplementation testlibs.junit
 }
 
 test {

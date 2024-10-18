@@ -3,5 +3,6 @@ description = 'jPOS-EE :: FlyWay support'
 dependencies {
     api project(':modules:dbsupport')
     api libs.flyway
+    testImplementation testlibs.junit
 }
 

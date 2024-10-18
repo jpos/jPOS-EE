@@ -2,8 +2,9 @@ description = 'jPOS-EE :: User Module'
 
 dependencies {
     api project(':modules:dbsupport')
-    testImplementation project(':modules:db-h2')
     api libs.commonsLang3
+    testImplementation project(':modules:db-h2')
+    testImplementation testlibs.junit
 }
 
 ext {

@@ -14,5 +14,6 @@ dependencies {
     implementation libs.jpos
     implementation libs.slf4j
     api libs.quartz
+    testImplementation testlibs.junit
 }
 

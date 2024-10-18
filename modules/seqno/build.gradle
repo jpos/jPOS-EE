@@ -4,6 +4,7 @@ dependencies {
     api project(':modules:dbsupport')
     testImplementation project(':modules:db-postgresql')
     testImplementation libs.testcontainersPostgresql
+    testImplementation testlibs.junit
 }
 
 

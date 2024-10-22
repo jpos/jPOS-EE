@@ -57,7 +57,7 @@ public class PASSWD implements CLICommand {
             mgr.setPassword(user, line.getOptionValue('p'));
             db.session().persist(user);
             db.commit();
-            cli.println ("User '" + user.getNickAndId() + "': password changed.");
+            cli.println ("User '" + user.nickAndId() + "': password changed.");
         } catch (Exception e) {
             cli.println (e.getMessage());
         }

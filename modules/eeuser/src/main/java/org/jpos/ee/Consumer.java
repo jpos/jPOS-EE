@@ -20,6 +20,8 @@ package org.jpos.ee;
 
 import java.util.*;
 import java.io.Serializable;
+
+import jakarta.persistence.Transient;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -127,7 +129,8 @@ public class Consumer extends Cloneable implements Serializable, SoftDelete {
     public void removeAllRoles () {
         roles.clear ();
     }
-    public String getRolesAsString () {
+    @Transient
+    public String rolesAsString() {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
             if (!sb.isEmpty())

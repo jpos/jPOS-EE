@@ -188,7 +188,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public void removeAllRoles () {
         roles.clear ();
     }
-    public String getRolesAsString () {
+    public String rolesAsString() {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
             if (!sb.isEmpty())
@@ -197,7 +197,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         }
         return sb.toString();
     }
-    public String getRealmsAsString () {
+    public String realmsAsString() {
         StringBuilder sb = new StringBuilder();
         for (Role r : roles) {
             if (r.getRealm() != null) {
@@ -261,7 +261,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     /**
      * @return nick(id)
      */
-    public String getNickAndId() {
+    public String nickAndId() {
         StringBuilder sb = new StringBuilder (getNick());
         sb.append ('(');
         sb.append (getId());

@@ -99,7 +99,7 @@ public class Role extends Cloneable implements Serializable {
             ignoreRealm = true;
             permName = permName.substring(1);
         }
-        return permName != null && (getActivePermissions(ignoreRealm).contains(Permission.valueOf(permName)));
+        return permName != null && (activePermissions(ignoreRealm).contains(Permission.valueOf(permName)));
     }
 
     public void addPermission (String permName) {
@@ -146,33 +146,33 @@ public class Role extends Cloneable implements Serializable {
      * get Fully Qualified Role Name
      * @return [realm:]role.name
      */
-    private String getFQRN() {
+    private String FQRN() {
         return getRealm () != null ? String.format("%s:role.%s", getRealm().getName(), getName()) :
           String.format("role.%s", getName());
     }
 
-    public Set<Permission> getActivePermissions () {
-        return getActivePermissions(false);
+    public Set<Permission> activePermissions() {
+        return activePermissions(false);
     }
 
-    public Set<Permission> getActivePermissions (boolean ignoreRealm) {
+    public Set<Permission> activePermissions(boolean ignoreRealm) {
         Set<Permission> perm = new LinkedHashSet<>();
-        perm.add(Permission.valueOf(getFQRN()));
+        perm.add(Permission.valueOf(FQRN()));
         if (ignoreRealm)
             perm.addAll(permissions);
         else
-            perm.addAll(getActivePermissions(getRealm()));
+            perm.addAll(activePermissions(getRealm()));
         for (Role r = this; r.getParent() != null; ) {
             r = r.getParent();
             if (ignoreRealm)
                 perm.addAll(r.getPermissions());
             else
-                perm.addAll(r.getActivePermissions(getRealm()));
+                perm.addAll(r.activePermissions(getRealm()));
         }
         return perm;
     }
 
-    private Set<Permission> getActivePermissions (Realm r) {
+    private Set<Permission> activePermissions(Realm r) {
         return r != null ?
           permissions.stream().map(
             p -> Permission.valueOf(r.getName() + ":" + p.getName())

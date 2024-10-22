@@ -80,7 +80,7 @@ public class ADDUSER implements CLICommand {
                 Collections.addAll(user.getRoles(), rr);
             user.setActive(true);
             db.commit();
-            cli.println ("User '" + user.getNickAndId() + "' created");
+            cli.println ("User '" + user.nickAndId() + "' created");
         } catch (Exception e) {
             cli.println (e.getMessage());
         }

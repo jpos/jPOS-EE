@@ -39,7 +39,7 @@ public class RMUSER implements CLICommand {
                 u.setDeleted(true);
             }
             db.commit();
-            cli.println(u != null ? "User " + u.getNickAndId() + " has been deleted" : "User does not exist");
+            cli.println(u != null ? "User " + u.nickAndId() + " has been deleted" : "User does not exist");
         } catch (Exception e) {
             cli.println(e.getMessage());
         }

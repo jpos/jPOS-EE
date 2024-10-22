@@ -361,7 +361,7 @@ public class DB implements Closeable {
      */
     public void save(Object obj) throws HibernateException
     {
-        session.save(obj);
+        session.persist(obj);
     }
 
     /**

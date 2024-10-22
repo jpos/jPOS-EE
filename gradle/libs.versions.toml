@@ -47,6 +47,7 @@ jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.
 hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
 hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernate' }
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
+hibernateAgroal = { module='org.hibernate:hibernate-agroal', version.ref='hibernate' }
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
 jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }
 jdbcMysql = { module = 'mysql:mysql-connector-java', version.ref='jdbcMysql' }

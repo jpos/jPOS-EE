@@ -51,7 +51,7 @@ public class Response {
     public String toString() {
         return "Response{" +
           "status=" + status +
-          "contentType="+ contentType +
+          ", contentType="+ contentType +
           ", body=" + body +
           '}';
     }

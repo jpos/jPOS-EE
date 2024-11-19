@@ -29,7 +29,6 @@ subprojects {
             'https://oss.sonatype.org/content/repositories/snapshots/' :
             'https://oss.sonatype.org/service/local/staging/deploy/maven2';
         configurations.implementation.transitive = true
-        javadoc.failOnError = false
 
         java {
             withJavadocJar()
@@ -120,6 +119,8 @@ subprojects {
         }
 
         javadoc {
+            failOnError = false
+            options.addStringOption('Xdoclint:all,-missing', '-quiet')
             configure(options) {
                 windowTitle = "jPOS-EE ${project.version}"
                 header = "<b>jPOS-EE ${project.version}</b>"

@@ -7,3 +7,4 @@ dependencies {
     }
 }
 
+apply from: "${rootProject.projectDir}/jpos-app.gradle"

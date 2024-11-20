@@ -31,14 +31,14 @@ import org.jpos.util.NameRegistrar;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
-import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
     protected Scheduler scheduler;
     private Element config;
+    private Map<String,JobDetail> jobs = new HashMap<>();
 
     @Override
     protected void initService() throws Exception {
@@ -62,31 +62,37 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
             jobData.put("Q2", adaptor);
 
             JobDetail job = JobBuilder.newJob(j.getClass())
-                    .withIdentity(e.getAttributeValue("id"), getName())
+                    .withIdentity(jobId, getName())
                     .usingJobData(jobData)
                     .build();
+
+            jobs.put(jobId, job);
 
             CronTrigger trigger;
             try {
                 String cronExpression = Environment.get(e.getAttributeValue("when"));
+                if (cronExpression == null)
+                    cronExpression = "0 0 0 31 12 ? " + String.valueOf(LocalDate.now().getYear()+100);
                 trigger = TriggerBuilder.newTrigger()
-                        .withIdentity(e.getAttributeValue("id"), getName())
-                        .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
-                        .build();
+                  .withIdentity(jobId, getName())
+                  .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+                  .build();
 
                 Date ft = scheduler.scheduleJob(job, trigger);
                 evt.addMessage(job.getKey() + " (" + obj.getClass() + ") has been scheduled to run at: " + ft
-                        + " and repeat based on expression: "
-                        + trigger.getCronExpression());
+                  + " and repeat based on expression: "
+                  + trigger.getCronExpression());
             } catch (Exception e1) {
                 evt.addMessage(String.format("%s: %s --- Exception follows", jobId, e1.getMessage()));
                 evt.addMessage(e1);
             }
         }
-
         NameRegistrar.register(getName(), this);
-
         Logger.log(evt);
+    }
+
+    public Scheduler scheduler() {
+        return scheduler;
     }
 
     @Override
@@ -106,6 +112,10 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
     }
     public void setConfiguration(Element config) throws ConfigurationException {
         this.config = config;
+    }
+
+    public JobDetail getJob (String id) {
+        return jobs.get(id);
     }
     public class Q2Adaptor implements LogSource, Configurable {
         Configuration cfg;

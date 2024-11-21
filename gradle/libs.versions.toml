@@ -44,7 +44,7 @@ freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' 
 jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
-hibernateCore = { module = 'org.hibernate.orm:hibernate-core', version.ref='hibernate' }
+hibernate = { module = 'org.hibernate.orm:hibernate-core', version.ref='hibernate' }
 hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernate' }
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
 hibernateAgroal = { module='org.hibernate:hibernate-agroal', version.ref='hibernate' }
@@ -66,9 +66,4 @@ jgroups = { module = 'org.jgroups:jgroups', version.ref = 'jgroups' }
 jackson = [
     "jacksonDatabind",
     "jacksonDataTypeJSR310"
-]
-hibernate = [
-    "hibernateCore",
-    "hibernateC3p0",
-    "hibernateHikari"
 ]

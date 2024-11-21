@@ -2,7 +2,7 @@ description = 'jPOS-EE :: Database Support Module'
 
 dependencies {
     api project(':modules:core')
-    api libs.hibernate
+    api libs.bundles.hibernate
     api libs.jacksonDatabind
     api libs.dom4j
     implementation libs.hibernateToolsOrm

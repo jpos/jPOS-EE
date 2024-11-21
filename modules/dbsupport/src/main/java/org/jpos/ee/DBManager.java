@@ -18,15 +18,11 @@
 
 package org.jpos.ee;
 
-// import org.hibernate.query.criteria.internal.OrderImpl;
-
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.*;
 import org.hibernate.query.Query;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 public class DBManager<T> {
 
@@ -56,12 +52,11 @@ public class DBManager<T> {
 
     public int getItemCount(DBFilter<T>... filters)  {
         CriteriaBuilder cb = db.session().getCriteriaBuilder();
-        // CriteriaQuery<Card> query = createCriteriaQuery(false, (DBFilter<Card>) null);
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<T> root = countQuery.from(clazz);
         Predicate combinedPredicate = cb.and(
             Arrays.stream(filters)
-                .filter(f -> f != null)
+                .filter(Objects::nonNull)
                 .map(f -> f.createPredicate(cb, root))
                 .toArray(Predicate[]::new)
         );
@@ -80,7 +75,7 @@ public class DBManager<T> {
 
     }
     public List<T> getAll(int offset, int limit, Map<String,Boolean> orders) {
-        return this.getAll(offset, limit, orders, null);
+        return this.getAll(offset, limit, orders, (DBFilter<T>) null);
     }
 
     public List<T> getAll(int offset, int limit, Map<String,Boolean> orders, DBFilter<T>... filters) {
@@ -91,13 +86,13 @@ public class DBManager<T> {
         //ORDERS
         if (orders != null) {
             orders.forEach((key, value) ->
-              orderList.add(value ? criteriaBuilder.asc(root.get(key)) : criteriaBuilder.desc(root.get(key)))
+              orderList.add(Boolean.TRUE.equals(value) ? criteriaBuilder.asc(root.get(key)) : criteriaBuilder.desc(root.get(key)))
             );
         }
         Predicate combinedPredicate = null;
         if (filters != null) {
             combinedPredicate = criteriaBuilder.and(Arrays.stream(filters)
-                    .filter(f -> f != null)
+                    .filter(Objects::nonNull)
                     .map(f -> f.createPredicate(criteriaBuilder, root))
                     .toArray(Predicate[]::new));
         }
@@ -115,10 +110,9 @@ public class DBManager<T> {
         if (limit != -1) {
             queryImp.setMaxResults(limit);
         }
-        List<T> list = queryImp
+        return queryImp
                 .setFirstResult(offset)
                 .getResultList();
-        return list;
     }
 
     public List<T> getAll() {
@@ -155,10 +149,9 @@ public class DBManager<T> {
             if (limit != -1) {
                 queryImp.setMaxResults(limit);
             }
-            List<T> list = queryImp
+            return queryImp
                     .setFirstResult(offset)
                     .getResultList();
-            return list;
         } catch (NoResultException nre) {
             return null;
         }
@@ -211,7 +204,7 @@ public class DBManager<T> {
      * Arbitrary query over the entity type (T) of this manager
      * Example usage:
      * <pre>
-     *     List&le;T&ge results = queryItems( (cb, root) ->
+     *     List&le;T&ge; results = queryItems( (cb, root) ->
      *          cb.or(
      *              cb.greaterThanOrEqualTo(root.get("property"), value),
      *              cb.isNotNull(root.get("otherProperty")

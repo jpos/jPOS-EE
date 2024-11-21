@@ -13,7 +13,7 @@ freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'
 jakartaActivation = '2.0.1'
-hibernate = '6.6.1.Final'
+hibernate = '6.6.2.Final'
 dom4j = '2.1.4'
 jdbcPostgresql = '42.7.2'
 jdbcMysql = '8.0.33'
@@ -44,10 +44,12 @@ freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' 
 jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
-hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
+hibernateCore = { module = 'org.hibernate.orm:hibernate-core', version.ref='hibernate' }
 hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernate' }
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
 hibernateAgroal = { module='org.hibernate:hibernate-agroal', version.ref='hibernate' }
+hibernateC3p0 = { module='org.hibernate.orm:hibernate-c3p0', version.ref='hibernate' }
+hibernateHikari = { module='org.hibernate.orm:hibernate-hikaricp', version.ref='hibernate' }
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
 jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }
 jdbcMysql = { module = 'mysql:mysql-connector-java', version.ref='jdbcMysql' }
@@ -65,4 +67,8 @@ jackson = [
     "jacksonDatabind",
     "jacksonDataTypeJSR310"
 ]
-
+hibernate = [
+    "hibernateCore",
+    "hibernateC3p0",
+    "hibernateHikari"
+]

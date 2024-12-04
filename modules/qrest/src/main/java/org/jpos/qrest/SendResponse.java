@@ -32,6 +32,7 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -121,6 +122,10 @@ public class SendResponse implements AbortParticipant, Configurable {
                   copiedBuffer(responseBody));
 
                 HttpHeaders httpHeaders = httpResponse.headers();
+
+                for (Map.Entry<String, String> header : response.getHeaders().entrySet()) {
+                    httpHeaders.add(header.getKey(), header.getValue());
+                }
 
                 if (response.contentType() != null)
                     httpResponse.headers().set(CONTENT_TYPE, response.contentType());

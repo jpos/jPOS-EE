@@ -127,4 +127,16 @@ public class RestTest  {
           .assertThat()
           .body("content", equalTo("hello"));
     }
+
+    @Test
+    void testResponseHeader() throws Exception {
+        given().log().all()
+                .post("/test/resp_header")
+                .then()
+                .statusCode(200)
+                .assertThat()
+                .header("test-content-header", equalTo("hello"))
+                .and()
+                .body("content", equalTo("world"));
+    }
 }

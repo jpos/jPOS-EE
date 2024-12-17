@@ -218,12 +218,10 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     }
 
     private boolean checkMandatoryJson (Context ctx) {
-        ctx.log ("Mandatory JSON: " + mandatoryJson);
         boolean validParams = true;
         for (Map.Entry<String,JsonSchema> entry : mandatoryJson.entrySet()) {
             String value = ctx.getString(entry.getKey());
             ProcessingReport report;
-            ctx.log ("Checking " + entry.getKey() + " value=" + value);
             if (value != null) {
                 try {
                     JsonSchema schema = entry.getValue();

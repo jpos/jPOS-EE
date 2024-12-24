@@ -20,6 +20,6 @@ tasks.register('jposeeSetup', JavaExec) {
 
 test {
     dependsOn 'jposeeSetup'
-    scanForTestClasses true
+    scanForTestClasses = true
     workingDir testRuntimeDir
 }

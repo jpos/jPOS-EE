@@ -19,7 +19,7 @@ task jposeeSetup(type: Copy) {
 
 test {
     dependsOn 'jposeeSetup'
-    scanForTestClasses true
+    scanForTestClasses = true
     workingDir testRuntimeDir
 }
 

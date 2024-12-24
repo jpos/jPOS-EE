@@ -14,20 +14,20 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
     group = 'org.jpos.ee'
     version = binding.variables.get("PROJECT_VERSION") ?: "0.0.1"
+    def isSnapshot = version.contains("SNAPSHOT")
+    def mavenCentralRepo = isSnapshot ?
+        'https://oss.sonatype.org/content/repositories/snapshots/' :
+        'https://oss.sonatype.org/service/local/staging/deploy/maven2';
     if (name != 'bom') {
-        apply plugin: 'java-library'
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
         apply plugin: 'project-report'
         apply plugin: 'org.jpos.jposapp'
+        apply plugin: 'java-library'
 
         [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
-        def isSnapshot = version.contains("SNAPSHOT")
-        def mavenCentralRepo = isSnapshot ?
-            'https://oss.sonatype.org/content/repositories/snapshots/' :
-            'https://oss.sonatype.org/service/local/staging/deploy/maven2';
         configurations.implementation.transitive = true
 
         java {
@@ -60,7 +60,7 @@ subprojects {
         jPOS is an ISO-8583 based financial transaction 
         library/framework that can be customized and 
         extended in order to implement financial interchanges.
-    """
+        """
                         url = "https://jpos.org"
                         organization {
                             name = 'jPOS.org'
@@ -96,28 +96,11 @@ subprojects {
                     from components.java
                 }
             }
-            repositories {
-                maven {
-                    def releasesRepoUrl = mavenCentralRepo
-                    def snapshotsRepoUrl = 'file:///opt/local/maven'
-                    url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-                    if (!isSnapshot) {
-                        credentials {
-                            if (project.hasProperty("mavenCentralUsername"))
-                                username = mavenCentralUsername
-                            if (project.hasProperty("mavenCentralPassword"))
-                                password = mavenCentralPassword
-                        }
-                    }
-                }
-            }
         }
-
         signing {
-            required { !isSnapshot }
+            required = !isSnapshot 
             sign publishing.publications.mavenJava
         }
-
         javadoc {
             failOnError = false
             options.addStringOption('Xdoclint:all,-missing', '-quiet')
@@ -147,6 +130,30 @@ subprojects {
                 maxParallelForks = Runtime.runtime.availableProcessors()
             }
         }
+        task aggregatedJavadoc (type: Javadoc, description: "Aggregated Javadocs") {
+            source subprojects.collect {project ->
+                project.sourceSets.main.allJava
+            }
+            destinationDir = new File(buildDir, 'docs/javadoc')
+            classpath = files(subprojects.collect {project ->
+                project.sourceSets.main.compileClasspath})
+            failOnError = false
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = mavenCentralRepo
+                def snapshotsRepoUrl = 'file:///opt/local/maven'
+                url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+                if (!isSnapshot) {
+                    credentials {
+                        if (project.hasProperty("mavenCentralUsername"))
+                            username = mavenCentralUsername
+                        if (project.hasProperty("mavenCentralPassword"))
+                            password = mavenCentralPassword
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -162,15 +169,5 @@ idea {
         }
         languageLevel = '23'
     }
-}
-
-task aggregatedJavadoc (type: Javadoc, description: "Aggregated Javadocs") {
-    source subprojects.collect {project ->
-        project.sourceSets.main.allJava
-    }
-    destinationDir = new File(buildDir, 'docs/javadoc')
-    classpath = files(subprojects.collect {project ->
-        project.sourceSets.main.compileClasspath})
-    failOnError = false
 }
 

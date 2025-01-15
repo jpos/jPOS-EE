@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jpos.jposapp' version '0.0.11'
+    id 'org.jpos.jposapp' version '0.0.13'
     id 'idea'
     id 'org.gradlex.extra-java-module-info' version '1.9'
 }

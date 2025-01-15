@@ -96,6 +96,22 @@ subprojects {
                     from components.java
                 }
             }
+            repositories {
+                maven {
+                    def snapshotsRepoUrl = 'file:///opt/local/maven'
+                    // def releasesRepoUrl = mavenCentralRepo
+                    def releasesRepoUrl = snapshotsRepoUrl
+                    url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+                    if (!isSnapshot) {
+                        credentials {
+                            if (project.hasProperty("mavenCentralUsername"))
+                                username = mavenCentralUsername
+                            if (project.hasProperty("mavenCentralPassword"))
+                                password = mavenCentralPassword
+                        }
+                    }
+                }
+            }
         }
         signing {
             required = !isSnapshot 
@@ -141,8 +157,9 @@ subprojects {
         }
         repositories {
             maven {
-                def releasesRepoUrl = mavenCentralRepo
                 def snapshotsRepoUrl = 'file:///opt/local/maven'
+                // def releasesRepoUrl = mavenCentralRepo
+                def releasesRepoUrl = snapshotsRepoUrl
                 url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
                 if (!isSnapshot) {
                     credentials {

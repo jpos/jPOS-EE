@@ -9,7 +9,7 @@ jPOS Extended Edition
 :author: jPOS Software SRL
 :email: support@jpos.org
 :revdate: {localdate}
-:revnumber: 2.2.9-SNAPSHOT
+:revnumber: 2.2.10-SNAPSHOT
 :source-highlighter: rouge
 :listing-caption: Listing
 :pdf-page-size: A4
@@ -38,6 +38,7 @@ include::introduction_module.adoc[]
 include::module_core.adoc[]
 include::module_txn.adoc[]
 include::module_qi.adoc[]
+include::module_saf.adoc[]
 
 == Database Support
 

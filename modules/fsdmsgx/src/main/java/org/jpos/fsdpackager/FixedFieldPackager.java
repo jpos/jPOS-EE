@@ -89,10 +89,10 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 		}
 		if (value.length() <= size) {
 			if (padLeft){
-				ISOUtil.padleft(getValue(), size,(char) padCharacter.byteValue() );
+				value = ISOUtil.padleft(getValue(), size,(char) padCharacter.byteValue() );
 			}
 			else {
-				ISOUtil.padright(getValue(), size,(char) padCharacter.byteValue() );
+				value = ISOUtil.padright(getValue(), size,(char) padCharacter.byteValue() );
 			}
 		}
 		else {

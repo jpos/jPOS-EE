@@ -85,6 +85,7 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 		if (value == null || value.equals("")) {
 			// if field is not set, make sure to send the delimiter to indicate
 			// its presence.
+			setValue(""); // the field needs to be set with a empty string in case it was null.
 			return new byte[] { delimiter.byteValue() };
 		}
 		if (value.length() <= maxSize) {

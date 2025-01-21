@@ -192,4 +192,31 @@ public class BranchFieldPackager extends AFSDFieldPackager {
 				cases);
 	}
 
+	@Override
+	public byte[] hexDump(String prefix, Map<String, String> fields) {
+	
+		String value = fields.get(switchField);
+		
+		if (value == null) {
+		    if (defaultCase != null) {
+			defaultCase.setValue(fields.get(defaultCase.getName()));
+			return defaultCase.hexDump(prefix, fields);
+		    }
+		    return null;
+		}
+		AFSDFieldPackager selectedPackager = switchCases.get(value);
+		if (selectedPackager == null) {
+		
+		    if (defaultCase != null) {
+			defaultCase.setValue(fields.get(defaultCase.getName()));
+			return defaultCase.hexDump(prefix, fields);
+		    }
+		    return null;
+		
+		}
+		selectedPackager.setValue(fields.get(selectedPackager.getName()));
+		return selectedPackager.hexDump(prefix, fields);
+	
+	}	
+
 }

@@ -1,0 +1,139 @@
+=== SAF
+
+The `SAF` (Store And Forward) module is responsible for managing and retransmitting messages, ensuring reliable and resilient message processing.
+It provides a mechanism to temporarily store messages when the network or MUX (Multiplexer) is unavailable and forwards them automatically when connectivity is restored.
+
+==== Key Features
+
+* Persistent message storage using configurable storage mechanisms (e.g., `JESpace`).
+* Automatic retry for message forwarding based on user-defined configurations.
+* Support for valid and retry response codes for retransmission logic.
+* Automatic handling of expired messages and maximum number of retransmission.
+* Thread-safe operations using jPOS's space-based architecture.
+* Logging and status monitoring.
+
+==== Configuration
+The `SAF` module is configured using a Q2 XML descriptor file. Below is an example configuration:
+
+[source,xml]
+----
+<saf name='saf' logger='Q2' realm='saf' class='org.jpos.saf.SAF'>
+ <property name='space' value='je:saf' />
+ <property name='mux' value='mux' />
+ <property name='flag-retransmissions' value='no'>
+  if MTI is in list, messages would be retransmitted as xxx1
+ </property>
+ <property name='initial-delay' value='60000' />
+ <property name='inter-message-delay' value='1000' />
+ <property name='wait-for-response' value='60000' />
+ <property name='max-retransmissions' value='1000' />
+ <property name='expire-after' value='86400'>
+  in seconds
+ </property>
+ <property name='valid-response-codes' value='*' />
+ <property name='retry-response-codes' value='91,ZZ' />
+</saf>
+----
+
+===== Available Properties
+
+- `space`
+Defines the persistence space where messages are stored. (e.g., `je:saf`)
+
+- `mux`
+Specifies the `MUX` instance used for sending messages.
+
+- `flag-retransmissions`
+If set to `yes`, messages with specific MTIs are retransmitted as `xxx1`.
+
+- `initial-delay`
+Sets the delay (in milliseconds) before starting the SAF process (default: `30,000` ms).
+
+- `inter-message-delay`
+Delay (in milliseconds) between subsequent messages (default: `1,000` ms).
+
+- `wait-for-response`
+Time (in milliseconds) to wait for a response after sending a message (default: `60,000` ms).
+
+- `max-retransmissions`
+Maximum number of times a message can be retransmitted (default: `0`, unlimited).
+
+- `expire-after`
+The expiration time for a message (in seconds). Expired messages are removed from the queue (default: `0`, unlimited).
+
+- `valid-response-codes`
+A list of response codes considered valid (default: `00`). Use `*` to accept all response codes.
+
+- `retry-response-codes`
+List of response codes that trigger message retransmission (optional).
+
+- `pre-message-delay`
+Delay before moving messages from a delayed queue to the main queue (default: `0`).
+
+==== Example Usage
+
+The following example demonstrates how to use the `SAF` module in your application to queue and process messages:
+
+[source,java]
+----
+import org.jpos.iso.ISOMsg;
+import org.jpos.saf.SAF;
+
+// Obtain an instance of the SAF service
+SAF saf = SAF.getSAF("saf");
+
+// Create a sample message
+ISOMsg msg = new ISOMsg();
+msg.setMTI("0200");
+msg.set(4, "1000");
+msg.set(11, "123456");
+msg.set(41, "000001");
+
+// Send the message
+saf.send(msg);
+----
+
+==== Inner Class: Entry
+
+The `Entry` class represents a queued message and its metadata.
+
+===== Attributes
+* `msg`: The `ISOMsg` object representing the message.
+* `time`: The timestamp when the message was added to the queue.
+* `count`: The number of transmission attempts for the message.
+* `responseKey`: The key used to store the response in the space (optional).
+* `responseTimeout`: The timeout in milliseconds for the response (optional).
+* `wipePreviousResponse`: Whether to clear previous responses for the same key.
+
+===== Methods
+
+====== Public Methods
+* `void send(ISOMsg msg)`: Queues a message for transmission.
+* `void send(ISOMsg msg, String responseKey, long responseTimeout, boolean wipe)`: Queues a message for transmission with additional response options.
+* `String getStatus()`: Retrieves the current status of the SAF service.
+* `static SAF getSAF(String name)`: Retrieves an instance of `SAF` from the `NameRegistrar`.
+
+====== Private Methods
+* `Entry send(Entry entry)`: Handles the actual transmission of a message.
+* `boolean shouldIgnore(Entry entry)`: Determines if a message should be ignored (expired or max retransmissions reached).
+* `LogEvent createLogEvent(String type, Entry entry)`: Creates a log event for a specific entry.
+
+==== How It Works
+
+* **Initialization**: The `SAF` service reads its configuration and sets up the necessary persistence space and `MUX` instance.
+* **Message Queueing**: Messages are queued into the configured persistence space.
+* **Message Processing**: Messages are sent sequentially based on the configuration (e.g., delay between messages and retry logic).
+* **Response Handling**: If a response is received, it is validated against the `valid-response-codes`. If invalid, the message is retried based on the `retry-response-codes` property.
+* **Message discarding**: If a message expires or exceeds the maximum retransmission attempts, it is discarded.
+
+==== Thread Safety
+
+The `SAF` module is thread-safe, allowing concurrent processing of messages. Synchronization mechanisms are implemented where needed to ensure safe interaction with shared resources.
+
+==== Logging and Monitoring
+
+The module integrates with the jPOS `Logger` and `LogEvent` utilities to provide extensive monitoring capabilities:
+
+* Logs transmission attempts and responses.
+* Reports expired or ignored messages.
+* Provides status information using the `getStatus()` method.

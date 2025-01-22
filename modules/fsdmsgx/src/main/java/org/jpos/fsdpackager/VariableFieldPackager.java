@@ -79,24 +79,28 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 		return i + 1;
 	}
 
-	@Override
-	public byte[] pack(Map<String, String> fields) throws ISOException {
+    @Override
+    public byte[] pack(Map<String, String> fields) throws ISOException {
 
-		if (value == null || value.equals("")) {
-			// if field is not set, make sure to send the delimiter to indicate
-			// its presence.
-			return new byte[] { delimiter.byteValue() };
-		}
-		if (value.length() <= maxSize) {
-			byte[] b = new byte[interpreter.getPackedLength(value.length() + 1)];
-			interpreter.interpret(value, b, 0);
-			b[b.length - 1] = delimiter.byteValue();
+        if (value == null || value.equals("")) {
+            // if field is not set, make sure to send the delimiter to indicate
+            // its presence.
+            value = fields.get(getName());
+            if (value == null || value.equals("")) {
+                setValue(""); // set this as the hexdump method throws NPE
+                return new byte[] { delimiter.byteValue() };
+            }
+        }
 
-			return b;
-		}
-		throw new ISOException(String.format("Size [%d] is greater than maxSize[%d] ", value.length(), maxSize));
-	}
+        if (value.length() <= maxSize) {
+            byte[] b = new byte[interpreter.getPackedLength(value.length() + 1)];
+            interpreter.interpret(value, b, 0);
+            b[b.length - 1] = delimiter.byteValue();
 
+            return b;
+        }
+        throw new ISOException(String.format("Size [%d] is greater than maxSize[%d] ", value.length(), maxSize));
+    }
 	public VariableFieldPackager(String name, int maxSize, Byte delimiter, Interpreter interpretter) {
 
 		this.maxSize = maxSize;

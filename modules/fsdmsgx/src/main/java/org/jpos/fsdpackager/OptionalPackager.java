@@ -40,7 +40,7 @@ public class OptionalPackager extends AFSDFieldPackager {
 			return fieldPackager.pack(setfields);
 			
 		} catch (Exception e) {
-			;// If optional was absent, pack would have thrown an exception as field was not set
+			// If optional was absent, pack would have thrown an exception as field was not set
 		}
 		return null;
 	}
@@ -51,14 +51,13 @@ public class OptionalPackager extends AFSDFieldPackager {
 		 return fieldPackager.unpack(inStream, offset, fields);
 		}
 		catch (Exception ex){
-			;//Do nothing, means optional field not present
+			//Do nothing, means optional field not present
 		}
 		return offset; // return original offset passed in
 	}
 
 	@Override
 	public String getParserTree(String prefix) {
-		// TODO Auto-generated method stub
 		return String.format("%sField [%s] : [OPTIONAL]%n",prefix,getName()) +fieldPackager.getParserTree(prefix+"\t");
 		
 	}
@@ -69,11 +68,15 @@ public class OptionalPackager extends AFSDFieldPackager {
 		try {
 			return fieldPackager.dump(prefix, setfields);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 		return "";
 	}
 	
+    @Override
+    public byte[] hexDump(String prefix, Map<String, String> setfields) {
+
+        return fieldPackager.hexDump(prefix, setfields);
+    }
 	
 	
 	

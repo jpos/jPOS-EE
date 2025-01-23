@@ -134,22 +134,21 @@ public class BranchFieldPackager extends AFSDFieldPackager {
 	public String dump(String prefix, Map<String, String> setfields) {
 
 		String fieldValue = setfields.get(switchField);
-		if (fieldValue == null) {
-			if (defaultCase != null) {
-
-				return defaultCase.dump(prefix, setfields);
-			}
-		} else {
+		if ((fieldValue != null)) {
 			AFSDFieldPackager temp = switchCases.get(fieldValue);
-			if (temp == null) {
-				if (defaultCase != null) {
-					return defaultCase.dump(prefix, setfields);
-				}
-			} else {
+			if (temp != null) {
 
 				return temp.dump(prefix, setfields);
 			}
+            if (defaultCase != null) {
+
+                return defaultCase.dump(prefix, setfields);
+            }
 		}
+        if (defaultCase != null) {
+
+        	return defaultCase.dump(prefix, setfields);
+        }
 		return "";
 
 	}
@@ -172,24 +171,58 @@ public class BranchFieldPackager extends AFSDFieldPackager {
 	@Override
 	public String getParserTree(String prefix) {
 
-		String cases = "";
+		StringBuilder cases = new StringBuilder();
 		if (switchCases == null) {
 
-			cases += "[Not Set]" + System.lineSeparator();
+			cases.append("[Not Set]")
+                   .append(System.lineSeparator());
 		} else {
 			for (Map.Entry<String, AFSDFieldPackager> entry : switchCases.entrySet()) {
 
 				AFSDFieldPackager fPkgr = entry.getValue();
 
-				cases += "\t\t" + entry.getKey() + ":" + System.lineSeparator() + fPkgr.getParserTree("\t\t\t");
+				cases.append("\t\t")
+                       .append(entry.getKey())
+                       .append(":")
+                       .append(System.lineSeparator())
+                       .append(fPkgr.getParserTree("\t\t\t"));
 
 			}
 		}
-		cases += "\t\tdefault:" + System.lineSeparator() + ((defaultCase != null)
-				? System.lineSeparator() + defaultCase.getParserTree("\t\t\t") : "\t\t\t[Not Set]");
+		cases.append("\t\tdefault:")
+               .append(System.lineSeparator())
+               .append((defaultCase != null)
+            		? System.lineSeparator() + defaultCase.getParserTree("\t\t\t") : "\t\t\t[Not Set]");
 
 		return String.format("%sField [%s] : [Branch]%n" + "\tswitch (%s)%n" + "%s", prefix, getName(), switchField,
-				cases);
+				cases.toString());
 	}
+
+    @Override
+    public byte[] hexDump(String prefix, Map<String, String> fields) {
+
+        String value = fields.get(switchField);
+
+        if (value == null) {
+            if (defaultCase != null) {
+                defaultCase.setValue(fields.get(defaultCase.getName()));
+                return defaultCase.hexDump(prefix, fields);
+            }
+            return null;
+        }
+        AFSDFieldPackager selectedPackager = switchCases.get(value);
+        if (selectedPackager == null) {
+
+            if (defaultCase != null) {
+                defaultCase.setValue(fields.get(defaultCase.getName()));
+                return defaultCase.hexDump(prefix, fields);
+            }
+            return null;
+
+        }
+        selectedPackager.setValue(fields.get(selectedPackager.getName()));
+        return selectedPackager.hexDump(prefix, fields);
+
+    }
 
 }

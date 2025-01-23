@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.jpos.fsdpackager.compliance.APCICompliance;
 import org.jpos.fsdpackager.compliance.NoCompliance;
+import org.jpos.iso.AsciiInterpreter;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOUtil;
 import org.jpos.iso.Interpreter;
@@ -32,10 +33,14 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 	Interpreter interpretter;
 	private int size;
 	private boolean padLeft = true;
-	private boolean padright = false;
-	private Byte padCharacter = new Byte((byte) 0x20); //space
+	private Byte padCharacter = Byte.valueOf((byte) 0x20); //space
 	private APCICompliance compliance = new NoCompliance();
 
+    public FixedFieldPackager(String name, int size) {
+        this.interpretter = new AsciiInterpreter();
+        this.size = size;
+        this.setName(name);
+    }
 	public FixedFieldPackager(String name,int size,Interpreter interpretter) {
 		this.interpretter = interpretter;
 		this.size = size;
@@ -62,11 +67,9 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 			throw new ISOException(String.format("Field [%s] at offset [%d]:Expecting %d bytes found %d", getName(),offset,packedSize, inStream.length - offset));
 		}
 		String interprettedvalue = interpretter.uninterpret(inStream, offset, size);
-		if (getValue() != null) {
-			if (!getValue().equals(interprettedvalue)) {
-				throw new ISOException(String.format("Field [%s] at offset [%d]:Expected %s but found %s", getName(),offset,getValue(), interprettedvalue));
-			}
-		}
+		if ((getValue() != null) && !getValue().equals(interprettedvalue)) {
+        	throw new ISOException(String.format("Field [%s] at offset [%d]:Expected %s but found %s", getName(),offset,getValue(), interprettedvalue));
+        }
 
 		fields.put(getName(),interprettedvalue);
 		value = interprettedvalue;
@@ -87,17 +90,15 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 		if (value==null){
 			throw new ISOException(String.format("Field [%s]: Unable to pack as field is not set",getName()));
 		}
-		if (value.length() <= size) {
-			if (padLeft){
-				ISOUtil.padleft(getValue(), size,(char) padCharacter.byteValue() );
-			}
-			else {
-				ISOUtil.padright(getValue(), size,(char) padCharacter.byteValue() );
-			}
-		}
-		else {
+		if (value.length() > size) {
 			throw new ISOException(String.format("Field [%s]:Cannot pack as data has size %d and size needs to be %d",getName(), value.length(),size));
 		}
+        if (padLeft){
+            value = ISOUtil.padleft(getValue(), size, (char) padCharacter.byteValue());
+        }
+        else {
+            value = ISOUtil.padright(getValue(), size, (char) padCharacter.byteValue());
+        }
 		
 		byte[] packedbyte = new byte[interpretter.getPackedLength(size)];
 		interpretter.interpret(getValue(), packedbyte, 0);
@@ -119,7 +120,6 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 
 	public void setPad(boolean padLeft) {
 		this.padLeft = padLeft;
-		this.padright = !padLeft;
 	}
 
 	public Byte getPadCharacter() {
@@ -132,13 +132,26 @@ public class FixedFieldPackager extends  AFSDFieldPackager {
 
 	@Override
 	public String dump(String prefix,Map<String, String> setfields) {
-		if (getValue()!=null)
-		return String.format("%s<field id=\"%s\" value=\"%s\"/>%n", prefix,getName(),compliance.makeCompliant(getValue()));
+        if (value == null) {
+            value = setfields.get(getName());
+
+        }
+		if (getValue()!=null) {
+            return String.format("%s<field id=\"%s\" value=\"%s\"/>%n", prefix,getName(),compliance.makeCompliant(getValue()));
+        }
 		return "";
 	}
 	@Override
 	public byte[] hexDump(String prefix,Map<String, String> setfields) {
-		
+
+        if (value == null) {// if the hardcoded value is in the constructor ,
+                            // use it.
+            value = setfields.get(getName());
+            return null;
+
+        }
+        setfields.put(getName(), value);
+
 		int numberOfPackedBytes = interpretter.getPackedLength(getValue().length());
 		String compliant = compliance.makeCompliant(getValue());
 		byte[] temp = new byte[numberOfPackedBytes];

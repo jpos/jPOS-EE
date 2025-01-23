@@ -26,20 +26,21 @@ import org.jpos.iso.ISOUtil;
 
 public class FSDMsgX extends AFSDFieldPackager {
 
-	public String dump(String prefix, Map<String, String> setfields) {
+	@Override
+    public String dump(String prefix, Map<String, String> setfields) {
 		// TODO Auto-generated method stub
 		return dump(prefix);
 	}
 
-	private Map<String, AFSDFieldPackager> fieldPackagers = new LinkedHashMap<String, AFSDFieldPackager>();
-	private Map<String, String> setfields = new LinkedHashMap<String, String>();
+	private Map<String, AFSDFieldPackager> fieldPackagers = new LinkedHashMap<>();
+	private Map<String, String> setfields = new LinkedHashMap<>();
 
 	public FSDMsgX(String name) {
 		setName(name);
 	}
 
 	private FSDMsgX() {
-	};
+	}
 
 	public void add(String name, AFSDFieldPackager fsdFieldPackager) {
 
@@ -80,8 +81,9 @@ public class FSDMsgX extends AFSDFieldPackager {
 		IFSDFieldPackager p = getFields().get(fieldName);
 
 		getSetfields().put(fieldName, value);
-		if (p != null)
-			p.setValue(value);
+		if (p != null) {
+            p.setValue(value);
+        }
 
 	}
 
@@ -221,9 +223,12 @@ public class FSDMsgX extends AFSDFieldPackager {
 	public byte[] hexDump(String prefix, Map<String, String> setfields) {
 
 		byte[] outStream = null;
+        this.setfields = setfields;
 		for (Map.Entry<String, AFSDFieldPackager> entry : fieldPackagers.entrySet()) {
 
-			byte[] temp = entry.getValue().hexDump(prefix, getSetfields());
+            byte[] temp = entry.getValue()
+                               .hexDump(prefix, setfields);
+
 			if (temp != null) {
 				if (outStream == null) {
 					outStream = temp;

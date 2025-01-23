@@ -9,11 +9,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jpos.fsdpackager;
@@ -42,11 +42,13 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 		boolean delimiterFound = false;
 		int i = offset;
 		int lengthTotraverse;
-		if (maxSize <= inStream.length - offset) // length-offset = remaining
-													// bytes
+		if (maxSize <= inStream.length - offset) { // length-offset = remaining
+			// bytes
 			lengthTotraverse = maxSize + offset + 1;// to include th delimiter
-		else
+        }
+        else { // length-offset = remaining
 			lengthTotraverse = inStream.length;
+		}
 		while (i < lengthTotraverse) { // there is no point traversing to the
 										// end, if we can we should traverse to
 										// the maxsize
@@ -57,23 +59,23 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 
 			i++;
 		}
-		if (delimiterFound || i == inStream.length) {
-
-			byte[] dest = new byte[i - offset];
-			if ((i - offset) == 0) {
-				// Means there is no data and its terminated by delimiter
-				value = "";
-			} else if ((i - offset) <= maxSize) {
-				System.arraycopy(inStream, offset, dest, 0, i - offset);
-				value = interpreter.uninterpret(dest, 0, i - offset);
-
-			} else
-				throw new ISOException(
-						String.format("Field size [%d] is greater than max size [%d] of field ", i - offset, maxSize));
-
-		} else {
+		if (!delimiterFound && (i != inStream.length)) {
 			throw new ISOException(String.format("Field [%s]: Delimiter %x not present after max size %d", getName(),
 					delimiter.byteValue(), maxSize));
+		}
+		byte[] dest = new byte[i - offset];
+		if ((i - offset) == 0) {
+			// Means there is no data and its terminated by delimiter
+			value = "";
+        }
+        else if ((i - offset) <= maxSize) {
+			System.arraycopy(inStream, offset, dest, 0, i - offset);
+			value = interpreter.uninterpret(dest, 0, i - offset);
+
+        }
+        else {
+			throw new ISOException(String.format("Field size [%d] is greater than max size [%d] of field ", i - offset,
+					maxSize));
 		}
 		setValue(value);
 		return i + 1;
@@ -85,8 +87,13 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 		if (value == null || value.equals("")) {
 			// if field is not set, make sure to send the delimiter to indicate
 			// its presence.
-			return new byte[] { delimiter.byteValue() };
+			value = fields.get(getName());
+			if (value == null || value.equals("")) {
+				setValue(""); // set this as the hexdump method throws NPE
+				return new byte[] { delimiter.byteValue() };
+			}
 		}
+
 		if (value.length() <= maxSize) {
 			byte[] b = new byte[interpreter.getPackedLength(value.length() + 1)];
 			interpreter.interpret(value, b, 0);
@@ -142,28 +149,52 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 	@Override
 	public void setValue(String value) {
 		this.value = value;
+
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public String dump(String prefix, Map<String, String> setfields) {
-		if (getValue()!=null)
-		return String.format("%s<field id=\"%s\" value=\"%s\"/>%n", prefix, getName(),
-				compliance.makeCompliant(getValue()));
+		if (value == null) {// if the hardcoded value is in the constructor ,
+			// use it.
+			value = setfields.get(getName());
+
+		}
+		if (getValue() != null) {
+			return String.format("%s<field id=\"%s\" value=\"%s\"/>%n", prefix, getName(),
+					compliance.makeCompliant(getValue()));
+		}
 		return "";
 	}
 
 	@Override
 	public byte[] hexDump(String prefix, Map<String, String> setfields) {
 
+		if (value == null || value.equals("")) {
+			// if field is not set, make sure to send the delimiter to indicate
+			// its presence.
+			value = setfields.get(getName());
+			if (value == null || value.equals("")) {
+				setValue(""); // set this as the hexdump method throws NPE
+				// return new byte[] { delimiter.byteValue() };
+			}
+        }
+        else {
+			setfields.put(getName(), value);
+		}
+
 		int numberOfPackedBytes = interpreter.getPackedLength(getValue().length());
 		String compliant = compliance.makeCompliant(getValue());
-		byte[] temp = new byte[numberOfPackedBytes+1];// +1 for the delimiter
+		byte[] temp = new byte[numberOfPackedBytes + 1]; // +1
+															// for
+															// the
+															// delimiter
 		try {
 			interpreter.interpret(compliant, temp, 0);
-			temp[temp.length-1]= delimiter.byteValue();
-		} catch (ISOException e) {
+			temp[temp.length - 1] = delimiter.byteValue();
+        }
+        catch (ISOException e) {
 			return null;
 		}
 		return temp;
@@ -173,7 +204,8 @@ public class VariableFieldPackager extends AFSDFieldPackager {
 	@Override
 	public String getParserTree(String prefix) {
 
-		return String.format("%sField [%s] : VAR[0..%d] delimiter[0x%X] or EOM  %s%n", prefix, getName(),maxSize, delimiter.byteValue(), getValue()==null?"":": "+getValue());
+		return String.format("%sField [%s] : VAR[0..%d] delimiter[0x%X] or EOM  %s%n", prefix, getName(), maxSize,
+				delimiter.byteValue(), getValue() == null ? "" : ": " + getValue());
 
 	}
 

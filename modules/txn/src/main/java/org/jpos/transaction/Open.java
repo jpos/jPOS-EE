@@ -42,13 +42,10 @@ public class Open extends TxnSupport {
         }
         return rc | NO_JOIN | READONLY;
     }
-    public void commit (long id, Serializable o) { }
-    public void abort  (long id, Serializable o) { }
-    public void setConfiguration (Configuration cfg) 
+    public void setConfiguration (Configuration cfg)
         throws ConfigurationException
     {
         super.setConfiguration (cfg);
         this.timeout = cfg.getInt ("timeout", 0);
     }
 }
-

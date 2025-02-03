@@ -172,6 +172,11 @@ subprojects {
             }
         }
     }
+    if (project.path.startsWith(':modules:iso20022-')) {
+        dependencies {
+            implementation libs.xmlBind
+        }
+    }
 }
 
 // Configure IDEA to use Git

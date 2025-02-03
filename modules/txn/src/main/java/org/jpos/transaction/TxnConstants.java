@@ -20,8 +20,8 @@ package org.jpos.transaction;
 
 public interface TxnConstants
 {
-    public static final String TX           = "TX";
-    public static final String DB           = "DB";
-    public static final String RC           = "RC";    // response code
-    public static final String EXTRC        = "EXTRC"; // extended rc
+    String TX           = "TX";
+    String DB           = "DB";
+    String RC           = "RC";    // response code
+    String EXTRC        = "EXTRC"; // extended rc
 }

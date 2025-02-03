@@ -21,16 +21,21 @@ package org.jpos.transaction;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOSource;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author jpaoletti, apr
  */
 public class InternalISOSource implements ISOSource {
-    private ISOMsg resp = null;
+    private final BlockingQueue<ISOMsg> queue = new LinkedBlockingQueue<>(1);
 
     public void send(ISOMsg m) {
-        synchronized (this) {
-            resp = m;
-            this.notify();
+        try {
+            queue.put(m);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Restore the interrupt status
         }
     }
 
@@ -39,12 +44,11 @@ public class InternalISOSource implements ISOSource {
     }
 
     public ISOMsg getResponse(long timeout) {
-        synchronized (this) {
-            try {
-                this.wait(timeout);
-            } catch (InterruptedException ignored) { }
+        try {
+            return queue.poll(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
-        return resp;
     }
 }
-

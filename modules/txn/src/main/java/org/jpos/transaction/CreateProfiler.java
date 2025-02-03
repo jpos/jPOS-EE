@@ -20,6 +20,7 @@ package org.jpos.transaction;
 
 import java.io.Serializable;
 
+@SuppressWarnings("unused")
 public class CreateProfiler implements TransactionParticipant {
     public int prepare (long id, Serializable o) {
         if (o instanceof Context)
@@ -27,7 +28,4 @@ public class CreateProfiler implements TransactionParticipant {
 
         return PREPARED | NO_JOIN | READONLY;
     }
-    public void commit (long id, Serializable o) { }
-    public void abort  (long id, Serializable o) { }
 }
-

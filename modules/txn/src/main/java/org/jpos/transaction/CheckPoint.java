@@ -27,7 +27,4 @@ public class CheckPoint extends TxnSupport {
 
         return PREPARED | NO_JOIN | READONLY;
     }
-    public void commit (long id, Serializable o) { }
-    public void abort  (long id, Serializable o) { }
 }
-

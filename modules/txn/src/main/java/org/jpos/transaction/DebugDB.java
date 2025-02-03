@@ -18,41 +18,72 @@
 
 package org.jpos.transaction;
 
-import org.hibernate.LockMode;
 import org.hibernate.Session;
-import org.hibernate.engine.spi.CollectionKey;
-import org.hibernate.engine.spi.EntityKey;
-import org.hibernate.stat.SessionStatistics;
+import org.hibernate.stat.Statistics;
 import org.jpos.ee.DB;
 
 import java.io.Serializable;
-import java.util.Set;
 
 @SuppressWarnings("unchecked unused")
 public class DebugDB implements AbortParticipant {
-    @Override
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
-        DB db = (DB) ctx.get(TxnConstants.DB);
+        DB db = ctx.get(TxnConstants.DB);
 
         Session session = db.session();
-        SessionStatistics statistics = session.getStatistics();
-        Set<EntityKey> entityKeys = statistics.getEntityKeys();
-        ctx.log (String.format ("ENTITIES:  (%d)", statistics.getEntityCount()));
-        for (EntityKey ek : entityKeys) {
-            Object obj = session.get(ek.getEntityName(), ek.getIdentifier());
-            LockMode lockMode = session.getCurrentLockMode(obj);
-            ctx.log(String.format("[%s] %s %s", ek.getIdentifier(), ek.getEntityName(), lockMode));
-        }
-        ctx.log ("==== COLLECTIONS ====");
-        Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
-        for (CollectionKey ck : collectionKeys) {
-            ctx.log(String.format("[%s] %s", ck.getKey(), ck.getRole()));
+        Statistics statistics = session.getSessionFactory().getStatistics();
+
+        // Print general statistics
+        ctx.log("=== Hibernate Statistics ===");
+        ctx.log(String.format("Entity Load Count: %d", statistics.getEntityLoadCount()));
+        ctx.log(String.format("Entity Fetch Count: %d", statistics.getEntityFetchCount()));
+        ctx.log(String.format("Query Execution Count: %d", statistics.getQueryExecutionCount()));
+        ctx.log(String.format("Second Level Cache Hit Count: %d", statistics.getSecondLevelCacheHitCount()));
+        ctx.log(String.format("Second Level Cache Miss Count: %d", statistics.getSecondLevelCacheMissCount()));
+        ctx.log(String.format("Second Level Cache Put Count: %d", statistics.getSecondLevelCachePutCount()));
+
+        // Print entity statistics
+        ctx.log("=== Entity Statistics ===");
+        String[] entityNames = statistics.getEntityNames();
+        for (String entityName : entityNames) {
+            ctx.log(String.format("Entity: %s", entityName));
+            ctx.log(String.format("  Load Count: %d", statistics.getEntityLoadCount()));
+            ctx.log(String.format("  Fetch Count: %d", statistics.getEntityFetchCount()));
         }
 
-        ctx.log("=====================");
+        // Print collection statistics
+        ctx.log("=== Collection Statistics ===");
+        String[] collectionRoleNames = statistics.getCollectionRoleNames();
+        for (String roleName : collectionRoleNames) {
+            ctx.log(String.format("Collection Role: %s", roleName));
+            ctx.log(String.format("  Load Count: %d", statistics.getCollectionLoadCount()));
+            ctx.log(String.format("  Fetch Count: %d", statistics.getCollectionFetchCount()));
+        }
+
+        // Print query statistics
+        ctx.log("=== Query Statistics ===");
+        String[] queries = statistics.getQueries();
+        for (String query : queries) {
+            ctx.log(String.format("Query: %s", query));
+            ctx.log(String.format("  Execution Count: %d", statistics.getQueryExecutionCount()));
+            ctx.log(String.format("  Cache Hit Count: %d", statistics.getQueryCacheHitCount()));
+            ctx.log(String.format("  Cache Miss Count: %d", statistics.getQueryCacheMissCount()));
+        }
+
+        // Print cache statistics
+        ctx.log("=== Cache Statistics ===");
+        String[] secondLevelCacheRegionNames = statistics.getSecondLevelCacheRegionNames();
+        for (String regionName : secondLevelCacheRegionNames) {
+            ctx.log(String.format("Cache Region: %s", regionName));
+            ctx.log(String.format("  Hit Count: %d", statistics.getSecondLevelCacheHitCount()));
+            ctx.log(String.format("  Miss Count: %d", statistics.getSecondLevelCacheMissCount()));
+            ctx.log(String.format("  Put Count: %d", statistics.getSecondLevelCachePutCount()));
+        }
+
+        ctx.log("========================");
         return PREPARED | READONLY | NO_JOIN;
     }
+
 
     @Override
     public int prepareForAbort(long id, Serializable context) {

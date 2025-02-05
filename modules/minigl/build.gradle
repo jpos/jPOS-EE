@@ -1,14 +1,13 @@
-
 description = 'jPOS-EE :: MiniGL Module'
 
 dependencies {
     api project(':modules:logback')
     api project(':modules:dbsupport')
-    api libraries.commons_lang
+    api libs.commonsLang3
     testImplementation project(':modules:db-h2')
     testImplementation project(':modules:db-postgresql')
-    testImplementation libraries.postgresql_embedded
-    testImplementation libraries.postgresql_bin
+    // testImplementation lib.postgresql_embedded
+    // testImplementation lib.postgresql_bin
 }
 
 ext {
@@ -18,7 +17,7 @@ ext {
 
 task jposeeSetup(dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
-    main = 'org.jpos.q2.install.Install'
+    mainClass.set('org.jpos.q2.install.Install')
     args = ["--outputDir=" + testRuntimeDir]
 }
 

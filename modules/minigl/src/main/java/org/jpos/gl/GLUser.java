@@ -20,7 +20,6 @@ package org.jpos.gl;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
-import java.util.Iterator;
 import org.jdom2.Element;
 import org.jdom2.Comment;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -41,12 +40,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public class GLUser {
     private String nick;
     private String name;
-    private Set    perms;
+    private Set<GLPermission>    perms;
     private long id;      // the Hibernate identifier
 	
     public GLUser() {
         super();
-        perms = new LinkedHashSet ();
+        perms = new LinkedHashSet<>();
     }
     /**
      * Constructs an User object out of a JDOM Element as defined in
@@ -97,7 +96,7 @@ public class GLUser {
     /**
      * @return Set of permissions
      */
-    public Set getPermissions () {
+    public Set<GLPermission> getPermissions () {
         return perms;
     }
     /**
@@ -115,13 +114,10 @@ public class GLUser {
      * @see Journal
      */
     public boolean hasPermission (String action, Journal j) {
-        Iterator iter = getPermissions().iterator();
-        while (iter.hasNext()) {
-            GLPermission p = (GLPermission) iter.next();
+        for (GLPermission p : getPermissions()) {
             Journal pj = p.getJournal();
-            if (action.equals (p.getName()) &&
-                    (pj == null || (pj.getId() == j.getId())))
-            {
+            if (action.equals(p.getName()) &&
+              (pj == null || (pj.getId() == j.getId()))) {
                 return true;
             }
         }
@@ -130,7 +126,7 @@ public class GLUser {
     /**
      * @param perms Set of permissions
      */
-    public void setPermissions (Set perms) {
+    public void setPermissions (Set<GLPermission> perms) {
         this.perms = perms;
     }
     /**
@@ -152,18 +148,17 @@ public class GLUser {
      * Revoke permission from user 
      * @param permName the permission
      */
-    public void revoke (String permName) {
-        Iterator iter = perms.iterator();
+    public void revoke(String permName) {
         GLPermission toRemove = null;
-        while (iter.hasNext()) {
-            GLPermission p = (GLPermission) iter.next();
-            if (permName.equals (p.getName())) {
+        for (GLPermission p : perms) {
+            if (permName.equals(p.getName())) {
                 toRemove = p;
                 break;
             }
         }
-        if (toRemove != null)
+        if (toRemove != null) {
             perms.remove(toRemove);
+        }
     }
     /**
      * Revoke all permissions
@@ -183,22 +178,21 @@ public class GLUser {
      * Creates a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
      */
-    public Element toXML () {
-        Element e = new Element ("user");
-        e.addContent (new Comment ("id " +Long.toString (getId())));
-        e.addContent (new Element ("nick").setText (getNick()));
-        e.addContent (new Element ("name").setText (getName()));
-        Iterator iter = getPermissions().iterator();
-        while (iter.hasNext()) {
-            GLPermission p = (GLPermission) iter.next();
-            if (p.getJournal() == null)
-                e.addContent (new Element ("grant").setText (p.getName()));
+    public Element toXML() {
+        Element e = new Element("user");
+        e.addContent(new Comment("id " + getId()));
+        e.addContent(new Element("nick").setText(getNick()));
+        e.addContent(new Element("name").setText(getName()));
+
+        for (GLPermission p : getPermissions()) {
+            if (p.getJournal() == null) {
+                e.addContent(new Element("grant").setText(p.getName()));
+            }
         }
         return e;
     }
     public boolean equals(Object other) {
-        if ( !(other instanceof GLUser) ) return false;
-        GLUser castOther = (GLUser) other;
+        if ( !(other instanceof GLUser castOther) ) return false;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();

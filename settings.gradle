@@ -31,6 +31,7 @@ include  ':modules:eeuser'
 include  ':modules:status'
 include  ':modules:rspace'
 include  ':modules:txn'
+include  ':modules:minigl'
 // include  ':modules:dbtest'
 
 dependencyResolutionManagement {
@@ -45,7 +46,6 @@ dependencyResolutionManagement {
 
 // include  ':modules:freemarker-decorator'
 // include  ':modules:db-mssql'
-// include  ':modules:minigl'
 // include  ':modules:mail'
 // include  ':modules:jetty'
 // include  ':modules:saf-monitor'

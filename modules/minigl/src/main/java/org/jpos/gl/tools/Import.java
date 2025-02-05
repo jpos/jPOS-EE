@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentException;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.jdom2.Document;
@@ -32,6 +31,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jpos.core.ConfigurationException;
 import org.jpos.ee.DB;
 import org.jpos.gl.*;
+import org.jpos.gl.Currency;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
@@ -39,10 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Import an XML document as described in
@@ -252,38 +249,63 @@ public class Import implements EntityResolver {
             glt.getEntries().add (entry);
         }
     }
-    private Account getAccount (Session sess, Account chart, Element elem)
-        throws SQLException, HibernateException
+    private Account getAccount(Session session, Account chart, Element element)
+      throws HibernateException
     {
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.Account where code = :code and acct.root = :chart");
+        Objects.requireNonNull(chart, "Chart account must not be null");
+        Objects.requireNonNull(element, "Element must not be null");
 
-        q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("chart", chart.getId());
-        List l = q.list();
-        return l.size() == 1 ? ((Account) l.get (0)) : null;
+        String accountCode = element.getAttributeValue("account");
+        if (accountCode == null || accountCode.isBlank()) {
+            throw new IllegalArgumentException("Account code attribute is missing or empty");
+        }
+
+        return session.createSelectionQuery(
+            "FROM Account WHERE code = :code AND root = :chartId",
+            Account.class
+          )
+          .setParameter("code", accountCode)
+          .setParameter("chartId", chart.getId())
+          .uniqueResultOptional()
+          .orElse(null);
     }
-    private FinalAccount getFinalAccount
-        (Session sess, Account chart, Element elem)
-        throws SQLException, HibernateException
+    private FinalAccount getFinalAccount(Session session, Account chart, Element element)
+      throws HibernateException
     {
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.FinalAccount where code = :code and acct.root = :root"
-        );
-        q.setParameter ("code", elem.getAttributeValue ("account"));
-        q.setLong ("root", chart.getId());
-        List l = q.list();
-        return l.size() == 1 ? ((FinalAccount) l.get (0)) : null;
+        Objects.requireNonNull(chart, "Chart account must not be null");
+        Objects.requireNonNull(element, "Element must not be null");
+
+        String accountCode = element.getAttributeValue("account");
+        if (accountCode == null || accountCode.isBlank()) {
+            throw new IllegalArgumentException("Account code attribute is missing or empty");
+        }
+
+        return session.createSelectionQuery(
+            "FROM FinalAccount WHERE code = :code AND root = :rootId",
+            FinalAccount.class
+          )
+          .setParameter("code", accountCode)
+          .setParameter("rootId", chart.getId())
+          .uniqueResultOptional()
+          .orElse(null);
     }
-    private CompositeAccount getChart (Session sess, String chartCode)
-        throws SQLException, HibernateException
+    private CompositeAccount getChart(Session session, String chartCode)
+      throws HibernateException
     {
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where code = :code and parent is null"
-        );
-        q.setParameter ("code", chartCode);
-        List l = q.list();
-        return (CompositeAccount) ((l.size() > 0) ? l.get (0) : null);
+        Objects.requireNonNull(session, "Session must not be null");
+        Objects.requireNonNull(chartCode, "Chart code must not be null");
+
+        if (chartCode.isBlank()) {
+            throw new IllegalArgumentException("Chart code cannot be blank");
+        }
+
+        return session.createSelectionQuery(
+            "FROM CompositeAccount WHERE code = :code AND parent IS NULL",
+            CompositeAccount.class
+          )
+          .setParameter("code", chartCode)
+          .uniqueResultOptional()
+          .orElse(null);
     }
     private void createJournalRules
         (Session session, Journal journal, Iterator iter)
@@ -294,7 +316,7 @@ public class Import implements EntityResolver {
             RuleInfo ri = new RuleInfo (e);
             ri.setJournal (journal);
             ri.setAccount (getAccount (session, journal.getChart(), e));
-            session.save (ri);
+            session.persist (ri);
         }
     }
     private void createJournalLayers
@@ -308,18 +330,26 @@ public class Import implements EntityResolver {
             session.save (layer);
         }
     }
-    private GLUser getUser (Session session, String nick)
-        throws HibernateException
-    {
-        Query q = session.createQuery ("from GLUser u where u.nick=:nick");
-        q.setParameter ("nick", nick);
-        List l = q.list();
-        if (l.size() == 0) {
-            throw new IllegalArgumentException (
-                "Invalid nick '" + nick + "'"
-            );
+    /**
+     * Retrieves a GLUser by their unique nickname.
+     *
+     * @param session The Hibernate session
+     * @param nick The user's nickname (case-sensitive exact match)
+     * @return The found GLUser
+     * @throws HibernateException If there's a database access problem
+     * @throws IllegalArgumentException If nick is invalid or user not found
+     */
+    private GLUser getUser(Session session, String nick) throws HibernateException {
+        Objects.requireNonNull(session, "Session must not be null");
+        Objects.requireNonNull(nick, "Nick cannot be null");
+
+        if (nick.isBlank()) {
+            throw new IllegalArgumentException("Nick cannot be blank");
         }
-        return (GLUser) l.get(0);
+        return session.createSelectionQuery("FROM GLUser u WHERE u.nick = :nick", GLUser.class)
+          .setParameter("nick", nick)
+          .uniqueResultOptional()
+          .orElseThrow(() -> new IllegalArgumentException("Invalid nick '" + nick + "'"));
     }
     private Set createPermissions (Session session, Journal j, Iterator iter)
         throws HibernateException
@@ -340,12 +370,10 @@ public class Import implements EntityResolver {
     private Journal getJournal (Session sess, String name)
         throws SQLException, HibernateException
     {
-        Query q = sess.createQuery (
-            "from journal in class org.jpos.gl.Journal where name = :name"
-        );
-        q.setParameter ("name", name);
-        List l = q.list();
-        return (Journal) ((l.size() > 0) ? l.get (0) : null);
+        return sess.createSelectionQuery (
+            "from journal in class org.jpos.gl.Journal where name = :name", Journal.class
+        ).setParameter ("name", name)
+          .uniqueResultOptional().orElse(null);
     }
     public InputSource resolveEntity (String publicId, String systemId) {
         if (systemId != null && systemId.startsWith (URL)) {

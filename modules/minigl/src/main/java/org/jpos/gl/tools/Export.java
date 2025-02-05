@@ -31,7 +31,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import java.sql.SQLException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.HibernateException;
 
@@ -102,8 +101,8 @@ public class Export {
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
-        Query q = sess.createQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where parent is null order by code");
+        var q = sess.createSelectionQuery (
+            "from acct in class org.jpos.gl.CompositeAccount where parent is null order by code", Account.class);
         Iterator iter = q.list().iterator();
         while (iter.hasNext()) {
             Account acct = (Account) iter.next ();
@@ -144,12 +143,10 @@ public class Export {
         throws SQLException, HibernateException
     {
         Session sess = gls.open();
-        Iterator iter = sess.createQuery (
-            "from currency in class org.jpos.gl.Currency order by id"
-        ).list().iterator();
-        while (iter.hasNext()) {
-            Currency currency = (Currency) iter.next ();
-            parentElement.addContent (currency.toXML ());
+        for (Currency currency : sess.createSelectionQuery(
+          "from currency in class org.jpos.gl.Currency order by id", Currency.class
+        ).list()) {
+            parentElement.addContent(currency.toXML());
         }
         gls.close ();
     }
@@ -157,12 +154,12 @@ public class Export {
         (Session sess, Journal journal, Element parentElement) 
         throws SQLException, HibernateException
     {
-        Query q = sess.createQuery ("from ruleinfo in class org.jpos.gl.RuleInfo where journal=:journal order by id");
+        var q = sess.createSelectionQuery (
+          "from ruleinfo in class org.jpos.gl.RuleInfo where journal=:journal order by id",
+          RuleInfo.class);
         q.setParameter ("journal", journal);
-        Iterator iter = q.list().iterator();
-        while (iter.hasNext()) {
-            RuleInfo rule = (RuleInfo) iter.next ();
-            parentElement.addContent (rule.toXML ());
+        for (RuleInfo rule : q.list()) {
+            parentElement.addContent(rule.toXML());
         }
     }
     private void addJournals (Element root) 

@@ -104,7 +104,7 @@
  <!--
    Layers plan:
 
-      Reporting currency (840) goes to layer 0 (reporting currency)
+      Reporting currency (840) goes to layer 0
       Uruguayan pesos (858) goes to layer 858
       Virtual layer 1 is a trip fund
       Virtual layer 2 is a budget layer

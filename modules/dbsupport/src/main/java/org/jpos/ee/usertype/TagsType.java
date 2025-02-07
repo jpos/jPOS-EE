@@ -70,7 +70,7 @@ public class TagsType implements UserType<Tags> {
 
     @Override
     public Tags deepCopy(Tags value) {
-        return new Tags(value.toString());
+        return value != null ? new Tags(value.toString()) : new Tags();
     }
 
     @Override

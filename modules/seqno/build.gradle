@@ -3,7 +3,7 @@ description = 'jPOS-EE :: SeqNo'
 dependencies {
     api project(':modules:dbsupport')
     testImplementation project(':modules:db-postgresql')
-    testImplementation libs.testcontainersPostgresql
+    testImplementation testlibs.testcontainers.postgresql
     testImplementation testlibs.junit
 }
 

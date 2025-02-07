@@ -36,6 +36,7 @@ import org.hibernate.query.Query;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.hibernate.type.StandardBasicTypes;
 import org.jpos.ee.DB;
+import org.jpos.util.LogEvent;
 
 /**
  * MiniGL facility entry point.
@@ -329,7 +330,7 @@ public class GLSession {
           "from org.jpos.gl.Account acct where acct.root = :chart and acct.code = :code",
           Account.class
         );
-        query.setParameter("chart", chart.getId());
+        query.setParameter("chart", chart);
         query.setParameter("code", code);
         return query.uniqueResultOptional().orElse(null);
     }
@@ -486,7 +487,7 @@ public class GLSession {
           "from org.jpos.gl.FinalAccount acct where acct.root = :chart and acct.code = :code",
           FinalAccount.class
         );
-        query.setParameter("chart", chart.getId());
+        query.setParameter("chart", chart);
         query.setParameter("code", code);
 
         return query.uniqueResultOptional().orElse(null);
@@ -514,7 +515,7 @@ public class GLSession {
           "from org.jpos.gl.FinalAccount acct where acct.root = :chart",
           FinalAccount.class
         );
-        query.setParameter("chart", chart.getId());
+        query.setParameter("chart", chart);
 
         return query.getResultList();
     }
@@ -594,7 +595,7 @@ public class GLSession {
           "from org.jpos.gl.Account acct where acct.root = :chart",
           Account.class
         );
-        query.setParameter("chart", chart.getId());
+        query.setParameter("chart", chart);
 
         return query.getResultList();
     }
@@ -623,7 +624,7 @@ public class GLSession {
           "from org.jpos.gl.CompositeAccount acct where acct.root = :chart and acct.code = :code",
           CompositeAccount.class
         );
-        query.setParameter("chart", chart.getId());
+        query.setParameter("chart", chart);
         query.setParameter("code", code);
 
         return query.uniqueResultOptional().orElse(null);
@@ -908,21 +909,17 @@ public class GLSession {
                 txn.createCredit(account, amount, null, currentLayer);
             }
         }
+        session.clear();
+        deleteGLTransactions(journal, start, end);
 
         // Finalize the summary transaction.
         txn.setJournal(journal);
         txn.setTimestamp(new Date());
         txn.setPostDate(end);
-
-        // Delete the original transactions in the specified range.
-        deleteGLTransactions(journal, start, end);
-
         // Persist the summary transaction (using persist() is preferred in Hibernate 6).
         session.persist(txn);
-
-        // Unlock the journal.
+        session.refresh(journal);
         journal.setLockDate(null);
-
         return txn;
     }
     /**
@@ -1434,8 +1431,9 @@ public class GLSession {
         if (acct.isFinalAccount()) {
             final CriteriaBuilder cb = session.getCriteriaBuilder();
 
-            CriteriaQuery<Tuple> balanceQuery = cb.createTupleQuery();
-            Root<GLEntry> entryRoot = balanceQuery.from(GLEntry.class);
+            // Query for entries with their increase/decrease status
+            CriteriaQuery<GLEntry> entryQuery = cb.createQuery(GLEntry.class);
+            Root<GLEntry> entryRoot = entryQuery.from(GLEntry.class);
             Join<GLEntry, GLTransaction> txnJoin = entryRoot.join("transaction");
 
             List<Predicate> predicates = new ArrayList<>();
@@ -1472,20 +1470,13 @@ public class GLSession {
                 }
             }
 
-            balanceQuery.multiselect(
-              cb.sum(entryRoot.get("amount")),
-              cb.count(entryRoot)
-            ).where(predicates.toArray(new Predicate[0]));
+            entryQuery.select(entryRoot)
+              .where(predicates.toArray(new Predicate[0]));
 
-            Tuple result = session.createQuery(balanceQuery).getSingleResult();
-
-            BigDecimal amountSum = result.get(0, BigDecimal.class);
-            if (amountSum != null) {
-                balance[0] = balance[0].add(amountSum);
-            }
-            balance[1] = BigDecimal.valueOf(result.get(1, Long.class));
+            List<GLEntry> entries = session.createQuery(entryQuery).getResultList();
+            balance[0] = applyEntries (balance[0], entries);
+            balance[1] = new BigDecimal(entries.size());
         }
-
         return balance;
     }
     /**
@@ -1668,11 +1659,10 @@ public class GLSession {
      * @throws HibernateException   For database access issues
      * @throws IllegalArgumentException If journal or account is null
      */
-    public AccountDetail getAccountDetail
-    (Journal journal, Account acct, Date start, Date end, short[] layers,
-     boolean ascendingOrder, int maxResults)
-      throws HibernateException, GLException
-    {
+    public AccountDetail getAccountDetail(
+      Journal journal, Account acct, Date start, Date end, short[] layers,
+      boolean ascendingOrder, int maxResults
+    ) throws HibernateException, GLException {
         checkPermission(GLPermission.READ);
         Objects.requireNonNull(journal, "Journal must not be null");
         Objects.requireNonNull(acct, "Account must not be null");
@@ -1682,41 +1672,43 @@ public class GLSession {
         final Root<GLEntry> entryRoot = cq.from(GLEntry.class);
         final Join<GLEntry, GLTransaction> txnJoin = entryRoot.join("transaction");
 
-        // Account hierarchy handling
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Account filtering
         if (acct.isCompositeAccount()) {
             List<Long> childIds = getChildren(acct);
-            if (!childIds.isEmpty()) {
-                Join<GLEntry, Account> accountJoin = entryRoot.join("account");
-                cq.where(accountJoin.get("id").in(childIds));
+            if (childIds.isEmpty()) {
+                // Return empty result for composite account with no children
+                return new AccountDetail(journal, acct, BigDecimal.ZERO, start, end,
+                  Collections.emptyList(), layers, ascendingOrder);
             }
+            Join<GLEntry, Account> accountJoin = entryRoot.join("account");
+            predicates.add(accountJoin.get("id").in(childIds));
         } else {
-            cq.where(cb.equal(entryRoot.get("account"), acct));
+            predicates.add(cb.equal(entryRoot.get("account"), acct));
         }
 
         // Layer filtering
         if (layers.length > 0) {
             List<Short> layerList = new ArrayList<>(layers.length);
             for (short s : layers) layerList.add(s);
-            cq.where(cb.isTrue(entryRoot.get("layer").in(layerList)));
+            predicates.add(entryRoot.get("layer").in(layerList));
         }
 
-        // Journal and date filtering
-        List<Predicate> datePredicates = new ArrayList<>();
-        cq.where(cb.equal(txnJoin.get("journal"), journal));
+        // Journal filtering
+        predicates.add(cb.equal(txnJoin.get("journal"), journal));
 
+        // Date filtering
         if (start != null || (start == null && ascendingOrder)) {
             Date adjustedStart = start != null ? Util.floor(start) : Util.floor(new Date(0L));
-            datePredicates.add(cb.greaterThanOrEqualTo(txnJoin.get("postDate"), adjustedStart));
+            predicates.add(cb.greaterThanOrEqualTo(txnJoin.get("postDate"), adjustedStart));
         }
-
         if (end != null || (end == null && ascendingOrder)) {
             Date adjustedEnd = end != null ? Util.ceil(end) : Util.ceil(new Date());
-            datePredicates.add(cb.lessThanOrEqualTo(txnJoin.get("postDate"), adjustedEnd));
+            predicates.add(cb.lessThanOrEqualTo(txnJoin.get("postDate"), adjustedEnd));
         }
 
-        if (!datePredicates.isEmpty()) {
-            cq.where(cb.and(datePredicates.toArray(new Predicate[0])));
-        }
+        cq.where(predicates.toArray(new Predicate[0]));
 
         // Ordering
         List<Order> orders = new ArrayList<>();
@@ -1745,7 +1737,6 @@ public class GLSession {
 
         return new AccountDetail(journal, acct, initialBalance[0], start, end, entries, layers, ascendingOrder);
     }
-
     /**
      * AccountDetail for date range
      * @param journal the journal.
@@ -2207,15 +2198,15 @@ public class GLSession {
         }
         return accounts;
     }
-    private List getAccountHierarchyIds (Account acct)
+    private List<Account> getAccountHierarchy (Account acct)
         throws GLException
     {
         if (acct == null)
             throw new GLException ("Invalid entry - account is null");
         Account p = acct;
-        List<Long> l = new ArrayList<Long>();
+        List<Account> l = new ArrayList<>();
         while (p != null) {
-            l.add (p.getId());
+            l.add (p);
             p = p.getParent();
         }
         return l;
@@ -2354,7 +2345,7 @@ public class GLSession {
         }
         int i = 0;
         for (GLEntry entry : txn.getEntries()) {
-            addRules(map, journal, getAccountHierarchyIds(entry.getAccount()), i);
+            addRules(map, journal, getAccountHierarchy(entry.getAccount()), i);
             i++;
         }
 
@@ -2390,63 +2381,52 @@ public class GLSession {
 
         StringBuilder qs = new StringBuilder(
           "select entry.account, sum(entry.amount)" +
-            " from org.jpos.gl.GLEntry entry, " +
-            "      org.jpos.gl.GLTransaction txn" +
-            " where txn.id = entry.transaction" +
-            "   and credit = :credit" +
+            " from org.jpos.gl.GLEntry entry" +
+            " join entry.transaction txn" +
+            " where entry.credit = :credit" +
             "   and txn.journal = :journal" +
-            "   and entry.layer = :layer"
+            "   and entry.layer = :layer" +
+            "   and txn.postDate >= :start" +
+            "   and txn.postDate < :end" +  // Use < instead of <= for end date
+            " group by entry.account"
         );
 
-        boolean equalDate = start.equals(end);
-        if (equalDate) {
-            qs.append(" and txn.postDate = :date");
-        } else {
-            qs.append(" and txn.postDate >= :start");
-            qs.append(" and txn.postDate <= :end");
-        }
-        qs.append(" group by entry.account");
-
-        // Create a typed Query that returns Object[] for each result row.
         Query<Object[]> q = session.createQuery(qs.toString(), Object[].class);
-        q.setParameter("journal", journal.getId());
-        q.setParameter("credit", credit ? "Y" : "N");
+        q.setParameter("journal", journal);
+        q.setParameter("credit", credit);
         q.setParameter("layer", layer);
-
-        if (equalDate) {
-            q.setParameter("date", start);
-        } else {
-            q.setParameter("start", start);
-            q.setParameter("end", end);
-        }
+        q.setParameter("start", start);
+        // Use the next day for end date to include all transactions on the end date
+        q.setParameter("end", Util.tomorrow(end));
 
         return q.getResultList().iterator();
     }
-
     private void deleteGLTransactions(Journal journal, Date start, Date end) {
-        var hql = new StringBuilder(
-          "DELETE FROM GLTransaction WHERE journal.id = :journalId"
-        );
+        String deleteEntriesHql =
+          "delete from org.jpos.gl.GLEntry entry " +
+            "where entry.transaction.id in (" +
+            "select txn.id from org.jpos.gl.GLTransaction txn " +
+            "where txn.journal = :journal " +
+            "and txn.postDate between :start and :end" +
+            ")";
 
-        if (start.equals(end)) {
-            hql.append(" AND postDate = :date");
-        } else {
-            hql.append(" AND postDate >= :start");
-            hql.append(" AND postDate <= :endDate");
-        }
+        session.createMutationQuery(deleteEntriesHql)
+          .setParameter("journal", journal)
+          .setParameter("start", start)
+          .setParameter("end", end)
+          .executeUpdate();
 
-        var query = session.createQuery(hql.toString())
-          .setParameter("journalId", journal.getId());
+        String deleteTransactionsHql =
+          "delete from org.jpos.gl.GLTransaction txn " +
+            "where txn.journal = :journal " +
+            "and txn.postDate between :start and :end";
 
-        if (start.equals(end)) {
-            query.setParameter("date", start);
-        } else {
-            query.setParameter("start", start)
-              .setParameter("endDate", end);
-        }
-        query.executeUpdate();
+        session.createMutationQuery(deleteTransactionsHql)
+          .setParameter("journal", journal)
+          .setParameter("start", start)
+          .setParameter("end", end)
+          .executeUpdate();
     }
-
 
     private static Short[] toShortArray (short[] i) {
         if (i == null)

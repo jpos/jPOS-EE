@@ -444,7 +444,7 @@ public class GLTransaction extends Cloneable {
             Element detail = new Element ("detail").setText (getDetail());
             elem.addContent (detail);
         }
-        if (getTags () != null) {
+        if (getTags() != null && getTags().size() > 0) {
             Element tags = new Element ("tags").setText (getTags().toString());
             elem.addContent (tags);
         }

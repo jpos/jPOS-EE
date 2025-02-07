@@ -19,7 +19,6 @@
 package org.jpos.gl.rule;
 
 import java.util.List;
-import java.util.Iterator;
 import java.math.BigDecimal;
 import org.jpos.gl.JournalRule;
 import org.jpos.gl.Account;
@@ -54,26 +53,24 @@ public class DoubleEntry implements JournalRule {
     private void checkEntries (GLTransaction txn, short layer) 
         throws GLException
     {
-        List list = txn.getEntries();
+        List<GLEntry> list = txn.getEntries();
         // if (list.size() < 2) 
         //     throw new GLException ("too few entries (" + list.size() + ")");
         BigDecimal debits  = ZERO;
         BigDecimal credits = ZERO;
-        Iterator iter = list.iterator();
 
-        while (iter.hasNext()) {
-            GLEntry entry = (GLEntry) iter.next();
+        for (GLEntry entry : list) {
             if (entry.getLayer() == layer) {
-                if (entry.isDebit ())
-                    debits = debits.add (entry.getAmount());
+                if (entry.isDebit())
+                    debits = debits.add(entry.getAmount());
                 else
-                    credits = credits.add (entry.getAmount());
+                    credits = credits.add(entry.getAmount());
             }
         }
         if (!debits.equals (credits)) {
             throw new GLException (
-                "Transaction (" + txn.getDetail() + ") does not balance. debits="+debits.toString() +
-                ", credits=" + credits.toString() + " (layer=" + layer + ")"
+                "Transaction (" + txn.getDetail() + ") does not balance. debits="+debits +
+                ", credits=" + credits + " (layer=" + layer + ")"
             );
         }
     }

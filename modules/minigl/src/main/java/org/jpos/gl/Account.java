@@ -431,5 +431,6 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
 }
 

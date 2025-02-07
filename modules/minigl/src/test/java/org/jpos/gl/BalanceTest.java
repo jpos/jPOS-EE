@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hibernate.Transaction;
 import org.jpos.gl.tools.Export;
+import org.jpos.util.LogEvent;
 import org.junit.jupiter.api.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -262,8 +263,10 @@ public class BalanceTest extends TestBase {
         FinalAccount B = gls.getFinalAccount ("TestChart", "112");
         // Create Transaction to be summarized
         Transaction tx = gls.beginTransaction();
-        gls.post (tj, createTransaction ("Txn 1", postDate, A, B));
-        gls.post (tj, createTransaction ("Txn 2", postDate, A, B));
+        var txn1 = createTransaction ("Txn 1", postDate, A, B);
+        var txn2 = createTransaction ("Txn 2", postDate, A, B);
+        gls.post (tj, txn1);
+        gls.post (tj, txn2);
         tx.commit();
 
         // Fetch the balances
@@ -279,7 +282,7 @@ public class BalanceTest extends TestBase {
 
         // Summarize
         tx = gls.beginTransaction();
-        gls.summarize (tj, postDate, postDate, "Summarized Txn", new short[] { 0, 858 });
+        var summarizedTxn = gls.summarize (tj, postDate, postDate, "Summarized Txn", new short[] { 0, 858 });
         tx.commit();
 
         // Test post summarize balances
@@ -288,6 +291,8 @@ public class BalanceTest extends TestBase {
         System.out.println ("A(858): " + gls.getBalance (tj, A, (short) 858));
         System.out.println ("  B(0): " + gls.getBalance (tj, B));
         System.out.println ("B(858): " + gls.getBalance (tj, B, (short) 858));
+
+        new Export().export(System.out);
 
         assertEquals (A_0, gls.getBalance (tj, A));
         assertEquals (A_858, gls.getBalance (tj, A, (short) 858));
@@ -300,12 +305,9 @@ public class BalanceTest extends TestBase {
         txn.createDebit (A, new BigDecimal ("1000.00"), null);
         txn.createDebit (A, new BigDecimal ("200.00"), null, (short) 858);
         txn.createCredit (B, new BigDecimal ("1000.00"), null);
-        // txn.createCredit (B, new BigDecimal ("200.00"), null, (short) 858);
+        txn.createCredit (B, new BigDecimal ("200.00"), null, (short) 858);
         return txn;
     }
-
-
-
 
     // -----------------------------------------------------------------
     private void checkBalancesByPostDate () throws Exception {

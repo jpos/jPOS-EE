@@ -18,6 +18,7 @@
 
 package org.jpos.gl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.math.BigDecimal;
@@ -139,6 +140,23 @@ public class AccountDetail {
     public int size() {
         return entries.size();
     }
+
+    @Override
+    public String toString() {
+        return "AccountDetail{" +
+          "journal=" + journal +
+          ", account=" + account +
+          ", end=" + end +
+          ", start=" + start +
+          ", initialBalance=" + initialBalance +
+          ", finalBalance=" + finalBalance +
+          ", debits=" + debits +
+          ", credits=" + credits +
+          ", entries=" + entries +
+          ", layers=" + Arrays.toString(layers) +
+          '}';
+    }
+
     private void computeBalances() {
         BigDecimal balance = initialBalance;
         debits = credits = GLSession.ZERO;        

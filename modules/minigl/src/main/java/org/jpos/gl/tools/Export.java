@@ -102,7 +102,7 @@ public class Export {
     {
         Session sess = gls.open();
         var q = sess.createSelectionQuery (
-            "from acct in class org.jpos.gl.CompositeAccount where parent is null order by code", Account.class);
+            "from org.jpos.gl.CompositeAccount where parent is null order by code", Account.class);
         Iterator iter = q.list().iterator();
         while (iter.hasNext()) {
             Account acct = (Account) iter.next ();
@@ -116,7 +116,7 @@ public class Export {
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-            "from transacc in class org.jpos.gl.GLTransaction order by id"
+            "from org.jpos.gl.GLTransaction order by id"
         ).list().iterator();
         while (iter.hasNext()) {
             GLTransaction glt = (GLTransaction) iter.next ();
@@ -126,15 +126,13 @@ public class Export {
     }
 
     private void addUsers (Element parentElement) 
-        throws SQLException, HibernateException
+        throws HibernateException
     {
         Session sess = gls.open();
-        Iterator iter = sess.createQuery (
-            "from gluser in class org.jpos.gl.GLUser order by id"
-        ).list().iterator();
-        while (iter.hasNext()) {
-            GLUser user = (GLUser) iter.next ();
-            parentElement.addContent (user.toXML ());
+        for (GLUser user : sess.createSelectionQuery(
+          "from org.jpos.gl.GLUser order by id", GLUser.class
+        ).list()) {
+            parentElement.addContent(user.toXML());
         }
         gls.close ();
     }
@@ -144,7 +142,7 @@ public class Export {
     {
         Session sess = gls.open();
         for (Currency currency : sess.createSelectionQuery(
-          "from currency in class org.jpos.gl.Currency order by id", Currency.class
+          "from org.jpos.gl.Currency order by id", Currency.class
         ).list()) {
             parentElement.addContent(currency.toXML());
         }
@@ -155,7 +153,7 @@ public class Export {
         throws SQLException, HibernateException
     {
         var q = sess.createSelectionQuery (
-          "from ruleinfo in class org.jpos.gl.RuleInfo where journal=:journal order by id",
+          "from org.jpos.gl.RuleInfo where journal=:journal order by id",
           RuleInfo.class);
         q.setParameter ("journal", journal);
         for (RuleInfo rule : q.list()) {
@@ -167,7 +165,7 @@ public class Export {
     {
         Session sess = gls.open();
         Iterator iter = sess.createQuery (
-          "from journal in class org.jpos.gl.Journal order by id"
+          "from org.jpos.gl.Journal order by id"
         ).list().iterator();
 
         while (iter.hasNext()) {

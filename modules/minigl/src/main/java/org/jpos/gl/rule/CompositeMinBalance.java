@@ -31,10 +31,7 @@ public class CompositeMinBalance extends CompositeBalance {
     protected String getRuleName() {
         return "CompositeMinBalance";
     }
-    protected boolean isError
-        (BigDecimal balance, BigDecimal minBalance)
-    {
+    protected boolean isError(BigDecimal balance, BigDecimal minBalance) {
         return balance.compareTo (minBalance) < 0;
     }
 }
-

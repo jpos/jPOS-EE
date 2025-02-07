@@ -21,12 +21,12 @@ package org.jpos.gl;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.jpos.ee.DB;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class AddExportUserTest extends TestBase {
     @Test
@@ -47,17 +47,19 @@ public class AddExportUserTest extends TestBase {
         sess.close ();
     }
 
-    private GLUser getUser (Session session, String nick) 
-        throws HibernateException
-    {
-        Query q = session.createQuery ("from GLUser u where u.nick=:nick");
-        q.setParameter ("nick", nick);
-        List l = q.list();
-        if (l.size() == 0) {
-            throw new IllegalArgumentException (
-                "Invalid nick '" + nick + "'"
-            );
+    private GLUser getUser(Session session, String nick) throws HibernateException {
+        // Validate input parameters
+        Objects.requireNonNull(session, "Session must not be null");
+        Objects.requireNonNull(nick, "Nick must not be null");
+
+        if (nick.isBlank()) {
+            throw new IllegalArgumentException("Nick cannot be blank");
         }
-        return (GLUser) l.get(0);
+
+        // Create and execute type-safe query
+        return session.createSelectionQuery("FROM GLUser u WHERE u.nick = :nick", GLUser.class)
+          .setParameter("nick", nick.trim())  // Trim whitespace if needed
+          .uniqueResultOptional()
+          .orElseThrow(() -> new IllegalArgumentException("User with nick '" + nick + "' not found"));
     }
 }

@@ -26,9 +26,9 @@ import java.math.BigDecimal;
 
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RulesTest extends TestBase {
     Journal journal;
     Account chart;
@@ -48,9 +48,9 @@ public class RulesTest extends TestBase {
         loan      = gls.getFinalAccount (chart, "21");
         bobEquity = gls.getFinalAccount (chart, "31");
     }
-    @Test
+    @Test @Order(1)
     public void testSimplePost () throws Exception {
-        BigDecimal amount      = new BigDecimal ("5.00");
+        BigDecimal amount = new BigDecimal ("5.00");
         GLTransaction txn = 
             createTransaction ("Check ability to post", 
                     cashUS, amount, cashPesos, amount, (short) 0);
@@ -59,7 +59,7 @@ public class RulesTest extends TestBase {
         gls.post (journal, txn);
         tx.commit();
     }
-    @Test
+    @Test @Order(2)
     public void testUnbalancedPost () throws Exception {
         GLTransaction txn = 
             createTransaction (
@@ -81,7 +81,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
-    @Test
+    @Test @Order(3)
     public void testFinalMinBalance () throws Exception {
         BigDecimal amount      = new BigDecimal ("4996.00");
         GLTransaction txn = 
@@ -104,7 +104,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
-    @Test
+    @Test @Order(4)
     public void testFinalMinBalanceInLayerOne () throws Exception {
         BigDecimal amount      = new BigDecimal ("4996.00");
         GLTransaction txn = 
@@ -128,9 +128,9 @@ public class RulesTest extends TestBase {
         fail ("GLException should have been raised");
     }
 
-    @Test
+    @Test @Order(5)
     public void testCompositeMinBalance () throws Exception {
-        BigDecimal amount = new BigDecimal ("48001.00");
+        BigDecimal amount = new BigDecimal ("147011.00");
         GLTransaction txn = 
             createTransaction (
                 "check parent MinBalance rule", 
@@ -154,7 +154,7 @@ public class RulesTest extends TestBase {
         fail ("GLException should have been raised");
     }
 
-    @Test
+    @Test @Order(6)
     public void testCompositeMaxBalance () throws Exception {
         BigDecimal amount = new BigDecimal ("1000000.00");
         GLTransaction txn = 
@@ -179,7 +179,7 @@ public class RulesTest extends TestBase {
         }
         fail ("GLException should have been raised");
     }
-    @Test
+    @Test @Order(7)
     public void testFinalMaxBalance () throws Exception {
         BigDecimal amount = new BigDecimal ("100000.00");
         GLTransaction txn = 
@@ -209,7 +209,7 @@ public class RulesTest extends TestBase {
         (String detail, 
          FinalAccount debitAccount, BigDecimal debitAmount, 
          FinalAccount creditAccount, BigDecimal creditAmount, short layer) 
-        throws GLException, HibernateException
+        throws HibernateException
     {
         GLTransaction txn  = new GLTransaction (detail);
         txn.setPostDate  (new Date());
@@ -218,4 +218,3 @@ public class RulesTest extends TestBase {
         return txn;
     }
 }
-

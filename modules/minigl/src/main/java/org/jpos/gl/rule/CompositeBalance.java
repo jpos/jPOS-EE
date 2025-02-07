@@ -18,7 +18,6 @@
 
 package org.jpos.gl.rule;
 
-import java.util.Arrays;
 import java.util.List;
 import java.math.BigDecimal;
 import org.jpos.gl.Account;
@@ -29,8 +28,6 @@ import org.jpos.gl.GLEntry;
 import org.jpos.gl.GLTransaction;
 import org.jpos.gl.Journal;
 import org.hibernate.HibernateException;
-import org.jpos.util.Log;
-import org.jpos.util.LogEvent;
 
 abstract class CompositeBalance implements JournalRule {
     private static final BigDecimal ZERO = new BigDecimal ("0.00");
@@ -48,32 +45,28 @@ abstract class CompositeBalance implements JournalRule {
         session.lock (journal, account);
         BigDecimal balance = session.getBalance (journal, account, layers);
 
-        BigDecimal paramBalance =
-            (param != null) ?  new BigDecimal (param) : ZERO;
+        BigDecimal paramBalance = (param != null) ?  new BigDecimal (param) : ZERO;
         BigDecimal impact = getImpact (txn, layers, offsets);
         if (isError (balance.add(impact), paramBalance)) {
-            StringBuffer sb = new StringBuffer (getRuleName());
+            StringBuilder sb = new StringBuilder (getRuleName());
             sb.append (" rule for account ");
             sb.append (account.getCode());
             sb.append (" failed. balance=");
             sb.append (balance);
             sb.append (", impact=");
             sb.append (impact);
-            sb.append (", minimum=");
+            sb.append (", param=");
             sb.append (param);
             throw new GLException (sb.toString());
         }
     }
     private BigDecimal getImpact (GLTransaction txn, short[] layers, int[] offsets) {
         BigDecimal impact = ZERO;
-        List entries = txn.getEntries();
-        
-        for (int i=0; i<offsets.length; i++) {
-            GLEntry e = ((GLEntry) entries.get (offsets[i]));
+        List<GLEntry> entries = txn.getEntries();
+        for (int offset : offsets) {
+            GLEntry e = entries.get(offset);
             if (isInLayer(e.getLayer(), layers)) {
-                impact = impact.add (
-                  e.getImpact ()
-                );
+                impact = impact.add(e.getImpact());
             }
         }
         return impact;
@@ -86,4 +79,3 @@ abstract class CompositeBalance implements JournalRule {
         return false;
     }
 }
-

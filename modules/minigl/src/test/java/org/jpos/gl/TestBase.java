@@ -18,7 +18,6 @@
 
 package org.jpos.gl;
 
-import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import org.jpos.ee.DB;
 import org.jpos.gl.tools.Export;
 import org.jpos.gl.tools.Import;
@@ -26,8 +25,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.containers.PostgreSQLContainer;
+
 import java.io.File;
-import java.io.FileWriter;
 
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
@@ -39,48 +39,26 @@ public abstract class TestBase {
     protected static GLSession gls;
     protected static long start;
     protected static long checkpoint;
-    protected static EmbeddedPostgres pg;
+
+    private static final PostgreSQLContainer<?> DB_CONTAINER =
+      new PostgreSQLContainer<>("postgres:17")
+        .withDatabaseName("jposee")
+        .withUsername("jpos")
+        .withPassword("password")
+        .withReuse(true);
 
     @BeforeAll
     public static void setUpBase () throws Exception {
         if (System.getProperty("test.minigl_db_driver").equals("postgres")) {
-            pg = EmbeddedPostgres.start();
-            String hibernateCfg = "<?xml version='1.0' encoding='utf-8'?>\n" +
-                    "<!DOCTYPE hibernate-configuration PUBLIC\n" +
-                    "        \"-//Hibernate/Hibernate Configuration DTD 3.0//EN\"\n" +
-                    "        \"http://hibernate.org/dtd/hibernate-configuration-3.0.dtd\">\n" +
-                    "\n" +
-                    "<hibernate-configuration>\n" +
-                    "    <session-factory>\n" +
-                    "        <!-- Database connection settings -->\n" +
-                    "        <property name=\"connection.driver_class\">org.postgresql.Driver</property>\n" +
-                    "        <property name=\"dialect\">org.hibernate.dialect.PostgreSQLDialect</property>\n" +
-                    "        <property name=\"connection.url\">" + pg.getPostgresDatabase().getConnection().getMetaData().getURL() + "</property>\n" +
-                    "        <property name=\"connection.username\">" + pg.getPostgresDatabase().getConnection().getMetaData().getUserName() + "</property>\n" +
-                    "        <property name=\"connection.password\">postgres</property>\n" +
-                    "        <!-- JDBC connection pool (use the built-in) -->\n" +
-                    "        <property name=\"connection.pool_size\">1</property>\n" +
-                    "        <!-- Enable Hibernate's automatic session context management -->\n" +
-                    "        <property name=\"current_session_context_class\">thread</property>\n" +
-                    "        <!-- Disable the second-level cache  -->\n" +
-                    "        <property name=\"cache.provider_class\">org.hibernate.cache.internal.NoCacheProvider</property>\n" +
-                    "        <!-- Echo all executed SQL to stdout -->\n" +
-                    "        <property name=\"show_sql\">false</property>\n" +
-                    "        <!-- Drop and re-create the database schema on startup -->\n" +
-                    "        <property name=\"hbm2ddl.auto\">create</property>\n" +
-                    "\n" +
-                    "    </session-factory>\n" +
-                    "</hibernate-configuration>\n";
-            File target = new File(tempDir.getAbsolutePath() + "/hibernate.cfg.xml");
-            FileWriter w = new FileWriter(target);
-            w.write(hibernateCfg);
-            w.flush();
-            w.close();
-            configModifier = target.toURI().toURL().toString();
+            DB_CONTAINER.start();
+            System.setProperty("db.connection", DB_CONTAINER.getJdbcUrl());
+            System.setProperty("db.username", DB_CONTAINER.getUsername());
+            System.setProperty("db.password", DB_CONTAINER.getPassword());
+            System.setProperty("db.driver", "org.postgresql.Driver");
+            System.setProperty("db.create.enabled", "YES");
         } else {
             // nothing required - use H2
         }
-
         try {
             String userName = System.getProperty("user.name");
             System.setProperty("user.name", "travis");
@@ -100,8 +78,8 @@ public abstract class TestBase {
     @AfterAll
     public static void tearDownBase () throws Exception {
         gls.close();
-        if (pg != null) {
-            pg.close();
+        if (System.getProperty("test.minigl_db_driver").equals("postgres")) {
+            DB_CONTAINER.stop();
         }
     }
 

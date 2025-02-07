@@ -98,7 +98,7 @@ public class Import implements EntityResolver {
         while (iter.hasNext()) {
             Element elem = (Element) iter.next ();
             CompositeAccount acct = new CompositeAccount (elem);
-            sess.save (acct);
+            sess.persist (acct);
             acct.setRoot (acct);
             processChartChildren (
                 sess, acct, elem.getChildren().iterator()
@@ -114,7 +114,7 @@ public class Import implements EntityResolver {
         while (iter.hasNext()) {
             Element elem = (Element) iter.next ();
             Currency currency = new Currency (elem);
-            sess.save (currency);
+            sess.persist (currency);
         }
         txn.commit();
     }
@@ -130,10 +130,10 @@ public class Import implements EntityResolver {
             while (permIter.hasNext()) {
                 Element perm = (Element) permIter.next();
                 GLPermission p = new GLPermission (perm.getTextTrim());
-                sess.save (p);
+                sess.persist (p);
                 user.grant (p);
             }
-            sess.save (user);
+            sess.persist (user);
         }
         txn.commit();
     }
@@ -147,7 +147,7 @@ public class Import implements EntityResolver {
             journal.setChart (
                 getChart (sess, elem.getChildTextTrim ("chart"))
             );
-            sess.save (journal);
+            sess.persist (journal);
             journal.setPermissions (
                 createPermissions (
                     sess, journal, elem.getChildren ("grant").iterator()
@@ -191,7 +191,7 @@ public class Import implements EntityResolver {
             validateAccountCode(parent, acct);
 
         acct.setRoot (parent.getRoot ());
-        sess.save (acct);
+        sess.persist (acct);
         acct.setParent (parent);
         parent.getChildren().add (acct);
         sess.flush ();
@@ -206,7 +206,7 @@ public class Import implements EntityResolver {
             validateAccountCode(parent, acct);
 
         acct.setRoot (parent.getRoot ());
-        sess.save (acct);
+        sess.persist (acct);
         acct.setParent (parent);
         parent.getChildren().add (acct);
     }
@@ -257,7 +257,7 @@ public class Import implements EntityResolver {
 
         String accountCode = element.getAttributeValue("account");
         if (accountCode == null || accountCode.isBlank()) {
-            throw new IllegalArgumentException("Account code attribute is missing or empty");
+            return null;
         }
 
         return session.createSelectionQuery(
@@ -265,7 +265,7 @@ public class Import implements EntityResolver {
             Account.class
           )
           .setParameter("code", accountCode)
-          .setParameter("chartId", chart.getId())
+          .setParameter("chartId", chart)
           .uniqueResultOptional()
           .orElse(null);
     }
@@ -285,7 +285,7 @@ public class Import implements EntityResolver {
             FinalAccount.class
           )
           .setParameter("code", accountCode)
-          .setParameter("rootId", chart.getId())
+          .setParameter("rootId", chart)
           .uniqueResultOptional()
           .orElse(null);
     }
@@ -327,7 +327,7 @@ public class Import implements EntityResolver {
             Element e = (Element) iter.next();
             Layer layer = new Layer (e);
             layer.setJournal (journal);
-            session.save (layer);
+            session.persist (layer);
         }
     }
     /**
@@ -363,7 +363,7 @@ public class Import implements EntityResolver {
             p.setJournal (j);
             permissions.add (p);
             user.getPermissions().add(p);
-            session.save (p);
+            session.persist (p);
         }
         return permissions;
     }
@@ -371,7 +371,7 @@ public class Import implements EntityResolver {
         throws SQLException, HibernateException
     {
         return sess.createSelectionQuery (
-            "from journal in class org.jpos.gl.Journal where name = :name", Journal.class
+            "from org.jpos.gl.Journal j where j.name = :name", Journal.class
         ).setParameter ("name", name)
           .uniqueResultOptional().orElse(null);
     }

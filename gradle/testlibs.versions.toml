@@ -2,9 +2,11 @@
 junit = "5.10.2"
 junitRuntime = "1.10.2"
 restAssured = '5.4.0'
+testcontainers = '1.20.3'
 
 [libraries]
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junitRuntime = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitRuntime" }
 restAssured = { module = 'io.rest-assured:rest-assured', version.ref='restAssured' } 
+testcontainers_postgresql = { group = "org.testcontainers", name="postgresql", version.ref = "testcontainers" }
 

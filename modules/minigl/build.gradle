@@ -6,8 +6,8 @@ dependencies {
     api libs.commonsLang3
     testImplementation project(':modules:db-h2')
     testImplementation project(':modules:db-postgresql')
-    // testImplementation lib.postgresql_embedded
-    // testImplementation lib.postgresql_bin
+    testImplementation testlibs.junit
+    testImplementation testlibs.testcontainers.postgresql
 }
 
 ext {
@@ -27,6 +27,7 @@ task copyTestResources(dependsOn: 'jposeeSetup', type: Copy) {
 }
 
 test {
+    maxParallelForks = 1
     dependsOn 'copyTestResources'
     include '**/*Test.class'
     exclude '**/stress/*'

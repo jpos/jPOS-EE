@@ -41,7 +41,7 @@
     <set name="events" lazy="true" cascade="all-delete-orphan" 
       order-by="id asc">
       <key column="source"/>
-      <one-to-many class="org.jpos.ee.SysLog" />
+      <one-to-many class="org.jpos.syslog.SysLog" />
     </set>
     <!--
     <set name="revisions" lazy="true" cascade="all-delete-orphan" 

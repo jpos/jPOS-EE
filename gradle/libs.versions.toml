@@ -13,7 +13,9 @@ freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'
 jakartaActivation = '2.0.1'
-hibernate = '6.6.1.Final'
+hibernate = '6.6.7.Final'
+# hibernateToolsa 6.6.7.Final not available yet (as of 2025-02-12)
+hibernateTools = '6.6.6.Final'
 dom4j = '2.1.4'
 jdbcPostgresql = '42.7.2'
 jdbcMysql = '8.0.33'
@@ -23,6 +25,8 @@ h2 = '2.2.224'
 httpAsyncClient = '4.1.5'
 jgroups = '5.3.11.Final'
 xmlBind = "4.0.1"
+javaxCache = '1.1.1'
+ehCache = '3.10.8'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -45,7 +49,7 @@ jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validat
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
 hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
-hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernate' }
+hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernateTools' }
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
 hibernateAgroal = { module='org.hibernate:hibernate-agroal', version.ref='hibernate' }
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
@@ -59,6 +63,9 @@ h2 = { module = 'com.h2database:h2', version.ref='h2' }
 httpAsyncClient = { module = 'org.apache.httpcomponents:httpasyncclient', version.ref = 'httpAsyncClient' }
 jgroups = { module = 'org.jgroups:jgroups', version.ref = 'jgroups' }
 xmlBind = { module = 'jakarta.xml.bind:jakarta.xml.bind-api', version.ref = 'xmlBind' }
+javaxCache = { module = 'javax.cache:cache-api', version.ref = 'javaxCache' }
+ehCache = { module = 'org.ehcache:ehcache', version.ref = 'ehCache' }
+jcache = { module = 'org.hibernate:hibernate-jcache', version.ref = 'hibernate' }
 
 [bundles]
 jackson = [

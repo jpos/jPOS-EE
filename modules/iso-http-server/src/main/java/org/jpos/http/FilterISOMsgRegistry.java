@@ -122,7 +122,7 @@ public class FilterISOMsgRegistry {
     public FilterISOMsg get(String name) {
         FilterISOMsg filter = registry.get(name);
         if (filter == null && name.matches("^\\d+$")) {
-            Integer port = new Integer(name);
+            Integer port = Integer.valueOf(name);
             name = portRegistry.get(port);
             if (name != null) {
                 filter = registry.get(name);

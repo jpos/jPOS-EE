@@ -11,8 +11,7 @@ class SysLog {
   String summary;
   String detail;
   String trace;
-  boolean deleted;
-} 
+}
 @enduml
 ----
 
@@ -23,13 +22,11 @@ The table has the following columns:
 
 - `id` : auto-generated ID
 - `date`: timestamp
-- `deleted`: logical delete indicator
 - `source`: application specific source (i.e. node name)
 - `severity`: we use DEBUG = 0, TRACE = 1, INFO  = 2, WARN  = 3, ERROR = 4, CRITICAL=5
 - `summary`: a brief description of the event, suitable to be printed by the UI in a column
 - `detail`: specific info about the event
 - `trace`: additional information (i.e. dumps)
-- `deleted`: logical delete
 
 
 Here is a sample use:

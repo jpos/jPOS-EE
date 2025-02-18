@@ -21,12 +21,11 @@
   SYSTEM "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-  <class name="org.jpos.ee.SysLog" table="syslog">
+  <class name="org.jpos.syslog.SysLog" table="syslog">
     <id name="id" column="id" type="long">
       <generator class="native" />
     </id>
     <property name="date"        type="timestamp" />
-    <property name="deleted"     type="yes_no" />
     <property name="source"      type="string" length="64" />
     <property name="type"        type="string" length="32" />
     <property name="severity"    type="int" />

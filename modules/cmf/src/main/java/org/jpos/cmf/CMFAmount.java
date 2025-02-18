@@ -40,7 +40,7 @@ import java.util.Objects;
  *  {@link #serialize(boolean, int)}, that the lengths are in accordance and what you need.
  * </p>
  * <p><b>NOTE:</b>This class does not handle additional amounts (DE-054).
- * For that, use {@link org.jpos.iso.AdditionalAmount} and {@link org.jpos.iso.AdditionalAmountsWrapper}.
+ * For that, use {@link org.jpos.cmf.iso.AdditionalAmount} and {@link org.jpos.cmf.iso.AdditionalAmountsWrapper}.
  * </p>
  *
  */

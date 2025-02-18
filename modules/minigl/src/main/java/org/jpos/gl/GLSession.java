@@ -363,13 +363,13 @@ public class GLSession {
      *
      * <p>
      * This method performs several validations before adding the account:
+     * </p>
      * <ul>
      *   <li>Verifies that the current user has the {@link GLPermission#WRITE} permission.</li>
      *   <li>If strict account codes are enforced, validates the account code against the parent.</li>
      *   <li>Ensures that the parent's type is compatible with the account's type (unless the parent is a chart).</li>
      *   <li>If the parent specifies a currency code, confirms that the account's currency code matches it.</li>
      * </ul>
-     * </p>
      *
      * <p>
      * The {@code fast} parameter determines whether the addition is performed in "fast" mode:
@@ -776,6 +776,7 @@ public class GLSession {
      *
      * <p>
      * This method performs the following steps:
+     * </p>
      * <ol>
      *   <li>Verifies that the user has the {@link GLPermission#POST} permission on the provided journal.</li>
      *   <li>Associates the transaction with the journal and sets the current timestamp.</li>
@@ -784,7 +785,6 @@ public class GLSession {
      *   <li>Retrieves any applicable journal rules and applies them to the transaction.</li>
      *   <li>Persists the transaction to the database.</li>
      * </ol>
-     * </p>
      *
      * @param journal the journal in which the transaction will be posted
      * @param txn the transaction to post
@@ -818,6 +818,7 @@ public class GLSession {
      *
      * <p>
      * This method performs the following steps:
+     * </p>
      * <ol>
      *   <li>Checks that the user has the required POST permission on both the new journal and the transaction's current journal.</li>
      *   <li>Invalidates any existing checkpoints for the transaction in its old journal context.</li>
@@ -826,7 +827,6 @@ public class GLSession {
      *   <li>Applies any applicable rules to the transaction.</li>
      *   <li>Updates the transaction in the database.</li>
      * </ol>
-     * </p>
      *
      * @param txn the transaction to move
      * @param journal the new journal to which the transaction will be moved

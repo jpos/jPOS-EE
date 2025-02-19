@@ -46,21 +46,20 @@ import java.util.function.Supplier;
 /**
  * Provides AES encryption service
  *
- * Sample Configuration:
+ * <p>Sample Configuration:</p>
  * <pre>
- *  <crypto-service class='org.jpos.cryptoservice.CryptoService' logger='Q2'>
- *    <property name="custodian" value='demo@jpos.org' />
- *    <property name="pubkeyring" value='cfg/keyring.pub' />
- *    <property name="privkeyring" value='cfg/keyring.priv' />
- *    <property name="lazy" value="true" />
- *    <property name="keylength" value="256" />
- *   </crypto-service>
+ * &lt;crypto-service class='org.jpos.crypto.CryptoService' logger='Q2'&gt;
+ *   &lt;property name="custodian" value='demo@jpos.org' /&gt;
+ *   &lt;property name="pubkeyring" value='cfg/keyring.pub' /&gt;
+ *   &lt;property name="privkeyring" value='cfg/keyring.priv' /&gt;
+ *   &lt;property name="lazy" value="true" /&gt;
+ *   &lt;property name="keylength" value="256" /&gt;
+ * &lt;/crypto-service&gt;
  * </pre>
  *
- * CryptoService generates a random AES key and stores it in sysconfig encrypted using PGP
- * under the custodian(s) keys. Before using decrypt operations, the key most be "loaded"
- * and that requires the private key-ring's password.
- *
+ * <p>CryptoService generates a random AES key and stores it in sysconfig encrypted using PGP
+ * under the custodian(s) keys. Before using decrypt operations, the key must be "loaded"
+ * and that requires the private key-ring's password.</p>
  */
 public final class CryptoService extends QBeanSupport implements Runnable, XmlConfigurable {
     private volatile UUID id;

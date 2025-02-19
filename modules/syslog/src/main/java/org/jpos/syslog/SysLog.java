@@ -28,15 +28,16 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@SoftDelete
 @Table(name = "syslog")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
 @Comment("System audit log")
 @SuppressWarnings("unused")
 public class SysLog implements Serializable {
     @Id
-    @GeneratedValue (strategy = GenerationType.SEQUENCE)
-    private long id;
+    @GeneratedValue(generator = "txn-id-gen")
+    @GenericGenerator(name = "txn-id-gen", strategy = "org.jpos.ee.TxnIdGenerator")
+    private Long id;
+
     private Instant date;
     private String source;
     private String type;

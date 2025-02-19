@@ -211,7 +211,7 @@ public class DBManager<T> {
      * Arbitrary query over the entity type (T) of this manager
      * Example usage:
      * <pre>
-     *     List&le;T&ge results = queryItems( (cb, root) ->
+     *     List&le;T&ge; results = queryItems( (cb, root) ->
      *          cb.or(
      *              cb.greaterThanOrEqualTo(root.get("property"), value),
      *              cb.isNotNull(root.get("otherProperty")

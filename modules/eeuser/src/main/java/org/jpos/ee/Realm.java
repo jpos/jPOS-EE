@@ -43,6 +43,9 @@ public class Realm extends Cloneable implements Serializable {
     @Column(length=8000)
     private String description;
 
+    @Column(length=64)
+    private String reference;
+
     public Long getId() {
         return id;
     }
@@ -66,6 +69,10 @@ public class Realm extends Cloneable implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public String getReference() { return reference; }
+
+    public void setReference(String reference) { this.reference = reference; }
 
     public Realm() {
         super();

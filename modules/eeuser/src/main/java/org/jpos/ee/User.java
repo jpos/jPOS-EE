@@ -145,10 +145,24 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         this.loginAttempts++;
     }
     public boolean hasPermission (String permName) {
+        return hasPermission(permName,null);
+    }
+
+    public boolean hasPermission(String permName, String reference) {
         if (permName != null) {
             for (Role r : roles) {
-                if (r.hasPermission(permName))
+                String realmReference = r.getRealm() != null ? r.getRealm().getReference() : null;
+                boolean referenceMatch;
+                if (reference == null) {
+                    // Null reference requires realm reference to be null or empty
+                    referenceMatch = (realmReference == null || realmReference.isEmpty());
+                } else {
+                    // Non-null reference requires exact match (case-insensitive)
+                    referenceMatch = (realmReference != null && realmReference.equalsIgnoreCase(reference));
+                }
+                if (referenceMatch && r.hasPermission(permName)) {
                     return true;
+                }
             }
         }
         return false;
@@ -156,10 +170,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public boolean hasAnyPermission (String[] permNames) {
         if (permNames != null) {
             for (String p : permNames) {
-                for (Role r : roles) {
-                    if (r.hasPermission(p))
-                        return true;
-                }
+                hasPermission(p);
             }
         }
         return false;
@@ -167,12 +178,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public boolean hasAllPermissions (String[] permNames) {
         if (permNames != null) {
             for (String p : permNames) {
-                boolean hasPerm = false;
-                for (Role r : roles) {
-                    if (r.hasPermission(p))
-                        hasPerm = true;
-                }
-                if (!hasPerm)
+                if (!hasPermission(p))
                     return false;
             }
             return true;

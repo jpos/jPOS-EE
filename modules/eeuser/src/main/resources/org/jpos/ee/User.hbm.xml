@@ -23,7 +23,7 @@
 <hibernate-mapping>
   <class name="org.jpos.ee.User" table="eeuser">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
 
     <property name="nick" type="string" length="64" not-null="true" unique="true" index="eeuser_nick"  />

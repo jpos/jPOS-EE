@@ -24,7 +24,7 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.GLUser" table="gluser">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
     <property name="nick">
      <column name="nick" sql-type="varchar(32)" unique="true" 

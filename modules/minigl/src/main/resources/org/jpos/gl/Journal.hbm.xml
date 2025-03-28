@@ -24,7 +24,7 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.Journal" table="journal">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
     <property name="name">
      <column name="name" sql-type="varchar(32)" not-null="true" unique="true" />

@@ -24,7 +24,7 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.GLTransactionGroup" table="transgroup">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
     <property name="name" type="string" length="32" index="transgroupname" unique="true" />
     <set name="transactions" order-by="transaction" table="transgroup_transactions">

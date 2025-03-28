@@ -18,8 +18,11 @@
 
 package org.jpos.ee;
 
+import jakarta.persistence.Id;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.LazyInitializer;
 import org.jpos.q2.Q2;
 import org.jpos.transaction.TxnId;
 
@@ -39,23 +42,60 @@ public class TxnIdGenerator implements IdentifierGenerator {
     }
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) {
-        Class<?> entityClass = object.getClass();
+        Class<?> entityClass = getEntityClass(object);
         Class<?> idType = idFieldTypeCache.computeIfAbsent(entityClass, cls -> {
+            // First try the direct "id" field approach
             try {
                 Field idField = cls.getDeclaredField("id");
-                idField.setAccessible(true); 
+                idField.setAccessible(true);
                 return idField.getType();
             } catch (NoSuchFieldException e) {
+                // Look for fields with @Id annotation or in parent classes
+                Field idField = findIdFieldInClassHierarchy(cls);
+                if (idField != null) {
+                    return idField.getType();
+                }
                 throw new RuntimeException("Failed to determine ID field type for entity: " + cls.getName(), e);
             }
         });
         TxnId txnId = TxnId.create(Instant.now(), nodeId, System.nanoTime());
         if (idType.equals(String.class)) {
             return txnId.toString();
-        } else if (idType.equals(Long.class)) {
+        } else if (idType.equals(Long.class) || idType.equals(long.class)) {
             return txnId.id();
         } else {
             throw new UnsupportedOperationException("Unsupported ID type: " + idType);
         }
+    }
+
+    private Field findIdFieldInClassHierarchy(Class<?> cls) {
+        // Look for annotated ID fields in current class
+        for (Field field : cls.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        // Look in parent classes
+        Class<?> superClass = cls.getSuperclass();
+        if (superClass != null && !superClass.equals(Object.class)) {
+            try {
+                Field idField = superClass.getDeclaredField("id");
+                idField.setAccessible(true);
+                return idField;
+            } catch (NoSuchFieldException e) {
+                // Recursively check parent class hierarchy
+                return findIdFieldInClassHierarchy(superClass);
+            }
+        }
+        return null;
+    }
+
+    private Class<?> getEntityClass(Object object) {
+        if (object instanceof HibernateProxy) {
+            LazyInitializer initializer = ((HibernateProxy) object).getHibernateLazyInitializer();
+            return initializer.getPersistentClass();
+        }
+        return object.getClass();
     }
 }

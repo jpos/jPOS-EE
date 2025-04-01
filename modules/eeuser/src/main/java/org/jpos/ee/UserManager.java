@@ -182,7 +182,7 @@ public class UserManager extends DBManager<User> {
     }
 
     private boolean checkV0Password(String passwordHash, long id, String clearpass) throws Exception {
-        return passwordHash.equals(HashVersion.ZERO.hash(Long.toString(id, 16), clearpass, null));
+        return passwordHash.equals(HashVersion.ZERO.hash(Long.toString(id), clearpass, null));
     }
 
     // HELPER METHODS

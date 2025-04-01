@@ -23,7 +23,7 @@
 <hibernate-mapping package="org.jpos.ee">
   <class name="Thing" table="things">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
     <property name="type" type="string" length="255" index="things_by_type" not-null="true" />    
     <map name="stringProps" lazy="true" table="props_s" cascade="all-delete-orphan">

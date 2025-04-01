@@ -24,7 +24,7 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.GLEntry" table="transentry" discriminator-value=" ">
     <id name="id" column="id" type="long">
-      <generator class="native" />
+      <generator class="org.jpos.ee.TxnIdGenerator" />
     </id>
     <discriminator column="subclass" type="string" length="1" />
 

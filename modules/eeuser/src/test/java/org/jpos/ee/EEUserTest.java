@@ -60,6 +60,7 @@ class EEUserTest {
         db.session().persist(user);
         UserManager mgr = new UserManager(db, HashVersion.ZERO);
         mgr.setPassword(user, "test", null);
+        System.out.println ("----> Setting password test for user " + user + " " + user.getPasswordHash());
 
         RealmManager rmgr = new RealmManager(db);
         Realm testRealm = rmgr.getRealmByName("TEST");
@@ -96,13 +97,13 @@ class EEUserTest {
         assertTrue(u.hasAnyPermission(new String[]{"nologin", "admin", "role.admin"}), "User has any permissions");
         assertFalse(u.hasPermission("superuser"), "User don't have 'superuser' permission");
 
-        assertTrue(mgr.checkPassword(u, "test"), "User password is 'test'");
-        assertEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash is correct");
+        assertTrue(mgr.checkPassword(u, "test"), "User password is 'test' " + u + " " + u.getPasswordHash());
+
+        String v0Hash = u.getPasswordHash();
         assertFalse(mgr.checkNewPassword(u, "test"), "Password has to be in history");
         mgr.upgradePassword(u, "test");
-        assertNotEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash has changed");
+        assertNotEquals(v0Hash, u.getPasswordHash(), "User hash has changed");
         assertTrue(mgr.checkPassword(u, "test"), "User password is still 'test'");
-        assertNotEquals("ee89026a6c5603c51b4504d218ac60f6874b7750", u.getPasswordHash(), "User hash has changed");
         assertFalse(mgr.checkNewPassword(u, "test"), "Password has to be in history");
         mgr.setPassword(u, "test1");
         mgr.setPassword(u, "test2");

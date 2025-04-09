@@ -15,7 +15,7 @@ allprojects {
     apply plugin: 'org.owasp.dependencycheck'
 
     group = 'org.jpos.ee'
-    version = '2.2.10'
+    version = '2.2.11-SNAPSHOT'
 
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {

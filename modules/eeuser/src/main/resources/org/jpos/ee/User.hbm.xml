@@ -43,7 +43,7 @@
       <key column="eeuser" not-null="true"/>
       <list-index column="id"/>
       <composite-element class="org.jpos.ee.PasswordHistory">
-       <property column="details" name="value" type="string" length="8000" not-null="true" />
+       <property name="value" type="string" length="8000" not-null="true" />
       </composite-element>
     </list>
 

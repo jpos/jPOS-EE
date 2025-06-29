@@ -27,6 +27,7 @@ jgroups = '5.3.11.Final'
 xmlBind = "4.0.1"
 javaxCache = '1.1.1'
 ehCache = '3.10.8'
+hibernateValidatorVersion = '6.2.1.Final'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -66,6 +67,7 @@ xmlBind = { module = 'jakarta.xml.bind:jakarta.xml.bind-api', version.ref = 'xml
 javaxCache = { module = 'javax.cache:cache-api', version.ref = 'javaxCache' }
 ehCache = { module = 'org.ehcache:ehcache', version.ref = 'ehCache' }
 jcache = { module = 'org.hibernate:hibernate-jcache', version.ref = 'hibernate' }
+hibernateValidator = { module = 'org.hibernate:hibernate-validator', version.ref = 'hibernateValidatorVersion' }
 
 [bundles]
 jackson = [

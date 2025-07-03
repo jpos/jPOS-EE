@@ -26,6 +26,9 @@ import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
 import org.jpos.ee.BLException;
 import org.jpos.ee.DB;
+import org.jpos.ee.RevisionManager;
+import org.jpos.ee.User;
+import org.jpos.ee.support.BeanDiff;
 import org.jpos.iso.ISOUtil;
 import org.jpos.qrest.*;
 import org.jpos.qrest.crud.Count;
@@ -41,10 +44,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -117,6 +117,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
 
     protected static final String TEMP_RESPONSE = "TEMP_RESPONSE";
     protected static final String PERSISTED_ENTITY = "PERSISTED_ENTITY";
+    protected static final String USER = "USER";
     private String idType;
     private Class idClass;
     private String getIdMethodName;
@@ -404,12 +405,14 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
      */
     protected int prepareForPost(long id, Context ctx) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         DB db = ctx.get(TxnSupport.DB);
+        User author = ctx.get(USER);
         T request = getAndValidateEntity(ctx);
         if (request != null && canPost(ctx, request)) {
             boolean hasId = getId(request) != null;
             ctx.log("HasID before persist: " + hasId + " '" + getId(request) + "'");
             db.session().persist(request);
             db.session().flush();
+            revisionCreated(db,author,request.getClass().getSimpleName(),getId(request).toString());
             ctx.put(PERSISTED_ENTITY, request);
             ctx.put(TEMP_RESPONSE, new Response(HttpResponseStatus.CREATED, toDTO(ctx, request)));
             return PREPARED | READONLY;
@@ -431,10 +434,19 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
      */
     protected int prepareForPut(long id, Context ctx) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         DB db = ctx.get(TxnSupport.DB);
+        User author = ctx.get(USER);
         T request = getAndValidateEntity(ctx);
         if (request != null && canPut(ctx, request)) {
             Serializable objId = getId(request);
             if (objId != null && getById(ctx, getManagedORMClass(), objId) != null) {
+                T oldObj = getById(ctx, getManagedORMClass(), objId);
+                List<String> propertyNames = new ArrayList<>();
+                Field[] fields = request.getClass().getDeclaredFields();
+                for (Field field : fields) {
+                    propertyNames.add(field.getName());
+                }
+                revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
+                  propertyNames.toArray(new String[propertyNames.size()]));
                 db.session().merge(request);
                 db.session().flush();
                 ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
@@ -582,6 +594,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
      */
     protected int prepareForDelete(long id, Context ctx) {
         DB db = ctx.get(TxnSupport.DB);
+        User author = ctx.get(USER);
         Map<String, String> params = ctx.get(PATHPARAMS);
         T persistedEntity = getById(ctx, getManagedORMClass(), getId(params.get("id")));
         if (persistedEntity != null) {
@@ -589,6 +602,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 db.session().remove(persistedEntity);
                 try {
                     db.session().flush();
+                    revisionRemoved(db, author, persistedEntity.getClass().getSimpleName(), getId(persistedEntity).toString());
                     ctx.put(TEMP_RESPONSE,
                       new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NO_CONTENT));
                     return PREPARED | READONLY;
@@ -732,6 +746,51 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             predicates.add(predicateFunction.apply(value));
         });
     }
+
+    /**
+     * Creates a new revision entry indicating that an entity has been created.
+     *
+     * @param db the database context in which to record the revision
+     * @param author the user who performed the creation
+     * @param entityName the name of the entity that was created
+     * @param ref the unique reference or identifier of the created entity
+     */
+    protected void revisionCreated(DB db, User author, String entityName, String ref) {
+        RevisionManager mgr = new RevisionManager(db);
+        mgr.createRevision(author,entityName + "." + ref , entityName + " created");
+    }
+
+    /**
+     * Creates a revision entry indicating that an entity has been modified,
+     * including a description of what changed.
+     *
+     * @param db the database context in which to record the revision
+     * @param author the user who performed the modification
+     * @param entityName the name of the entity that was changed
+     * @param ref the unique reference or identifier of the modified entity
+     * @param oldObj the original state of the entity before the change
+     * @param newObj the new state of the entity after the change
+     * @param props the names of the properties to include in the diff
+     */
+    protected void revisionChanged(DB db, User author, String entityName, String ref, Object oldObj, Object newObj, String... props) {
+        BeanDiff diff = new BeanDiff(oldObj,newObj, props);
+        RevisionManager mgr = new RevisionManager(db);
+        mgr.createRevision(author,entityName + "." + ref, diff.toString());
+    }
+
+    /**
+     * Creates a new revision entry indicating that an entity has been deleted.
+     *
+     * @param db the database context in which to record the revision
+     * @param author the user who performed the deletion
+     * @param entityName the name of the entity that was deleted
+     * @param ref the unique reference or identifier of the deleted entity
+     */
+    protected void revisionRemoved (DB db, User author, String entityName, String ref) {
+        RevisionManager mgr = new RevisionManager(db);
+        mgr.createRevision(author,entityName + "." + ref, entityName + " deleted");
+    }
+
 
     /**
      * Creates a predicate function based on the given parameter name.

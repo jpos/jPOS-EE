@@ -3,6 +3,7 @@ description = 'jPOS-EE :: QRest-CRUD'
 dependencies {
     api project(':modules:qrest')
     api project(':modules:txn')
+    api project(':modules:eeuser')
     api libs.bundles.jackson
     api libs.hibernateValidator
 }

@@ -39,8 +39,8 @@ public class FlywaySupport implements LogCreator, Log {
         Properties p = new DB(configModifier).getProperties();
 
         FluentConfiguration config = Flyway.configure()
-          .configuration(getConfigurationProperties())
           .locations("classpath:db/migration")
+          .configuration(getConfigurationProperties())
           .dataSource(
             p.getProperty("hibernate.connection.url"),
             p.getProperty("hibernate.connection.username"),

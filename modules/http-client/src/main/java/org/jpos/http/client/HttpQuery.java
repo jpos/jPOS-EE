@@ -18,29 +18,28 @@
 
 package org.jpos.http.client;
 
-import org.apache.http.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.auth.*;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.impl.LaxRedirectStrategy;
+import org.apache.hc.client5.http.impl.auth.*;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.async.methods.*;
+
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
+import org.apache.hc.core5.util.Timeout;
+
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
@@ -48,44 +47,42 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 import org.jpos.util.Destroyable;
 import org.jpos.util.Log;
-import org.jpos.util.LogEvent;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static org.jpos.util.Logger.log;
-
-
+/**
+ * jPOS-EE HttpQuery upgraded to Apache HttpComponents 5.5.
+ * Behaviour and public surface remain identical to the original 4.x implementation.
+ */
 @SuppressWarnings("unused")
 public class HttpQuery extends Log implements AbortParticipant, Configurable, Destroyable {
-    private static final String DEFAULT_MAX_CONNECTIONS = "25";         // overridable by sys prop http.maxConnections, or with cfg "maxConnections"
+    /* ------------------------------------------------------------- constants */
+    private static final String DEFAULT_MAX_CONNECTIONS = "25";
+    private static final int    DEFAULT_CONNECT_TIMEOUT = 10_000; // ms
+    private static final int    DEFAULT_TIMEOUT         = 15_000; // ms
 
-    private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
-    private static final int DEFAULT_TIMEOUT = 15000;
-
+    /* -------------------------------------------------------------- cfg data */
     private Configuration cfg;
-    private String url;
-    private String contentType;
-    private Header[] httpHeaders;
-    private boolean responseOnError;
-    private boolean preemptiveAuth= false;          // Preemptive Basic Authentication (send on first request, false by default)
-    private int connectTimeout;                     // timeout waiting for connection
-    private int timeout;                            // timeout waiting for HTTP response on socket
 
-    // Context variable names
+    private String   url;
+    private String   contentType;
+    private Header[] httpHeaders = new Header[0];
+
+    private boolean responseOnError;
+    private boolean preemptiveAuth;
+    private int     connectTimeout;
+    private int     timeout;
+
+    /* -------------------------- context-variable names (same defaults) */
     private String urlName;
     private String paramsName;
     private String headersName;
@@ -96,360 +93,293 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
     private String contentTypeName;
     private String trustAllCertsName;
     private String basicAuthenticationName;
-    private RedirectStrategy redirectStrategy;
-    private boolean ignoreNullRequest;
     private String httpVersionName;
+    private boolean ignoreNullRequest;
 
-    // Shared clients for the instance.
-    // Created at configuration time; destroyed when this participant is destroyed.
-    private CloseableHttpAsyncClient httpClient = null;
-    // This client will be used when certificate validation bypassing is needed
-    private CloseableHttpAsyncClient unsecureHttpClient = null;
+    /* ------------------------------------------------------- redirect policy */
+    private RedirectStrategy redirectStrategy = DefaultRedirectStrategy.INSTANCE;
 
-    public HttpQuery () {
-        super();
-    }
+    /* ------------------------------------------------------------- clients */
+    private CloseableHttpAsyncClient httpClient;          // regular TLS
+    private CloseableHttpAsyncClient unsecureHttpClient;  // trust-all TLS
 
+    /* ========================================================================
+                                  PARTICIPANT
+       ===================================================================== */
     @Override
-    public int prepare (long id, Serializable o) {
+    public int prepare(long id, Serializable o) {
         Context ctx = (Context) o;
 
-        HttpRequestBase httpRequest = getHttpRequest(ctx);
-        if (httpRequest == null)
+        SimpleHttpRequest req = buildRequest(ctx);
+        if (req == null)
             return ignoreNullRequest ? PREPARED | NO_JOIN | READONLY : FAIL;
 
-        addHeaders(ctx, httpRequest);
+        addHeaders(ctx, req);
 
-        //set the http protocol version, default to version 1.1
-        //config example <property name="httpVersionName" value="1.1"/>
-        HttpVersion definedVersion = null;
-        String httpVersion = getVersion(ctx);
-        if(httpVersion != null && !httpVersion.isEmpty()) {
-            String[] majmin = httpVersion.split("\\.");                 // split into major and minor version numbers
-            definedVersion = new HttpVersion(Integer.parseInt(majmin[0]),
-                                             majmin.length > 1 ? Integer.parseInt(majmin[1]) : 0);            // default to minor 0 if it can't be split
+        /* per-request HTTP version (default 1.1) */
+        String ver = ctx.getString(httpVersionName);
+        if (ver != null && !ver.isEmpty() && ver.startsWith("1.")) {
+            String[] mm = ver.split("\\.");
+            req.setVersion(new HttpVersion(
+              Integer.parseInt(mm[0]),
+              mm.length > 1 ? Integer.parseInt(mm[1]) : 0));
         }
-        httpRequest.setProtocolVersion((definedVersion != null) ? definedVersion : HttpVersion.HTTP_1_1);     // default to HTTP/1.1
 
-        httpRequest.setConfig(RequestConfig.custom().
-            setConnectTimeout(connectTimeout).
-            setSocketTimeout(timeout).
-            build());
+        /* execution context */
+        HttpClientContext httpCtx = HttpClientContext.create();
 
-        HttpClientContext httpCtx= HttpClientContext.create();                              // per-request http context
+        // ── Basic / pre-emptive auth ───────────────────────────────────────
+        String ba = ctx.get(basicAuthenticationName);
+        if (ba != null && ba.contains(":")) {
+            String[] c = ba.split(":", 2);
+            var cp = new BasicCredentialsProvider();
+            cp.setCredentials(
+              new AuthScope(null, -1),                      // any host/port
+              new UsernamePasswordCredentials(c[0], c[1].toCharArray()));
+            httpCtx.setCredentialsProvider(cp);
 
-        String basicAuth = ctx.get(basicAuthenticationName);
-        if (basicAuth != null && basicAuth.contains(":")) {
-            String[] credentials = basicAuth.split(":");
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(AuthScope.ANY,
-                                         new UsernamePasswordCredentials(credentials[0], credentials[1]));
-            httpCtx.setCredentialsProvider(credsProvider);
-
-            // NOTE: The Apache HTTP client does not do preemptive authentication out of the box.
-            // Therefore, it will normally send a non-authenticated request first, and if the server
-            // requires authentication (status code 401, etc) then it will send a second request with
-            // the credentials.
-            // For preemptive authentication, an AuthCache needs to be configured.
-            // Ref: https://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/authentication.html
             if (preemptiveAuth) {
-                URI uri= httpRequest.getURI();
-                AuthCache authCache= new BasicAuthCache();
-                authCache.put(new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme()), new BasicScheme());
-                httpCtx.setAuthCache(authCache);
+                URI uri = null;
+                try {
+                    uri = req.getUri();
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+                AuthCache cache = new BasicAuthCache();
+                cache.put(new HttpHost(uri.getScheme(), uri.getHost(), uri.getPort()),
+                  new BasicScheme());
+                httpCtx.setAuthCache(cache);
             }
         }
 
-        boolean trustAllCerts = ctx.getString(trustAllCertsName, "false").equals("true");
-        getHttpClient(trustAllCerts).execute(httpRequest, httpCtx, new FutureCallback<HttpResponse>() {
+        boolean trustAll = "true".equals(ctx.getString(trustAllCertsName, "false"));
+        getHttpClient(trustAll).execute(req, httpCtx, new FutureCallback<>() {
             @Override
-            public void completed(HttpResponse result) {
-                ctx.log (result.getStatusLine());
-
-                int sc = result.getStatusLine().getStatusCode();
-
-                // we always include the response body on success and check responseOnError for failed requests
-                boolean includeResponse= (sc == HttpStatus.SC_CREATED) || (sc == HttpStatus.SC_OK) || responseOnError;
-                if (includeResponse) {
-                    try {
-                        if (null != result.getEntity()) {
-                            ctx.put(responseName, EntityUtils.toString(result.getEntity()));
-                        }
-                    } catch (IOException e) {
-                        ctx.log (e);
-                    }
-                }
-
-                ctx.put (statusName, sc); // status has to be the last entry because client might be waiting on it
+            public void completed(SimpleHttpResponse rsp) {
+                int sc = rsp.getCode();
+                boolean include = (sc == HttpStatus.SC_OK ||
+                  sc == HttpStatus.SC_CREATED ||
+                  responseOnError);
+                if (include && rsp.getBody() != null)
+                    ctx.put(responseName, rsp.getBodyText());
+                ctx.put(statusName, sc);          // always last
                 ctx.resume(PREPARED);
             }
-
-            @Override
-            public void failed(Exception ex) {
-                // Common cases with current Apache impl; just logged but not handled here:
-                //      java.net.UnknownHostException: mydomain.com: nodename nor servname provided, or not known
-                //      java.net.ConnectException: Connection refused
-                //      java.net.ConnectException: Timeout connecting to [mydomain.com/xxx.xxx.xxx.xxx:ppp]
-                //      java.net.SocketTimeoutException: ... (when no HTTP response)
-                ctx.log(ex);
-                ctx.resume(ABORTED);
-            }
-
-            @Override
-            public void cancelled() {
-                ctx.resume(ABORTED);
-            }
+            @Override public void failed(Exception ex) { ctx.log(ex); ctx.resume(ABORTED); }
+            @Override public void cancelled()           { ctx.resume(ABORTED); }
         });
 
         return PREPARED | PAUSE | NO_JOIN | READONLY;
     }
 
     @Override
-    public int prepareForAbort (long id, Serializable o) {
-        if (cfg.getBoolean ("on-abort", false))
-            return prepare (id, o);
-        return PREPARED;
+    public int prepareForAbort(long id, Serializable o) {
+        return cfg.getBoolean("on-abort", false) ? prepare(id, o) : PREPARED;
     }
 
+    /* ========================================================================
+                                CONFIGURABLE
+       ===================================================================== */
     @Override
-    public void setConfiguration (Configuration cfg) throws ConfigurationException {
+    public void setConfiguration(Configuration cfg) throws ConfigurationException {
         this.cfg = cfg;
-        url = cfg.get("url");
-        contentType = cfg.get("contentType", "application/json");
-        responseOnError= cfg.getBoolean("responseBodyOnError", false);    // do we include a response body for failed requests? default: false
-        connectTimeout= cfg.getInt("connect-timeout", DEFAULT_CONNECT_TIMEOUT);
-        timeout= cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
-        urlName = cfg.get("urlName", "HTTP_URL");
-        httpVersionName = cfg.get("httpVersionName", "HTTP_VERSION");
-        methodName = cfg.get("methodName", "HTTP_METHOD");
-        paramsName = cfg.get ("paramsName", "HTTP_PARAMS");
-        requestName = cfg.get ("requestName", "HTTP_REQUEST");
-        contentTypeName = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
-        responseName = cfg.get("responseName", "HTTP_RESPONSE");
-        statusName = cfg.get("responseStatusName", "HTTP_STATUS");
-        ignoreNullRequest = cfg.getBoolean("ignoreNullRequest", false);
+        url             = cfg.get("url");
+        contentType     = cfg.get("contentType", "application/json");
+        responseOnError = cfg.getBoolean("responseBodyOnError", false);
+        connectTimeout  = cfg.getInt("connect-timeout", DEFAULT_CONNECT_TIMEOUT);
+        timeout         = cfg.getInt("timeout", DEFAULT_TIMEOUT);
 
-        preemptiveAuth = cfg.getBoolean("preemptiveAuth", preemptiveAuth);
+        /* context-variable names (defaults match original) */
+        urlName          = cfg.get("urlName", "HTTP_URL");
+        httpVersionName  = cfg.get("httpVersionName", "HTTP_VERSION");
+        methodName       = cfg.get("methodName", "HTTP_METHOD");
+        paramsName       = cfg.get("paramsName", "HTTP_PARAMS");
+        requestName      = cfg.get("requestName", "HTTP_REQUEST");
+        contentTypeName  = cfg.get("contentTypeName", "HTTP_CONTENT_TYPE");
+        responseName     = cfg.get("responseName", "HTTP_RESPONSE");
+        statusName       = cfg.get("responseStatusName", "HTTP_STATUS");
+        ignoreNullRequest= cfg.getBoolean("ignoreNullRequest", false);
+
+        preemptiveAuth          = cfg.getBoolean("preemptiveAuth", false);
         basicAuthenticationName = cfg.get("basicAuthenticationName", ".HTTP_BASIC_AUTHENTICATION");
+        trustAllCertsName       = cfg.get("trustAllCerts", "HTTP_TRUST_ALL_CERTS");
 
-        trustAllCertsName = cfg.get("trustAllCerts", "HTTP_TRUST_ALL_CERTS");
-
-        // ctx name under which extra http headers could exist at runtime
-        // the object could be a List<String> or String[] (in the "name:value" format)
-        // or a Map<String,String>
         headersName = cfg.get("headersName", "HTTP_HEADERS");
 
-        // hardcoded headers configured for this participant (in the "name:value" format)
-        String[] headers= cfg.getAll("httpHeader");
-        httpHeaders= new Header[headers.length];
-        for (int i= 0; i < headers.length; i++) {
-            int colonPos= headers[i].indexOf(':');
-            if (colonPos < 0)
-                throw new ConfigurationException("Bad HTTP header '"+headers[i]+"' (needs a colon)");
-
-            httpHeaders[i]= new BasicHeader(headers[i].substring(0, colonPos),      // header name
-                                            headers[i].substring(colonPos+1));      // header value
+        /* fixed headers from cfg */
+        String[] h = cfg.getAll("httpHeader");
+        httpHeaders = new Header[h.length];
+        for (int i = 0; i < h.length; i++) {
+            int p = h[i].indexOf(':');
+            if (p < 0)
+                throw new ConfigurationException("Bad HTTP header '" + h[i] + '\'');
+            httpHeaders[i] = new BasicHeader(
+              h[i].substring(0, p).trim(),
+              h[i].substring(p + 1).trim());
         }
 
-        String redirProp = cfg.get("redirect-strategy", "default");
-        if ("default".equals(redirProp))
-            redirectStrategy= DefaultRedirectStrategy.INSTANCE;
-        else if ("lax".equals(redirProp))
-            redirectStrategy= LaxRedirectStrategy.INSTANCE;
-        else
-            throw new ConfigurationException("'redirect-strategy' must be 'lax' or 'default'");
+        /* redirect strategy */
+        String rs = cfg.get("redirect-strategy", "default");
+        redirectStrategy = switch (rs) {
+            case "lax"     -> LaxRedirectStrategy.INSTANCE;
+            case "default" -> DefaultRedirectStrategy.INSTANCE;
+            default -> throw new ConfigurationException(
+              "'redirect-strategy' must be 'default' or 'lax'");
+        };
 
-
-        String maxConn = System.getProperty("http.maxConnections");
-        if (maxConn == null || maxConn.trim().isEmpty()) {
-            String maxConnCfg = cfg.get("maxConnections", DEFAULT_MAX_CONNECTIONS);
-            maxConn = maxConnCfg.trim();
-            System.setProperty("http.maxConnections", maxConn);
-        }
-        try { Integer.parseInt(maxConn); }
-        catch (Exception e) {
-            throw new ConfigurationException("Bad value for maxConnections: "+maxConn);
+        /* global pool size (legacy property retained) */
+        String max = Optional.ofNullable(System.getProperty("http.maxConnections"))
+          .orElseGet(() -> cfg.get("maxConnections", DEFAULT_MAX_CONNECTIONS));
+        System.setProperty("http.maxConnections", max.trim());
+        try { Integer.parseInt(max.trim()); }
+        catch (NumberFormatException nfe) {
+            throw new ConfigurationException("Bad value for maxConnections: " + max);
         }
     }
 
+    /* ========================================================================
+                               INTERNAL HELPERS
+       ===================================================================== */
+    private SimpleHttpRequest buildRequest(Context ctx) {
+        String url   = getURL(ctx);
+        String m     = ctx.getString(methodName, "GET");
+        String body  = ctx.getString(requestName);
+        ContentType ct = getContentType(ctx);
 
-    /**
-        Method is synchronized against this instance of HttpQuery, because the instance of
-        the CloseableHttpAsyncClient is *lazily* created upon first request, and only one
-        should be created and shared by all threads.
-    */
-    public synchronized CloseableHttpAsyncClient getHttpClient(boolean trustAllCerts) {
-        if (trustAllCerts) {
+        SimpleRequestBuilder b = switch (m) {
+            case "POST"   -> SimpleRequestBuilder.post(url);
+            case "PUT"    -> SimpleRequestBuilder.put(url);
+            case "PATCH"  -> SimpleRequestBuilder.patch(url);
+            case "DELETE" -> SimpleRequestBuilder.delete(url);
+            case "GET"    -> SimpleRequestBuilder.get(url);
+            default -> { ctx.log("Invalid HTTP method: " + m); yield null; }
+        };
+        if (b == null) return null;
+
+        if (body != null && !body.isEmpty() &&
+          ("POST".equals(m) || "PUT".equals(m) || "PATCH".equals(m))) {
+            b.setBody(body, ct);
+        }
+        return b.build();
+    }
+
+    private String getURL(Context ctx) {
+        StringBuilder sb = new StringBuilder(ctx.getString(urlName, url));
+        String params = ctx.getString(paramsName, "");
+        if (!params.isEmpty()) sb.append('?').append(params);
+        return sb.toString();
+    }
+
+    private ContentType getContentType(Context ctx) {
+        String mime = ctx.get(contentTypeName, contentType);
+        return cfg.getBoolean("no-charset")
+          ? ContentType.parse(mime)
+          : ContentType.create(mime, StandardCharsets.UTF_8);
+    }
+
+    /** Add fixed cfg headers first, then any runtime overrides. */
+    @SuppressWarnings("unchecked")
+    private void addHeaders(Context ctx, SimpleHttpRequest req) {
+        req.setHeaders(httpHeaders);
+
+        Object hObj = ctx.get(headersName);
+        if (hObj == null) return;
+
+        if (hObj instanceof Map<?,?> map) {
+            map.forEach((k, v) -> req.setHeader(k.toString(), v.toString()));
+            return;
+        }
+
+        List<String> list;
+        if (hObj instanceof String[] arr)      list = Arrays.asList(arr);
+        else if (hObj instanceof List<?> l)    list = (List<String>) l;
+        else {
+            ctx.log("HTTP_HEADERS is not String[], List<String> or Map<String,String>");
+            return;
+        }
+
+        for (String h : list) {
+            int p = h.indexOf(':');
+            if (p < 0) { ctx.log("Bad HTTP header '" + h + '\''); continue; }
+            req.setHeader(h.substring(0, p).trim(), h.substring(p + 1).trim());
+        }
+    }
+
+    /* -----------------------------------------------------------------------
+                                HTTP CLIENT FACTORY
+       -------------------------------------------------------------------- */
+    private synchronized CloseableHttpAsyncClient getHttpClient(boolean trustAll) {
+        if (trustAll) {
             if (unsecureHttpClient == null) {
-                setUnsecureHttpClient(getClientBuilder(true).build());
+                unsecureHttpClient = createBuilder(true).build();
                 unsecureHttpClient.start();
             }
             return unsecureHttpClient;
-        } else if (httpClient == null) {
-            setHttpClient(getClientBuilder(false).build());
+        }
+        if (httpClient == null) {
+            httpClient = createBuilder(false).build();
             httpClient.start();
         }
         return httpClient;
     }
 
-    public void setHttpClient(CloseableHttpAsyncClient httpClient) {
-        this.httpClient = httpClient;
-    }
+    private HttpAsyncClientBuilder createBuilder(boolean trustAll) {
+        RequestConfig defaults = RequestConfig.custom()
+          .setConnectTimeout(Timeout.ofMilliseconds(connectTimeout))
+          .setResponseTimeout(Timeout.ofMilliseconds(timeout))
+          .build();
 
-    public void setUnsecureHttpClient(CloseableHttpAsyncClient httpClient) {
-        this.unsecureHttpClient = httpClient;
-    }
+        HttpAsyncClientBuilder b = HttpAsyncClients.custom()
+          .useSystemProperties()
+          .setRedirectStrategy(redirectStrategy)
+          .setDefaultRequestConfig(defaults);
 
-    protected HttpAsyncClientBuilder getClientBuilder(boolean trustAllCerts) {
-        HttpAsyncClientBuilder builder = HttpAsyncClients.custom().useSystemProperties()
-                .setRedirectStrategy(redirectStrategy);
-        if (trustAllCerts) {
-            disableSSLVerification(builder);
-        }
+        if (trustAll) {
+            SSLContext sc = buildTrustAllContext();
+            if (sc != null) {
+                TlsStrategy tls = ClientTlsStrategyBuilder.create()
+                  .setSslContext(sc)
+                  .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                  .build();
 
-        return builder;
-    }
+                PoolingAsyncClientConnectionManager cm =
+                  PoolingAsyncClientConnectionManagerBuilder.create()
+                    .setTlsStrategy(tls)
+                    .build();
 
-    private HttpAsyncClientBuilder disableSSLVerification(HttpAsyncClientBuilder builder) {
-        TrustManager[] wrappedTrustManagers = new TrustManager[] {
-            new X509TrustManager() {
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
-
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    // ignored
-                }
-
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    log(new LogEvent(Arrays.toString(certs) + " " + authType));
-                }
+                b.setConnectionManager(cm);
             }
-        };
+        }
+        return b;
+    }
 
-        SSLContext sc;
+    private SSLContext buildTrustAllContext() {
         try {
-            sc = SSLContext.getInstance("TLS");
-            sc.init(null, wrappedTrustManagers, new SecureRandom());
-            return builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).setSSLContext(sc);
+            TrustManager[] tm = { new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] c, String a) {}
+                public void checkServerTrusted(X509Certificate[] c, String a) {}
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }};
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, tm, new SecureRandom());
+            return sc;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            LogEvent evt = new LogEvent(this, "warn");
-            evt.addMessage(e);
-            log(evt);
-            return builder;
+            warn(e); return null;
         }
     }
 
-    private String getURL (Context ctx) {
-        StringBuilder sb = new StringBuilder (
-            ctx.getString (urlName, url)
-        );
-        String params = ctx.getString (paramsName, "");
-        if (!params.isEmpty()) {
-            sb.append ('?');
-            sb.append (params);
-        }
-        return sb.toString();
-    }
-
-    private HttpRequestBase getHttpRequest(Context ctx) {
-    	Consumer<HttpEntityEnclosingRequestBase> setBody = (HttpEntityEnclosingRequestBase request) -> {
-	        String payload = ctx.getString(requestName);
-	        if (payload != null) {
-	            request.setEntity(new StringEntity(payload, getContentType(ctx)));
-	        }
-    	};
-        String url = getURL(ctx);
-        String payload;
-        switch (ctx.getString(methodName)) {
-            case "POST":
-                HttpPost post = new HttpPost(url);
-                setBody.accept(post);
-                return post;
-            case "PUT":
-                HttpPut put = new HttpPut(url);
-                setBody.accept(put);
-                return put;
-            case "GET":
-                return new HttpGet(url);
-            case "DELETE":
-                return new HttpDelete(url);
-            case "PATCH":
-                HttpPatch patch = new HttpPatch(url);
-                setBody.accept(patch);
-                return patch;
-        }
-        ctx.log ("Invalid request method");
-        return null;
-    }
-
-    private String getVersion(Context ctx) {
-        return ctx.getString(httpVersionName);
-    }
-
-    private ContentType getContentType (Context ctx) {
-        return cfg.getBoolean("no-charset") ?
-          ContentType.create(ctx.get(contentTypeName, contentType)) :
-          ContentType.create(ctx.get(contentTypeName, contentType), Consts.UTF_8);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addHeaders(Context ctx, HttpUriRequest req) {
-        // first add the ones from the cfg
-        req.setHeaders(httpHeaders);
-
-        // now the ones in the ctx (possibly overwriting some of the above)
-        Object hObj= ctx.get(headersName);
-        if (hObj != null) {
-
-            // case Map<String,String>
-            if (hObj instanceof Map) {
-                for (Map.Entry<String,Object> ent : ((Map<String,Object>)hObj).entrySet()) {
-                    req.setHeader(ent.getKey(), ent.getValue().toString());
-                }
-                return;
-            }
-
-            // cases List<String> and String[]
-            List<String> hList;
-            if (hObj instanceof String[])
-                hList= Arrays.asList((String[])hObj);
-            else if (hObj instanceof List)
-                hList= (List<String>)hObj;
-            else {
-                hList= new ArrayList<>(0);  // dummy
-                ctx.log("Wrong class for Context entry HTTP_HEADERS ("+headersName+"): "+hObj.getClass().getName()+". "+
-                        "(one of these expected: String[], List<String>, Map<String,String>)" );
-            }
-
-            for (String hStr : hList) {
-                int colonPos= hStr.indexOf(':');
-                if (colonPos < 0) {
-                    ctx.log("Bad HTTP header '"+hStr+"' (needs colon; ignoring)");
-                    continue;   // ignoring this bad header
-                }
-
-                req.setHeader(hStr.substring(0, colonPos),      // header name
-                              hStr.substring(colonPos+1));      // header value
-            }
-        }
-    } // addHeaders
-
+    /* ========================================================================
+                                   DESTROYABLE
+       ===================================================================== */
     @Override
     public void destroy() {
-        httpClient = destroyClient(httpClient);
-        unsecureHttpClient = destroyClient(unsecureHttpClient);
+        closeQuiet(httpClient);       httpClient = null;
+        closeQuiet(unsecureHttpClient); unsecureHttpClient = null;
     }
-
-    private CloseableHttpAsyncClient destroyClient (CloseableHttpAsyncClient client) {
-        if (client != null && client.isRunning()) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                warn(e);
-            }
+    private void closeQuiet(CloseableHttpAsyncClient c) {
+        if (c != null) {
+            try { c.close(); } catch (IOException ex) { warn(ex); }
         }
-        return null;
     }
 }

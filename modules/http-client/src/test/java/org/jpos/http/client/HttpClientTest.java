@@ -18,7 +18,7 @@
 
 package org.jpos.http.client;
 
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.jpos.iso.ISOUtil;
 import org.jpos.q2.Q2;
 import org.jpos.transaction.Context;
@@ -65,7 +65,7 @@ public class HttpClientTest {
         assertNotNull(ctx.getString("HTTP_RESPONSE"), "Response should not bee null");
         assertFalse (ctx.getString("HTTP_RESPONSE").isEmpty(), "Response is not empty");
     }
-    
+
     @Test
     public void test404() {
         Context ctx = new Context();
@@ -77,7 +77,7 @@ public class HttpClientTest {
         assertEquals (Integer.valueOf(HttpStatus.SC_NOT_FOUND), sc, "Status code should be 404");
     }
 
-    @Test 
+    @Test
     public void test400() {
         Context ctx = new Context();
         ctx.put("HTTP_URL", BASE_URL + "/bad");

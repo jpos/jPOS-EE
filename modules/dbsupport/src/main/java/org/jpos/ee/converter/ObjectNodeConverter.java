@@ -27,16 +27,18 @@ import java.io.IOException;
 @Converter(autoApply = true)
 public class ObjectNodeConverter implements AttributeConverter<ObjectNode,String> {
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     @Override
     public String convertToDatabaseColumn(ObjectNode attribute) {
-        return attribute.toString();
+        return attribute == null ? null : attribute.toString();
     }
 
     @Override
     public ObjectNode convertToEntityAttribute(String dbData) {
         try {
-            return (ObjectNode) new ObjectMapper().readTree(dbData);
-        } catch (IOException e) {
+            return dbData == null ? null : (ObjectNode) mapper.readTree(dbData);
+        } catch (IOException _) {
             return null;
         }
     }

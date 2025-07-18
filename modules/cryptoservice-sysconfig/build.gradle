@@ -1,0 +1,9 @@
+description = 'jPOS-EE :: CryptoService SysConfig'
+
+dependencies {
+    api libs.jpos
+    api project(':modules:cryptoservice')
+    api project(':modules:sysconfig')
+    testImplementation testlibs.junit
+}
+

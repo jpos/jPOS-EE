@@ -2,6 +2,7 @@ plugins {
     id 'org.jpos.jposapp' version '0.0.13'
     id 'idea'
     id 'org.gradlex.extra-java-module-info' version '1.9'
+    id 'org.owasp.dependencycheck' version '12.1.3'
 }
 
 import org.gradle.internal.os.OperatingSystem

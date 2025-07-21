@@ -8,7 +8,7 @@ dependencies {
 }
 
 ext {
-    testRuntimeDir = "$layout.buildDirectory/runtime" as File
+    testRuntimeDir = layout.buildDirectory.get().asFile.toPath().resolve("runtime").toFile()
 }
 
 tasks.register('jposeeSetup', JavaExec) {

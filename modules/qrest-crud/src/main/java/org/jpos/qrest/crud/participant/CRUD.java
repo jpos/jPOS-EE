@@ -348,7 +348,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             String jsonRequest = ctx.get(JSON_REQUEST.name());
             entity = fromDTO(ctx, Converter.getMapper().readValue(jsonRequest, getManagedDTOInputClass()));
             if (!isValidId(entity, ctx)) {
-                ctx.put(RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+                ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
                 return null;
             }
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -358,7 +358,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 for (ConstraintViolation<Object> violation : violations) {
                     ctx.log("Validation error: " + violation.getMessage());
                 }
-                ctx.put(RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+                ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
                 return null;
             }
             ctx.remove(JSON_REQUEST.name()); // unclutter context
@@ -367,7 +367,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             ctx.put(TEMP_RESPONSE, e.getResponse());
         } catch (Exception e) {
             ctx.log(e.getMessage() + " (" + Caller.info(0) + ")");
-            ctx.put(RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
         }
         return entity;
     }
@@ -436,28 +436,33 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         DB db = ctx.get(TxnSupport.DB);
         User author = ctx.get(USER);
         T request = getAndValidateEntity(ctx);
-        if (request != null && canPut(ctx, request)) {
-            Serializable objId = getId(request);
-            if (objId != null && getById(ctx, getManagedORMClass(), objId) != null) {
-                T oldObj = getById(ctx, getManagedORMClass(), objId);
-                List<String> propertyNames = new ArrayList<>();
-                Field[] fields = request.getClass().getDeclaredFields();
-                for (Field field : fields) {
-                    propertyNames.add(field.getName());
-                }
-                revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
-                  propertyNames.toArray(new String[propertyNames.size()]));
-                db.session().merge(request);
-                db.session().flush();
-                ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-                return PREPARED | READONLY;
-            }
+        if (request == null) {
+            ctx.put(TEMP_RESPONSE,
+              new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED)
+            );
+            return ABORTED | READONLY;
+        }
+        Serializable objId = getId(request);
+        T oldObj = (objId == null) ? null : getById(ctx, getManagedORMClass(), objId);
+        if (oldObj == null) {
             ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND));
             return ABORTED | READONLY;
         }
-        if (ctx.get(TEMP_RESPONSE) == null)
-            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
-        return ABORTED | READONLY;
+        if (!canPut(ctx, request)) {
+            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONFLICT));
+            return ABORTED | READONLY;
+        }
+        List<String> propertyNames = new ArrayList<>();
+        Field[] fields = request.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            propertyNames.add(field.getName());
+        }
+        revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
+          propertyNames.toArray(String[]::new));
+        db.session().merge(request);
+        db.session().flush();
+        ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+        return PREPARED | READONLY;
     }
 
     /**

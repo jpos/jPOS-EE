@@ -54,10 +54,7 @@ import java.util.function.Function;
 import org.hibernate.query.Query;
 
 import javax.annotation.Nullable;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 
 import static org.jpos.qrest.Constants.*;
 
@@ -393,6 +390,42 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         return true;
     }
 
+    /** Per-CRUD override (optional). Default: empty. */
+    protected Map<String, String> constraintMessageMap() {
+        return Collections.emptyMap();
+    }
+
+    protected Response conflictFromConstraint(Throwable t) {
+        org.hibernate.exception.ConstraintViolationException cve = unwrapConstraintViolation(t);
+        String key = "duplicate"; // generic fallback
+        if (cve != null) {
+            String name = cve.getConstraintName();
+            if (name != null) {
+                // strip schema prefix and normalize
+                int dot = name.lastIndexOf('.');
+                if (dot >= 0 && dot + 1 < name.length()) name = name.substring(dot + 1);
+                String norm = name.toLowerCase(java.util.Locale.ROOT).trim();
+
+                String mapped = constraintMessageMap().get(norm);
+                if (mapped != null) {
+                    key = mapped;
+                } else {
+                    // light heuristics
+                    if (norm.contains("name")) key = "duplicate.name";
+                    else if (norm.contains("code")) key = "duplicate.code";
+                }
+            }
+        }
+        return new Response(io.netty.handler.codec.http.HttpResponseStatus.CONFLICT, MessageBody.of(key));
+    }
+    
+    protected org.hibernate.exception.ConstraintViolationException unwrapConstraintViolation(Throwable t) {
+        for (Throwable cur = t; cur != null; cur = cur.getCause()) {
+            if (cur instanceof org.hibernate.exception.ConstraintViolationException c) return c;
+        }
+        return null;
+    }
+
     /**
      * Prepares a POST (create) operation.
      *
@@ -408,17 +441,36 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         User author = ctx.get(USER);
         T request = getAndValidateEntity(ctx);
         if (request != null && canPost(ctx, request)) {
-            boolean hasId = getId(request) != null;
-            ctx.log("HasID before persist: " + hasId + " '" + getId(request) + "'");
-            db.session().persist(request);
-            db.session().flush();
-            revisionCreated(db,author,request.getClass().getSimpleName(),getId(request).toString());
-            ctx.put(PERSISTED_ENTITY, request);
-            ctx.put(TEMP_RESPONSE, new Response(HttpResponseStatus.CREATED, toDTO(ctx, request)));
-            return PREPARED | READONLY;
+            try {
+                boolean hasId = getId(request) != null;
+                ctx.log("HasID before persist: " + hasId + " '" + getId(request) + "'");
+                db.session().persist(request);
+                db.session().flush();
+                revisionCreated(db,author,request.getClass().getSimpleName(),getId(request).toString());
+                ctx.put(PERSISTED_ENTITY, request);
+                ctx.put(TEMP_RESPONSE, new Response(HttpResponseStatus.CREATED, toDTO(ctx, request)));
+                return PREPARED | READONLY;
+            } catch (org.hibernate.exception.ConstraintViolationException hce) {
+                ctx.put(TEMP_RESPONSE, conflictFromConstraint(hce));
+                return ABORTED | READONLY;
+            } catch (jakarta.persistence.PersistenceException pe) {
+                org.hibernate.exception.ConstraintViolationException hce = unwrapConstraintViolation(pe);
+                if (hce != null) {
+                    ctx.put(TEMP_RESPONSE, conflictFromConstraint(hce));
+                    return ABORTED | READONLY;
+                }
+                ctx.put(TEMP_RESPONSE,
+                  new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+                return ABORTED | READONLY;
+            } catch (RuntimeException re) {
+                ctx.put(TEMP_RESPONSE,
+                  new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR));
+                return ABORTED | READONLY;
+            }
         }
         if (ctx.get(TEMP_RESPONSE) == null)
-            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
+            ctx.put(TEMP_RESPONSE,
+              new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
         return ABORTED | READONLY;
     }
 
@@ -438,8 +490,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         T request = getAndValidateEntity(ctx);
         if (request == null) {
             ctx.put(TEMP_RESPONSE,
-              new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED)
-            );
+              new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.METHOD_NOT_ALLOWED));
             return ABORTED | READONLY;
         }
         Serializable objId = getId(request);
@@ -449,20 +500,37 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             return ABORTED | READONLY;
         }
         if (!canPut(ctx, request)) {
-            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONFLICT));
+            if (ctx.get(TEMP_RESPONSE) == null)
+                ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONFLICT));
             return ABORTED | READONLY;
         }
-        List<String> propertyNames = new ArrayList<>();
-        Field[] fields = request.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            propertyNames.add(field.getName());
+        try {
+            List<String> propertyNames = new ArrayList<>();
+            for (Field field : request.getClass().getDeclaredFields())
+                propertyNames.add(field.getName());
+            revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
+              propertyNames.toArray(String[]::new));
+            db.session().merge(request);
+            db.session().flush();
+            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+            return PREPARED | READONLY;
+        } catch (org.hibernate.exception.ConstraintViolationException hce) {
+            ctx.put(TEMP_RESPONSE, conflictFromConstraint(hce));
+            return ABORTED | READONLY;
+        } catch (jakarta.persistence.PersistenceException pe) {
+            org.hibernate.exception.ConstraintViolationException hce = unwrapConstraintViolation(pe);
+            if (hce != null) {
+                ctx.put(TEMP_RESPONSE, conflictFromConstraint(hce));
+                return ABORTED | READONLY;
+            }
+            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(
+              HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+            return ABORTED | READONLY;
+        } catch (RuntimeException re) {
+            ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(
+              HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR));
+            return ABORTED | READONLY;
         }
-        revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
-          propertyNames.toArray(String[]::new));
-        db.session().merge(request);
-        db.session().flush();
-        ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-        return PREPARED | READONLY;
     }
 
     /**
@@ -887,5 +955,13 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         return db.session()
                 .createQuery(countCQ)
                 .getSingleResult();
+    }
+
+    // Tiny payload DTO
+    public static final class MessageBody {
+        private final String message;
+        private MessageBody(String message) { this.message = message; }
+        public String getMessage() { return message; }
+        public static MessageBody of(String key) { return new MessageBody(key); }
     }
 }

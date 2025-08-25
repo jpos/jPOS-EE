@@ -23,6 +23,7 @@ import groovy.transform.Field
 
 import org.jpos.transaction.Context
 import org.jpos.util.Caller
+import org.jpos.core.Configuration
 
 
 // ### Groovy initialization to spice up Context object
@@ -46,6 +47,17 @@ ctxmc.putAt= { Object key, Object val ->
     delegate.put(key, val)
 }
 
+// ### Groovy initialization to spice up Configuration.
+
+def cfgmc = Configuration.metaClass
+
+cfgmc.getProperty = { String name ->
+    return delegate.get(name)
+}
+
+cfgmc.getAt= { Object key ->
+    return delegate.get(key)
+}
 
 // ### Groovy alternatives for org.jpos.util.Caller#info() methods
 

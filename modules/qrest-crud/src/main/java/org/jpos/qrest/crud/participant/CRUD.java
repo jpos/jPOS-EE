@@ -792,17 +792,29 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
      * @param queryParams the map of query parameters.
      * @param predicates the list to which the predicate should be added.
      */
-    protected void processQueryParamWithArray(
-      String paramName,
-      Function<String[], jakarta.persistence.criteria.Predicate> predicateFunction,
-      Map<String, List<String>> queryParams,
-      List<jakarta.persistence.criteria.Predicate> predicates) {
-        List<String> valuesList = queryParams.get(paramName);
-        if (valuesList != null && !valuesList.isEmpty()) {
-            String[] values = ISOUtil.commaDecode(valuesList.getFirst());
-            jakarta.persistence.criteria.Predicate pred = predicateFunction.apply(values);
-            predicates.add(pred);
+    protected void processQueryParamWithArray (String paramName, Function<String[], Predicate> predicateFunction,
+      Map<String, List<String>> queryParams, List<Predicate> predicates) {
+        if (queryParams == null || !queryParams.containsKey(paramName))
+            return;
+        List<String> raw = queryParams.get(paramName);
+        List<String> tokens = new ArrayList<>();
+        if (raw == null || raw.isEmpty()) {
+            // ?param  or parser returned no entries → treat as one empty token
+            tokens.add("");
+        } else {
+            for (String s : raw) {
+                // split with -1 to KEEP empty elements (leading/trailing commas)
+                String[] parts = (s == null ? "" : s).split(",", -1);
+                Collections.addAll(tokens, parts);
+            }
+            // If all formatted to empties, keep one empty so callers can interpret "NULL"
+            boolean anyNonEmpty = tokens.stream().anyMatch(t -> t != null && !t.isEmpty());
+            if (!anyNonEmpty) {
+                tokens.clear();
+                tokens.add("");
+            }
         }
+        predicates.add(predicateFunction.apply(tokens.toArray(String[]::new)));
     }
 
     /**

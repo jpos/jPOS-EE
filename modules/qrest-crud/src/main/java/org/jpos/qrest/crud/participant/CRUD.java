@@ -886,7 +886,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
      * @param entity the entity instance whose revision reference is needed
      * @return a string representing the revision reference (typically the entity's ID)
      */
-    protected String getRevisionRef(T entity) {
+    protected String getRevisionRef(T entity) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         return getId(entity).toString();
     }
 

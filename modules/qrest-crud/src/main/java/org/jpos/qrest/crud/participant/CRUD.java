@@ -446,7 +446,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 ctx.log("HasID before persist: " + hasId + " '" + getId(request) + "'");
                 db.session().persist(request);
                 db.session().flush();
-                revisionCreated(db,author,request.getClass().getSimpleName(),getId(request).toString());
+                revisionCreated(db,author,request.getClass().getSimpleName(),getRevisionRef(request));
                 ctx.put(PERSISTED_ENTITY, request);
                 ctx.put(TEMP_RESPONSE, new Response(HttpResponseStatus.CREATED, toDTO(ctx, request)));
                 return PREPARED | READONLY;
@@ -508,7 +508,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             List<String> propertyNames = new ArrayList<>();
             for (Field field : request.getClass().getDeclaredFields())
                 propertyNames.add(field.getName());
-            revisionChanged(db,author, request.getClass().getSimpleName(), getId(request).toString(), oldObj, request,
+            revisionChanged(db,author, request.getClass().getSimpleName(), getRevisionRef(request), oldObj, request,
               propertyNames.toArray(String[]::new));
             db.session().merge(request);
             db.session().flush();
@@ -675,7 +675,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 db.session().remove(persistedEntity);
                 try {
                     db.session().flush();
-                    revisionRemoved(db, author, persistedEntity.getClass().getSimpleName(), getId(persistedEntity).toString());
+                    revisionRemoved(db, author, persistedEntity.getClass().getSimpleName(), getRevisionRef(persistedEntity));
                     ctx.put(TEMP_RESPONSE,
                       new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NO_CONTENT));
                     return PREPARED | READONLY;
@@ -876,6 +876,19 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
         mgr.createRevision(author,entityName + "." + ref, entityName + " deleted");
     }
 
+    /**
+     * Returns a string representation of the entity's revision reference.
+     * <p>
+     * By default, this uses the entity's ID as the revision reference.
+     * Subclasses may override this method to provide a more meaningful or
+     * composite reference for revision tracking.
+     *
+     * @param entity the entity instance whose revision reference is needed
+     * @return a string representing the revision reference (typically the entity's ID)
+     */
+    protected String getRevisionRef(T entity) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        return getId(entity).toString();
+    }
 
     /**
      * Creates a predicate function based on the given parameter name.

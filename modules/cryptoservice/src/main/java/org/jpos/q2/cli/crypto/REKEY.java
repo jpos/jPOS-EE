@@ -42,8 +42,15 @@ public class REKEY implements CLICommand {
             cli.println("'crypto-service' not registered");
             return;
         }
-        for (int i=1; i<args.length; i++) {
-            cs.rekey(UUID.fromString(args[i]));
+        int len = args.length - 1;
+        for (int i=1; i<=len; i++) {
+            try {
+                if (len > 1) //batch
+                    cli.println(String.format("rekey %d/%d", i, len));
+                cs.rekey(UUID.fromString(args[i]));
+            } catch (Exception e) {
+                cli.println (String.format("REKEY ERROR '%s' processing key '%s'", e.getMessage(), args[i]));
+            }
         }
     }
 

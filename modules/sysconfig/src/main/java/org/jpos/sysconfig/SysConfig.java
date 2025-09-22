@@ -27,9 +27,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.*;
-import org.jpos.ee.usertype.TagsType;
 import org.jpos.ee.Cloneable;
-import org.jpos.util.Tags;
 
 @Entity
 @Table(name = "sysconfig")
@@ -43,6 +41,14 @@ public class SysConfig extends Cloneable implements Serializable {
 
     @Column(length=8000)
     private String value;
+
+    @Column(length=64)
+    private String readPerm;
+
+    @Column(length=64)
+    private String writePerm;
+
+
     public SysConfig() {
         super();
     }
@@ -52,6 +58,13 @@ public class SysConfig extends Cloneable implements Serializable {
     public SysConfig(String id, String value) {
         this.id = id;
         this.value = value;
+    }
+
+    public SysConfig(String id, String value, String readPerm, String writePerm) {
+        this.id = id;
+        this.value = value;
+        this.readPerm = readPerm;
+        this.writePerm = writePerm;
     }
 
     public String getId() {
@@ -69,6 +82,23 @@ public class SysConfig extends Cloneable implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
+
+    public String getReadPerm() {
+        return readPerm;
+    }
+
+    public void setReadPerm(String readPerm) {
+        this.readPerm = readPerm;
+    }
+
+    public String getWritePerm() {
+        return writePerm;
+    }
+
+    public void setWritePerm(String writePerm) {
+        this.writePerm = writePerm;
+    }
+
     @Override
     public String toString() {
         return "SysConfig{" +

@@ -18,6 +18,7 @@
 
 package org.jpos.sysconfig;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import org.hibernate.query.NativeQuery;
@@ -154,6 +155,9 @@ public class SysConfigManager extends DBManager<SysConfig> {
         return query.list().iterator();
     }
     public void put (String name, String value) {
+        put (name, value, null, null);
+    }
+    public void put (String name, String value, String readPerm, String writePerm) {
         SysConfig cfg;
         if (prefix != null)
             name = prefix + name;
@@ -172,6 +176,8 @@ public class SysConfigManager extends DBManager<SysConfig> {
                 cfg.setId (name);
                 saveIt = true;
             }
+            cfg.setReadPerm (readPerm);
+            cfg.setWritePerm (writePerm);
             cfg.setValue (value);
             if (saveIt)
                 db.session().persist (cfg);
@@ -181,6 +187,7 @@ public class SysConfigManager extends DBManager<SysConfig> {
             db.getLog().warn (e);
         }
     }
+
     public String get (String name) {
         return get (name, "");
     }
@@ -213,6 +220,13 @@ public class SysConfigManager extends DBManager<SysConfig> {
         String v = get (name);
         return v.length() == 0 ? def :
             (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes"));
+    }
+    public BigDecimal getBigDecimal (String name, BigDecimal def) {
+        String v = get (name);
+        return v != null ? new BigDecimal(v.trim()) : def;
+    }
+    public BigDecimal getBigDecimal (String name) {
+        return getBigDecimal (name, BigDecimal.ZERO);
     }
     public int getMaxIdLength() {
         String queryString = "select max(length(id)) as maxidlen from sysconfig";

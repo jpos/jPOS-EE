@@ -19,6 +19,7 @@
 package org.jpos.gl;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.*;
 import java.math.BigDecimal;
 import java.util.function.Consumer;
@@ -36,6 +37,7 @@ import org.hibernate.query.Query;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.hibernate.type.StandardBasicTypes;
 import org.jpos.ee.DB;
+import org.jpos.transaction.TxnId;
 import org.jpos.util.LogEvent;
 
 /**
@@ -52,7 +54,7 @@ public class GLSession {
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
     public static final BigDecimal Z    = new BigDecimal ("0");
 
-    private long SAFE_WINDOW = 1000L;
+    private long SAFE_WINDOW = 120L;
     private boolean ignoreBalanceCache = false;
     private boolean strictAccountCodes = true;
     private NativeDialect nativeDialect = NativeDialect.ORM;
@@ -2446,7 +2448,7 @@ public class GLSession {
           .orElse(0L);
     }
     private long getSafeMaxGLEntryId() {
-        return Math.max (getMaxGLEntryId()-SAFE_WINDOW, 0L);
+        return TxnId.create(Instant.now().minusSeconds(SAFE_WINDOW), 0, 0).id();
     }
     public void overrideSafeWindow (long l) {
         this.SAFE_WINDOW = l;

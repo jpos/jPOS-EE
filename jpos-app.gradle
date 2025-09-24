@@ -1,149 +1,150 @@
-String archiveJarName="${project.name}-${project.version}.jar"
-String archiveWarName="${project.name}-${project.version}.war"
-String installDir=file("${project.buildDir}/install/${project.name}")
+// -----------------------------------------
+// LAZY CONSTANTS / SETTINGS
+// -----------------------------------------
+def target = (project.findProperty('target') ?: 'devel').toString()
 
-project.ext {
-    def target = project.hasProperty('target') ? target : 'devel'
-    targetConfiguration = configure(new Properties()) {
-        put('jvm.options', '')                                  // empty default, so ReplaceTokens has something to work with
-        put('target', target)
-        jarname = archiveJarName
-        warname = archiveWarName
-        buildTimestamp = new Date().format("yyyy-MM-dd HH:mm:ss z")
-        rootProjectDir = this.rootProject.projectDir.toString()
-    }
+// Build the token map once (strings only), OK for config cache.
+def targetConfiguration = new Properties().with {
+    put('jvm.options', '') // default so ReplaceTokens always has a key.
+    put('target', target)
+    put('jarname', "${project.name}-${project.version}.jar")
+    put('warname', "${project.name}-${project.version}.war")
+    put('buildTimestamp', new Date().format("yyyy-MM-dd HH:mm:ss z"))
+    put('rootProjectDir', rootProject.projectDir.toString())
+    it
+}
 
-    File cfgFile = file("${rootProject.projectDir}/${target}.properties")
-    if (cfgFile.exists()) {
-        cfgFile.withInputStream{
-            targetConfiguration.load(it)
-        }
+def cfgFile = rootProject.file("${target}.properties")
+if (cfgFile.exists()) {
+    cfgFile.withInputStream { targetConfiguration.load(it) }
+}
+
+// Derived providers
+def installDirProv = layout.buildDirectory.dir("install/${project.name}")
+def jarNameProv    = providers.provider {
+    (targetConfiguration.get('jarname') ?: "${project.name}-${project.version}.jar").toString()
+}
+def classPathAttr = configurations.runtimeClasspath.elements.map { fileSet ->
+    fileSet.collect { "lib/${it.asFile.name}" }.join(' ')
+}
+
+// -----------------------------------------
+// JAR TASK (lazy manifest + filename)
+// -----------------------------------------
+tasks.named('jar', Jar).configure {
+    // Make the archive name explicit; avoids later renames that may capture a Project.
+    archiveFileName.set(jarNameProv)
+
+    // Declare runtime CP as an input so Class-Path is tracked properly.
+    inputs.files(configurations.runtimeClasspath)
+
+    manifest {
+        attributes(
+            'Implementation-Title': providers.provider { project.name },
+            'Implementation-Version': providers.provider { project.version.toString() },
+            'Main-Class'          : 'org.jpos.q2.Q2',
+            // Provider<String> is supported here; stays lazy/config-cache safe.
+            'Class-Path'          : classPathAttr
+        )
     }
 }
 
-// We build a CopySpec for consistency
-def jposCopySpec = copySpec {
-    from(file("src/dist")) {
-        exclude 'cfg/*.lmk'
-        exclude 'cfg/*.jks'
-        exclude 'cfg/*.ks'
-        exclude '**/*.jpg'
-        exclude '**/*.gif'
-        exclude '**/*.png'
-        exclude '**/*.pdf'
-        exclude '**/*.ico'
-        exclude '**/*.war'
-        exclude '**/*.dat'
-        exclude '**/*.ser'
-        exclude '**/*.eot'
-        exclude '**/*.svg'
-        exclude '**/*.ttf'
-        exclude '**/*.woff'
-        exclude '**/*.woff2'
-        filter(
-            org.apache.tools.ant.filters.ReplaceTokens,
-            tokens: targetConfiguration
-        )
+// -----------------------------------------
+// COPY SPEC (no direct Task/Project capture)
+// -----------------------------------------
+def jposCopySpec = objects.copySpec {
+    // Text resources w/ token filtering
+    from(layout.projectDirectory.dir("src/dist")) {
+        exclude 'cfg/*.lmk', 'cfg/*.jks', 'cfg/*.ks',
+                '**/*.jpg', '**/*.gif', '**/*.png', '**/*.pdf', '**/*.ico',
+                '**/*.war', '**/*.dat', '**/*.ser',
+                '**/*.eot', '**/*.svg', '**/*.ttf', '**/*.woff', '**/*.woff2'
+        filter(org.apache.tools.ant.filters.ReplaceTokens, [tokens: targetConfiguration])
     }
-    from(file("src/dist")) {
-        include 'cfg/*.lmk'
-        include 'cfg/*.jks'
-        include 'cfg/*.ks'
-        include '**/*.jpg'
-        include '**/*.gif'
-        include '**/*.png'
-        include '**/*.pdf'
-        include '**/*.ico'
-        include '**/*.war'
-        include '**/*.dat'
-        include '**/*.ser'
-        include '**/*.eot'
-        include '**/*.svg'
-        include '**/*.ttf'
-        include '**/*.woff'
-        include '**/*.woff2'
+    // Binary resources (no filtering)
+    from(layout.projectDirectory.dir("src/dist")) {
+        include 'cfg/*.lmk', 'cfg/*.jks', 'cfg/*.ks',
+                '**/*.jpg', '**/*.gif', '**/*.png', '**/*.pdf', '**/*.ico',
+                '**/*.war', '**/*.dat', '**/*.ser',
+                '**/*.eot', '**/*.svg', '**/*.ttf', '**/*.woff', '**/*.woff2'
     }
-    from(jar) {
-        rename archiveJarName, "${targetConfiguration.jarname}"
-    }
-    into("lib") {
+
+    // Pull the jar output via TaskProvider (no direct Task/Project capture, no rename needed)
+    from(tasks.named('jar'))
+
+    // Runtime libs
+    into('lib') {
         from(configurations.runtimeClasspath) {
-            exclude "servlet-api*.jar"    // dependency hack
+            exclude "servlet-api*.jar" // dependency hack
         }
     }
-    into("webapps") {
-        from(file("build/libs")) {
+
+    // Webapps from build/libs
+    into('webapps') {
+        from(layout.buildDirectory.dir('libs')) {
             include '*.war'
         }
     }
 }
 
-// Create the jar's manifest
-jar.manifest {
-    attributes(
-        'Implementation-Title': project.name,
-        'Implementation-Version': project.version,
-        'Main-Class': 'org.jpos.q2.Q2',
-        'Class-Path': configurations.runtimeClasspath.files.collect { "lib/" + it.getName() }.join(' ')
-    )
-}
+// -----------------------------------------
+// processResources (track tokens as inputs)
+// -----------------------------------------
+tasks.named('processResources', ProcessResources).configure {
+    // Make token map part of the task’s inputs so CC/UP-TO-DATE is correct.
+    inputs.properties(targetConfiguration as Map<String, ?>)
 
-
-processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from(sourceSets.main.resources.srcDirs) {
-        include '**/*.properties'
-        include '**/*.xml'
-        include '**/*.cfg'
-        include '**/*.asc'
-        filter(
-            org.apache.tools.ant.filters.ReplaceTokens,
-            tokens: targetConfiguration
-        )
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        include '**/*.properties', '**/*.xml', '**/*.cfg', '**/*.asc'
+        filter(org.apache.tools.ant.filters.ReplaceTokens, [tokens: targetConfiguration])
     }
 }
 
-
-//--------------------------------------------------
-// TASKS
-//--------------------------------------------------
-
-task version (type: JavaExec, dependsOn: classes) {
+// -----------------------------------------
+// TASKS (registered, lazy, CC friendly)
+// -----------------------------------------
+tasks.register('version', JavaExec) {
     description = "Shows jPOS Version"
-    main = 'org.jpos.q2.Q2'
-    args = ['--version']
-    classpath configurations.runtimeClasspath
+    classpath(sourceSets.main.runtimeClasspath)
+    mainClass.set('org.jpos.q2.Q2')
+    args('--version')
 }
 
-task dist(type: Tar) {
-    description 'Creates tar distribution'
-    into "$project.name-$archiveVersion"
-    with jposCopySpec
+tasks.register('dist', Tar) {
+    description = 'Creates tar distribution'
     compression = Compression.GZIP
-    archiveExtension = "tar.gz"
+    archiveExtension.set('tar.gz')
+    into("${project.name}-${project.version}")
+    with(jposCopySpec)
 }
 
-task installApp(type: Sync) {
-    description 'Installs jPOS based application'
-    into { installDir }
-    with jposCopySpec
+tasks.register('installApp', Sync) {
+    description = 'Installs jPOS based application'
+    into(installDirProv)
+    with(jposCopySpec)
 }
 
-task wrapper( type: Wrapper ) {
+tasks.register('wrapper', Wrapper) {
     description = "Generate gradlew[.bat]"
-    gradleVersion = '6.0.1'
+    // use your current Gradle (adjust if you standardize elsewhere)
+    gradleVersion = '8.14.3'
+    distributionType = Wrapper.DistributionType.BIN
 }
 
-task installResources(dependsOn: 'classes', type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'org.jpos.q2.install.Install'
-    args = ["--outputDir=src/dist"]
+tasks.register('installResources', JavaExec) {
+    dependsOn('classes')
+    classpath(sourceSets.main.runtimeClasspath)
+    mainClass.set('org.jpos.q2.install.Install')
+    args("--outputDir=src/dist")
 }
 
-task viewTests (description: 'Open Test Reports') {
+tasks.register('viewTests') {
+    description = 'Open Test Reports'
     doLast {
-        Class.forName("java.awt.Desktop").newInstance().browse(
-            new File("${buildDir}/reports/tests/test", 'index.html').toURI())
+        java.awt.Desktop.desktop.browse(
+            layout.buildDirectory.file("reports/tests/test/index.html").get().asFile.toURI()
+        )
     }
 }
 

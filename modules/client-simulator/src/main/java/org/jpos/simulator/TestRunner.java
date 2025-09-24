@@ -318,6 +318,8 @@ public class TestRunner
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }
+        expected.setPackager(null);
+        c.setPackager(null);
         ISOPackager p = getDefaultPackager();
         expected.setPackager(p);
         c.setPackager(p);

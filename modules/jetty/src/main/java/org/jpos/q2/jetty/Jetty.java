@@ -18,15 +18,20 @@
 
 package org.jpos.q2.jetty;
 
-import java.io.FileInputStream;
+import java.nio.file.Path;
 import java.util.StringTokenizer;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.core.annotation.Config;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.security.SensitiveString;
 
@@ -35,24 +40,37 @@ public class Jetty extends QBeanSupport implements JettyMBean {
     private Server server;
     private SensitiveString keystorePassword;
 
+    @Config("dump-at-startup") boolean dumpAtStartUp;
+
     @Override
     public void initService() throws Exception {
+        System.setProperty("jetty.base", System.getProperty("user.dir"));
         server = new Server();
+        server.setDumpAfterStart(dumpAtStartUp);
+
+        ResourceFactory rf = ResourceFactory.of(server); // ties resource lifecycle to the Server
         StringTokenizer st = new StringTokenizer(config, ", ");
         while (st.hasMoreElements()) {
-            FileInputStream fis = new FileInputStream(st.nextToken());
-            @SuppressWarnings("deprecation")
-            XmlConfiguration xml = new XmlConfiguration(fis);
+            String path = st.nextToken();
+            Resource res = rf.newResource(Path.of(path));   // or rf.newResource(path) for URL/filename
+            XmlConfiguration xml = new XmlConfiguration(res);
             xml.configure(server);
-            if (keystorePassword != null && 
-                    keystorePassword.get() != null && 
-                    keystorePassword.get().trim().length() > 0) {                    
-                for (Connector connector : server.getConnectors()) {
-                    SslConnectionFactory connFactory = connector.getConnectionFactory(SslConnectionFactory.class);
-                    if (connFactory != null) {
-                        connFactory.getSslContextFactory().setKeyStorePassword(keystorePassword.get());
-                    }
-                }    
+        }
+
+        // If a keystore password is provided, push it into any SSL connection factories.
+        if (keystorePassword != null && keystorePassword.get() != null && !keystorePassword.get().trim().isEmpty()) {
+            for (Connector connector : server.getConnectors()) {
+                if (connector instanceof ServerConnector sc) {
+                    sc.getConnectionFactories().stream()
+                      .filter(cf -> cf instanceof SslConnectionFactory)
+                      .map(cf -> (SslConnectionFactory) cf)
+                      .forEach(cf -> {
+                          SslContextFactory.Server ssl = cf.getSslContextFactory();
+                          if (ssl != null) {
+                              ssl.setKeyStorePassword(keystorePassword.get());
+                          }
+                      });
+                }
             }
         }
     }
@@ -62,8 +80,7 @@ public class Jetty extends QBeanSupport implements JettyMBean {
         super.setConfiguration(cfg);
         try {
             keystorePassword = new SensitiveString(cfg.get("keystorePassword"));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }
@@ -75,6 +92,7 @@ public class Jetty extends QBeanSupport implements JettyMBean {
 
     @Override
     public void stopService() throws Exception {
+        // stop() is fine; destroy() is optional if you want to force bean teardown
         server.stop();
     }
 

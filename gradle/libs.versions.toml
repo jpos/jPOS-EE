@@ -29,6 +29,7 @@ javaxCache = '1.1.1'
 ehCache = '3.10.8'
 hibernateValidator = '6.2.1.Final'
 kafkaClients = '4.0.0'
+jetty = '12.0.20'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -70,6 +71,12 @@ ehCache = { module = 'org.ehcache:ehcache', version.ref = 'ehCache' }
 jcache = { module = 'org.hibernate:hibernate-jcache', version.ref = 'hibernate' }
 hibernateValidator = { module = 'org.hibernate:hibernate-validator', version.ref = 'hibernateValidator' }
 kafkaClients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafkaClients' }
+jetty = { module = 'org.eclipse.jetty:jetty-server', version.ref = 'jetty' }
+jetty-server  = { module = "org.eclipse.jetty:jetty-server",  version.ref = "jetty" }
+jetty-xml     = { module = "org.eclipse.jetty:jetty-xml",     version.ref = "jetty" }
+jetty-rewrite = { module = "org.eclipse.jetty:jetty-rewrite", version.ref = "jetty" }
+jetty-deploy  = { module = "org.eclipse.jetty:jetty-deploy",  version.ref = "jetty" }
+jetty-ee10-webapp = { module = "org.eclipse.jetty.ee10:jetty-ee10-webapp", version.ref = "jetty" }
 
 [bundles]
 jackson = [

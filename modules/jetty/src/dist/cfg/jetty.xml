@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://jetty.org/configure.dtd">
+
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+  <!-- HTTP config -->
+  <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Set name="sendServerVersion">true</Set>
+    <Set name="sendDateHeader">false</Set>
+  </New>
+
+  <!-- HTTP :8080 -->
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.ServerConnector">
+        <Arg name="server"><Ref refid="Server"/></Arg>
+        <Arg name="factories">
+          <Array type="org.eclipse.jetty.server.ConnectionFactory">
+            <Item>
+              <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                <Arg name="config"><Ref refid="httpConfig"/></Arg>
+              </New>
+            </Item>
+          </Array>
+        </Arg>
+        <Set name="port">8080</Set>
+        <Set name="idleTimeout">30000</Set>
+      </New>
+    </Arg>
+  </Call>
+
+  <!-- TLS + HTTPS :8443 -->
+  <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
+    <Set name="keyStorePath"><Property name="jetty.base" default="."/>/cfg/keystore.jks</Set>
+    <Set name="keyStoreType"><Property name="jetty.keystore.type" default="JKS"/></Set>
+    <Set name="keyStorePassword"><Property name="jetty.keystore.password" default="changeit"/></Set>
+    <Set name="excludeProtocols">
+      <Array type="java.lang.String"><Item>TLSv1</Item><Item>TLSv1.1</Item><Item>SSLv3</Item></Array>
+    </Set>
+  </New>
+
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.ServerConnector">
+        <Arg name="server"><Ref refid="Server"/></Arg>
+        <Arg name="factories">
+          <Array type="org.eclipse.jetty.server.ConnectionFactory">
+            <Item>
+              <New class="org.eclipse.jetty.server.SslConnectionFactory">
+                <Arg name="sslContextFactory"><Ref refid="sslContextFactory"/></Arg>
+                <Arg name="next">http/1.1</Arg>
+              </New>
+            </Item>
+            <Item>
+              <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                <Arg name="config"><Ref refid="httpConfig"/></Arg>
+              </New>
+            </Item>
+          </Array>
+        </Arg>
+        <Set name="port">8443</Set>
+        <Set name="idleTimeout">30000</Set>
+      </New>
+    </Arg>
+  </Call>
+
+  <!-- Static "/" from $JETTY_BASE/webapps/root -->
+  <New id="StaticRoot" class="org.eclipse.jetty.server.handler.ResourceHandler">
+    <Set name="baseResourceAsString">
+      <SystemProperty name="jetty.base" default="${user.dir}"/>/webapps/root
+    </Set>
+    <Set name="dirAllowed">false</Set>
+    <Set name="welcomeFiles"><Array type="java.lang.String"><Item>index.html</Item></Array></Set>
+  </New>
+  <New id="StaticContext" class="org.eclipse.jetty.server.handler.ContextHandler">
+    <Set name="contextPath">/</Set>
+    <Set name="handler"><Ref refid="StaticRoot"/></Set>
+  </New>
+  <Ref refid="StaticContext">
+    <Call name="addAliasCheck">
+      <Arg>
+        <New class="org.eclipse.jetty.server.AllowedResourceAliasChecker">
+          <!-- must pass the ContextHandler -->
+          <Arg><Ref refid="StaticContext"/></Arg>
+        </New>
+      </Arg>
+    </Call>
+  </Ref>
+
+
+  <!-- Contexts where deployed apps attach -->
+  <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+
+  <!-- Top-level handler -->
+  <Set name="handler">
+    <New class="org.eclipse.jetty.server.Handler$Sequence">
+      <Set name="handlers">
+        <Array type="org.eclipse.jetty.server.Handler">
+          <Item><Ref refid="StaticContext"/></Item>
+          <Item><Ref refid="Contexts"/></Item>
+          <Item><New class="org.eclipse.jetty.server.handler.DefaultHandler"/></Item>
+        </Array>
+      </Set>
+    </New>
+  </Set>
+
+  <Set name="stopAtShutdown">true</Set>
+  <Set name="stopTimeout">5000</Set>
+</Configure>
+

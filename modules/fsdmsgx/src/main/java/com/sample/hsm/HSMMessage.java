@@ -56,7 +56,7 @@ public class HSMMessage {
 		optionalGrp1.add(reserved1);
 		optionalGrp1.add(keySchemeLMK);
 		optionalGrp1.add(keyCheckValue);
-		LookAheadPackager determineGrp1 = new LookAheadPackager("LAGRP1", 0, new Byte((byte)';') ,optionalGrp1, null, new String[]{"key-scheme-lmk","key-check-value-len"}, null);
+		LookAheadPackager determineGrp1 = new LookAheadPackager("LAGRP1", 0, Byte.valueOf((byte)';') ,optionalGrp1, null, new String[]{"key-scheme-lmk","key-check-value-len"}, null);
 		
 		FSDMsgX optionalGrp2 = new FSDMsgX("OptionalGroup2");
 		
@@ -64,7 +64,7 @@ public class HSMMessage {
 		AFSDFieldPackager percent = new FixedFieldPackager("delimiter-2","%",AsciiInterpreter.INSTANCE);
 		optionalGrp2.add(percent);
 		optionalGrp2.add(lmkid);
-		LookAheadPackager determineGrp2 = new LookAheadPackager("LAGRP2", 0, new Byte((byte)'%') ,optionalGrp2, null, new String[]{"LMK-ID"}, null);
+		LookAheadPackager determineGrp2 = new LookAheadPackager("LAGRP2", 0, Byte.valueOf((byte)'%') ,optionalGrp2, null, new String[]{"LMK-ID"}, null);
 		
 		
 		FSDMsgX container = new FSDMsgX("TranslateZPKReq-FA");

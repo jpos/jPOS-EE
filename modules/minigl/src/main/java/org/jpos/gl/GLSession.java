@@ -1532,6 +1532,7 @@ public class GLSession {
                 return getBalancesORM(journal, acct, date, inclusive, layers, maxId);
         }
 
+        db.session().flush();
         checkPermission(GLPermission.READ, journal);
         BigDecimal[] balance = {ZERO, ZERO};
         select.append(", transacc as txn\n");

@@ -46,7 +46,8 @@ public class Jetty extends QBeanSupport implements JettyMBean {
     public void initService() throws Exception {
         System.setProperty("jetty.base", System.getProperty("user.dir"));
         server = new Server();
-        server.setDumpAfterStart(dumpAtStartUp);
+        if (dumpAtStartUp)
+            server.setDumpAfterStart(true);
 
         ResourceFactory rf = ResourceFactory.of(server); // ties resource lifecycle to the Server
         StringTokenizer st = new StringTokenizer(config, ", ");

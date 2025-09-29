@@ -31,7 +31,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
-import org.jpos.core.annotation.Config;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.security.SensitiveString;
 
@@ -40,15 +39,10 @@ public class Jetty extends QBeanSupport implements JettyMBean {
     private Server server;
     private SensitiveString keystorePassword;
 
-    @Config("dump-at-startup") boolean dumpAtStartUp;
-
     @Override
     public void initService() throws Exception {
         System.setProperty("jetty.base", System.getProperty("user.dir"));
         server = new Server();
-        if (dumpAtStartUp)
-            server.setDumpAfterStart(true);
-
         ResourceFactory rf = ResourceFactory.of(server); // ties resource lifecycle to the Server
         StringTokenizer st = new StringTokenizer(config, ", ");
         while (st.hasMoreElements()) {

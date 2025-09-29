@@ -103,23 +103,28 @@ public class SysConfigManager extends DBManager<SysConfig> {
         return false;
     }
 
-    public SysConfig[] getAll  (String queryString) {
-        SysConfig[] values;
+    public SysConfig[] getAll(String queryString) {
         try {
-            if (prefix != null)
-                queryString = prefix + queryString;
-            Query<SysConfig> query = db.session().createQuery (
-                "from org.jpos.sysconfig.SysConfig sysconfig in class org.jpos.sysconfig.SysConfig where sysconfig.id like :queryString order by sysconfig.id", SysConfig.class
-            );
-            query.setParameter ("queryString", queryString);
-            List<SysConfig> l = query.list();
-            values = l.toArray(new SysConfig[0]);
+            String pattern = (prefix != null ? prefix : "") + queryString;
+            pattern = pattern
+              .replace("\\", "\\\\")
+              .replace("%", "\\%")
+              .replace("_", "\\_") + "%";
+
+            Query<SysConfig> q = db.session().createQuery("""
+                select s
+                from org.jpos.sysconfig.SysConfig s
+                where s.id like :pattern escape '\\'
+                order by s.id
+            """, SysConfig.class);
+            q.setParameter("pattern", pattern);
+            return q.list().toArray(new SysConfig[0]);
         } catch (HibernateException e) {
-            db.getLog().warn (e);
-            values = new SysConfig[0];
+            db.getLog().warn(e);
+            return new SysConfig[0];
         }
-        return values;
     }
+
     public List<SysConfig> getAll () {
         HashMap<String,Boolean> orders = new HashMap<>();
         orders.put("id",true);

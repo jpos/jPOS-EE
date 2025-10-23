@@ -1,11 +1,27 @@
 description = 'jPOS-EE :: MiniGL Module'
 
+
+// Decide driver at configuration time (default: h2)
+def dbDriver = (project.findProperty('test.minigl_db_driver')
+        ?: System.getProperty('test.minigl_db_driver')
+        ?: 'h2').toString()
+
+logger.lifecycle("MiniGL: tests will use DB driver: ${dbDriver}")
+
 dependencies {
     api project(':modules:logback')
     api project(':modules:dbsupport')
     api libs.commonsLang3
-    testImplementation project(':modules:db-h2')
     testImplementation project(':modules:db-postgresql')
+    testImplementation project(':modules:db-h2')
+
+    // Conditional test DB dependencies
+    if (dbDriver.equalsIgnoreCase('postgres') || dbDriver.equalsIgnoreCase('local')) {
+        testImplementation project(':modules:db-postgresql')
+        testImplementation testlibs.testcontainers.postgresql
+    } else {
+        testImplementation project(':modules:db-h2')
+    }
     testImplementation testlibs.junit
     testImplementation testlibs.testcontainers.postgresql
 }

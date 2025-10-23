@@ -36,20 +36,26 @@ public class MoveTest extends TestBase {
         gls.post (j, txn);
         tx.commit();
 
+
+        tx = gls.beginTransaction();
         FinalAccount cashUS = gls.getFinalAccount ("TestChart", "111");
         BigDecimal balance_j = gls.getBalance (j, cashUS);
         BigDecimal balance_h = gls.getBalance (h, cashUS);
         BigDecimal amount = new BigDecimal ("1000.00");
+        tx.commit();
+
         tx = gls.beginTransaction();
         gls.move (txn, h);
         tx.commit();
 
+        tx = gls.beginTransaction();
         assertEquals (
             balance_j.subtract(amount), gls.getBalance (j, cashUS)
         );
         assertEquals (
             balance_h.add(amount), gls.getBalance (h, cashUS)
         );
+        tx.commit();
     }
     private GLTransaction createTransaction (String desc) throws Exception {
         GLTransaction txn = new GLTransaction (desc);

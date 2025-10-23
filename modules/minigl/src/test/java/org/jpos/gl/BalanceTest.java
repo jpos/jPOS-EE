@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.hibernate.Transaction;
 import org.jpos.gl.tools.Export;
-import org.jpos.util.LogEvent;
 import org.junit.jupiter.api.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -112,68 +111,84 @@ public class BalanceTest extends TestBase {
     @Test
     @Order(9)
     public void testAccountDetailCashUS() throws Exception {
-        AccountDetail detail = gls.getAccountDetail (
-            tj, cashUS, 
-            Util.parseDate ("20050101"),
-            Util.parseDate ("20050131"),
-            new short[] { 0 }
-        );
-        assertEquals (3, detail.size());
-        assertEquals (
-            new BigDecimal("0.00"),
-            detail.getInitialBalance()
-        );
-        assertEquals (
-            new BigDecimal("25000.00"),
-            detail.getFinalBalance()
-        );
+        var tx = gls.beginTransaction();
+        try {
+            AccountDetail detail = gls.getAccountDetail(
+              tj, cashUS,
+              Util.parseDate("20050101"),
+              Util.parseDate("20050131"),
+              new short[]{0}
+            );
+            assertEquals(3, detail.size());
+            assertEquals(
+              new BigDecimal("0.00"),
+              detail.getInitialBalance()
+            );
+            assertEquals(
+              new BigDecimal("25000.00"),
+              detail.getFinalBalance()
+            );
+        } finally {
+            tx.commit();
+        }
     }
+
     @Test
     @Order(10)
     public void testAccountDetailCashPesos() throws Exception {
-        AccountDetail detail = gls.getAccountDetail (
-            tj, cashPesos, 
-            Util.parseDate ("20050101"),
-            Util.parseDate ("20050131"),
-            new short[] { 858 }
-        );
-        assertEquals (1, detail.size());
-        assertEquals (
-            new BigDecimal("0.00"),
-            detail.getInitialBalance()
-        );
-        assertEquals (
-            new BigDecimal("12500.00"),
-            detail.getFinalBalance()
-        );
-        detail = gls.getAccountDetail (
-            tj, cashPesos, 
-            Util.parseDate ("20050101"),
-            Util.parseDate ("20050131"),
-            new short[] { 0 }
-        );
-        assertEquals (
-            new BigDecimal("5000.00"),
-            detail.getFinalBalance()
-        );
+        var tx = gls.beginTransaction();
+        try {
+            AccountDetail detail = gls.getAccountDetail (
+                tj, cashPesos,
+                Util.parseDate ("20050101"),
+                Util.parseDate ("20050131"),
+                new short[] { 858 }
+            );
+            assertEquals (1, detail.size());
+            assertEquals (
+                new BigDecimal("0.00"),
+                detail.getInitialBalance()
+            );
+            assertEquals (
+                new BigDecimal("12500.00"),
+                detail.getFinalBalance()
+            );
+            detail = gls.getAccountDetail (
+                tj, cashPesos,
+                Util.parseDate ("20050101"),
+                Util.parseDate ("20050131"),
+                new short[] { 0 }
+            );
+            assertEquals (
+                new BigDecimal("5000.00"),
+                detail.getFinalBalance()
+            );
+        } finally {
+            tx.commit();
+        }
     }
 
     @Test
     @Order(11)
     public void testMiniStatementCashPesos() throws Exception {
-        AccountDetail detail = gls.getMiniStatement (
-                tj, cashPesos,
-                new short[] { 858 }, 1
-        );
-        assertEquals (1, detail.size());
-        assertEquals (
-                new BigDecimal("0.00"),
-                detail.getInitialBalance()
-        );
-        assertEquals (
-                new BigDecimal("12500.00"),
-                detail.getFinalBalance()
-        );
+        var tx = gls.beginTransaction();
+        try {
+            AccountDetail detail = gls.getMiniStatement(
+              tj, cashPesos,
+              new short[]{858}, 1
+            );
+            assertEquals(1, detail.size());
+            assertEquals(
+              new BigDecimal("0.00"),
+              detail.getInitialBalance()
+            );
+            assertEquals(
+              new BigDecimal("12500.00"),
+              detail.getFinalBalance()
+            );
+        } finally {
+            tx.commit();
+        }
     }
 
     @Test
@@ -220,37 +235,47 @@ public class BalanceTest extends TestBase {
     @Test
     @Order(24)
     public void testMinBalance() throws Exception {
-        assertEquals (new BigDecimal("0.00"), gls.getBalance(tj, tripFund, new short[] { 0 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getBalance(tj, tripFund, new short[] { 1 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getBalance(tj, tripFund, new short[] { 2 }));
+        var tx = gls.beginTransaction();
+        try {
+            assertEquals (new BigDecimal("0.00"), gls.getBalance(tj, tripFund, new short[] { 0 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getBalance(tj, tripFund, new short[] { 1 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getBalance(tj, tripFund, new short[] { 2 }));
 
-        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 2 }));
+            assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 2 }));
 
-        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }));
-        assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 0,1 }, new short[] { 0,2 }));
-        assertEquals (new BigDecimal("-48000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
+            assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }));
+            assertEquals (new BigDecimal("0.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0 }, new short[] { 0,1 }, new short[] { 0,2 }));
+            assertEquals (new BigDecimal("-48000.00"), gls.getMinBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
+        } finally {
+            tx.commit();
+        }
     }
 
     @Test
     @Order(25)
     public void testMaxBalance() throws Exception {
-        assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }));
-        assertEquals (new BigDecimal("-50000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 2 }));
+        var tx = gls.beginTransaction();
+        try {
+            assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }));
+            assertEquals (new BigDecimal("-50000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 2 }));
 
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
-        assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
-        assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,2 }, new short[] { 0 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0 }, new short[] { 1 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 1 }, new short[] { 2 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 0,2 }));
+            assertEquals (new BigDecimal("2000.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,1 }, new short[] { 1,2 }));
+            assertEquals (new BigDecimal("0.00"), gls.getMaxBalance(tj, tripFund, new short[] { 0,2 }, new short[] { 0 }));
+        } finally {
+            tx.commit();
+        }
     }
 
     // Formerly SummarizeTest
@@ -270,6 +295,7 @@ public class BalanceTest extends TestBase {
         tx.commit();
 
         // Fetch the balances
+        tx = gls.beginTransaction();
         BigDecimal A_0   = gls.getBalance (tj, A);
         BigDecimal A_858 = gls.getBalance (tj, A, (short) 858);
         BigDecimal B_0   = gls.getBalance (tj, B);
@@ -279,6 +305,7 @@ public class BalanceTest extends TestBase {
         System.out.println ("A(858): " + A_858);
         System.out.println ("  B(0): " + B_0);
         System.out.println ("B(858): " + B_858);
+        tx.commit();
 
         // Summarize
         tx = gls.beginTransaction();
@@ -286,18 +313,22 @@ public class BalanceTest extends TestBase {
         tx.commit();
 
         // Test post summarize balances
+        tx = gls.beginTransaction();
         System.out.println ("--- post-balances ---");
         System.out.println ("  A(0): " + gls.getBalance (tj, A));
         System.out.println ("A(858): " + gls.getBalance (tj, A, (short) 858));
         System.out.println ("  B(0): " + gls.getBalance (tj, B));
         System.out.println ("B(858): " + gls.getBalance (tj, B, (short) 858));
+        tx.commit();
 
         new Export().export(System.out);
 
+        tx = gls.beginTransaction();
         assertEquals (A_0, gls.getBalance (tj, A));
         assertEquals (A_858, gls.getBalance (tj, A, (short) 858));
         assertEquals (B_0, gls.getBalance (tj, B));
         assertEquals (B_858, gls.getBalance (tj, B, (short) 858));
+        tx.commit();
     }
     private GLTransaction createTransaction (String desc, Date postDate, FinalAccount A, FinalAccount B) throws Exception {
         GLTransaction txn = new GLTransaction (desc);
@@ -311,79 +342,88 @@ public class BalanceTest extends TestBase {
 
     // -----------------------------------------------------------------
     private void checkBalancesByPostDate () throws Exception {
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, cashUS, Util.parseDate ("20041231"))
-        );
-        assertEquals (
-            new BigDecimal("15000.00"),
-            gls.getBalance (tj, cashUS, Util.parseDate ("20050101"))
-        );
-        short[] zeroOnly = {0};
-        assertEquals (
-                new BigDecimal("25000.00"),
-                gls.getBalancesORM (tj, cashUS, Util.parseDate ("20050102"), true, zeroOnly, 0)[0]
-        );
-        assertEquals (
-            new BigDecimal("25000.00"),
-            gls.getBalance (tj, cashUS, Util.parseDate ("20050102"))
-        );
-        assertEquals (
-            new BigDecimal("12500.00"),
-            gls.getBalance (tj, cashPesos, Util.parseDate ("20050101"), (short) 858)
-        );
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, cashPesos, Util.parseDate ("20041231"), (short) 858)
-        );
+        var tx = gls.beginTransaction();
+        try {
+            assertEquals(
+              new BigDecimal("0.00"),
+              gls.getBalance(tj, cashUS, Util.parseDate("20041231"))
+            );
+            assertEquals(
+              new BigDecimal("15000.00"),
+              gls.getBalance(tj, cashUS, Util.parseDate("20050101"))
+            );
+            short[] zeroOnly = {0};
+            assertEquals(
+              new BigDecimal("25000.00"),
+              gls.getBalancesORM(tj, cashUS, Util.parseDate("20050102"), true, zeroOnly, 0)[0]
+            );
+            assertEquals(
+              new BigDecimal("25000.00"),
+              gls.getBalance(tj, cashUS, Util.parseDate("20050102"))
+            );
+            assertEquals(
+              new BigDecimal("12500.00"),
+              gls.getBalance(tj, cashPesos, Util.parseDate("20050101"), (short) 858)
+            );
+            assertEquals(
+              new BigDecimal("0.00"),
+              gls.getBalance(tj, cashPesos, Util.parseDate("20041231"), (short) 858)
+            );
 
-        // root account has to be always 0.00
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, root, Util.parseDate ("20050102"))
-        );
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, root, Util.parseDate ("20050101"))
-        );
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, root, Util.parseDate ("20041231"))
-        );
+            // root account has to be always 0.00
+            assertEquals(
+              new BigDecimal("0.00"),
+              gls.getBalance(tj, root, Util.parseDate("20050102"))
+            );
+            assertEquals(
+              new BigDecimal("0.00"),
+              gls.getBalance(tj, root, Util.parseDate("20050101"))
+            );
+            assertEquals(
+              new BigDecimal("0.00"),
+              gls.getBalance(tj, root, Util.parseDate("20041231"))
+            );
+        } finally {
+            tx.commit();
+        }
     }
     private void checkCurrentBalances() throws Exception {
-        assertEquals (
-            new BigDecimal ("25000.00"),
-            gls.getBalance (tj, cashUS)
-        );
-        assertEquals (
-            new BigDecimal("5000.00"),
-            gls.getBalance (tj, cashPesos)
-        );
-        assertEquals (
-            new BigDecimal("12500.00"),
-            gls.getBalance (tj, cashPesos, (short) 858)
-        );
-        assertEquals (
-            new BigDecimal("20000.00"),
-            gls.getBalance (tj, bobEquity)
-        );
-        assertEquals (
-            new BigDecimal("10000.00"),
-            gls.getBalance (tj, aliceEquity)
-        );
-        assertEquals (
-            new BigDecimal("50000.00"),
-            gls.getBalance (tj, assets)
-        );
-        assertEquals (
-            new BigDecimal("30000.00"),
-            gls.getBalance (tj, equity)
-        );
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, root)
-        );
+        var tx = gls.beginTransaction();
+        try {
+            assertEquals (
+                new BigDecimal ("25000.00"),
+                gls.getBalance (tj, cashUS)
+            );
+            assertEquals (
+                new BigDecimal("5000.00"),
+                gls.getBalance (tj, cashPesos)
+            );
+            assertEquals (
+                new BigDecimal("12500.00"),
+                gls.getBalance (tj, cashPesos, (short) 858)
+            );
+            assertEquals (
+                new BigDecimal("20000.00"),
+                gls.getBalance (tj, bobEquity)
+            );
+            assertEquals (
+                new BigDecimal("10000.00"),
+                gls.getBalance (tj, aliceEquity)
+            );
+            assertEquals (
+                new BigDecimal("50000.00"),
+                gls.getBalance (tj, assets)
+            );
+            assertEquals (
+                new BigDecimal("30000.00"),
+                gls.getBalance (tj, equity)
+            );
+            assertEquals (
+                new BigDecimal("0.00"),
+                gls.getBalance (tj, root)
+            );
+        } finally {
+            tx.commit();
+        }
     }
 }
-

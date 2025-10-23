@@ -49,13 +49,18 @@ public abstract class TestBase {
 
     @BeforeAll
     public static void setUpBase () throws Exception {
-        if (System.getProperty("test.minigl_db_driver").equals("postgres")) {
+        String driver = System.getProperty("test.minigl_db_driver");
+        if ("postgres".equals (driver)) {
             DB_CONTAINER.start();
             System.setProperty("db.connection", DB_CONTAINER.getJdbcUrl());
             System.setProperty("db.username", DB_CONTAINER.getUsername());
             System.setProperty("db.password", DB_CONTAINER.getPassword());
             System.setProperty("db.driver", "org.postgresql.Driver");
-            System.setProperty("db.create.enabled", "YES");
+        } else if ("local".equals (driver)) {
+            System.setProperty("db.connection", "jdbc:postgresql://localhost:5432/jposee");
+            System.setProperty("db.username", "jpos");
+            System.setProperty("db.password", "password");
+            System.setProperty("db.driver", "org.postgresql.Driver");
         } else {
             // nothing required - use H2
         }

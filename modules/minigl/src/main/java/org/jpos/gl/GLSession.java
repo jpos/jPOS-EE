@@ -1643,7 +1643,7 @@ public class GLSession {
         }
         return sb.toString();
     }
-    private String layersToString (short[] layers) {
+    public String layersToString (short[] layers) {
         return layersToString(layers, '.');
     }
 

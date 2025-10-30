@@ -803,15 +803,12 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             tokens.add("");
         } else {
             for (String s : raw) {
-                // split with -1 to KEEP empty elements (leading/trailing commas)
-                String[] parts = (s == null ? "" : s).split(",", -1);
-                Collections.addAll(tokens, parts);
-            }
-            // If all formatted to empties, keep one empty so callers can interpret "NULL"
-            boolean anyNonEmpty = tokens.stream().anyMatch(t -> t != null && !t.isEmpty());
-            if (!anyNonEmpty) {
-                tokens.clear();
-                tokens.add("");
+                String[] parts = ISOUtil.commaDecode(s);
+                if (parts.length == 0) {
+                    tokens.add("");
+                } else {
+                    Collections.addAll(tokens, parts);
+                }
             }
         }
         predicates.add(predicateFunction.apply(tokens.toArray(String[]::new)));

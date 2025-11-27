@@ -2514,4 +2514,21 @@ public class GLSession {
     public enum NativeDialect {
         MYSQL, POSTGRESQL, ORM
     }
+
+    public long countChildren(Account parent) {
+        return (Long) session().createQuery(
+            "select count(c.id) from Account c where c.parent = :parent")
+          .setParameter("parent", parent)
+          .uniqueResult();
+    }
+
+    public List<Account> findChildrenPage(Account parent, int offset, int limit) {
+        return session().createQuery(
+            "from Account c where c.parent = :parent order by c.code",
+            Account.class)
+          .setParameter("parent", parent)
+          .setFirstResult(offset)
+          .setMaxResults(limit)
+          .getResultList();
+    }
 }

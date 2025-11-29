@@ -2,7 +2,7 @@
 junit = "5.10.2"
 junitRuntime = "1.10.2"
 restAssured = '5.4.0'
-testcontainers = '1.20.3'
+testcontainers = '1.21.3'
 
 [libraries]
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }

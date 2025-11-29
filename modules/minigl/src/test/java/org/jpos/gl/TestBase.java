@@ -51,6 +51,7 @@ public abstract class TestBase {
     public static void setUpBase () throws Exception {
         String driver = System.getProperty("test.minigl_db_driver");
         if ("postgres".equals (driver)) {
+            System.setProperty("api.version", "1.44");
             DB_CONTAINER.start();
             System.setProperty("db.connection", DB_CONTAINER.getJdbcUrl());
             System.setProperty("db.username", DB_CONTAINER.getUsername());

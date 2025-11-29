@@ -32,9 +32,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
 public class SeqNoTest {
     private static final PostgreSQLContainer<?> DB_CONTAINER =
-      new PostgreSQLContainer<>("postgres:16")
+      new PostgreSQLContainer<>("postgres:17")
         .withDatabaseName("jposee")
         .withUsername("jpos")
         .withPassword("password")
@@ -42,6 +43,7 @@ public class SeqNoTest {
 
     @BeforeAll
     public static void setUp() throws DocumentException {
+        System.setProperty("api.version", "1.44");
         DB_CONTAINER.start();
         System.setProperty("db.connection", DB_CONTAINER.getJdbcUrl());
         System.setProperty("db.username", DB_CONTAINER.getUsername());

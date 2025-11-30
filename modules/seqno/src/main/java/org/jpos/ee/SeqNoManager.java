@@ -19,6 +19,8 @@
 package org.jpos.ee;
 
 import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jpos.iso.ISOUtil;
 import javax.persistence.LockTimeoutException;
 
@@ -176,21 +178,21 @@ public class SeqNoManager {
     }
 
     private SeqNo getOrCreate(String id, long initialValue) {
-        SeqNo seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
+        Session session = db.session();
+        SeqNo seq = session.get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
         if (seq == null) {
-            create (id, initialValue);
-            seq = db.session().get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
+            try {
+                seq = new SeqNo(id, initialValue);
+                session.persist(seq);
+                session.flush();
+            } catch (ConstraintViolationException e) {
+                // Another transaction created it first - re-fetch it
+                seq = session.get(SeqNo.class, id, LockMode.PESSIMISTIC_WRITE);
+            }
+        }
+        if (seq == null) {
+            throw new IllegalStateException("Unable to create SeqNo for id=" + id);
         }
         return seq;
-    }
-
-    private void create (String id, long initialValue) {
-        try (DB db = new DB()) {
-            db.open();
-            db.beginTransaction();
-            SeqNo seq = new SeqNo(id, initialValue);
-            db.session().save(seq);
-            db.commit();
-        } catch (Exception ignored) { }
     }
 }

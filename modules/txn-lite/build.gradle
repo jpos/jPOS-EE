@@ -1,0 +1,5 @@
+description = 'jPOS-EE :: Txn Lite Module'
+
+dependencies {
+    api project(':modules:core')
+}

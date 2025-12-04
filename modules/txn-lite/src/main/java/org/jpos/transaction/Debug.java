@@ -22,7 +22,7 @@ import java.io.Serializable;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 
-public class Debug extends TxnSupport implements AbortParticipant {
+public class Debug extends TxnLite implements AbortParticipant {
     public int prepare (long id, Serializable o) {
         // Logger.log (createEvent ("prepare", id, (Context) o));
         return PREPARED | READONLY;

@@ -20,7 +20,7 @@ package org.jpos.transaction;
 
 import java.io.Serializable;
 
-public class CheckPoint extends TxnSupport {
+public class CheckPoint extends TxnLite {
     public int prepare (long id, Serializable o) {
         if (o instanceof Context) 
             ((Context)o).checkPoint (cfg.get ("message", "checkpoint"));

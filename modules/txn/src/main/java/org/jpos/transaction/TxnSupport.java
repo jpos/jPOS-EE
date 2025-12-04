@@ -27,144 +27,15 @@ import org.jpos.core.ConfigurationException;
 import org.jpos.ee.DB;
 import org.jpos.ee.BLException;
 
-public abstract class TxnSupport extends Log 
+public abstract class TxnSupport extends TxnLite
     implements TransactionParticipant, Configurable, TxnConstants
 {
-    protected Configuration cfg;
-
-    protected int doPrepare (long id, Context ctx) throws Exception {
-        return ABORTED; // misconfigured participant
-    }
-    protected int doPrepareForAbort (long id, Context ctx) throws Exception {
-        return ABORTED; // misconfigured participant
-    }
-    public int prepare (long id, Serializable o) {
-        Context ctx = (Context) o;
-        try {
-            return doPrepare (id, ctx);
-        } catch (BLException e) {
-            setResultCode (ctx, e.getMessage(), e.getDetail());
-        } catch (Throwable t) {
-            ctx.log ("prepare exception in " + this.getClass().getName());
-            ctx.log (t);
-            setResultCode (ctx, t.getMessage());
-        } finally {
-            checkPoint (ctx);
-        }
-        return ABORTED;
-    }
-    
-    public int prepareForAbort (long id, Serializable o) {
-        // TxnSupport does not implement AbortParticipant on purpose,
-        // but participants willing to implement it will benefit from
-        // this method.
-        Context ctx = (Context) o;
-        try {
-            return doPrepareForAbort (id, ctx);
-        } catch (BLException e) {
-            setResultCode (ctx, e.getMessage(), e.getDetail());
-        } catch (Throwable t) {
-            ctx.log ("prepare exception in " + this.getClass().getName());
-            ctx.log (t);
-            setResultCode (ctx, t.getMessage());
-        } finally {
-            checkPoint (ctx);
-        }
-        return ABORTED;
-    }
-
-    protected void assertTrue (boolean condition, String message) 
-        throws BLException 
-    {
-        if (!condition)
-            throw new BLException (message);
-    }
-    protected void assertFalse (boolean condition, String message) 
-        throws BLException 
-    {
-        if (condition)
-            throw new BLException (message);
-    }
-    protected void assertTrue 
-        (boolean condition, String message, String detail) 
-        throws BLException 
-    {
-        if (!condition)
-            throw new BLException (message, detail);
-    }
-    protected void assertFalse
-        (boolean condition, String message, String detail) 
-        throws BLException 
-    {
-        if (condition)
-            throw new BLException (message, detail);
-    }
-    protected void assertNotNull (Object obj, String message)
-        throws BLException
-    {
-        if (obj == null)
-            throw new BLException (message);
-    }
-    protected void assertNotNull (Object obj, String message, String detail)
-        throws BLException
-    {
-        if (obj == null)
-            throw new BLException (message, detail);
-    }
-    protected void assertNotNull (Object obj, int resultCode)
-        throws BLException
-    {
-        if (obj == null)
-            throw new BLException (Integer.toString (resultCode));
-    }
-    protected void assertNotNull (Object obj, int resultCode, String detail)
-        throws BLException
-    {
-        if (obj == null)
-            throw new BLException (Integer.toString (resultCode), detail);
-    }
-    protected void assertNotNull (Map map, String[] props, String message)
-        throws BLException
-    {
-        for (int i=0; i<props.length; i++)
-            assertNotNull (map.get (props[i]), message);
-    }
-    protected void assertNull (Object obj, String message)
-        throws BLException
-    {
-        if (obj != null)
-            throw new BLException (message);
-    }
-    protected void assertNull (Object obj, String message, String detail)
-        throws BLException
-    {
-        if (obj != null)
-            throw new BLException (message, detail);
-    }
-    protected void checkPoint (Context ctx) {
-        String checkPointMessage = cfg.get ("checkpoint", null);
-        if (checkPointMessage != null)
-            ctx.checkPoint (checkPointMessage);
-    }
-    public void setConfiguration (Configuration cfg) 
-        throws ConfigurationException
-    {
-        this.cfg = cfg;
-    }
     public synchronized DB getDB (Context ctx) {
         DB db = (DB) ctx.get (DB);
         if (db == null) {
             ctx.put (DB, db = new DB ());
         }
         return db;
-    }
-    public void setResultCode (Context ctx, String rc) {
-        setResultCode (ctx, rc, null);
-    }
-    public void setResultCode (Context ctx, String rc, String detail) {
-        ctx.put (RC, rc);
-        if (detail != null)
-            ctx.put (EXTRC, detail);
     }
 }
 

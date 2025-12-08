@@ -4,8 +4,8 @@ publish:
 libs:
     vi gradle/libs.versions.toml
 
-idea:
-    gradle idea
+testlibs:
+    vi gradle/testlibs.versions.toml
 
 clean:
     gradle clean

@@ -21,6 +21,7 @@ dependencies {
         testImplementation project(':modules:db-h2')
     }
     testImplementation testlibs.junit
+    testRuntimeOnly testlibs.junitRuntime
     testImplementation testlibs.testcontainers.postgresql
 }
 

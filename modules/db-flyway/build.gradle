@@ -4,5 +4,6 @@ dependencies {
     api project(':modules:dbsupport')
     api libs.flyway
     testImplementation testlibs.junit
+    testRuntimeOnly testlibs.junitRuntime
 }
 

@@ -1,6 +1,6 @@
 [versions]
-junit = "5.10.2"
-junitRuntime = "1.10.2"
+junit = "5.11.3"
+junitRuntime = "1.11.3"
 restAssured = '5.4.0'
 testcontainers = '1.21.3'
 

@@ -33,6 +33,7 @@ import org.jpos.security.SensitiveString;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.*;
@@ -223,6 +224,13 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     @Override
     protected void stopService() {
         NameRegistrar.unregister(getName());
+        if (ksProvider != null && ksProvider instanceof Closeable closeable) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                getLog().error(e);
+            }
+        }
     }
 
     @Override

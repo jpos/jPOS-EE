@@ -20,7 +20,6 @@ package org.jpos.qrest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.JsonLoader;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
@@ -33,6 +32,8 @@ import org.jpos.util.Caller;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -83,6 +84,13 @@ import java.util.regex.Pattern;
  *        &lt;/mandatory&gt;
  *    &lt;/participant&gt;
  *
+ *
+ *    &lt;participant class="org.jpos.rest.ValidateParams" logger="Q2" realm="validate-params"&gt;
+ *        &lt;mandatory&gt;
+ *            &lt;param name="JSON_REQUEST" type="json-schema" file="cfg/your_schema.json" /&gt;
+ *        &lt;/mandatory&gt;
+ *    &lt;/participant&gt;
+ *
  */
 
 @SuppressWarnings("unused")
@@ -105,13 +113,6 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
         return PREPARED | NO_JOIN | READONLY;
     }
 
-    @Override
-    public void commit(long id, Serializable context) { }
-
-    @Override
-    public void abort(long id, Serializable context) { }
-
-
     @SuppressWarnings("unchecked")
     @Override
     public void setConfiguration(Element cfg) throws ConfigurationException{
@@ -121,21 +122,12 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
         Element m = cfg.getChild("mandatory");
         if (m != null) {
             for (Element e : m.getChildren("param")) {
-                if ("json-schema".equals(e.getAttributeValue("type"))) {
-                    try {
-                        String json = e.getValue();
-                        JsonNode nodeSchema = JsonLoader.fromString(json);
-                        JsonSchema schema = JsonSchemaFactory.byDefault().getJsonSchema(nodeSchema);
-                        mandatoryJson.put(e.getAttributeValue("name"), schema);
-                    } catch (Exception ex) {
-                         throw new ConfigurationException(ex);
-                    }
-                } else if ("path".equals(e.getAttributeValue("type"))){
-                    mandatoryPathParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
-                } else if ("query".equals(e.getAttributeValue("type"))) {
-                    mandatoryQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
-                } else {
-                    throw new ConfigurationException("Misconfigured param: " +
+                switch (e.getAttributeValue("type")) {
+                    case "json-schema" -> loadJson(e, mandatoryJson);
+                    case "path" -> mandatoryPathParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                    case "query" ->
+                            mandatoryQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                    case null, default -> throw new ConfigurationException("Misconfigured param: " +
                             e.getAttributeValue("name") + ". Type missing.");
                 }
             }
@@ -145,23 +137,42 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
         Element o = cfg.getChild("optional");
         if (o != null) {
             for (Element e : o.getChildren("param")) {
-                if ("json-schema".equals(e.getAttributeValue("type"))) {
-                    String json = e.getValue();
-                    JsonNode nodeSchema;
-                    try {
-                        nodeSchema = JsonLoader.fromString(json);
-                        JsonSchema schema = JsonSchemaFactory.byDefault().getJsonSchema(nodeSchema);
-                        optionalJson.put(e.getAttributeValue("name"), schema);
-                    } catch (IOException | ProcessingException ex) {
-                        throw new ConfigurationException(ex);
-                    }
-                } else if ("path".equals(e.getAttributeValue("type"))){
-                    throw new ConfigurationException("Misconfigured param: " +
+                switch (e.getAttributeValue("type")) {
+                    case "json-schema" -> loadJson(e, optionalJson);
+                    case "path" -> throw new ConfigurationException("Misconfigured param: " +
                             e.getAttributeValue("name") + ". Path param cannot be optional.");
-                } else {
-                    optionalQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
+                    case null, default ->
+                            optionalQueryParams.put(e.getAttributeValue("name"), Pattern.compile(e.getValue()));
                 }
             }
+        }
+    }
+
+    private void loadJson(Element e, Map<String, JsonSchema> jsonMap) throws ConfigurationException {
+            try {
+                String json;
+                String fileName = e.getAttributeValue("file");
+                if (fileName != null && !fileName.isEmpty()) {
+                    json = readFileContent(fileName);
+                } else {
+                    json = e.getValue();
+                }
+                if (json != null && !json.isEmpty()) {
+                    JsonNode nodeSchema = JsonLoader.fromString(json);
+                    JsonSchema schema = JsonSchemaFactory.byDefault().getJsonSchema(nodeSchema);
+                    jsonMap.put(e.getAttributeValue("name"), schema);
+                }
+            } catch (Exception ex) {
+                throw new ConfigurationException(ex);
+            }
+    }
+
+    private String readFileContent(String fileName) throws ConfigurationException {
+        try {
+            Path filePath = Path.of(fileName);
+            return Files.readString(filePath);
+        } catch (IOException e) {
+            throw new ConfigurationException("Unable to read file " + fileName + " : " + e.getMessage());
         }
     }
 
@@ -183,8 +194,8 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
             if (value == null) {
                 ctx.getResult().fail(ResultCode.BAD_REQUEST, Caller.info(), "Mandatory param " + entry.getKey().toLowerCase() + " not present");
                 return false;
-            }
-            return validParam(ctx, entry, value);
+            } else
+                return validParam(ctx, entry, value);
         }
         return true;
     }

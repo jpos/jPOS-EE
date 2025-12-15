@@ -48,4 +48,18 @@ public interface CryptoServiceKeyStoreProvider {
     default void put(String id, String value) throws CryptoServiceKeyStoreException {
         put (id, value, false);
     }
+    /**
+     * Initialization hook called during service startup.
+     * <p>
+     * Implementations can override this method to perform early initialization
+     * tasks such as establishing database connections, initializing Kafka streams,
+     * or setting up other resources required before the service becomes operational.
+     * <p>
+     * The default implementation does nothing.
+     *
+     * @throws Exception if initialization fails
+     */
+    default void init() throws Exception {
+
+    }
 }

@@ -338,17 +338,26 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         Element kse = e.getChild("ks-provider");
-        if (kse != null) {
-            QFactory factory = getFactory();
-            Object obj = factory.newInstance(kse.getAttributeValue("class"));
-            if (obj instanceof CryptoServiceKeyStoreProvider) {
-                factory.setLogger(obj, kse);
-                factory.setConfiguration(obj, kse);
-                ksProvider = (CryptoServiceKeyStoreProvider) obj;
-            }
+        if (kse == null)
+            throw new ConfigurationException("Missing ks-provider element");
+
+        QFactory factory = getFactory();
+        Object obj = factory.newInstance(kse.getAttributeValue("class"));
+
+        if (!(obj instanceof CryptoServiceKeyStoreProvider)) {
+            throw new ConfigurationException(
+              "ks-provider class must implement CryptoServiceKeyStoreProvider"
+            );
         }
-        if (ksProvider == null) {
-            throw new ConfigurationException ("Unconfigured ks-provider");
+
+        ksProvider = (CryptoServiceKeyStoreProvider) obj;
+        factory.setLogger(ksProvider, kse);
+        factory.setConfiguration(ksProvider, kse);
+
+        try {
+            ksProvider.init();
+        } catch (Throwable t) {
+            throw new ConfigurationException(t);
         }
     }
 }

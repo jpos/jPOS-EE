@@ -20,8 +20,8 @@ dependencies {
     } else {
         testImplementation project(':modules:db-h2')
     }
-    testImplementation testlibs.junit
-    testRuntimeOnly testlibs.junitRuntime
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
     testImplementation testlibs.testcontainers.postgresql
 }
 

@@ -4,8 +4,6 @@ commonsLang3 = "3.17.0"
 quartz = "2.5.0-rc1"
 slf4j = "2.0.12"
 jakartaBind = "4.0.1"
-junit = "5.10.2"
-junitRuntime = "1.10.2"
 logback = '1.5.18'
 jacksonDatabind = '2.18.0'
 netty = '4.2.2.Final'
@@ -13,9 +11,9 @@ freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'
 jakartaActivation = '2.0.1'
-hibernate = '6.6.7.Final'
-# hibernateToolsa 6.6.7.Final not available yet (as of 2025-02-12)
-hibernateTools = '6.6.6.Final'
+hibernate = '6.6.17.Final'
+hibernateTools = '6.6.17.Final'
+hibernateValidator = '6.2.5.Final'
 dom4j = '2.1.4'
 jdbcPostgresql = '42.7.2'
 jdbcMysql = '9.3.0'
@@ -27,16 +25,13 @@ jgroups = '5.3.11.Final'
 xmlBind = "4.0.1"
 javaxCache = '1.1.1'
 ehCache = '3.11.1'
-hibernateValidator = '6.2.1.Final'
-kafkaClients = '4.0.0'
 jetty = '12.0.20'
+
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
 commonsLang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
 quartz = { module = "org.quartz-scheduler:quartz", version.ref = "quartz" }
-junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-junitRuntime = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitRuntime" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 jakartaBind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaBind" }
 jclOverSlf4j = { module='org.slf4j:jcl-over-slf4j', version.ref = 'slf4j' }
@@ -70,7 +65,6 @@ javaxCache = { module = 'javax.cache:cache-api', version.ref = 'javaxCache' }
 ehCache = { module = 'org.ehcache:ehcache', version.ref = 'ehCache' }
 jcache = { module = 'org.hibernate:hibernate-jcache', version.ref = 'hibernate' }
 hibernateValidator = { module = 'org.hibernate:hibernate-validator', version.ref = 'hibernateValidator' }
-kafkaClients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafkaClients' }
 jetty = { module = 'org.eclipse.jetty:jetty-server', version.ref = 'jetty' }
 jetty-server  = { module = "org.eclipse.jetty:jetty-server",  version.ref = "jetty" }
 jetty-xml     = { module = "org.eclipse.jetty:jetty-xml",     version.ref = "jetty" }
@@ -78,10 +72,10 @@ jetty-rewrite = { module = "org.eclipse.jetty:jetty-rewrite", version.ref = "jet
 jetty-deploy  = { module = "org.eclipse.jetty:jetty-deploy",  version.ref = "jetty" }
 jetty-ee10-webapp = { module = "org.eclipse.jetty.ee10:jetty-ee10-webapp", version.ref = "jetty" }
 
+
 [bundles]
 jackson = [
     "jacksonDatabind",
     "jacksonDataTypeJSR310"
 ]
-
 

@@ -1,7 +1,7 @@
 description = 'jPOS-EE :: Crypto Server'
 
 dependencies {
-    testImplementation libs.junit
+    testImplementation testlibs.bundles.junit
     testImplementation testlibs.restAssured
     api project(':modules:qrest')
     api project(':modules:cryptoservice')

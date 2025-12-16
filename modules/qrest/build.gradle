@@ -10,7 +10,8 @@ dependencies {
     api libs.guava
     api libs.jakartaActivation
  
-    testImplementation testlibs.junit
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
     testImplementation testlibs.restAssured
 }
 

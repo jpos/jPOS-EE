@@ -4,7 +4,8 @@ dependencies {
     api project(':modules:dbsupport')
     testImplementation project(':modules:db-postgresql')
     testImplementation testlibs.testcontainers.postgresql
-    testImplementation testlibs.junit
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
 }
 
 

@@ -4,6 +4,6 @@ dependencies {
     api libs.jpos
     api project(':modules:cryptoservice')
     api project(':modules:sysconfig')
-    testImplementation testlibs.junit
+    testImplementation testlibs.bundles.junit
 }
 

@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 23 ]
+        java: [ 25 ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -18,12 +18,6 @@ jobs:
         distribution: 'corretto'
         java-version: ${{ matrix.java }}
         cache: 'gradle'
-#    - name: Cache Gradle packages
-#      uses: actions/cache@v2
-#      with:
-#        path: ~/.gradle/caches
-#        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-#        restore-keys: ${{ runner.os }}-gradle
     - name: Assemble
       run: ./gradlew assemble --info
       env:
@@ -36,11 +30,9 @@ jobs:
       if: success() || failure()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results
+        name: test-results-${{ matrix.java }}-${{ matrix.os }}
         path: modules/*/build/reports/tests/*
-#    - name: Check minigl postgres
-#      run: ./gradlew :modules:minigl:clean :modules:minigl:check --rerun-tasks --info
-#      if: runner.os != 'Windows'
+        retention-days: 7
       env:
         TERM: dumb
         GRADLE_OPTS: -Dtest.minigl_db_driver=postgres

@@ -19,8 +19,8 @@ subprojects {
     version = binding.variables.get("PROJECT_VERSION") ?: "0.0.1"
     def isSnapshot = version.contains("SNAPSHOT")
     def mavenCentralRepo = isSnapshot ?
-        'https://oss.sonatype.org/content/repositories/snapshots/' :
-        'https://oss.sonatype.org/service/local/staging/deploy/maven2';
+            'https://oss.sonatype.org/content/repositories/snapshots/' :
+            'https://oss.sonatype.org/service/local/staging/deploy/maven2';
     if (name != 'bom') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
@@ -28,7 +28,7 @@ subprojects {
         apply plugin: 'org.jpos.jposapp'
         apply plugin: 'java-library'
 
-        [ compileJava, compileTestJava, javadoc ]*.options*.encoding = 'UTF-8'
+        [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
         configurations.implementation.transitive = true
 
         java {
@@ -152,8 +152,9 @@ subprojects {
                 project.sourceSets.main.allJava
             }
             destinationDir = new File(buildDir, 'docs/javadoc')
-            classpath = files(subprojects.collect {project ->
-                project.sourceSets.main.compileClasspath})
+            classpath = files(subprojects.collect { project ->
+                project.sourceSets.main.compileClasspath
+            })
             failOnError = false
         }
         repositories {
@@ -176,6 +177,22 @@ subprojects {
     if (project.path.startsWith(':modules:iso20022-')) {
         dependencies {
             implementation libs.xmlBind
+        }
+    }
+    configurations.configureEach {
+        resolutionStrategy {
+            // io.rest-assured:rest-assured:5.5.6 brings in vulnerable commons-codec 1.11
+            force 'commons-codec:commons-codec:1.20.0'
+
+            //json-schema-validator depends on vulnerable rhino 1.7.7.2
+            force 'org.mozilla:rhino:1.7.15.1'
+
+            //org.testcontainsers.postgresql:1.21.3 depends on vulnerable
+            //  commons-compress 1.24.0, and
+            //  commons-lang3 3.14.0
+            force 'org.apache.commons:commons-compress:1.26.0'
+            force 'org.apache.commons:commons-lang3:3.20.0'
+
         }
     }
 }

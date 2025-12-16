@@ -1,12 +1,12 @@
 [versions]
 jpos = "3.0.1-SNAPSHOT"
-commonsLang3 = "3.17.0"
+commonsLang3 = "3.20.0"
 quartz = "2.5.0-rc1"
 slf4j = "2.0.12"
 jakartaBind = "4.0.1"
-logback = '1.5.18'
+logback = '1.5.22'
 jacksonDatabind = '2.18.0'
-netty = '4.2.2.Final'
+netty = '4.2.8.Final'
 freemarker = '2.3.32'
 jsonSchemaValidator = '2.2.14'
 guava = '33.0.0-jre'

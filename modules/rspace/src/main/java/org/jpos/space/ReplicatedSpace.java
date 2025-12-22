@@ -388,7 +388,6 @@ public class ReplicatedSpace
         //
     }
     /** Block sending and receiving of messages until ViewAccepted is called */
-    @Override
     public void block () {
         this.view = null;
     }
@@ -404,7 +403,6 @@ public class ReplicatedSpace
      * <p>
      * For more details see https://jira.jboss.org/jira/browse/JGRP-986
      */
-    @Override
     public void unblock() {
 
     }

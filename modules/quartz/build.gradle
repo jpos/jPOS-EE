@@ -6,7 +6,6 @@ description = 'jPOS-EE :: Quartz integration'
 
 extraJavaModuleInfo {
     failOnMissingModuleInfo.set(false)
-    automaticModule('org.quartz-scheduler:quartz', 'org.quartz')
 }
 
 

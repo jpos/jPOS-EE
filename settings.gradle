@@ -36,6 +36,7 @@ include  ':modules:txn-lite'
 include  ':modules:txn'
 include  ':modules:minigl'
 include  ':modules:jetty'
+include  ':modules:groovy'
 
 // include  ':modules:dbtest'
 
@@ -61,7 +62,6 @@ dependencyResolutionManagement {
 // include  ':modules:eerest'
 // include  ':modules:eeresttest'
 // include  ':modules:fsdmsgx'
-// include  ':modules:groovy'
 // include  ':modules:qi-core'
 // include  ':modules:qi-eeuser'
 // include  ':modules:qi-sysconfig'

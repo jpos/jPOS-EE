@@ -26,7 +26,7 @@ xmlBind = "4.0.1"
 javaxCache = '1.1.1'
 ehCache = '3.11.1'
 jetty = '12.1.4'
-
+groovy = '3.0.25'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -71,7 +71,9 @@ jetty-xml     = { module = "org.eclipse.jetty:jetty-xml",     version.ref = "jet
 jetty-rewrite = { module = "org.eclipse.jetty:jetty-rewrite", version.ref = "jetty" }
 jetty-deploy  = { module = "org.eclipse.jetty:jetty-deploy",  version.ref = "jetty" }
 jetty-ee10-webapp = { module = "org.eclipse.jetty.ee10:jetty-ee10-webapp", version.ref = "jetty" }
-
+groovy = { module = 'org.codehaus.groovy:groovy', version.ref = 'groovy' }
+groovy_sh = { module = 'org.codehaus.groovy:groovy-groovysh', version.ref = 'groovy' }
+groovy_sql = { module = 'org.codehaus.groovy:groovy-sql', version.ref = 'groovy' }
 
 [bundles]
 jackson = [

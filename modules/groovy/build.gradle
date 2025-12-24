@@ -1,12 +1,13 @@
 description = 'jPOS-EE :: Groovy Module'
 
 dependencies {
-    api libraries.jpos
-    api libraries.groovy
-    api libraries.groovysh
-    implementation libraries.jline
-    api group: 'org.fusesource.jansi', name: 'jansi', version: '1.11'
+    api libs.jpos
+    api libs.groovy
+    api libs.groovy.sh
+    api libs.groovy.sql
 
-    api libraries.groovySql
+    // implementation libraries.jline
+    // api group: 'org.fusesource.jansi', name: 'jansi', version: '1.11'
+    // api libraries.groovySql
 }
 

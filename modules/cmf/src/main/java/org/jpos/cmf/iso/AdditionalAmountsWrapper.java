@@ -18,6 +18,8 @@
 
 package org.jpos.cmf.iso;
 
+import org.jpos.cmf.CMFAdditionalAmount;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,6 +60,31 @@ public class AdditionalAmountsWrapper extends LinkedHashSet<AdditionalAmount> {
         return amounts;
     }
 
+    /**
+     * Parses a full string of Additional Amount occurrences (usually DE-054)
+     * using the default CMF Additional Amount serialization rules.
+     *
+     * <p>This is a convenience method equivalent to invoking
+     * {@link #parse(String, int, Function)} with the following defaults:</p>
+     * <ul>
+     *   <li>Occurrence length:
+     *       {@link CMFAdditionalAmount#SERIALIZED_DATA_LENGTH}.</li>
+     *   <li>Parser function:
+     *       {@link CMFAdditionalAmount#parse(String)}.</li>
+     * </ul>
+     *
+     * @param data a String containing one or more serialized Additional Amount occurrences
+     * @return an {@link AdditionalAmountsWrapper} containing all parsed occurrences
+     * @throws IllegalArgumentException if the data length is not a multiple of the expected occurrence length
+     */
+    public static AdditionalAmountsWrapper parse(String data) {
+        return parse(
+          data,
+          CMFAdditionalAmount.SERIALIZED_DATA_LENGTH,
+          CMFAdditionalAmount::parse
+        );
+    }
+    
     public String serialize() {
         StringBuilder sb = new StringBuilder();
         forEach(amount -> sb.append(amount.serialize()));

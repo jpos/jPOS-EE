@@ -1,0 +1,168 @@
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| What | Apache Kafka producer/consumer QBean
+| When | Introduced during jPOS-EE Kafka integration work
+| Who | The jPOS Software team.
+| Where | Directory modules/kafkaservice
+| Why | Provide native Kafka integration as a first-class Q2 service
+| Status | Used in production
+| License | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+.Maven Coordinates
+[source,xml]
+----
+<dependency> 
+  <groupId>org.jpos.ee</groupId>
+  <artifactId>jposee-kafkaservice</artifactId>
+  <version>${jposee.version}</version>
+</dependency> 
+----
+
+Traditionally, jPOS-based systems integrate with messaging platforms using JMS, Spaces, or
+custom adapters. As Kafka became a foundational component for event-driven and streaming
+architectures, jPOS-EE introduced KafkaService as a native QBean that manages Kafka
+producers and consumers directly within the Q2 lifecycle.
+
+KafkaService allows Kafka topics to be treated as first-class integration points, while
+retaining all the operational benefits of Q2: lifecycle management, configuration via XML,
+logging, and predictable startup/shutdown semantics.
+
+The service is intentionally generic: it does not impose message formats or processing
+models. Instead, it focuses on reliable Kafka connectivity and delegates application-specific
+logic to downstream participants or services.
+
+Basic QBean Configuration
+
+A minimal KafkaService configuration looks like this:
+
+[source,xml]
+------------
+
+<kafka-service name="kafka-service" class="org.jpos.kafka.KafkaService" logger="Q2">
+<property name="bootstrap-servers" value="localhost:9094" />          <1>
+<property name="group-id" value="jpos-cryptoservice" />               <2>
+<property name="topics" value="cryptoservice" />                      <3>
+
+<!-- Custom producer properties -->
+<property name="producer.acks" value="all" />                         <4>
+<property name="producer.retries" value="3" />
+<property name="producer.linger.ms" value="5" />
+
+<!-- Custom consumer properties -->
+<property name="consumer.max.poll.records" value="500" />             <5>
+<property name="consumer.session.timeout.ms" value="30000" />
+<property name="consumer.enable.auto.commit" value="true" />
+
+</kafka-service> 
+------------
+<1> Kafka bootstrap servers, passed to both producer and consumer.
+<2> Consumer group identifier.
+<3> One or more Kafka topics to subscribe to (comma-separated).
+<4> Kafka producer-specific configuration (prefixed with producer.).
+<5> Kafka consumer-specific configuration (prefixed with consumer.).
+
+At startup time, KafkaService initializes a Kafka consumer subscribed to the configured
+topics and a Kafka producer bound to the same bootstrap cluster.
+
+=== Property Scoping and Mapping
+
+KafkaService distinguishes between core service properties and Kafka client properties.
+
+Core properties are consumed directly by the service:
+
+- bootstrap-servers.
+- group-id.
+- topics.
+
+All other properties are mapped to Kafka client configuration objects using prefixes:
+
+Properties starting with producer. are applied to the Kafka ProducerConfig.
+
+Properties starting with consumer. are applied to the Kafka ConsumerConfig.
+
+During initialization, KafkaService strips the prefix and validates the resulting property
+name against Kafka’s known configuration keys.
+
+For example:
+
+[source,xml]
+------------
+<property name="producer.acks" value="all" />
+------------
+
+is mapped internally to:
+
+[source,java]
+------------
+acks=all
+------------
+
+and passed to the Kafka producer.
+
+This mechanism allows full access to Kafka’s configuration surface without requiring
+Kafka-specific XML elements or schema changes.
+
+=== Default Consumer and Producer Behavior
+
+KafkaService provides sensible defaults when properties are not explicitly configured.
+
+For consumers:
+
+`key.deserializer` and `value.deserialize`r default to `StringDeserializer`.
+
+`auto.offset.reset` defaults to earliest.
+
+`enable.auto.commit` defaults to true.
+
+For producers:
+
+`key.serializer` and `value.serializer` default to `StringSerializer`.
+
+These defaults are intentionally conservative and suitable for most integration and
+control-plane use cases. Applications requiring binary payloads, Avro, Protobuf, or
+custom serialization can override the relevant properties explicitly.
+
+`Lifecycle and Q2 Integration`
+
+KafkaService is a standard QBean and participates fully in the Q2 lifecycle:
+
+Initialization occurs during Q2 startup.
+
+Kafka connections are established when the service enters the running state.
+
+On shutdown, consumers and producers are closed cleanly, ensuring offsets and resources
+are released.
+
+Because KafkaService is managed by Q2, failures during startup or runtime are surfaced
+through standard Q2 logging and monitoring mechanisms.
+
+=== Typical Usage Patterns
+
+KafkaService is commonly used as:
+
+An integration point for event-sourced systems.
+
+A transport layer for asynchronous cryptographic, tokenization, or ledger operations.
+
+A bridge between Kafka-centric architectures and jPOS TransactionManagers or Spaces.
+
+Higher-level services (such as CryptoService or stream processors) typically rely on
+KafkaService to provide connectivity, while delegating message handling and domain logic
+to specialized components.
+
+Notes and Recommendations
+[TIP]
+=====
+KafkaService is intentionally minimal and composable.
+
+It is often preferable to keep KafkaService focused on connectivity and configuration,
+and implement business logic in downstream participants, stream processors, or dedicated
+QBeans that consume from or produce to Kafka via well-defined contracts.
+
+Future versions may expose additional optional features (metrics, recovery helpers,
+stream topologies), but the core design goal remains the same: predictable Kafka
+integration aligned with Q2’s operational model.
+=====
+

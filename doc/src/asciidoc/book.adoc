@@ -53,6 +53,9 @@ include::module_binlog.adoc[]
 include::module_qrest.adoc[]
 include::module_http_client.adoc[]
 
+== Kafka Support
+include::module_kafkaservice.adoc[]
+
 == Tools
 
 include::module_freemarker_decorator.adoc[]

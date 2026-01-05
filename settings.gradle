@@ -37,6 +37,7 @@ include  ':modules:txn'
 include  ':modules:minigl'
 include  ':modules:jetty'
 include  ':modules:groovy'
+include  ':modules:kafkaservice'
 
 // include  ':modules:dbtest'
 

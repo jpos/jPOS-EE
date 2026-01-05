@@ -1,0 +1,8 @@
+description = 'jPOS-EE :: Kafka Service'
+
+dependencies {
+    api libs.jpos
+    api libs.kafkaClients
+    api libs.kafkaStreams
+}
+

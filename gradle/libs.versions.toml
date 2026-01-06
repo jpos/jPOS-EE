@@ -34,6 +34,9 @@ jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
 commonsLang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
 quartz = { module = "org.quartz-scheduler:quartz", version.ref = "quartz" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j_simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+slf4j_nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+
 jakartaBind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaBind" }
 jclOverSlf4j = { module='org.slf4j:jcl-over-slf4j', version.ref = 'slf4j' }
 log4jOverSlf4j = { module='org.slf4j:log4j-over-slf4j', version.ref = 'slf4j' }
@@ -75,8 +78,8 @@ jetty-ee10-webapp = { module = "org.eclipse.jetty.ee10:jetty-ee10-webapp", versi
 groovy = { module = 'org.codehaus.groovy:groovy', version.ref = 'groovy' }
 groovy_sh = { module = 'org.codehaus.groovy:groovy-groovysh', version.ref = 'groovy' }
 groovy_sql = { module = 'org.codehaus.groovy:groovy-sql', version.ref = 'groovy' }
-kafkaClients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafka' }
-kafkaStreams = { module = 'org.apache.kafka:kafka-streams', version.ref = 'kafka' }
+kafka_clients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafka' }
+kafka_streams = { module = 'org.apache.kafka:kafka-streams', version.ref = 'kafka' }
 
 [bundles]
 jackson = [

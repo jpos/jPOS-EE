@@ -1,0 +1,19 @@
+description = 'jPOS-EE :: CryptoService Kafka'
+
+dependencies {
+    api libs.jpos
+    api libs.kafka.clients
+    api libs.kafka.streams
+    api project(':modules:cryptoservice')
+    api project(':modules:kafkaservice')
+
+    testImplementation testlibs.testcontainers.kafka
+    testRuntimeOnly 'commons-codec:commons-codec' // required by tar operations
+
+    testImplementation testlibs.bundles.junit
+    testImplementation testlibs.kafkastreams.testutils
+
+    testRuntimeOnly testlibs.bundles.junit.platform
+    testImplementation libs.slf4j.simple
+}
+

@@ -1,0 +1,125 @@
+[[cryptoservice_kafka]]
+=== CryptoService Kafka KeyStore Provider
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| What | Kafka Streams-based `CryptoServiceKeyStoreProvider` for `CryptoService`.
+| When | Introduced during jPOS-EE Kafka-backed key material distribution work.
+| Who | The jPOS Software team.
+| Where | Directory `modules/cryptoservice-kafka`.
+| Why | Persist and distribute encrypted CryptoService session keys via Kafka, without writing key material to local disk.
+| Status | Intended for production use.
+| License | <<appendix_license,GNU Affero General Public License version 3>>
+|=================================================================
+
+==== Overview
+
+The `cryptoservice-kafka` module provides `org.jpos.crypto.kafka.KafkaCryptoServiceKeyStoreProvider`, a
+Kafka-backed implementation of the `CryptoServiceKeyStoreProvider` SPI used by `CryptoService`.
+
+In practical terms:
+
+* `CryptoService` still generates a transient AES key (rotated periodically) and encrypts it to one or more PGP custodians.
+* The resulting armored PGP message is stored in a Kafka topic (keyed by the Key ID / UUID).
+* A Kafka Streams `KTable` materializes that topic into a local state store for fast reads.
+* A small local write cache (TSpace) provides read-after-write behavior while the Streams topology catches up.
+
+This design allows multiple jPOS nodes to share the same encrypted key material via Kafka, while keeping
+the unencrypted AES key only in memory.
+
+==== Maven Coordinates
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.jpos.ee</groupId>
+  <artifactId>jposee-cryptoservice-kafka</artifactId>
+  <version>${jposee.version}</version>
+</dependency>
+----
+
+==== Configuration
+
+`KafkaCryptoServiceKeyStoreProvider` is configured using standard Q2 properties (same style as other QBeans).
+
+The provider expects Kafka settings consistent with `kafkaservice` / `AbstractKafkaStreamsQBean`, plus a few
+provider-specific properties.
+
+.Provider properties
+[cols="35%,65%",options="header"]
+|===
+| Property | Meaning
+| `bootstrap-servers` | Kafka broker addresses. Required.
+| `topic` | Topic that stores the encrypted key material. Default: `cryptoservice`.
+| `app-id` | Kafka Streams application ID. Default: `jpos-cryptoservice-keystore`.
+| `store-name` | Local state store name. Default: `crypto-keystore-store`.
+| `transactional-id` | Transactional producer ID. Default: `app-id` + `-txn`.
+| `write-cache-ttl-ms` | Local write cache TTL (milliseconds). Default: `10000`.
+| `store-retry-attempts` | Maximum retries for state-store access. Default: `3`.
+| `store-retry-delay-ms` | Base delay for retry backoff (milliseconds). Default: `100`.
+| `startup-timeout-seconds` | Max time to wait for Kafka Streams RUNNING state. Default: `60`.
+| `max-auto-restarts` | Maximum auto-restart attempts. Default: `3`.
+| `state-dir` | Kafka Streams state directory. Default: `data`.
+|===
+
+==== Using it from CryptoService
+
+The typical deployment model is to configure the provider as the `ks-provider` of a `crypto-service`
+instance.
+
+.Minimal example
+[source,xml]
+----
+<crypto-service class="org.jpos.crypto.CryptoService" logger="Q2" name="cryptoservice">
+  <custodian id="custodian-key-id-or-email" />
+  <property name="pubring" value="cfg/crypto/pubring.gpg" />
+  <property name="secring" value="cfg/crypto/secring.gpg" />
+  <property name="lazy" value="false" />
+  <property name="keylength" value="256" />
+  <property name="duration" value="86400000" />
+  <property name="ttl" value="3600000" />
+
+  <ks-provider class="org.jpos.crypto.kafka.KafkaCryptoServiceKeyStoreProvider">
+    <property name="bootstrap-servers" value="kafka-1:9092,kafka-2:9092" />
+    <property name="topic" value="cryptoservice" />
+    <property name="app-id" value="jpos-cryptoservice-keystore-${q2.name}" />
+    <property name="transactional-id" value="jpos-cryptoservice-keystore-${q2.name}-txn" />
+    <property name="state-dir" value="data/cryptoservice-kafka" />
+  </ks-provider>
+</crypto-service>
+----
+
+[NOTE]
+======
+`KafkaCryptoServiceKeyStoreProvider` starts its Kafka Streams runtime during initialization, because
+`CryptoService` expects the key store to be available immediately after startup. When deployed as a
+standalone QBean, Q2 will still call `start()`, but the provider intentionally performs a no-op there
+to avoid a double-start.
+======
+
+==== Kafka topic recommendations
+
+For auditability and operational safety, treat the CryptoService topic as security-sensitive data
+(even though it stores PGP-encrypted payloads).
+
+* Use a dedicated topic (avoid reusing generic application topics).
+* Prefer a compacted topic (so the latest value per Key ID is retained).
+* Configure appropriate replication and ACLs consistent with your threat model.
+* Keep the number of partitions aligned with your deployment model.
+  ** If you want each jPOS node to maintain a complete local state store without interactive queries,
+     configure a single-partition topic and use a unique `app-id` per node.
+  ** If you partition the topic, Kafka Streams will shard the local state by partition; this provider
+     does not perform remote lookups.
+
+[TIP]
+=====
+Use a unique `app-id` and `transactional-id` per node (for example, include the Q2 instance name) to
+avoid consumer-group sharding and producer fencing when multiple nodes are running.
+=====
+
+==== Operational notes
+
+* The Kafka Streams `state-dir` should be on fast local storage and must be writable by the jPOS user.
+* As with any CryptoService deployment, disable swap and core dumps on production hosts.
+* Monitor Kafka Streams health (RUNNING state) and the provider’s metrics (Micrometer counters) if enabled.
+

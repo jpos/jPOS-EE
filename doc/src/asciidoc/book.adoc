@@ -62,6 +62,7 @@ include::module_freemarker_decorator.adoc[]
 include::module_groovy.adoc[]
 include::module_cryptoservice.adoc[]
 include::module_cryptoserver.adoc[]
+include::module_cryptoservice_kafka.adoc[]
 
 == Simulators
 

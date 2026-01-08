@@ -4,6 +4,9 @@ testcontainers = '1.21.3'
 junit-jupiter = '5.11.3'
 junit-launcher = '1.11.3'
 kafkastreams_testutils = '4.1.0'
+mockito = "5.21.0"
+mockitojupiter = "5.21.0"
+hamcrest = "3.0"
 
 [libraries]
 restAssured = { module = 'io.rest-assured:rest-assured', version.ref='restAssured' } 
@@ -15,6 +18,11 @@ junit_jupiter_api = { group = 'org.junit.jupiter', name='junit-jupiter-api', ver
 junit_jupiter_params = { group = 'org.junit.jupiter', name='junit-jupiter-params', version.ref='junit-jupiter' }
 junit_jupiter_engine = { group = 'org.junit.jupiter', name='junit-jupiter-engine', version.ref='junit-jupiter' }
 junit_platform_launcher = { group = 'org.junit.platform', name='junit-platform-launcher', version.ref='junit-launcher' }
+
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito_jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockitojupiter" }
+
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 
 [bundles]
 junit = [

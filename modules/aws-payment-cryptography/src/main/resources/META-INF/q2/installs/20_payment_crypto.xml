@@ -1,0 +1,7 @@
+<paymentcrypto name="payment-crypto" class="org.jpos.q2.security.SMAdaptor" logger="Q2">
+    <attr name="impl">org.jpos.security.paymentcrypto.PaymentCryptographyAdapter</attr>
+    <property name="accessKeyId" value="${pc.access.key.id}" />
+    <property name="secretAccessKey" value="${pc.secret.access.key}" />
+    <property name="region" value="${pc.region}" />
+    <property name="timeout" value="${pc.timeout:10000}" />
+</paymentcrypto>

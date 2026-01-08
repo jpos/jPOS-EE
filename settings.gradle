@@ -39,6 +39,7 @@ include  ':modules:jetty'
 include  ':modules:groovy'
 include  ':modules:kafkaservice'
 include  ':modules:cryptoservice-kafka'
+include  ':modules:aws-payment-cryptography'
 
 // include  ':modules:dbtest'
 

@@ -1,0 +1,17 @@
+description = 'jPOS-EE :: AWS Payment Cryptography'
+
+dependencies {
+    api libs.jpos
+    api libs.aws.paymentcryptography
+    api libs.aws.paymentcryptography.data
+
+    testImplementation testlibs.bundles.junit
+    testImplementation testlibs.kafkastreams.testutils
+    testImplementation testlibs.mockito
+    testImplementation testlibs.mockito.jupiter
+    testImplementation testlibs.hamcrest
+
+    testRuntimeOnly testlibs.bundles.junit.platform
+    // testImplementation libs.slf4j.simple
+}
+

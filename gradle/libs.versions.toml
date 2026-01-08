@@ -28,6 +28,7 @@ ehCache = '3.11.1'
 jetty = '12.1.4'
 groovy = '3.0.25'
 kafka = '4.1.0'
+awssdk = '2.26.3'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -36,7 +37,6 @@ quartz = { module = "org.quartz-scheduler:quartz", version.ref = "quartz" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j_simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 slf4j_nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
-
 jakartaBind = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaBind" }
 jclOverSlf4j = { module='org.slf4j:jcl-over-slf4j', version.ref = 'slf4j' }
 log4jOverSlf4j = { module='org.slf4j:log4j-over-slf4j', version.ref = 'slf4j' }
@@ -80,6 +80,8 @@ groovy_sh = { module = 'org.codehaus.groovy:groovy-groovysh', version.ref = 'gro
 groovy_sql = { module = 'org.codehaus.groovy:groovy-sql', version.ref = 'groovy' }
 kafka_clients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafka' }
 kafka_streams = { module = 'org.apache.kafka:kafka-streams', version.ref = 'kafka' }
+aws_paymentcryptography = { module = 'software.amazon.awssdk:paymentcryptography', version.ref = 'awssdk' }
+aws_paymentcryptography_data = { module = 'software.amazon.awssdk:paymentcryptographydata', version.ref = 'awssdk' }
 
 [bundles]
 jackson = [

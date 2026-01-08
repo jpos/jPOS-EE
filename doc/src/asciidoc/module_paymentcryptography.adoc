@@ -1,0 +1,177 @@
+=== AWS Payment Cryptography (PaymentCrypto)
+
+[frame="none",cols="20%,80%"]
+|=================================================================
+| *What*         | AWS Payment Cryptography adapter for jPOS `SMAdapter` operations.
+| *When*         | Introduced during 3.0.x development (initial AWS Payment Cryptography integration).
+| *Who*          | The jPOS Software team.
+| *Where*        | `org.jpos.security.paymentcrypto.PaymentCryptographyAdapter`.
+| *Why*          | Provide HSM-grade cryptographic services (keys, PIN, CVV, EMV cryptograms) using AWS Payment Cryptography and AWS Payment Cryptography Data.
+| *Status*       | Module implementation; validate service permissions and supported operations for your AWS account/region.
+| *License*      | <<appendix_license,GNU Affero General Public License version 3>>.
+|=================================================================
+
+==== Overview
+
+This adapter implements the jPOS security module abstraction by delegating operations to AWS Payment Cryptography:
+
+- The *control plane* (`PaymentCryptographyAsyncClient`) is used for key lifecycle operations (for example, TR-31 key import and key generation).
+- The *data plane* (`PaymentCryptographyDataAsyncClient`) is used for online cryptographic primitives (for example, PIN translation, CVV verification, and EMV cryptogram verification).
+
+The adapter is designed to be plugged behind `org.jpos.q2.security.SMAdaptor` via the `impl` attribute.
+
+==== Supported operations
+
+This implementation provides support for the following categories of operations:
+
+- Key import using TR-31 key blocks wrapped under an AWS-managed wrapping key (KEK), referenced by ARN.
+- Key generation using AWS key attributes (usage, algorithm, mode of use) mapped from jPOS `SecureKeySpec` and/or key type.
+- PIN block translation (incoming/outgoing keys referenced by ARN).
+- CVV/CVD generation and verification.
+- PVV generation and verification (Visa PIN verification attributes).
+- EMV ARQC verification and ARPC generation (limited to supported derivation methods and ARPC method variants implemented by this adapter).
+
+Operational support depends on:
+- Your AWS account enablement for Payment Cryptography.
+- IAM permissions granted to the credentials configured for the adapter.
+- The AWS region selected.
+
+==== Configuration
+
+The adapter reads its configuration from the jPOS `Configuration` passed by Q2. The following properties are used.
+
+.Required properties
+- `accessKeyId`.
+- `secretAccessKey`.
+- `region`.
+
+.Optional properties
+- `timeout`. API call timeout in milliseconds. Default: `10000`.
+- `keyAlgorithm`. Key algorithm used for generated keys. Default: `tdes-3`. Supported values:
+  - `tdes-2`.
+  - `tdes-3`.
+  - `aes-128`.
+  - `aes-192`.
+  - `aes-256`.
+
+[NOTE]
+====
+The configuration uses explicit AWS access keys. In production environments, consider using AWS-native credential mechanisms (instance profiles, task roles, IRSA, etc.) when possible. If you keep access keys in properties, treat them as secrets and do not commit them to source control.
+====
+
+==== Q2 wiring
+
+The typical wiring pattern is to configure a `paymentcrypto` service that instantiates `SMAdaptor` and points `impl` to the AWS adapter class.
+
+[source,xml]
+----
+<paymentcrypto name="payment-crypto" class="org.jpos.q2.security.SMAdaptor" logger="Q2">
+    <attr name="impl">org.jpos.security.paymentcrypto.PaymentCryptographyAdapter</attr>
+
+    <property name="accessKeyId" value="${pc.access.key.id}" />
+    <property name="secretAccessKey" value="${pc.secret.access.key}" />
+    <property name="region" value="${pc.region}" />
+    <property name="timeout" value="${pc.timeout:10000}" />
+</paymentcrypto>
+----
+
+==== Key representation
+
+AWS Payment Cryptography identifies keys by ARN. This adapter represents those keys as `org.jpos.security.SecureARNKey`.
+
+- Imported keys: the adapter imports TR-31 key material and returns a `SecureARNKey` that carries the ARN and the returned KCV.
+- Generated keys: the adapter creates a new key and returns a `SecureARNKey` with ARN and KCV.
+
+When importing a working key:
+- The working key must be provided as a `SecureKeyBlock` (TR-31).
+- The wrapping key (KEK) must be a `SecureARNKey`, whose ARN is used as the `wrappingKeyIdentifier`.
+
+==== PIN operations
+
+PIN operations are performed through AWS Payment Cryptography Data.
+
+- PIN translation: incoming and outgoing keys must be `SecureARNKey` instances.
+- Supported PIN block formats in this implementation:
+  - jPOS `SMAdapter.FORMAT01` (ISO format 0).
+  - jPOS `SMAdapter.FORMAT03` (ISO format 3).
+
+If a PIN block format outside those values is requested, the adapter throws `SMException`.
+
+==== Card validation data (CVV/CVD)
+
+This implementation supports generation and verification of card validation data through AWS Payment Cryptography Data:
+
+- Verification:
+  - Service code `000` is treated as CVV2 verification.
+  - Other service codes use CVV1 attributes (and may also align with CVV3 usage depending on issuer scheme rules).
+- Generation:
+  - Generates a 3-digit validation value.
+
+If AWS returns a verification failure, the adapter returns `false` (rather than failing the operation with an exception). Other AWS errors are surfaced as `SMException`.
+
+==== PVV (Visa PIN Verification Value)
+
+The adapter implements PVV generation and verification using Visa PIN verification attributes:
+
+- The PIN encryption key (PEK) and the PVK must be provided as `SecureARNKey`.
+- Verification failures return `false`.
+- Other AWS errors are propagated as `SMException`.
+
+==== EMV ARQC verification and ARPC generation
+
+The adapter supports EMV ARQC verification and ARPC generation using AWS Payment Cryptography Data.
+
+- Master key derivation methods supported:
+  - `MKDMethod.OPTION_A`.
+  - `MKDMethod.OPTION_B`.
+- Session key derivation methods supported:
+  - `SKDMethod.EMV_CSKD`.
+  - `SKDMethod.EMV2000_SKM`.
+  - `SKDMethod.VSDC`.
+  - `SKDMethod.MCHIP`.
+  - `SKDMethod.AEPIS_V40`.
+- ARPC methods supported:
+  - `ARPCMethod.METHOD_1` only.
+
+Unsupported derivation methods or ARPC methods result in `SMException`.
+
+==== Logging and data minimization
+
+The adapter logs operations via `LogEvent` under the realm `apc-operation`.
+
+To reduce the chance of leaking sensitive values in logs:
+
+- Key blocks are masked using `protectKeyblock`, showing header and MAC while masking the key material.
+- PIN blocks are masked using `protectPinblock`, showing only the first two hex characters (PIN block format nibble/bytes) and masking the remainder.
+
+[NOTE]
+====
+Even with masking, treat logs as sensitive assets. Ensure appropriate retention, access control, and transport security.
+====
+
+==== Region support
+
+The adapter maps a string `region` to an AWS `Region` enum. This implementation currently recognizes:
+
+- `us-east-1`.
+- `us-east-2`.
+- `us-west-1`.
+- `us-west-2`.
+
+If a region outside this list is configured, `getAWSRegion()` returns `null` and AWS client creation is expected to fail. If you need additional regions, extend the mapping accordingly.
+
+==== Troubleshooting
+
+- *ConfigurationException: Access Key Id not set / Secret Access Key not set.*
+  Verify the Q2 properties (`pc.access.key.id`, `pc.secret.access.key`) are present and resolved.
+
+- *Timeouts while calling AWS.*
+  Increase `timeout`, check network reachability to AWS endpoints, and confirm service quotas.
+
+- *Verification failures return false.*
+  This is expected behavior for CVV/PVV verification when the validation value is incorrect. If you need strict behavior, wrap the adapter behind higher-level logic that treats `false` as an error condition.
+
+- *Unsupported method / unsupported format.*
+  Ensure the transaction uses supported PIN block formats, derivation methods, and ARPC method variants.
+
+

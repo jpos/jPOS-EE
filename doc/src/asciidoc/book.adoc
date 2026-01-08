@@ -56,6 +56,10 @@ include::module_http_client.adoc[]
 == Kafka Support
 include::module_kafkaservice.adoc[]
 
+== HSM Support 
+
+include::module_paymentcryptography.adoc[]
+
 == Tools
 
 include::module_freemarker_decorator.adoc[]

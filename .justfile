@@ -20,3 +20,7 @@ resetdb:
 [no-cd]
 run:
     gradle iA && q2
+
+testall:
+    gradle clean test --info --rerun-tasks
+

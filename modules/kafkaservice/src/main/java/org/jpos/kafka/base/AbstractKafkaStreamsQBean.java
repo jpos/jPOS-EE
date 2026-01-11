@@ -147,6 +147,7 @@ public abstract class AbstractKafkaStreamsQBean<K, V> extends AbstractKafkaQBean
             .maxAttempts(storeRetryAttempts)
             .initialDelay(Duration.ofMillis(storeRetryDelayMs))
             .backoffMultiplier(2.0)
+            .runningCondition(this::shouldContinue)
             .build();
 
         // Build topology
@@ -184,6 +185,7 @@ public abstract class AbstractKafkaStreamsQBean<K, V> extends AbstractKafkaQBean
     protected void doStart() throws Exception {
         // Wait for RUNNING state with timeout
         StartupSynchronizer sync = new StartupSynchronizer(startupTimeoutSeconds, TimeUnit.SECONDS);
+        sync.setRunningCondition(this::shouldContinue);
 
         // Set combined state listener BEFORE starting (combines recovery + sync)
         streams.setStateListener((newState, oldState) -> {

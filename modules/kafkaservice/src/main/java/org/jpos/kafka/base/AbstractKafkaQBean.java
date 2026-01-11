@@ -245,6 +245,27 @@ public abstract class AbstractKafkaQBean<K, V> extends QBeanSupport {
     }
 
     /**
+     * Check if the component should continue operating.
+     * Returns true unless we're actively stopping or stopped.
+     * Works correctly in both QBean deployment (respects Q2's running()) and standalone usage.
+     * @return true if operations should continue, false if shutting down
+     */
+    protected final boolean shouldContinue() {
+        LifecycleState currentState = state.get();
+        // Abort if local state indicates shutdown
+        if (currentState == LifecycleState.STOPPING || currentState == LifecycleState.STOPPED) {
+            return false;
+        }
+        // When deployed as a QBean, also respect Q2's running() signal
+        // getName() is non-null when deployed via Q2
+        if (getName() != null) {
+            return running();
+        }
+        // Standalone usage: continue as long as not stopping
+        return true;
+    }
+
+    /**
      * Log info message.
      * @param message the message
      */

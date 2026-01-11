@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 /**
  * Synchronizes asynchronous startup with configurable timeout.
@@ -51,12 +52,14 @@ import java.util.concurrent.atomic.AtomicReference;
  * </pre>
  */
 public class StartupSynchronizer {
+    private static final long POLL_INTERVAL_MS = 1000;
     private final CountDownLatch latch = new CountDownLatch(1);
     private final long timeoutValue;
     private final TimeUnit timeoutUnit;
     private final AtomicBoolean ready = new AtomicBoolean(false);
     private final AtomicBoolean error = new AtomicBoolean(false);
     private final AtomicReference<String> errorMessage = new AtomicReference<>();
+    private volatile Supplier<Boolean> runningCondition;
 
     /**
      * Create a startup synchronizer with timeout.
@@ -66,6 +69,15 @@ public class StartupSynchronizer {
     public StartupSynchronizer(long timeout, TimeUnit unit) {
         this.timeoutValue = timeout;
         this.timeoutUnit = unit;
+    }
+
+    /**
+     * Set running condition to check during await.
+     * If the condition returns false, await will abort with InterruptedException.
+     * @param runningCondition supplier returning true if waiting should continue
+     */
+    public void setRunningCondition(Supplier<Boolean> runningCondition) {
+        this.runningCondition = runningCondition;
     }
 
     /**
@@ -95,27 +107,47 @@ public class StartupSynchronizer {
 
     /**
      * Wait for component to be ready or error.
+     * If a running condition is set, it will be checked periodically and await
+     * will abort if the condition returns false (e.g., during system shutdown).
      * @throws StartupException if startup fails
-     * @throws InterruptedException if interrupted while waiting
+     * @throws InterruptedException if interrupted while waiting or running condition returns false
      */
     public void await() throws StartupException, InterruptedException {
-        boolean completed = latch.await(timeoutValue, timeoutUnit);
+        long totalTimeMs = timeoutUnit.toMillis(timeoutValue);
+        long elapsedMs = 0;
+        long pollIntervalMs = Math.min(POLL_INTERVAL_MS, totalTimeMs);
 
-        if (!completed) {
-            throw new StartupTimeoutException(
-                "Startup did not complete within " + timeoutValue + " " + timeoutUnit
-            );
+        while (elapsedMs < totalTimeMs) {
+            // Check if we should continue running
+            if (runningCondition != null && !runningCondition.get()) {
+                throw new InterruptedException("Await aborted - system is shutting down");
+            }
+
+            long waitMs = Math.min(pollIntervalMs, totalTimeMs - elapsedMs);
+            boolean completed = latch.await(waitMs, TimeUnit.MILLISECONDS);
+
+            if (completed) {
+                // Latch released - check the outcome
+                if (error.get()) {
+                    throw new StartupFailedException(
+                        errorMessage.get() != null ? errorMessage.get() : "Startup failed"
+                    );
+                }
+
+                if (!ready.get()) {
+                    throw new StartupException("Startup completed but ready flag not set");
+                }
+
+                return; // Success
+            }
+
+            elapsedMs += waitMs;
         }
 
-        if (error.get()) {
-            throw new StartupFailedException(
-                errorMessage.get() != null ? errorMessage.get() : "Startup failed"
-            );
-        }
-
-        if (!ready.get()) {
-            throw new StartupException("Startup completed but ready flag not set");
-        }
+        // Timeout
+        throw new StartupTimeoutException(
+            "Startup did not complete within " + timeoutValue + " " + timeoutUnit
+        );
     }
 
     /**

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 /**
  * Configurable retry policy with exponential backoff.
@@ -57,6 +58,7 @@ public class RetryPolicy {
     private final boolean useJitter;
     private final Set<Class<? extends Exception>> retryableExceptions;
     private final Set<Class<? extends Exception>> nonRetryableExceptions;
+    private final Supplier<Boolean> runningCondition;
 
     private RetryPolicy(Builder builder) {
         this.maxAttempts = builder.maxAttempts;
@@ -66,6 +68,7 @@ public class RetryPolicy {
         this.useJitter = builder.useJitter;
         this.retryableExceptions = builder.retryableExceptions;
         this.nonRetryableExceptions = builder.nonRetryableExceptions;
+        this.runningCondition = builder.runningCondition;
     }
 
     /**
@@ -80,6 +83,11 @@ public class RetryPolicy {
         long delayMs = initialDelay.toMillis();
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            // Check if we should continue running before each attempt
+            if (runningCondition != null && !runningCondition.get()) {
+                throw new InterruptedException("Retry aborted - system is shutting down");
+            }
+
             try {
                 return operation.call();
             } catch (Exception e) {
@@ -90,6 +98,10 @@ public class RetryPolicy {
                 }
 
                 if (attempt < maxAttempts) {
+                    // Check running condition before sleeping
+                    if (runningCondition != null && !runningCondition.get()) {
+                        throw new InterruptedException("Retry aborted - system is shutting down");
+                    }
                     sleep(delayMs);
                     delayMs = calculateNextDelay(delayMs);
                 }
@@ -192,6 +204,7 @@ public class RetryPolicy {
         private boolean useJitter = true;
         private Set<Class<? extends Exception>> retryableExceptions = new HashSet<>();
         private Set<Class<? extends Exception>> nonRetryableExceptions = new HashSet<>();
+        private Supplier<Boolean> runningCondition;
 
         /**
          * Set maximum number of retry attempts.
@@ -266,6 +279,17 @@ public class RetryPolicy {
          */
         public Builder doNotRetryOn(Class<? extends Exception> exceptionClass) {
             this.nonRetryableExceptions.add(exceptionClass);
+            return this;
+        }
+
+        /**
+         * Set running condition to check before each retry attempt.
+         * If the condition returns false, retries will be aborted with InterruptedException.
+         * @param runningCondition supplier returning true if retries should continue
+         * @return this builder
+         */
+        public Builder runningCondition(Supplier<Boolean> runningCondition) {
+            this.runningCondition = runningCondition;
             return this;
         }
 

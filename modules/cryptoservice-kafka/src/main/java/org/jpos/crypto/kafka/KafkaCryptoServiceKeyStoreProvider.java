@@ -34,6 +34,7 @@ import org.jpos.crypto.CryptoServiceKeyStoreException;
 import org.jpos.crypto.CryptoServiceKeyStoreProvider;
 import org.jpos.crypto.KeyAlreadyExistsException;
 import org.jpos.kafka.base.AbstractKafkaStreamsQBean;
+import org.jpos.kafka.streams.TransactionalProducerHelper;
 import org.jpos.space.Space;
 import org.jpos.space.TSpace;
 
@@ -169,6 +170,11 @@ public class KafkaCryptoServiceKeyStoreProvider
         requireNonNull(id, "id must not be null");
         requireNonNull(value, "value must not be null");
 
+        TransactionalProducerHelper<String, String> txnHelper = getTransactionHelper();
+        if (txnHelper == null) {
+            throw new CryptoServiceKeyStoreException("Provider not ready - transactional producer not initialized");
+        }
+
         try {
             if (getMetrics() != null) {
                 getMetrics().counter("operations", "type", "write").increment();
@@ -176,7 +182,7 @@ public class KafkaCryptoServiceKeyStoreProvider
 
             if (!override) {
                 // Check-and-write with transaction
-                getTransactionHelper().executeInTransaction(
+                txnHelper.executeInTransaction(
                     () -> {
                         // Pre-write check: ensure key doesn't exist
                         String existing = get(id);
@@ -189,7 +195,7 @@ public class KafkaCryptoServiceKeyStoreProvider
                 );
             } else {
                 // Direct write with transaction
-                getTransactionHelper().executeInTransaction(() -> writeToKafka(id, value));
+                txnHelper.executeInTransaction(() -> writeToKafka(id, value));
             }
 
             // Cache write for read-after-write consistency

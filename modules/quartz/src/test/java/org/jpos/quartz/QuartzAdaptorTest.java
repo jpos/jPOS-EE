@@ -114,6 +114,48 @@ class QuartzAdaptorTest {
         assertEquals("1 1 1 1 1 ?", cron.getCronExpression());
     }
 
+    @Test
+    void testEnabledAndDisabledJob() throws Exception {
+        // Define an enabled job
+        Element enabledJob = new Element("job")
+                .setAttribute("id", "EnabledJob")
+                .setAttribute("class", TestJob.class.getName())
+                .setAttribute("when", "* * * * * ?");
+
+        // Define a disabled job by setting the 'enabled' attribute to false
+        // This will be caught by QFactory.isEnabled(e) inside the loop
+        Element disabledJob = new Element("job")
+                .setAttribute("id", "DisabledJob")
+                .setAttribute("class", TestJob.class.getName())
+                .setAttribute("enabled", "false")
+                .setAttribute("when", "* * * * * ?");
+
+        Element config = new Element("cron")
+                .addContent(enabledJob)
+                .addContent(disabledJob);
+
+        qa = new QuartzAdaptor();
+        qa.setConfiguration(config);
+        qa.setName("testDisabledJob");
+        qa.setConfiguration(new SimpleConfiguration(new Properties()));
+        qa.setServer(q2);
+
+        // Execute initService to trigger the job scheduling logic
+        qa.initService();
+
+        assertNotNull(qa.scheduler);
+
+        // Retrieve all scheduled jobs
+        Set<JobKey> jobs = qa.scheduler.getJobKeys(GroupMatcher.anyJobGroup());
+
+        // Verify that only 1 job was scheduled (the disabled one must be skipped)
+        assertEquals(1, jobs.size(), "Only the enabled job should be scheduled");
+
+        // Validate that the scheduled job is indeed the 'EnabledJob'
+        JobKey key = jobs.iterator().next();
+        assertEquals("EnabledJob", key.getName());
+    }
+
     @AfterEach
     public void stopServices() {
         if (q2 != null) q2.stop();

@@ -47,6 +47,8 @@ public class QuartzAdaptor extends QBeanSupport implements XmlConfigurable {
         QFactory factory = getFactory();
         LogEvent evt = getLog().createInfo();
         for (Element e : config.getChildren("job")) {
+            if (!QFactory.isEnabled(e))
+                continue;
             String jobId = e.getAttributeValue("id");
             if (jobId == null)
                 jobId = UUID.randomUUID().toString();

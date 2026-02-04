@@ -80,8 +80,13 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private boolean validateHeaders;
     private Map<String,CorsConfig> corsConfig = new LinkedHashMap<>();
     private CorsConfig defaultCorsConfig;
+    private String websocketPath;
+    private int maxWebSocketFrameSize;
+    private Map<String,String> websocketRoutes = new LinkedHashMap<>();
+    private Map<String, WebSocketHandler> websocketHandlers = new LinkedHashMap<>();
 
     public static final int DEFAULT_MAX_CONTENT_LENGTH = 512*1024;
+    public static final int DEFAULT_MAX_WEBSOCKET_FRAME_SIZE = 65536;
 
     @Override
     protected void initService() throws GeneralSecurityException, IOException {
@@ -99,12 +104,15 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                   int timeout = cfg.getInt("timeout", 300);
                   ch.pipeline().addLast(new IdleStateHandler(timeout,timeout,timeout));
                   if (enableTLS) {
-                      ch.pipeline().addLast(new SslHandler(getSSLEngine(sslContext), true));
+                      ch.pipeline().addLast("ssl", new SslHandler(getSSLEngine(sslContext), true));
                   }
                   ch.pipeline()
                      .addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, validateHeaders))
                      .addLast(new HttpObjectAggregator(maxContentLength));
-                  ch.pipeline().addLast(new RestSession(RestServer.this));
+                  if (websocketPath != null) {
+                      ch.pipeline().addLast("wsUpgrade", new WebSocketUpgradeHandler(RestServer.this, websocketPath, maxWebSocketFrameSize));
+                  }
+                  ch.pipeline().addLast("restSession", new RestSession(RestServer.this));
               }
           })
           .option(ChannelOption.SO_BACKLOG, 128)
@@ -168,6 +176,54 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         sp.out(getQueue(request), ctx, 60000L);
     }
 
+    /**
+     * Queues a WebSocket message context to the TransactionManager.
+     *
+     * @param ctx the context containing WS_SESSION, WS_FRAME, WS_FRAME_TYPE, and WS_PATH
+     * @param path the WebSocket path
+     */
+    @SuppressWarnings("unchecked")
+    public void queueWebSocket(Context ctx, String path) {
+        sp.out(getWebSocketQueue(path), ctx, 60000L);
+    }
+
+    private String getWebSocketQueue(String path) {
+        // Check for path-specific websocket routes
+        for (Map.Entry<String, String> entry : websocketRoutes.entrySet()) {
+            if (matchesWsPath(path, entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return queue;
+    }
+
+    private boolean matchesWsPath(String path, String pattern) {
+        // Simple pattern matching for websocket routes
+        if (pattern.endsWith("/**")) {
+            String prefix = pattern.substring(0, pattern.length() - 3);
+            return path.startsWith(prefix) || path.equals(prefix.substring(0, Math.max(0, prefix.length() - 1)));
+        } else if (pattern.endsWith("/*")) {
+            String prefix = pattern.substring(0, pattern.length() - 2);
+            return path.startsWith(prefix) && path.indexOf('/', prefix.length()) < 0;
+        }
+        return path.equals(pattern);
+    }
+
+    /**
+     * Returns the WebSocketHandler configured for the given path, if any.
+     *
+     * @param path the WebSocket path
+     * @return the handler, or null if no handler is configured for this path
+     */
+    public WebSocketHandler getWebSocketHandler(String path) {
+        for (Map.Entry<String, WebSocketHandler> entry : websocketHandlers.entrySet()) {
+            if (matchesWsPath(path, entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
     public CorsConfig getCorsConfig (FullHttpRequest request) {
         return corsConfig
           .entrySet()
@@ -196,6 +252,8 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         maxInitialLineLength = cfg.getInt("maxInitialLineLength", DEFAULT_MAX_INITIAL_LINE_LENGTH);
         maxChunkSize = cfg.getInt("maxChunkSize", DEFAULT_MAX_CHUNK_SIZE);
         validateHeaders = cfg.getBoolean("validateHeaders", DEFAULT_CHUNKED_SUPPORTED);
+        websocketPath = cfg.get("websocket-path", null);
+        maxWebSocketFrameSize = cfg.getInt("maxWebSocketFrameSize", DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
     }
 
     @Override
@@ -218,6 +276,20 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
                     r.getAttributeValue("method"),
                     (t, s) -> r.getAttributeValue("queue"))
                 );
+            }
+            for (Element ws : e.getChildren("websocket-route")) {
+                String path = ws.getAttributeValue("path");
+                String handlerClass = ws.getAttributeValue("handler");
+                String wsQueue = ws.getAttributeValue("queue");
+
+                if (path != null && handlerClass != null) {
+                    WebSocketHandler handler = (WebSocketHandler) getFactory().newInstance(handlerClass);
+                    getFactory().setLogger(handler, ws);
+                    getFactory().setConfiguration(handler, ws);
+                    websocketHandlers.put(path, handler);
+                } else if (path != null && wsQueue != null) {
+                    websocketRoutes.put(path, wsQueue);
+                }
             }
         } catch (Throwable t) {
             throw new ConfigurationException(t);

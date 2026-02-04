@@ -429,3 +429,266 @@ CORS can be configured on a system-wide basis by not providing a `path` attribut
 The last entry with no path is taken as the system's default.
 ======
 
+==== WebSocket Support
+
+QRest provides WebSocket support with two approaches:
+
+* **Queue-based routing** - WebSocket messages are queued to a TransactionManager, similar to HTTP requests
+* **Handler-based routing** - A dedicated handler class processes WebSocket events directly
+
+===== Enabling WebSocket Support
+
+To enable WebSocket support, add the `websocket-path` property to specify which paths should accept WebSocket upgrades:
+
+[source,xml]
+------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  <property name='port' value='8081' />
+  <property name='queue' value='TXNMGR' />
+  <property name='websocket-path' value='/ws/**' />                          <1>
+  <property name='maxWebSocketFrameSize' value='65536' />                    <2>
+</qrest>
+------------
+<1> Path pattern for WebSocket connections. Supports `**` (any path) and `*` (single segment) wildcards.
+<2> Optional maximum frame size in bytes (default: 65536)
+
+===== Queue-based WebSocket Routing
+
+This approach routes WebSocket messages to a TransactionManager queue, allowing you to process them using transaction participants. This is useful when you need the full power of the TransactionManager (logging, recovery, participant chaining).
+
+[source,xml]
+------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  <property name='port' value='8081' />
+  <property name='queue' value='TXNMGR' />
+  <property name='websocket-path' value='/ws/**' />
+
+  <websocket-route path="/ws/api/**" queue="TXNMGR.WS"/>                     <1>
+</qrest>
+------------
+<1> Routes WebSocket messages from `/ws/api/**` to the `TXNMGR.WS` queue
+
+When a WebSocket message arrives, QRest creates a `Context` with the following entries:
+
+[cols="30%,70%"]
+|===
+| Constant | Description
+
+| `WsConstants.WS_SESSION`
+| The Netty `ChannelHandlerContext` for sending responses
+
+| `WsConstants.WS_FRAME`
+| The frame content (`String` for text, `byte[]` for binary)
+
+| `WsConstants.WS_FRAME_TYPE`
+| Either `"TEXT"` or `"BINARY"`
+
+| `WsConstants.WS_PATH`
+| The WebSocket URI path
+|===
+
+To send a response from a transaction participant, use `SendWebSocketResponse`:
+
+[source,xml]
+------------
+<txnmgr class="org.jpos.transaction.TransactionManager" logger="Q2">
+  <property name="queue" value="TXNMGR.WS"/>
+  <property name="sessions" value="2"/>
+
+  <participant class="com.example.ProcessWebSocketMessage"/>
+  <participant class="org.jpos.qrest.SendWebSocketResponse"/>                <1>
+</txnmgr>
+------------
+<1> Sends the response stored in `WsConstants.WS_RESPONSE` back to the client
+
+===== Handler-based WebSocket Routing
+
+For simpler use cases or when you need more direct control over the WebSocket connection, you can use handler-based routing. Handlers implement the `WebSocketHandler` interface and receive callbacks for WebSocket events.
+
+[source,xml]
+------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  <property name='port' value='8081' />
+  <property name='queue' value='TXNMGR' />
+  <property name='websocket-path' value='/ws/**' />
+
+  <websocket-route path="/ws/echo/**" handler="com.example.EchoHandler">     <1>
+    <property name="prefix" value="Echo: "/>                                 <2>
+  </websocket-route>
+</qrest>
+------------
+<1> Routes to a handler class instead of a queue
+<2> Configuration properties are passed to the handler
+
+The handler receives a `WebSocketContext` that provides methods for sending messages and managing connection state:
+
+[cols="40%,60%"]
+|===
+| Method | Description
+
+| `send(String text)`
+| Sends a text message to the client
+
+| `sendBinary(byte[] data)`
+| Sends binary data to the client
+
+| `close()`
+| Closes the connection normally
+
+| `close(int statusCode, String reason)`
+| Closes with a specific status code
+
+| `getPath()`
+| Returns the WebSocket URI path
+
+| `getAttribute(String key)`
+| Gets a per-connection attribute
+
+| `setAttribute(String key, Object value)`
+| Sets a per-connection attribute
+
+| `getRemoteAddress()`
+| Returns the client's socket address
+
+| `getServer()`
+| Returns the RestServer instance
+
+| `isActive()`
+| Returns true if the connection is active
+|===
+
+===== Sample Handler Implementation
+
+Here's a complete example of a WebSocket handler that echoes messages back to the client:
+
+[source,java]
+------------
+package com.example;
+
+import org.jpos.qrest.AbstractWebSocketHandler;
+import org.jpos.qrest.WebSocketContext;
+
+/**
+ * Simple echo handler that sends messages back to the client.
+ */
+public class EchoHandler extends AbstractWebSocketHandler {
+
+    @Override
+    public void onOpen(WebSocketContext ctx) {
+        // Access configuration if needed
+        String greeting = cfg != null ? cfg.get("greeting", "Connected!") : "Connected!";
+        ctx.send(greeting);
+
+        // Store per-connection state
+        ctx.setAttribute("messageCount", 0);
+    }
+
+    @Override
+    public void onMessage(WebSocketContext ctx, String message) {
+        // Update message count
+        int count = (int) ctx.getAttribute("messageCount") + 1;
+        ctx.setAttribute("messageCount", count);
+
+        // Get prefix from configuration
+        String prefix = cfg != null ? cfg.get("prefix", "") : "";
+
+        // Echo the message back
+        ctx.send(prefix + message + " (message #" + count + ")");
+    }
+
+    @Override
+    public void onBinaryMessage(WebSocketContext ctx, byte[] data) {
+        // Echo binary data back unchanged
+        ctx.sendBinary(data);
+    }
+
+    @Override
+    public void onClose(WebSocketContext ctx, int statusCode, String reason) {
+        // Cleanup if needed
+        int count = (int) ctx.getAttribute("messageCount");
+        // Log or record the session statistics
+    }
+
+    @Override
+    public void onError(WebSocketContext ctx, Throwable cause) {
+        // Handle errors - connection will be closed after this
+        ctx.send("Error: " + cause.getMessage());
+    }
+}
+------------
+
+===== Chat Room Example
+
+Here's a more complete example implementing a simple chat room:
+
+[source,java]
+------------
+package com.example;
+
+import org.jpos.qrest.AbstractWebSocketHandler;
+import org.jpos.qrest.WebSocketContext;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Simple chat room handler that broadcasts messages to all connected clients.
+ */
+public class ChatHandler extends AbstractWebSocketHandler {
+
+    // Thread-safe set of all connected clients
+    private static final Set<WebSocketContext> clients = ConcurrentHashMap.newKeySet();
+
+    @Override
+    public void onOpen(WebSocketContext ctx) {
+        clients.add(ctx);
+        broadcast("User joined. Total users: " + clients.size());
+    }
+
+    @Override
+    public void onMessage(WebSocketContext ctx, String message) {
+        // Broadcast the message to all connected clients
+        String sender = ctx.getRemoteAddress().toString();
+        broadcast("[" + sender + "]: " + message);
+    }
+
+    @Override
+    public void onClose(WebSocketContext ctx, int statusCode, String reason) {
+        clients.remove(ctx);
+        broadcast("User left. Total users: " + clients.size());
+    }
+
+    private void broadcast(String message) {
+        for (WebSocketContext client : clients) {
+            if (client.isActive()) {
+                client.send(message);
+            }
+        }
+    }
+}
+------------
+
+Configure it in your QRest XML:
+
+[source,xml]
+------------
+<qrest class='org.jpos.qrest.RestServer' logger='Q2'>
+  <property name='port' value='8081' />
+  <property name='queue' value='TXNMGR' />
+  <property name='websocket-path' value='/ws/**' />
+
+  <websocket-route path="/ws/chat/**" handler="com.example.ChatHandler"/>
+</qrest>
+------------
+
+Test with a WebSocket client:
+
+[source,bash]
+------------
+$ wscat -c ws://localhost:8081/ws/chat
+Connected (press CTRL+C to quit)
+< User joined. Total users: 1
+> Hello everyone!
+< [/127.0.0.1:54321]: Hello everyone!
+------------
+

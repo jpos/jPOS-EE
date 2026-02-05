@@ -26,7 +26,9 @@ import org.jpos.transaction.TransactionParticipant;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,16 +46,16 @@ public class ExtractFormParams implements TransactionParticipant {
         String contentType = request.headers().get("Content-Type");
         if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
             try {
-                Map<String,String> params = new LinkedHashMap<>();
+                Map<String,List<String>> params = new LinkedHashMap<>();
                 ctx.put (FORMPARAMS, params);
                 String body = request.content().toString(CharsetUtil.UTF_8);
                 Matcher m = FORM_PARAM_PATTERN.matcher(body);
                 while (m.find()) {
                     if (m.groupCount() == 2) {
-                        params.put(
+                        params.computeIfAbsent(
                           URLDecoder.decode(m.group(1), CharsetUtil.UTF_8.name()),
-                          URLDecoder.decode(m.group(2), CharsetUtil.UTF_8.name())
-                        );
+                          k -> new ArrayList<>()
+                        ).add(URLDecoder.decode(m.group(2), CharsetUtil.UTF_8.name()));
                     }
                 }
             } catch (UnsupportedEncodingException ignored) { }

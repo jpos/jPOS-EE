@@ -181,17 +181,16 @@ public class Q2Info implements TransactionParticipant, Configurable {
 
 
     private void initInternalRoutes() {
-        routes.add(new Route<>(prefix + "/q2/version**", "GET", (t,s) -> mapOf ("version", q2Version())));
-        routes.add(new Route<>(prefix + "/q2/applicationVersion**", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
-        routes.add(new Route<>(prefix + "/q2/instanceId**", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
-        routes.add(new Route<>(prefix + "/q2/uptime**", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
-        // routes.add(new Route<>(prefix + "/q2/started**", "GET", (t,s) -> mapOf("started", q2.getUptime())));
-        routes.add(new Route<>(prefix + "/q2/diskspace**", "GET", (t,s) -> diskspace()));
+        routes.add(new Route<>(prefix + "/q2/version", "GET", (t,s) -> mapOf ("version", q2Version())));
+        routes.add(new Route<>(prefix + "/q2/applicationVersion", "GET", (t,s) -> mapOf("applicationVersion", Q2.getAppVersionString())));
+        routes.add(new Route<>(prefix + "/q2/instanceId", "GET", (t,s) -> mapOf("instanceId", q2.getInstanceId())));
+        routes.add(new Route<>(prefix + "/q2/uptime", "GET", (t,s) -> mapOf("uptime", q2.getUptime())));
+        routes.add(new Route<>(prefix + "/q2/diskspace", "GET", (t,s) -> diskspace()));
         routes.add(new Route<>(prefix + "/q2/mux/{muxname}/connected", "GET", (t,s) -> connected(t,s)));    // like below, but returns HTTP code 503 if mux not connected
-        routes.add(new Route<>(prefix + "/q2/mux/{muxname}**", "GET", (t,s) -> muxInfo(t,s)));
-        routes.add(new Route<>(prefix + "/q2/mux**", "GET", (t,s) -> muxes()));
+        routes.add(new Route<>(prefix + "/q2/mux/{muxname}", "GET", (t,s) -> muxInfo(t,s)));
+        routes.add(new Route<>(prefix + "/q2/mux", "GET", (t,s) -> muxes()));
         routes.add(new Route<>(prefix + "/q2/txnmgr/name", "GET", (t,s) -> mapOf("name", txnmgr.getName())));
-        routes.add(new Route<>(prefix + "/q2/txnmgr**", "GET", (t,s) -> txnmgr()));
+        routes.add(new Route<>(prefix + "/q2/txnmgr", "GET", (t,s) -> txnmgr()));
     }
 
     private  Map<String, Object> newMap () {

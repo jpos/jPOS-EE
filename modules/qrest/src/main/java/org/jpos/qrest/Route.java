@@ -31,6 +31,7 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
     private BiFunction<Route<T>, String,T> supplier;
 
     private final List<String> params = new ArrayList<>();
+    private boolean hasWildcard;
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{([^/]+?)\\}");
     private static final Pattern WILDCARD_PATTERN = Pattern.compile("[\\*][\\*]");
 
@@ -64,6 +65,11 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
                 if (!val.isEmpty())
                     pathParameters.put(name, val);
             }
+            if (hasWildcard) {
+                String val = m.group(i);
+                if (!val.isEmpty())
+                    pathParameters.put("*", val);
+            }
         }
         return pathParameters;
     }
@@ -96,7 +102,8 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
         }
         m = WILDCARD_PATTERN.matcher(s);
         while (m.find()) {
-            s = m.replaceAll(".*");
+            hasWildcard = true;
+            s = m.replaceFirst("(.*)");
             m.reset(s);
         }
         return Pattern.compile(s + "$");

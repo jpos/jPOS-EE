@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 /**
  * @author Arturo Volpe
@@ -50,6 +50,53 @@ class RouteTest {
         assertEquals(2, params.size());
         assertEquals("2.1", params.get("version"));
         assertEquals("21.001.001", params.get("code"));
+    }
+
+    @Test
+    void wildcardParameter() {
+        Route<?> route = buildRoute("/api/{version}/**");
+        String uri = "/api/v2/users/123/profile";
+        assertTrue(route.matches(uri));
+        Map<String, Object> params = route.parameters(uri);
+        assertEquals("v2", params.get("version"));
+        assertEquals("users/123/profile", params.get("*"));
+    }
+
+    @Test
+    void wildcardSingleSegment() {
+        Route<?> route = buildRoute("/template/{key}/**");
+        String uri = "/template/SALE:1/form";
+        assertTrue(route.matches(uri));
+        Map<String, Object> params = route.parameters(uri);
+        assertEquals("SALE:1", params.get("key"));
+        assertEquals("form", params.get("*"));
+    }
+
+    @Test
+    void wildcardEmptyTail() {
+        Route<?> route = buildRoute("/files/**");
+        String uri = "/files/";
+        assertTrue(route.matches(uri));
+        Map<String, Object> params = route.parameters(uri);
+        assertNull(params.get("*"));
+    }
+
+    @Test
+    void wildcardNoTrailingPath() {
+        Route<?> route = buildRoute("/files/**");
+        String uri = "/files";
+        assertFalse(route.matches(uri));
+    }
+
+    @Test
+    void multipleParamsWithWildcard() {
+        Route<?> route = buildRoute("/org/{orgId}/repo/{repoId}/**");
+        String uri = "/org/acme/repo/widgets/tree/main/src";
+        assertTrue(route.matches(uri));
+        Map<String, Object> params = route.parameters(uri);
+        assertEquals("acme", params.get("orgId"));
+        assertEquals("widgets", params.get("repoId"));
+        assertEquals("tree/main/src", params.get("*"));
     }
 
     private static Route<String> buildRoute(String path) {

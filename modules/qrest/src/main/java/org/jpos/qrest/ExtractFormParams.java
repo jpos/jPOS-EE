@@ -20,6 +20,9 @@ package org.jpos.qrest;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.CharsetUtil;
+import org.jpos.core.Configurable;
+import org.jpos.core.Configuration;
+import org.jpos.core.ConfigurationException;
 import org.jpos.core.annotation.Config;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionParticipant;
@@ -35,9 +38,14 @@ import java.util.regex.Pattern;
 
 import static org.jpos.qrest.Constants.*;
 
-public class ExtractFormParams implements TransactionParticipant {
+public class ExtractFormParams implements TransactionParticipant, Configurable {
     private static final Pattern FORM_PARAM_PATTERN = Pattern.compile("([^&]*)=([^&]*)");
     @Config("ignore-content-type") boolean ignoreContentType;
+
+    @Override
+    public void setConfiguration(Configuration cfg) throws ConfigurationException {
+        ignoreContentType = cfg.getBoolean("ignore-content-type", false);
+    }
 
     @Override
     public int prepare(long id, Serializable context) {

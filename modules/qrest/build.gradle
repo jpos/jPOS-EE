@@ -9,6 +9,7 @@ dependencies {
     api libs.jsonSchemaValidator
     api libs.guava
     api libs.jakartaActivation
+    api libs.jakartaWsRs
  
     testImplementation testlibs.bundles.junit
     testRuntimeOnly testlibs.bundles.junit.platform

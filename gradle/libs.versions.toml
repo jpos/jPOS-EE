@@ -29,6 +29,7 @@ jetty = '12.1.4'
 groovy = '3.0.25'
 kafka = '4.1.0'
 awssdk = '2.26.3'
+jakartaWsRs = '4.0.0'
 
 [libraries]
 jpos = { module = "org.jpos:jpos", version.ref = "jpos" }
@@ -82,6 +83,7 @@ kafka_clients = { module = 'org.apache.kafka:kafka-clients', version.ref = 'kafk
 kafka_streams = { module = 'org.apache.kafka:kafka-streams', version.ref = 'kafka' }
 aws_paymentcryptography = { module = 'software.amazon.awssdk:paymentcryptography', version.ref = 'awssdk' }
 aws_paymentcryptography_data = { module = 'software.amazon.awssdk:paymentcryptographydata', version.ref = 'awssdk' }
+jakartaWsRs = { module = 'jakarta.ws.rs:jakarta.ws.rs-api', version.ref = 'jakartaWsRs' }
 
 [bundles]
 jackson = [

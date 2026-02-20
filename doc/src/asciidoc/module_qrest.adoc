@@ -304,6 +304,89 @@ Here is a copy of the internal Q2Info route configuration:
 
 If we just call `/q2`, it will output them all.
 
+==== ParamBinder
+
+Transaction participants that handle HTTP requests typically need to extract path, query, and form
+parameters from the `Context` and convert them to the appropriate types. `ParamBinder` is a small
+utility that uses standard JAX-RS annotations on Java records to do this declaratively.
+
+Instead of:
+
+[source,java]
+----------------------------------------------------------------------------------------
+@Override
+public int prepare(long id, Serializable context) {
+    Context ctx = (Context) context;
+    Map<String, Object> pathParams = ctx.get(Constants.PATHPARAMS);
+    Map<String, List<String>> queryParams = ctx.get(Constants.QUERYPARAMS);
+
+    long accountId = Long.parseLong(pathParams.get("id").toString());
+    String currency = queryParams.containsKey("currency")
+        ? queryParams.get("currency").get(0) : "USD";
+    int limit = queryParams.containsKey("limit")
+        ? Integer.parseInt(queryParams.get("limit").get(0)) : 10;
+    // ...
+}
+----------------------------------------------------------------------------------------
+
+you can define a record:
+
+[source,java]
+----------------------------------------------------------------------------------------
+record AccountQuery(
+    @PathParam("id") long id,
+    @QueryParam("currency") @DefaultValue("USD") String currency,
+    @QueryParam("limit") @DefaultValue("10") int limit
+) { }
+----------------------------------------------------------------------------------------
+
+and bind it in one call:
+
+[source,java]
+----------------------------------------------------------------------------------------
+@Override
+public int prepare(long id, Serializable context) {
+    Context ctx = (Context) context;
+    AccountQuery q = ParamBinder.bind(ctx, AccountQuery.class);
+    // q.id(), q.currency(), q.limit() are ready to use
+    // ...
+}
+----------------------------------------------------------------------------------------
+
+===== Supported annotations
+
+[cols="30%,70%"]
+|===
+| Annotation | Source in Context
+
+| `@QueryParam("name")`
+| `Constants.QUERYPARAMS` -- `Map<String, List<String>>`, takes the first value
+
+| `@PathParam("name")`
+| `Constants.PATHPARAMS` -- `Map<String, Object>`, calls `toString()` on the value
+
+| `@FormParam("name")`
+| `Constants.FORMPARAMS` -- `Map<String, List<String>>`, takes the first value
+
+| `@DefaultValue("value")`
+| Fallback when the parameter is absent; may be combined with any of the above
+|===
+
+===== Supported types
+
+Record components may use the following types: `String`, `int` / `Integer`,
+`long` / `Long`, `boolean` / `Boolean`, `short` / `Short`, and `BigDecimal`.
+An `IllegalArgumentException` is thrown for unsupported types.
+
+When a parameter is missing and no `@DefaultValue` is provided, primitive types receive their
+Java default (`0`, `0L`, `false`, `(short) 0`) and object types receive `null`.
+
+===== Caching
+
+`ParamBinder` caches the reflective metadata (constructor lookup, annotation parsing) per record
+class in a `ConcurrentHashMap`, so repeated calls with the same record type incur no reflection
+overhead after the first invocation.
+
 ==== Static and Dynamic HTML content
 
 QRest is by no means a full fledged web server, but it can still serve static and

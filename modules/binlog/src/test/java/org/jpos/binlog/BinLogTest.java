@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +60,7 @@ public class BinLogTest implements Runnable {
     }
     @Test
     @Order(1)
-    public void test000_Write() throws IOException {
+    public void test000_Write() throws IOException, InterruptedException {
         try (BinLogWriter w = new BinLogWriter(dir)) { 
             assertNotNull(w.getFirst(dir), "Did not find first file");
             assertNull(w.getLastClosed(dir), "Found last closed file");
@@ -78,6 +79,7 @@ public class BinLogTest implements Runnable {
             }
             assertEquals(10000, i, "Invalid number of entries");
             assertEquals(1, bl.getFileNumber(bl.getFirst(dir)), "Invalid first file");
+            awaitWriterTermination();
             assertEquals(100, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");
         }
     }
@@ -105,7 +107,8 @@ public class BinLogTest implements Runnable {
     }
 
     @AfterAll
-    public static void cleanup() throws IOException {
+    public static void cleanup() throws IOException, InterruptedException {
+        awaitWriterTermination();
         if (Files.isDirectory(dir)) {
             for (Path f : Files.newDirectoryStream(dir)) {
                 if (f.toString().endsWith(".dat")) {
@@ -116,5 +119,16 @@ public class BinLogTest implements Runnable {
         }
         System.out.println ("Deleting " + dir);
         Files.deleteIfExists(dir);
+    }
+
+    private static void awaitWriterTermination() throws InterruptedException {
+        if (executor != null) {
+            executor.shutdown();
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+                throw new IllegalStateException("BinLog writers did not finish within 30 seconds");
+            }
+            executor = null;
+        }
     }
 }

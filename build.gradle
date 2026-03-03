@@ -41,6 +41,12 @@ subprojects {
         tasks.withType(JavaCompile) {
             options.release = JavaVersion.VERSION_25.ordinal()
         }
+
+        tasks.withType(Test).configureEach {
+            if (System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE") == null) {
+                environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock"
+            }
+        }
         repositories {
             mavenCentral()
             maven { url = uri('https://jpos.org/maven') }

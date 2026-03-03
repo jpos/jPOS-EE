@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
+import org.jpos.q2.QFactory;
 import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.GroupSelector;
@@ -72,6 +73,8 @@ public class Router implements GroupSelector, XmlConfigurable {
     public void setConfiguration(Element e) throws ConfigurationException {
         try {
             for (Element r : e.getChildren("route")) {
+                if (!QFactory.isEnabled(r))
+                    continue;
                 String name = r.getAttributeValue("name");
                 routes.computeIfAbsent(
                   r.getAttributeValue("method"),

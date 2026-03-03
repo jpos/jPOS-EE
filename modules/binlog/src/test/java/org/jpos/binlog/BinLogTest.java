@@ -33,6 +33,9 @@ import org.junit.jupiter.api.Order;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
@@ -45,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @TestMethodOrder(OrderAnnotation.class)
 public class BinLogTest implements Runnable {
     public static Path dir;
+    private static ExecutorService executor;
     private AtomicLong cnt = new AtomicLong();
 
     @BeforeEach
@@ -66,14 +70,15 @@ public class BinLogTest implements Runnable {
     }
     @Test
     @Order(1)
-    public void test000_Write() throws IOException {
-        try (BinLogWriter w = new BinLogWriter(dir)) { 
+    public void test000_Write() throws Exception {
+        try (BinLogWriter w = new BinLogWriter(dir)) {
             assertNotNull(w.getFirst(dir), "Did not find first file");
             assertNull(w.getLastClosed(dir), "Found last closed file");
             assertEquals(1, w.getFileNumber(w.getFirst(dir)), "Invalid first file");
         }
+        executor = Executors.newFixedThreadPool(10);
         for (int i=0; i<10; i++) {
-            new Thread(this).start();
+            executor.submit(this);
         }
         try (BinLogReader bl = new BinLogReader(dir)) {
             int i = 0;
@@ -84,8 +89,9 @@ public class BinLogTest implements Runnable {
                     System.out.println(i + " " + new String(b));
             }
             assertEquals(100000, i, "Invalid number of entries");
+            awaitWriterTermination();
             assertEquals(1, bl.getFileNumber(bl.getFirst(dir)), "Invalid first file");
-            assertEquals(i/5000, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");            
+            assertEquals(i/5000, bl.getFileNumber(bl.getLastClosed(dir)), "Invalid last closed file");
         }
     }
 
@@ -107,7 +113,8 @@ public class BinLogTest implements Runnable {
     }
 
     @AfterAll
-    public static void cleanup() throws IOException {
+    public static void cleanup() throws Exception {
+        awaitWriterTermination();
         if (Files.isDirectory(dir)) {
             for (Path f : Files.newDirectoryStream(dir)) {
                 if (f.toString().endsWith(".dat")) {
@@ -118,5 +125,15 @@ public class BinLogTest implements Runnable {
         }
         System.out.println ("Deleting " + dir);
         Files.deleteIfExists(dir);
+    }
+
+    private static void awaitWriterTermination() throws Exception {
+        if (executor != null) {
+            executor.shutdown();
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Writers did not finish within 30 seconds");
+            }
+            executor = null;
+        }
     }
 }

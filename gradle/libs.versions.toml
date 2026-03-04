@@ -6,11 +6,12 @@ slf4j = "2.0.17"
 jakartaBind = "4.0.1"
 logback = '1.5.23'
 jacksonDatabind = '2.20.1'
-netty = '4.2.9.Final'
+netty = '4.1.131.Final'
 freemarker = '2.3.34'
 jsonSchemaValidator = '2.2.14'
 guava = '33.5.0-jre'
 jakartaActivation = '2.0.1'
+angusActivation = '2.0.3'
 hibernate = '6.6.17.Final'
 hibernateTools = '6.6.17.Final'
 hibernateValidator = '6.2.5.Final'
@@ -51,6 +52,7 @@ freemarker = { module = 'org.freemarker:freemarker', version.ref = 'freemarker' 
 jsonSchemaValidator = { module = 'com.github.java-json-tools:json-schema-validator', version.ref = 'jsonSchemaValidator' }
 guava = { module = 'com.google.guava:guava', version.ref = 'guava' }
 jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.ref = 'jakartaActivation' }
+angusActivation = { module = 'org.eclipse.angus:angus-activation', version.ref = 'angusActivation' }
 hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
 hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernateTools' }
 hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
@@ -90,4 +92,3 @@ jackson = [
     "jacksonDatabind",
     "jacksonDataTypeJSR310"
 ]
-

@@ -209,6 +209,17 @@ public class DB implements Closeable {
     }
 
     /**
+     * Checks whether properties have been registered for the given configModifier.
+     *
+     * @param configModifier the config modifier key to check
+     * @return true if properties are registered
+     */
+    public static boolean hasRegisteredProperties(String configModifier) {
+        String cm = configModifier != null ? configModifier : "";
+        return registeredProperties.containsKey(cm);
+    }
+
+    /**
      * Invalidates and closes the SessionFactory for a specific configModifier.
      *
      * @param configModifier the config modifier key to invalidate

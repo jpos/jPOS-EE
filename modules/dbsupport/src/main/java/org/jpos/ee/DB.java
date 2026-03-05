@@ -78,6 +78,7 @@ public class DB implements Closeable {
     private static Map<String,SessionFactory> sessionFactories = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Metadata> metadatas = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Properties> properties = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Properties> registeredProperties = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Creates DB Object using default Hibernate instance
@@ -176,6 +177,50 @@ public class DB implements Closeable {
             } catch (Exception ignored) {}
         }
         sessionFactories.clear();
+    }
+
+    /**
+     * Registers properties programmatically for a given configModifier,
+     * bypassing the filesystem-based cfg/db.properties lookup.
+     *
+     * <p>This enables runtime database provisioning (e.g., per-entity databases)
+     * where connection parameters are determined at runtime rather than
+     * from configuration files.</p>
+     *
+     * @param configModifier the config modifier key (e.g., "entity-acme:tenant")
+     * @param props Hibernate properties for this configuration
+     */
+    public static void registerProperties(String configModifier, Properties props) {
+        String cm = configModifier != null ? configModifier : "";
+        registeredProperties.put(cm, props);
+        invalidateSessionFactory(cm);
+    }
+
+    /**
+     * Unregisters previously registered properties for a given configModifier,
+     * closing and removing the associated SessionFactory.
+     *
+     * @param configModifier the config modifier key to unregister
+     */
+    public static void unregisterProperties(String configModifier) {
+        String cm = configModifier != null ? configModifier : "";
+        registeredProperties.remove(cm);
+        invalidateSessionFactory(cm);
+    }
+
+    /**
+     * Invalidates and closes the SessionFactory for a specific configModifier.
+     *
+     * @param configModifier the config modifier key to invalidate
+     */
+    public static synchronized void invalidateSessionFactory(String configModifier) {
+        String cm = configModifier != null ? configModifier : "";
+        SessionFactory sf = sessionFactories.remove(cm);
+        if (sf != null) {
+            try { sf.close(); } catch (Exception ignored) {}
+        }
+        metadatas.remove(cm);
+        properties.remove(cm);
     }
 
     private SessionFactory newSessionFactory() throws IOException, ConfigurationException, InterruptedException, DocumentException {
@@ -550,8 +595,11 @@ public class DB implements Closeable {
                 ssrb.configure(hibCfg);
                 Properties dbProps = null;
                 if (!standardHibernateConfig) {
-                    propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
-                    dbProps = loadProperties(propFile);
+                    dbProps = registeredProperties.get(cm);
+                    if (dbProps == null) {
+                        propFile = System.getProperty(dbPropertiesPrefix + "DB_PROPERTIES", "cfg/" + dbPropertiesPrefix + "db.properties");
+                        dbProps = loadProperties(propFile);
+                    }
                     for (Map.Entry entry : dbProps.entrySet()) {
                         String k = (String) entry.getKey();
                         String v = Environment.get((String) entry.getValue());

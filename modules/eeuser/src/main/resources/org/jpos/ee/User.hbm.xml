@@ -54,7 +54,7 @@
 
     <map name="props" lazy="true" table="eeuser_props"
         cascade="all-delete-orphan">
-        <key foreign-key="FKUserProps" />
+        <key column="eeuser" foreign-key="FKUserProps" />
         <index column="propName" type="string" length="64"/>
         <element column="propValue" type="string"/>
     </map>

@@ -22,6 +22,7 @@ package org.jpos.ee;
 
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.*;
+import org.hibernate.Session;
 import org.hibernate.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,9 @@ public class DBManager<T> {
         this.clazz = clazz;
     }
 
+    public Session session() {
+        return db.session();
+    }
     /** Convenience method */
     public T byId(Long id) {
         return db.session().get(clazz, id);

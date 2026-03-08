@@ -28,6 +28,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -97,6 +99,12 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
             QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
             WebSocketHandler handler = server.getWebSocketHandler(decoder.path());
 
+            // Extract HTTP headers from the upgrade request for downstream use
+            Map<String, String> headers = new HashMap<>();
+            for (Map.Entry<String, String> entry : request.headers()) {
+                headers.put(entry.getKey(), entry.getValue());
+            }
+
             // Perform the handshake
             handshaker.handshake(ctx.channel(), request).addListener(future -> {
                 if (future.isSuccess()) {
@@ -109,7 +117,7 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
                     ctx.pipeline().replace(
                         "restSession",
                         "wsSession",
-                        new WebSocketSession(server, handshaker, request.uri(), handler)
+                        new WebSocketSession(server, handshaker, request.uri(), handler, headers)
                     );
                     server.getLog().info("WebSocket connected: " + ctx.channel() + " path=" + request.uri());
                 } else {

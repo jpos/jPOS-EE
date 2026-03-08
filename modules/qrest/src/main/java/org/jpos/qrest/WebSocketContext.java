@@ -39,6 +39,7 @@ public class WebSocketContext {
     private final ChannelHandlerContext nettyCtx;
     private final RestServer server;
     private final String path;
+    private final Map<String, String> upgradeHeaders;
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     /**
@@ -49,9 +50,23 @@ public class WebSocketContext {
      * @param path the WebSocket path for this connection
      */
     public WebSocketContext(ChannelHandlerContext nettyCtx, RestServer server, String path) {
+        this(nettyCtx, server, path, Map.of());
+    }
+
+    /**
+     * Creates a new WebSocketContext with HTTP upgrade headers.
+     *
+     * @param nettyCtx the underlying Netty channel handler context
+     * @param server the RestServer instance
+     * @param path the WebSocket path for this connection
+     * @param upgradeHeaders headers from the HTTP upgrade request
+     */
+    public WebSocketContext(ChannelHandlerContext nettyCtx, RestServer server, String path,
+                            Map<String, String> upgradeHeaders) {
         this.nettyCtx = nettyCtx;
         this.server = server;
         this.path = path;
+        this.upgradeHeaders = upgradeHeaders != null ? upgradeHeaders : Map.of();
     }
 
     /**
@@ -188,5 +203,15 @@ public class WebSocketContext {
      */
     public boolean isActive() {
         return nettyCtx.channel().isActive();
+    }
+
+    /**
+     * Returns a header from the HTTP upgrade request.
+     *
+     * @param name the header name (case-sensitive)
+     * @return the header value, or null if not present
+     */
+    public String getUpgradeHeader(String name) {
+        return upgradeHeaders.get(name);
     }
 }

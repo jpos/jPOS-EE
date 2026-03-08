@@ -29,6 +29,8 @@ import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
+import java.util.Map;
+
 /**
  * Handles WebSocket frames after the connection has been upgraded.
  * Routes messages to the TransactionManager via Space (same as HTTP).
@@ -38,6 +40,7 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     private final WebSocketServerHandshaker handshaker;
     private final String path;
     private final WebSocketHandler handler;
+    private final Map<String, String> upgradeHeaders;
     private WebSocketContext wsContext;
 
     /** Frame type constant for text frames */
@@ -46,14 +49,20 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     public static final String FRAME_TYPE_BINARY = "BINARY";
 
     public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path) {
-        this(server, handshaker, path, null);
+        this(server, handshaker, path, null, Map.of());
     }
 
     public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path, WebSocketHandler handler) {
+        this(server, handshaker, path, handler, Map.of());
+    }
+
+    public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path,
+                             WebSocketHandler handler, Map<String, String> upgradeHeaders) {
         this.server = server;
         this.handshaker = handshaker;
         this.path = path;
         this.handler = handler;
+        this.upgradeHeaders = upgradeHeaders != null ? upgradeHeaders : Map.of();
     }
 
     @Override
@@ -169,7 +178,7 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
         super.handlerAdded(ctx);
         // Initialize wsContext when handler is added to an already-active channel (WebSocket upgrade)
         if (handler != null && ctx.channel().isActive()) {
-            wsContext = new WebSocketContext(ctx, server, path);
+            wsContext = new WebSocketContext(ctx, server, path, upgradeHeaders);
             handler.onOpen(wsContext);
         }
     }
@@ -179,7 +188,7 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
         super.channelActive(ctx);
         // Handle case where channel becomes active after handler was added
         if (handler != null && wsContext == null) {
-            wsContext = new WebSocketContext(ctx, server, path);
+            wsContext = new WebSocketContext(ctx, server, path, upgradeHeaders);
             handler.onOpen(wsContext);
         }
     }

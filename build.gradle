@@ -40,9 +40,6 @@ subprojects {
     group = 'org.jpos.ee'
     version = binding.variables.get("PROJECT_VERSION") ?: "0.0.1"
     def isSnapshot = version.contains("SNAPSHOT")
-    def mavenCentralRepo = isSnapshot ?
-            'https://oss.sonatype.org/content/repositories/snapshots/' :
-            'https://oss.sonatype.org/service/local/staging/deploy/maven2';
     if (name != 'bom') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
@@ -86,8 +83,8 @@ subprojects {
                     pom {
                         name = 'jPOS Project'
                         description = """
-        jPOS is an ISO-8583 based financial transaction 
-        library/framework that can be customized and 
+        jPOS is an ISO-8583 based financial transaction
+        library/framework that can be customized and
         extended in order to implement financial interchanges.
         """
                         url = "https://jpos.org"
@@ -127,18 +124,7 @@ subprojects {
             }
             repositories {
                 maven {
-                    def snapshotsRepoUrl = 'file:///opt/local/maven'
-                    // def releasesRepoUrl = mavenCentralRepo
-                    def releasesRepoUrl = snapshotsRepoUrl
-                    url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-                    if (!isSnapshot) {
-                        credentials {
-                            if (project.hasProperty("mavenCentralUsername"))
-                                username = mavenCentralUsername
-                            if (project.hasProperty("mavenCentralPassword"))
-                                password = mavenCentralPassword
-                        }
-                    }
+                    url = 'file:///opt/local/maven'
                 }
             }
         }
@@ -187,18 +173,7 @@ subprojects {
         }
         repositories {
             maven {
-                def snapshotsRepoUrl = 'file:///opt/local/maven'
-                // def releasesRepoUrl = mavenCentralRepo
-                def releasesRepoUrl = snapshotsRepoUrl
-                url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-                if (!isSnapshot) {
-                    credentials {
-                        if (project.hasProperty("mavenCentralUsername"))
-                            username = mavenCentralUsername
-                        if (project.hasProperty("mavenCentralPassword"))
-                            password = mavenCentralPassword
-                    }
-                }
+                url = 'file:///opt/local/maven'
             }
         }
     }

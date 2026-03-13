@@ -62,6 +62,8 @@ import software.amazon.awssdk.services.paymentcryptography.model.*;
 import software.amazon.awssdk.services.paymentcryptographydata.PaymentCryptographyDataAsyncClient;
 import software.amazon.awssdk.services.paymentcryptographydata.PaymentCryptographyDataAsyncClientBuilder;
 import software.amazon.awssdk.services.paymentcryptographydata.model.*;
+// Explicit import to resolve ambiguity: KeyCheckValueAlgorithm exists in both model packages since 2.42.x
+import software.amazon.awssdk.services.paymentcryptography.model.KeyCheckValueAlgorithm;
 
 /**
  * AWS Payment Cryptography adapter for jPOS Security Module.

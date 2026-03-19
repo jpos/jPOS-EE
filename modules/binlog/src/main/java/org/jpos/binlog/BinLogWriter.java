@@ -138,6 +138,7 @@ public class BinLogWriter extends BinLog {
                     channel.force(false);
                     raf = newRaf;
                     switched = true;
+                    dataAvailable.signalAll();
                 } finally {
                     lock.release();
                     if (switched) {
@@ -163,6 +164,9 @@ public class BinLogWriter extends BinLog {
                 var flushed = flushQueue();
                 raf.force(false);
                 lock.release();
+                if (!flushed.isEmpty()) {
+                    dataAvailable.signalAll();
+                }
                 flushed.forEach(QueueEntry::complete);
             } else {
                 throw new IOException("Failed to acquire file lock");

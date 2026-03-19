@@ -25,11 +25,13 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Used to iterate over a binlog
  */
 public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
+    private static final int PEEK_BUFFER_SIZE = 4096;
     private long iteratorPos;
     private boolean follow = true;
     private long cachedTailOffset = 0L;
@@ -129,23 +131,33 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
     }
 
     /**
+     * Waits up to {@code timeout} milliseconds for the next entry to become available.
+     * Uses a {@link java.util.concurrent.locks.Condition} signalled by the writer after
+     * each flush or cutover, giving sub-millisecond latency instead of a 50 ms busy-wait.
      *
-     * @param timeout in millis
-     * @return true if this binlog has a next entry
+     * @param timeout maximum wait in millis
+     * @return true if this binlog has a next entry before the timeout expires
      */
     public boolean hasNext(long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        while (System.currentTimeMillis() < end) {
-            if (hasNext()) {
-                return true;
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeout);
+        mutex.lock();
+        try {
+            while (!hasNext()) {
+                long remaining = deadline - System.nanoTime();
+                if (remaining <= 0) {
+                    return false;
+                }
+                try {
+                    dataAvailable.await(remaining, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
             }
-            try {
-                Thread.sleep(50L);
-            } catch (InterruptedException e) {
-                break;
-            }
+            return true;
+        } finally {
+            mutex.unlock();
         }
-        return false;
     }
 
     @Override
@@ -170,39 +182,61 @@ public class BinLogReader extends BinLog implements Iterator<BinLog.Entry> {
         return new BinLog.Entry(new BinLog.Ref(fileNumber, pos), ev);
     }
 
+    /**
+     * Reads one record from the given position using a single async read when possible.
+     * <p>
+     * A peek buffer of {@value PEEK_BUFFER_SIZE} bytes is read first. In the common case the
+     * entire record (4-byte length header + payload) fits inside it, so only one
+     * {@link java.nio.channels.AsynchronousFileChannel#read} call is needed.  When the
+     * payload is larger than the peek buffer a second read fetches the remainder.
+     *
+     * @param pos byte offset of the record in the current file
+     * @return the record payload (without the 4-byte length header)
+     * @throws IOException on any I/O or format error
+     */
     private byte[] read (long pos) throws IOException {
         int len = 0;
         try {
-            ByteBuffer lenbuf = ByteBuffer.allocate(4);
+            // Single read covering length header + most payloads
+            ByteBuffer peek = ByteBuffer.allocate(PEEK_BUFFER_SIZE);
+            int peekRead;
             try {
-                int read = raf.read(lenbuf, pos).get();
-                if (read != 4) {
-                    throw new IOException ("Failed to read 4 byte data length, return: " + read);
-                }
-            } catch (InterruptedException e) {
-                throw new IOException (e.getMessage());
-            } catch (ExecutionException e) {
-                throw new IOException (e.getMessage());
+                peekRead = raf.read(peek, pos).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IOException(e.getMessage());
             }
-            lenbuf.flip();
-            len = lenbuf.getInt();
+            if (peekRead < 4) {
+                throw new IOException("Failed to read 4 byte data length, return: " + peekRead);
+            }
+            peek.flip();
+            len = peek.getInt();            // consume the 4-byte header
             byte[] buf = new byte[len];
-            ByteBuffer bytebuf = ByteBuffer.allocate(len);
-            try {
-                int read = raf.read(bytebuf, pos + 4).get();
-                if (read != len) {
-                    throw new IOException ("Failed to read " + len + " byte data, return: " + read);
+
+            int available = peekRead - 4;   // payload bytes already in the peek buffer
+            if (available >= len) {
+                // Happy path: entire record was in the peek buffer
+                peek.get(buf, 0, len);
+            } else {
+                // Slow path: payload spans beyond the peek buffer — copy what we have,
+                // then do one more read for the remainder
+                peek.get(buf, 0, available);
+                int remaining = len - available;
+                ByteBuffer rest = ByteBuffer.allocate(remaining);
+                int restRead;
+                try {
+                    restRead = raf.read(rest, pos + 4 + available).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new IOException(e.getMessage());
                 }
-            } catch (InterruptedException e) {
-                throw new IOException (e.getMessage());
-            } catch (ExecutionException e) {
-                throw new IOException (e.getMessage());
+                if (restRead != remaining) {
+                    throw new IOException("Failed to read " + remaining + " remaining bytes of record, return: " + restRead);
+                }
+                rest.flip();
+                rest.get(buf, available, remaining);
             }
-            bytebuf.flip();
-            bytebuf.get(buf, 0, len);
             return buf;
         } catch (IOException e) {
-            throw new IOException ("Error reading position " + pos + " length " + len, e);
+            throw new IOException("Error reading position " + pos + " length " + len, e);
         }
     }
 }

@@ -31,6 +31,7 @@ import java.nio.file.*;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,10 +88,12 @@ public abstract class BinLog implements AutoCloseable {
     private static SecureRandom numberGenerator = new SecureRandom();
     private OpenOption[] mode;
     private static Map<String,ReentrantLock> mutexs = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Condition> dataAvailableConditions = Collections.synchronizedMap(new HashMap<>());
     protected Path dir;
     protected int fileNumber;
     protected AsynchronousFileChannel raf;
     protected final ReentrantLock mutex;
+    protected final Condition dataAvailable;
 
     private static final Pattern fileNamePatternRegX = Pattern.compile("^(.*/)?([\\d]{8})\\.dat$");
     private static final DirectoryStream.Filter<Path> filePattern = new DirectoryStream.Filter<Path>() {
@@ -112,6 +115,8 @@ public abstract class BinLog implements AutoCloseable {
         String dirString = dir.toAbsolutePath().toString();
         mutexs.putIfAbsent(dirString, new ReentrantLock());
         mutex = mutexs.get(dirString);
+        dataAvailableConditions.putIfAbsent(dirString, mutex.newCondition());
+        dataAvailable = dataAvailableConditions.get(dirString);
         if ((Files.exists(dir) && !Files.isDirectory(dir))|| (!Files.exists(dir) && !create))
             throw new IOException ("Invalid directory '" + dir.toString() + "'");
         else

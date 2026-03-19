@@ -32,6 +32,7 @@ import java.util.concurrent.*;
  * Used to append add records to a BinLog
  */
 public class BinLogWriter extends BinLog {
+    private static final long LOCK_TIMEOUT_MS = 5000L;
     private ConcurrentLinkedQueue <QueueEntry> queue = new ConcurrentLinkedQueue<>();
     /**
      * Instantiates a BinLogWriter. Creates directory if necessary.
@@ -102,14 +103,15 @@ public class BinLogWriter extends BinLog {
             Future<FileLock> lockfut = channel.lock();
             FileLock lock;
             try {
-                lock = lockfut.get();
-            } catch (InterruptedException | ExecutionException e) {
+                lock = lockfut.get(LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 throw new IOException (e.getMessage());
             }
             if (lock.isValid()) {
                 if (readStatus() != Status.OPEN)
                     throw new IOException ("BinLog not open");
                 AsynchronousFileChannel newRaf = openOrCreateFile(dir, ++fileNumber);
+                boolean switched = false;
                 try {
                     ByteBuffer index = ByteBuffer.allocate(4);
                     index.putInt(fileNumber);
@@ -135,12 +137,14 @@ public class BinLogWriter extends BinLog {
                     }
                     channel.force(false);
                     raf = newRaf;
+                    switched = true;
+                    dataAvailable.signalAll();
                 } finally {
                     lock.release();
-                    if (newRaf == raf) {
-                        channel.close();
+                    if (switched) {
+                        channel.close();   // close old channel — normal path
                     } else {
-                        newRaf.close();
+                        newRaf.close();    // close orphaned new channel — exception path
                     }
                 }
             } else {
@@ -155,16 +159,19 @@ public class BinLogWriter extends BinLog {
         try {
             mutex.lock();
             checkCutover(true);
-            FileLock lock = raf.lock().get();
+            FileLock lock = raf.lock().get(LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (lock.isValid()) {
                 var flushed = flushQueue();
                 raf.force(false);
                 lock.release();
+                if (!flushed.isEmpty()) {
+                    dataAvailable.signalAll();
+                }
                 flushed.forEach(QueueEntry::complete);
             } else {
                 throw new IOException("Failed to acquire file lock");
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new IOException(e.getMessage());
         } finally {
             mutex.unlock();

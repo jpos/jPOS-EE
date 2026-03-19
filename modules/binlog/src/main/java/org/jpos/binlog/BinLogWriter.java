@@ -111,6 +111,7 @@ public class BinLogWriter extends BinLog {
                 if (readStatus() != Status.OPEN)
                     throw new IOException ("BinLog not open");
                 AsynchronousFileChannel newRaf = openOrCreateFile(dir, ++fileNumber);
+                boolean switched = false;
                 try {
                     ByteBuffer index = ByteBuffer.allocate(4);
                     index.putInt(fileNumber);
@@ -136,12 +137,13 @@ public class BinLogWriter extends BinLog {
                     }
                     channel.force(false);
                     raf = newRaf;
+                    switched = true;
                 } finally {
                     lock.release();
-                    if (newRaf == raf) {
-                        channel.close();
+                    if (switched) {
+                        channel.close();   // close old channel — normal path
                     } else {
-                        newRaf.close();
+                        newRaf.close();    // close orphaned new channel — exception path
                     }
                 }
             } else {

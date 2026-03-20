@@ -18,3 +18,4 @@ Servers
 # Gradle Ignores
 .gradle
 build/
+hs_err_pid*.log

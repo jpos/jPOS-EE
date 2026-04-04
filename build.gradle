@@ -184,17 +184,6 @@ subprojects {
     }
     configurations.configureEach {
         resolutionStrategy {
-            eachDependency { details ->
-                if (details.requested.group == 'io.netty') {
-                    details.useVersion(libs.versions.netty.get())
-                    details.because('Align Netty modules with the patched 4.1.131.Final release')
-                }
-                if (details.requested.group == 'org.eclipse.angus' && details.requested.name == 'angus-activation') {
-                    details.useVersion(libs.versions.angusActivation.get())
-                    details.because('Upgrade Angus Activation to 2.0.3 (fixes CVE-2025-7962)')
-                }
-            }
-
             // io.rest-assured:rest-assured:5.5.6 brings in vulnerable commons-codec 1.11
             force 'commons-codec:commons-codec:1.20.0'
 

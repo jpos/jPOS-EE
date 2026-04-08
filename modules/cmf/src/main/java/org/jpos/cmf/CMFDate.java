@@ -101,7 +101,7 @@ public class CMFDate {
      * @return parsed {@link Date}
      */
     public static Date parseDateTime(String cmfDateString) {
-        return cmfDateString == null ? null : toDate(parseLocalDate(cmfDateString));
+        return cmfDateString == null ? null : toDate(parseLocalDateTime(cmfDateString));
     }
 
     public static String format(LocalDateTime dateTime) {

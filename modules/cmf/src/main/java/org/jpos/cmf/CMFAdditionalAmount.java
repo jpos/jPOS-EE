@@ -72,7 +72,7 @@ public class CMFAdditionalAmount extends AdditionalAmount {
         String amountSign = data.substring(8,9);
         BigDecimal amount = new BigDecimal(data.substring(data.length() - 12)).movePointLeft(minorUnit);
 
-        if (!"C.D".contains(amountSign))
+        if (!"CD".contains(amountSign))
             throw new IllegalArgumentException("Invalid amount sign");
 
         if ("D".equalsIgnoreCase(amountSign))

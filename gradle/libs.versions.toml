@@ -25,11 +25,11 @@ httpClient = '5.6'
 jgroups = '5.5.4.Final'
 xmlBind = "4.0.5"
 javaxCache = '1.1.1'
-ehCache = '3.11.1'
+ehCache = '3.12.0'
 jetty = '12.1.8'
 groovy = '3.0.25'
 kafka = '4.2.0'
-awssdk = '2.42.12'
+awssdk = '2.42.33'
 jakartaWsRs = '4.0.0'
 
 [libraries]

@@ -267,7 +267,10 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
     protected boolean canPost(Context ctx, T entity) {
         DB db = ctx.get(TxnSupport.DB);
         try {
-            Object persistedEntity = db.session().get(entity.getClass(), getId(entity));
+            Object id = getId(entity);
+            if (id == null)
+                return true;
+            Object persistedEntity = db.session().get(entity.getClass(), id);
             if (persistedEntity != null) {
                 ctx.put(TEMP_RESPONSE, new Response(HttpResponseStatus.CONFLICT, new RestErrorResponse("duplicate.id")));
                 return false;

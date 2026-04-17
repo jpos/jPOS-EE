@@ -19,6 +19,8 @@
 package org.jpos.ee;
 
 import org.dom4j.DocumentException;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.jpos.iso.ISOUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +33,7 @@ import java.util.Random;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class SeqNoTest {
@@ -61,6 +64,16 @@ public class SeqNoTest {
         if (DB_CONTAINER != null)
             DB_CONTAINER.stop();
     }
+    @Test
+    public void testUsesAgroalConnectionProvider() {
+        try (DB db = new DB()) {
+            SessionFactoryImpl sf = (SessionFactoryImpl) db.getSessionFactory();
+            ConnectionProvider cp = sf.getServiceRegistry().getService(ConnectionProvider.class);
+            assertTrue(cp.getClass().getName().contains("AgroalConnectionProvider"),
+              "Expected Agroal connection provider, got " + cp.getClass().getName());
+        }
+    }
+
     @Test
     public void testNewSeqNoWithDefault() {
         try (DB db = new DB()) {

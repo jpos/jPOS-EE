@@ -6,6 +6,7 @@ dependencies {
     api libs.jacksonDatabind
     api libs.dom4j
     implementation libs.hibernateToolsOrm
+    implementation libs.hibernateAgroal
     implementation libs.agroal
     implementation libs.javaxCache
     implementation libs.ehCache

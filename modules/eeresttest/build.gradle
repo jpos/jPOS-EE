@@ -7,7 +7,7 @@ dependencies {
     providedCompile project(':modules:jetty')
     providedCompile "javax.ws.rs:javax.ws.rs-api:${jaxrsVersion}"
     providedCompile jsonSchemaValidatorLibs
-    providedCompile 'com.google.guava:guava:27.1-jre' // force newer Guava
+    providedCompile libs.guava
     providedCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.22.1"
     providedCompile "org.glassfish.jersey.core:jersey-server:2.22.1"
     api libraries.commons_lang

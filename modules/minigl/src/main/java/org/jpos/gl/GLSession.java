@@ -1567,7 +1567,7 @@ public class GLSession {
         }
         where(qs, "(entry.transaction = txn.id and txn.journal = :journal)\n");
         if (date != null) {
-            where(qs, "txn.postDate < :date");
+            where(qs, "txn.\"postDate\" < :date");
         }
         where(qs, "entry.layer in");
         qs.append("  (");

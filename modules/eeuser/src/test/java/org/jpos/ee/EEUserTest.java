@@ -121,7 +121,9 @@ class EEUserTest {
 
     @AfterEach
     public void tearDown() {
-        db.close();
+        if (db != null) {
+            db.close();
+        }
     }
 
     private Role createRole (DB db, Realm realm, String name, String... permissions) {

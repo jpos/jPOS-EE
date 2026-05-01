@@ -13,11 +13,11 @@
 .Maven Coordinates
 [source,xml]
 ----
-<dependency> 
+<dependency>
   <groupId>org.jpos.ee</groupId>
   <artifactId>jposee-kafkaservice</artifactId>
   <version>${jposee.version}</version>
-</dependency> 
+</dependency>
 ----
 
 Traditionally, jPOS-based systems integrate with messaging platforms using JMS, Spaces, or
@@ -55,7 +55,7 @@ A minimal `KafkaService` configuration looks like this:
 <property name="consumer.session.timeout.ms" value="30000" />
 <property name="consumer.enable.auto.commit" value="true" />
 
-</kafka-service> 
+</kafka-service>
 ------------
 <1> Kafka bootstrap servers, passed to both producer and consumer.
 <2> Consumer group identifier.
@@ -157,7 +157,7 @@ Notes and Recommendations
 =====
 `KafkaService` is intentionally minimal and composable.
 
-It is often preferable to keep K`afkaService` focused on connectivity and configuration,
+It is often preferable to keep `KafkaService` focused on connectivity and configuration,
 and implement business logic in downstream participants, stream processors, or dedicated
 QBeans that consume from or produce to Kafka via well-defined contracts.
 

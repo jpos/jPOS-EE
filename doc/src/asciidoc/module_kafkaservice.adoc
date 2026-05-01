@@ -35,7 +35,7 @@ logic to downstream participants or services.
 
 Basic QBean Configuration
 
-A minimal KafkaService configuration looks like this:
+A minimal `KafkaService` configuration looks like this:
 
 [source,xml]
 ------------
@@ -60,15 +60,15 @@ A minimal KafkaService configuration looks like this:
 <1> Kafka bootstrap servers, passed to both producer and consumer.
 <2> Consumer group identifier.
 <3> One or more Kafka topics to subscribe to (comma-separated).
-<4> Kafka producer-specific configuration (prefixed with producer.).
-<5> Kafka consumer-specific configuration (prefixed with consumer.).
+<4> Kafka producer-specific configuration (prefixed with `producer.`).
+<5> Kafka consumer-specific configuration (prefixed with `consumer.`).
 
-At startup time, KafkaService initializes a Kafka consumer subscribed to the configured
+At startup time, `KafkaService` initializes a Kafka consumer subscribed to the configured
 topics and a Kafka producer bound to the same bootstrap cluster.
 
 === Property Scoping and Mapping
 
-KafkaService distinguishes between core service properties and Kafka client properties.
+`KafkaService` distinguishes between core service properties and Kafka client properties.
 
 Core properties are consumed directly by the service:
 
@@ -78,11 +78,11 @@ Core properties are consumed directly by the service:
 
 All other properties are mapped to Kafka client configuration objects using prefixes:
 
-Properties starting with producer. are applied to the Kafka ProducerConfig.
+Properties starting with `producer.` are applied to the Kafka ProducerConfig.
 
-Properties starting with consumer. are applied to the Kafka ConsumerConfig.
+Properties starting with `consumer.` are applied to the Kafka ConsumerConfig.
 
-During initialization, KafkaService strips the prefix and validates the resulting property
+During initialization, `KafkaService` strips the prefix and validates the resulting property
 name against Kafka’s known configuration keys.
 
 For example:
@@ -110,7 +110,7 @@ KafkaService provides sensible defaults when properties are not explicitly confi
 
 For consumers:
 
-`key.deserializer` and `value.deserialize`r default to `StringDeserializer`.
+`key.deserializer` and `value.deserializer` default to `StringDeserializer`.
 
 `auto.offset.reset` defaults to earliest.
 
@@ -126,7 +126,7 @@ custom serialization can override the relevant properties explicitly.
 
 `Lifecycle and Q2 Integration`
 
-KafkaService is a standard QBean and participates fully in the Q2 lifecycle:
+`KafkaService` is a standard QBean and participates fully in the Q2 lifecycle:
 
 Initialization occurs during Q2 startup.
 
@@ -135,29 +135,29 @@ Kafka connections are established when the service enters the running state.
 On shutdown, consumers and producers are closed cleanly, ensuring offsets and resources
 are released.
 
-Because KafkaService is managed by Q2, failures during startup or runtime are surfaced
+Because `KafkaService` is managed by Q2, failures during startup or runtime are surfaced
 through standard Q2 logging and monitoring mechanisms.
 
 === Typical Usage Patterns
 
-KafkaService is commonly used as:
+`KafkaService` is commonly used as:
 
-An integration point for event-sourced systems.
+- An integration point for event-sourced systems.
 
-A transport layer for asynchronous cryptographic, tokenization, or ledger operations.
+- A transport layer for asynchronous cryptographic, tokenization, or ledger operations.
 
-A bridge between Kafka-centric architectures and jPOS TransactionManagers or Spaces.
+- A bridge between Kafka-centric architectures and jPOS TransactionManagers or Spaces.
 
 Higher-level services (such as CryptoService or stream processors) typically rely on
-KafkaService to provide connectivity, while delegating message handling and domain logic
+`KafkaService` to provide connectivity, while delegating message handling and domain logic
 to specialized components.
 
 Notes and Recommendations
 [TIP]
 =====
-KafkaService is intentionally minimal and composable.
+`KafkaService` is intentionally minimal and composable.
 
-It is often preferable to keep KafkaService focused on connectivity and configuration,
+It is often preferable to keep K`afkaService` focused on connectivity and configuration,
 and implement business logic in downstream participants, stream processors, or dedicated
 QBeans that consume from or produce to Kafka via well-defined contracts.
 

@@ -84,8 +84,17 @@ public class SendResponse implements AbortParticipant, Configurable {
             if (!keepAlive)
                 cf.addListener(ChannelFutureListener.CLOSE);
         } finally {
-            ReferenceCountUtil.release(request);
+            releaseRequest(ctx, request);
         }
+    }
+
+    private void releaseRequest (Context ctx, FullHttpRequest request) {
+        if (request == null)
+            return;
+        if (ReferenceCountUtil.refCnt(request) > 0)
+            ReferenceCountUtil.release(request);
+        else
+            ctx.log("HTTP request already released");
     }
 
     private FullHttpResponse error (HttpResponseStatus rc, HttpVersion version) {

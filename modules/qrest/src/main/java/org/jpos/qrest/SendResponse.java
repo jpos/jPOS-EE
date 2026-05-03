@@ -56,7 +56,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         Context ctx = (Context) context;
         ChannelHandlerContext ch = ctx.get(SESSION);
         FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx, request.protocolVersion());
+        FullHttpResponse response = getResponse(ctx, protocolVersion(request));
         sendResponse(ctx, ch, request, response);
     }
 
@@ -65,12 +65,12 @@ public class SendResponse implements AbortParticipant, Configurable {
         Context ctx = (Context) context;
         ChannelHandlerContext ch = ctx.get(SESSION);
         FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx, request.protocolVersion());
+        FullHttpResponse response = getResponse(ctx, protocolVersion(request));
         sendResponse(ctx, ch, request, response);
     }
 
     private void sendResponse (Context ctx, ChannelHandlerContext ch, FullHttpRequest request, FullHttpResponse response) {
-        boolean keepAlive = HttpUtil.isKeepAlive(request);
+        boolean keepAlive = request != null && HttpUtil.isKeepAlive(request);
         HttpHeaders headers = response.headers();
         try {
             if (keepAlive)
@@ -95,6 +95,10 @@ public class SendResponse implements AbortParticipant, Configurable {
             ReferenceCountUtil.release(request);
         else
             ctx.log("HTTP request already released");
+    }
+
+    private HttpVersion protocolVersion(FullHttpRequest request) {
+        return request != null ? request.protocolVersion() : HttpVersion.HTTP_1_1;
     }
 
     private FullHttpResponse error (HttpResponseStatus rc, HttpVersion version) {

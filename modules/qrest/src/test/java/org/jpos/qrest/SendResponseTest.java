@@ -23,6 +23,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -94,7 +95,29 @@ class SendResponseTest {
         assertNull(channel.readOutbound());
     }
 
-    private Context createContext(DefaultFullHttpRequest request) {
+    @Test
+    void commitHandlesMissingRequest() {
+        assertDoesNotThrow(() -> participant.commit(3L, createContext(null)));
+
+        FullHttpResponse outbound = channel.readOutbound();
+        assertNotNull(outbound);
+        assertEquals(HttpResponseStatus.OK, outbound.status());
+        outbound.release();
+        assertNull(channel.readOutbound());
+    }
+
+    @Test
+    void abortHandlesMissingRequest() {
+        assertDoesNotThrow(() -> participant.abort(4L, createContext(null)));
+
+        FullHttpResponse outbound = channel.readOutbound();
+        assertNotNull(outbound);
+        assertEquals(HttpResponseStatus.OK, outbound.status());
+        outbound.release();
+        assertNull(channel.readOutbound());
+    }
+
+    private Context createContext(FullHttpRequest request) {
         Context ctx = new Context();
         ctx.put(Constants.SESSION, channelHandlerContext);
         ctx.put(Constants.REQUEST, request);

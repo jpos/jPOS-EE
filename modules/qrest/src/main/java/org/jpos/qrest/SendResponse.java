@@ -94,7 +94,7 @@ public class SendResponse implements AbortParticipant, Configurable {
         if (ReferenceCountUtil.refCnt(request) > 0)
             ReferenceCountUtil.release(request);
         else
-            ctx.log("HTTP request already released");
+            ctx.log("WARNING: HTTP request already released");
     }
 
     private HttpVersion protocolVersion(FullHttpRequest request) {

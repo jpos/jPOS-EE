@@ -1,8 +1,8 @@
 plugins {
     id 'org.jpos.jposapp' version '0.0.17'
     id 'idea'
-    id 'org.gradlex.extra-java-module-info' version '1.9'
-    id 'org.owasp.dependencycheck' version '12.1.3'
+    id 'org.gradlex.extra-java-module-info' version '1.14'
+    id 'org.owasp.dependencycheck' version '12.2.2'
 }
 
 import org.gradle.internal.os.OperatingSystem

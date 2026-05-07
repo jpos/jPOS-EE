@@ -173,7 +173,14 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
 
     @SuppressWarnings("unchecked")
     public void queue (FullHttpRequest request, Context ctx) {
-        sp.out(getQueue(request), ctx, 60000L);
+        String q = getQueue(request);
+        ChannelHandlerContext ch = ctx.get(Constants.SESSION);
+        if (ch != null) {
+            RestAccessState state = ch.channel().attr(RestSession.ACCESS_STATE).get();
+            if (state != null)
+                state.queue = q;
+        }
+        sp.out(q, ctx, 60000L);
     }
 
     /**

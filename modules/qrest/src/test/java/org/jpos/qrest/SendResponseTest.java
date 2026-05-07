@@ -30,10 +30,16 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.transaction.Context;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -117,6 +123,58 @@ class SendResponseTest {
         assertNull(channel.readOutbound());
     }
 
+    @Test
+    void commitEmitsViaAccessEmitterAndClearsState() {
+        RestAccessState state = new RestAccessState();
+        state.method = "GET";
+        state.path = "/balance";
+        channel.attr(RestSession.ACCESS_STATE).set(state);
+
+        List<QRestAccess> emitted = Collections.synchronizedList(new ArrayList<>());
+        List<UUID> traceIds = Collections.synchronizedList(new ArrayList<>());
+        channel.attr(RestSession.ACCESS_EMITTER).set((access, traceId) -> {
+            emitted.add(access);
+            traceIds.add(traceId);
+        });
+        UUID sessionTraceId = UUID.randomUUID();
+        channel.attr(RestSession.TRACE_ID).set(sessionTraceId);
+
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/balance");
+        request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+
+        participant.commit(20L, createContext(request));
+
+        assertEquals(1, emitted.size(),
+          "SendResponse must emit exactly one QRestAccess via the ACCESS_EMITTER hook");
+        QRestAccess evt = emitted.get(0);
+        assertEquals(Integer.valueOf(200), evt.status());
+        assertNotNull(evt.responseBytes());
+
+        assertEquals(sessionTraceId, traceIds.get(0),
+          "SendResponse must forward the session-scoped trace-id to the emitter");
+
+        assertNull(channel.attr(RestSession.ACCESS_STATE).get(),
+          "SendResponse must clear ACCESS_STATE so the next keep-alive request starts fresh");
+
+        FullHttpResponse outbound = channel.readOutbound();
+        if (outbound != null)
+            outbound.release();
+    }
+
+    @Test
+    void commitWithoutAccessStateIsHarmless() {
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/orders");
+        request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+
+        // no RestAccessState and no ACCESS_EMITTER on the channel — SendResponse must tolerate it
+        Context ctx = createContext(request);
+        assertDoesNotThrow(() -> participant.commit(21L, ctx));
+
+        FullHttpResponse outbound = channel.readOutbound();
+        if (outbound != null)
+            outbound.release();
+    }
+
     private Context createContext(FullHttpRequest request) {
         Context ctx = new Context();
         ctx.put(Constants.SESSION, channelHandlerContext);
@@ -125,4 +183,3 @@ class SendResponseTest {
         return ctx;
     }
 }
-

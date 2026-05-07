@@ -27,13 +27,16 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
@@ -42,9 +45,20 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     private String contentKey;
     private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
+    static final AttributeKey<RestAccessState> ACCESS_STATE = AttributeKey.valueOf("qrestAccessState");
+    static final AttributeKey<BiConsumer<QRestAccess, UUID>> ACCESS_EMITTER = AttributeKey.valueOf("qrestAccessEmitter");
+    static final AttributeKey<UUID> TRACE_ID = AttributeKey.valueOf("qrestTraceId");
+
     RestSession(RestServer server) {
         this.server = server;
         contentKey = server.getConfiguration().get("content", null);
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        super.handlerAdded(ctx);
+        ctx.channel().attr(ACCESS_EMITTER).set(this::emitAccessLog);
+        ctx.channel().attr(TRACE_ID).set(UuidV7.randomUuidV7());
     }
 
     @Override
@@ -58,6 +72,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
                     return;
                 }
             }
+            captureRequest(ch, request);
             Context ctx = new Context();
             ctx.put(Constants.SESSION, ch);
             ctx.put(Constants.REQUEST, request);
@@ -91,6 +106,10 @@ public class RestSession extends ChannelInboundHandlerAdapter {
 
         HttpVersion version = ctx.channel().attr(httpVersion).get();
 
+        RestAccessState state = ctx.channel().attr(ACCESS_STATE).get();
+        if (state != null && state.status == null)
+            state.status = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
+
         ctx.writeAndFlush(new DefaultFullHttpResponse(
           version,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
@@ -102,13 +121,14 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        server.getLog().info("accepted: " + ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        server.getLog().info("closed: " + ctx.channel());
+        super.channelInactive(ctx);
+        RestAccessState state = ctx.channel().attr(ACCESS_STATE).getAndSet(null);
+        if (state != null)
+            emitAccessLog(state.toAccess(), ctx.channel().attr(TRACE_ID).get());
     }
 
     @Override
@@ -116,10 +136,47 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleState e = ((IdleStateEvent) evt).state();
             if (e == IdleState.READER_IDLE) {
-                server.getLog().info("timeout " + ctx.channel());
                 ctx.fireChannelInactive();
                 ctx.close();
             }
         }
+    }
+
+    /**
+     * Emits one structured QRest audit-log event. The trace-id (a session-scoped
+     * UUIDv7) is attached to the {@link LogEvent} so all events from the same
+     * keep-alive session share it. Visible for testing.
+     */
+    protected void emitAccessLog(QRestAccess access, UUID traceId) {
+        LogEvent evt = new LogEvent(server.getLog(), "qrest-access");
+        if (traceId != null)
+            evt.withTraceId(traceId);
+        evt.addMessage(access);
+        Logger.log(evt);
+    }
+
+    private void captureRequest(ChannelHandlerContext ch, FullHttpRequest request) {
+        RestAccessState state = new RestAccessState();
+        state.ts = Instant.now();
+        state.startNanos = System.nanoTime();
+        state.method = request.method().name();
+        state.path = stripQuery(request.uri());
+        state.remote = remoteAddress(ch);
+        state.requestBytes = (long) request.content().readableBytes();
+        ch.channel().attr(ACCESS_STATE).set(state);
+    }
+
+    private String stripQuery(String uri) {
+        if (uri == null)
+            return null;
+        int q = uri.indexOf('?');
+        return q < 0 ? uri : uri.substring(0, q);
+    }
+
+    private String remoteAddress(ChannelHandlerContext ch) {
+        SocketAddress addr = ch.channel().remoteAddress();
+        if (addr instanceof InetSocketAddress isa && isa.getAddress() != null)
+            return isa.getAddress().getHostAddress();
+        return addr != null ? addr.toString() : null;
     }
 }

@@ -27,12 +27,15 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
+import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.rc.Result;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -78,7 +81,9 @@ public class SendResponse implements AbortParticipant, Configurable {
 
             if (contentType != null)
                 headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
-            headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            long responseBytes = response.content().readableBytes();
+            headers.set(HttpHeaderNames.CONTENT_LENGTH, responseBytes);
+            captureResponse(ch, response, responseBytes);
             ChannelFuture cf = ch.writeAndFlush(response);
 
             if (!keepAlive)
@@ -86,6 +91,20 @@ public class SendResponse implements AbortParticipant, Configurable {
         } finally {
             releaseRequest(ctx, request);
         }
+    }
+
+    private void captureResponse(ChannelHandlerContext ch, FullHttpResponse response, long responseBytes) {
+        if (ch == null)
+            return;
+        RestAccessState state = ch.channel().attr(RestSession.ACCESS_STATE).getAndSet(null);
+        if (state == null)
+            return;
+        if (response != null)
+            state.status = response.status().code();
+        state.responseBytes = responseBytes;
+        BiConsumer<QRestAccess, UUID> emitter = ch.channel().attr(RestSession.ACCESS_EMITTER).get();
+        if (emitter != null)
+            emitter.accept(state.toAccess(), ch.channel().attr(RestSession.TRACE_ID).get());
     }
 
     private void releaseRequest (Context ctx, FullHttpRequest request) {

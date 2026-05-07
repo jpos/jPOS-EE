@@ -97,7 +97,9 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
         } else {
             // Look up handler for this path
             QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
-            WebSocketHandler handler = server.getWebSocketHandler(decoder.path());
+            String requestPath = decoder.path();
+            RestServer.WebSocketRouteMatch match = server.resolveWebSocketRoute(requestPath);
+            WebSocketHandler handler = match.handler() ? server.getWebSocketHandler(requestPath) : null;
 
             // Extract HTTP headers from the upgrade request for downstream use
             Map<String, String> headers = new HashMap<>();
@@ -117,8 +119,11 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
                     ctx.pipeline().replace(
                         "restSession",
                         "wsSession",
-                        new WebSocketSession(server, handshaker, request.uri(), handler, headers)
+                        new WebSocketSession(server, handshaker, request.uri(), handler, headers, match)
                     );
+                    QRestMetrics m = server.getMetrics();
+                    if (m != null)
+                        m.webSocketConnected(match.route(), match.queue());
                     server.getLog().info("WebSocket connected: " + ctx.channel() + " path=" + request.uri());
                 } else {
                     server.getLog().warn("WebSocket handshake failed: " + ctx.channel());

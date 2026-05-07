@@ -18,6 +18,7 @@
 
 package org.jpos.qrest;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -25,6 +26,7 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -52,11 +54,24 @@ final class QRestMetrics {
     static final String REQUEST_SIZE     = "http.server.request.body.size";
     static final String RESPONSE_SIZE    = "http.server.response.body.size";
 
+    static final String WS_CONNECTIONS_ACTIVE = "jpos.qrest.websocket.connections.active";
+    static final String WS_CONNECTIONS_OPENED = "jpos.qrest.websocket.connections.opened";
+    static final String WS_CONNECTIONS_CLOSED = "jpos.qrest.websocket.connections.closed";
+    static final String WS_FRAMES_RECEIVED    = "jpos.qrest.websocket.frames.received";
+    static final String WS_FRAMES_SENT        = "jpos.qrest.websocket.frames.sent";
+    static final String WS_FRAME_SIZE         = "jpos.qrest.websocket.frame.size";
+    static final String WS_ERRORS             = "jpos.qrest.websocket.errors";
+    static final String WS_MESSAGES_QUEUED    = "jpos.qrest.websocket.messages.queued";
+
     static final String UNKNOWN_ROUTE = "_unknown";
     static final String UNMATCHED_ROUTE = "_unmatched";
     static final String UNKNOWN_QUEUE = "_unknown";
     static final String OVERFLOW_ROUTE = "_overflow";
     static final String OTHER_METHOD = "_OTHER";
+
+    static final String WS_DIRECTION_IN  = "in";
+    static final String WS_DIRECTION_OUT = "out";
+    static final String WS_FRAME_UNKNOWN = "unknown";
 
     /** Configuration knob: how to label the request path. */
     enum PathLabel { ROUTE, PATH, NONE }
@@ -71,6 +86,7 @@ final class QRestMetrics {
     private final int maxRoutes;
     private final Set<String> seenRoutes = ConcurrentHashMap.newKeySet();
     private final AtomicLong activeRequests = new AtomicLong();
+    private final AtomicLong activeWebSockets = new AtomicLong();
 
     QRestMetrics(MeterRegistry registry, String serverName, PathLabel pathLabel, int maxRoutes) {
         this.registry = registry;
@@ -81,6 +97,10 @@ final class QRestMetrics {
             Gauge.builder(ACTIVE_REQUESTS, activeRequests, AtomicLong::doubleValue)
               .tags(Tags.of("server", safeServer()))
               .description("In-flight HTTP server requests")
+              .register(registry);
+            Gauge.builder(WS_CONNECTIONS_ACTIVE, activeWebSockets, AtomicLong::doubleValue)
+              .tags(Tags.of("server", safeServer()))
+              .description("Active WebSocket connections")
               .register(registry);
         }
     }
@@ -225,6 +245,130 @@ final class QRestMetrics {
         if (s >= 400 && s < 500) return "CLIENT_ERROR";
         if (s >= 500 && s < 600) return "SERVER_ERROR";
         return "UNKNOWN";
+    }
+
+    long activeWebSockets() {
+        return activeWebSockets.get();
+    }
+
+    /**
+     * Records a successful WebSocket handshake / connection. Increments the
+     * active-connections gauge and the opened-connections counter.
+     */
+    void webSocketConnected(String route, String queueOrMode) {
+        if (registry == null)
+            return;
+        activeWebSockets.incrementAndGet();
+        Counter.builder(WS_CONNECTIONS_OPENED)
+          .description("WebSocket connections opened")
+          .tags(wsTags(route, queueOrMode))
+          .register(registry)
+          .increment();
+    }
+
+    /**
+     * Records a WebSocket connection close. Idempotency for the active gauge is
+     * the responsibility of the caller; pass each unique connection-close event
+     * exactly once.
+     */
+    void webSocketClosed(String route, String queueOrMode, Integer closeStatus) {
+        if (registry == null)
+            return;
+        long n = activeWebSockets.decrementAndGet();
+        if (n < 0) {
+            // never let the gauge go negative if the caller miscounts.
+            activeWebSockets.set(0L);
+        }
+        Tags tags = wsTags(route, queueOrMode)
+          .and("close.status", closeStatus != null ? closeStatus.toString() : "0");
+        Counter.builder(WS_CONNECTIONS_CLOSED)
+          .description("WebSocket connections closed")
+          .tags(tags)
+          .register(registry)
+          .increment();
+    }
+
+    /** Records an inbound WebSocket frame. */
+    void webSocketFrameReceived(String route, String queueOrMode, String frameType, long bytes) {
+        recordFrame(WS_FRAMES_RECEIVED, "WebSocket frames received", WS_DIRECTION_IN,
+          route, queueOrMode, frameType, bytes);
+    }
+
+    /** Records an outbound WebSocket frame. */
+    void webSocketFrameSent(String route, String queueOrMode, String frameType, long bytes) {
+        recordFrame(WS_FRAMES_SENT, "WebSocket frames sent", WS_DIRECTION_OUT,
+          route, queueOrMode, frameType, bytes);
+    }
+
+    private void recordFrame(String counterName, String desc, String direction,
+                             String route, String queueOrMode, String frameType, long bytes) {
+        if (registry == null)
+            return;
+        Tags tags = wsTags(route, queueOrMode)
+          .and("frame.type", normalizeFrameType(frameType))
+          .and("direction", direction);
+        Counter.builder(counterName)
+          .description(desc)
+          .tags(tags)
+          .register(registry)
+          .increment();
+        if (bytes >= 0L) {
+            DistributionSummary.builder(WS_FRAME_SIZE)
+              .description("Size of WebSocket frames")
+              .baseUnit("bytes")
+              .tags(tags)
+              .register(registry)
+              .record(bytes);
+        }
+    }
+
+    /** Records a WebSocket-level error. The throwable is logged to choose tag values only. */
+    void webSocketError(String route, String queueOrMode, Throwable t) {
+        if (registry == null)
+            return;
+        Counter.builder(WS_ERRORS)
+          .description("WebSocket errors")
+          .tags(wsTags(route, queueOrMode))
+          .register(registry)
+          .increment();
+    }
+
+    /** Records that a WebSocket message has been handed off to a transaction-manager queue. */
+    void webSocketMessageQueued(String route, String queue, String frameType, long bytes) {
+        if (registry == null)
+            return;
+        Tags tags = wsTags(route, queue)
+          .and("frame.type", normalizeFrameType(frameType));
+        Counter.builder(WS_MESSAGES_QUEUED)
+          .description("WebSocket messages queued to TransactionManager")
+          .tags(tags)
+          .register(registry)
+          .increment();
+    }
+
+    private Tags wsTags(String route, String queueOrMode) {
+        String routeTag = capCardinality(route == null || route.isEmpty() ? UNMATCHED_ROUTE : route);
+        return Tags.of(
+          "ws.route", routeTag,
+          "queue", safe(queueOrMode, UNKNOWN_QUEUE),
+          "server", safeServer()
+        );
+    }
+
+    private static String normalizeFrameType(String t) {
+        if (t == null || t.isEmpty())
+            return WS_FRAME_UNKNOWN;
+        String s = t.toLowerCase(Locale.ROOT);
+        switch (s) {
+            case "text":
+            case "binary":
+            case "ping":
+            case "pong":
+            case "close":
+                return s;
+            default:
+                return WS_FRAME_UNKNOWN;
+        }
     }
 
     static PathLabel parsePathLabel(String s) {

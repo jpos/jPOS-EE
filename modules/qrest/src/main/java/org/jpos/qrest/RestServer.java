@@ -208,17 +208,30 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
      */
     @SuppressWarnings("unchecked")
     public void queueWebSocket(Context ctx, String path) {
-        sp.out(getWebSocketQueue(path), ctx, 60000L);
+        WebSocketRouteMatch match = resolveWebSocketRoute(path);
+        sp.out(match.queue(), ctx, 60000L);
+        QRestMetrics m = metrics;
+        if (m != null) {
+            ChannelHandlerContext ch = ctx.get(WsConstants.WS_SESSION);
+            String frameType = (String) ctx.get(WsConstants.WS_FRAME_TYPE);
+            Object frame = ctx.get(WsConstants.WS_FRAME);
+            long bytes = wsFrameBytes(frame);
+            m.webSocketMessageQueued(match.route(), match.queue(), normalizeFrameType(frameType), bytes);
+        }
     }
 
-    private String getWebSocketQueue(String path) {
-        // Check for path-specific websocket routes
-        for (Map.Entry<String, String> entry : websocketRoutes.entrySet()) {
-            if (matchesWsPath(path, entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return queue;
+    private static long wsFrameBytes(Object frame) {
+        if (frame instanceof byte[] b)
+            return b.length;
+        if (frame instanceof String s)
+            return s.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        return 0L;
+    }
+
+    private static String normalizeFrameType(String t) {
+        if (t == null)
+            return "unknown";
+        return t.toLowerCase(java.util.Locale.ROOT);
     }
 
     private boolean matchesWsPath(String path, String pattern) {
@@ -247,6 +260,37 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         }
         return null;
     }
+
+    /**
+     * Resolves a WebSocket path to its matched route pattern and routing target.
+     *
+     * <p>Resolution order:</p>
+     * <ol>
+     *   <li>handler-mode {@code <websocket-route handler="...">} — returns the matched
+     *       pattern with {@code queue=_handler}.</li>
+     *   <li>queue-mode {@code <websocket-route queue="...">} — returns the matched
+     *       pattern and configured queue.</li>
+     *   <li>fall-through to the QBean-level {@code queue} property; route is reported
+     *       as {@link QRestMetrics#UNMATCHED_ROUTE}.</li>
+     * </ol>
+     */
+    WebSocketRouteMatch resolveWebSocketRoute(String path) {
+        if (path != null) {
+            for (Map.Entry<String, WebSocketHandler> entry : websocketHandlers.entrySet()) {
+                if (matchesWsPath(path, entry.getKey()))
+                    return new WebSocketRouteMatch(WS_HANDLER_QUEUE, entry.getKey(), true);
+            }
+            for (Map.Entry<String, String> entry : websocketRoutes.entrySet()) {
+                if (matchesWsPath(path, entry.getKey()))
+                    return new WebSocketRouteMatch(entry.getValue(), entry.getKey(), false);
+            }
+        }
+        return new WebSocketRouteMatch(queue, QRestMetrics.UNMATCHED_ROUTE, false);
+    }
+
+    static final String WS_HANDLER_QUEUE = "_handler";
+
+    record WebSocketRouteMatch(String queue, String route, boolean handler) { }
 
     public CorsConfig getCorsConfig (FullHttpRequest request) {
         return corsConfig

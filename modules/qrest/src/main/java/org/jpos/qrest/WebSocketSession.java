@@ -24,12 +24,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.CharsetUtil;
 import org.jpos.transaction.Context;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Handles WebSocket frames after the connection has been upgraded.
@@ -41,7 +42,10 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     private final String path;
     private final WebSocketHandler handler;
     private final Map<String, String> upgradeHeaders;
+    private final RestServer.WebSocketRouteMatch routeMatch;
     private WebSocketContext wsContext;
+    private final AtomicBoolean closeRecorded = new AtomicBoolean(false);
+    private Integer lastCloseStatus;
 
     /** Frame type constant for text frames */
     public static final String FRAME_TYPE_TEXT = "TEXT";
@@ -49,20 +53,52 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     public static final String FRAME_TYPE_BINARY = "BINARY";
 
     public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path) {
-        this(server, handshaker, path, null, Map.of());
+        this(server, handshaker, path, null, Map.of(), null);
     }
 
     public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path, WebSocketHandler handler) {
-        this(server, handshaker, path, handler, Map.of());
+        this(server, handshaker, path, handler, Map.of(), null);
     }
 
     public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path,
                              WebSocketHandler handler, Map<String, String> upgradeHeaders) {
+        this(server, handshaker, path, handler, upgradeHeaders, null);
+    }
+
+    public WebSocketSession(RestServer server, WebSocketServerHandshaker handshaker, String path,
+                             WebSocketHandler handler, Map<String, String> upgradeHeaders,
+                             RestServer.WebSocketRouteMatch routeMatch) {
         this.server = server;
         this.handshaker = handshaker;
         this.path = path;
         this.handler = handler;
         this.upgradeHeaders = upgradeHeaders != null ? upgradeHeaders : Map.of();
+        this.routeMatch = routeMatch;
+    }
+
+    /** Returns the {@link RestServer} this session belongs to. */
+    public RestServer getServer() {
+        return server;
+    }
+
+    /** Returns the matched WebSocket route, or null if the session was constructed without one. */
+    RestServer.WebSocketRouteMatch getRouteMatch() {
+        return routeMatch;
+    }
+
+    private String metricsRoute() {
+        return routeMatch != null ? routeMatch.route() : QRestMetrics.UNMATCHED_ROUTE;
+    }
+
+    private String metricsQueue() {
+        return routeMatch != null ? routeMatch.queue()
+          : (handler != null ? RestServer.WS_HANDLER_QUEUE : QRestMetrics.UNKNOWN_QUEUE);
+    }
+
+    private void recordFrameReceived(String frameType, long bytes) {
+        QRestMetrics m = server.getMetrics();
+        if (m != null)
+            m.webSocketFrameReceived(metricsRoute(), metricsQueue(), frameType, bytes);
     }
 
     @Override
@@ -88,6 +124,11 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
             } else if (frame instanceof BinaryWebSocketFrame) {
                 handleBinaryFrame(ctx, (BinaryWebSocketFrame) frame);
             } else {
+                QRestMetrics m = server.getMetrics();
+                if (m != null) {
+                    recordFrameReceived(QRestMetrics.WS_FRAME_UNKNOWN, frame.content().readableBytes());
+                    m.webSocketError(metricsRoute(), metricsQueue(), null);
+                }
                 throw new UnsupportedOperationException("Unsupported frame type: " + frame.getClass().getName());
             }
         } finally {
@@ -98,6 +139,8 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     private void handleClose(ChannelHandlerContext ctx, CloseWebSocketFrame frame) {
         int statusCode = frame.statusCode();
         String reason = frame.reasonText();
+        recordFrameReceived("close", frame.content().readableBytes());
+        lastCloseStatus = statusCode;
         server.getLog().info("WebSocket close requested: " + ctx.channel() +
             " status=" + statusCode + " reason=" + reason);
         if (handler != null && wsContext != null) {
@@ -107,15 +150,23 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
     }
 
     private void handlePing(ChannelHandlerContext ctx, PingWebSocketFrame frame) {
+        int bytes = frame.content().readableBytes();
+        recordFrameReceived("ping", bytes);
+        QRestMetrics m = server.getMetrics();
+        if (m != null)
+            m.webSocketFrameSent(metricsRoute(), metricsQueue(), "pong", bytes);
         ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
     }
 
     private void handlePong(ChannelHandlerContext ctx, PongWebSocketFrame frame) {
+        recordFrameReceived("pong", frame.content().readableBytes());
         // Pong received - connection is alive
     }
 
     private void handleTextFrame(ChannelHandlerContext ctx, TextWebSocketFrame frame) {
         String text = frame.text();
+        long bytes = text.getBytes(StandardCharsets.UTF_8).length;
+        recordFrameReceived("text", bytes);
         if (handler != null && wsContext != null) {
             handler.onMessage(wsContext, text);
         } else {
@@ -128,6 +179,7 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
         ByteBuf content = frame.content();
         byte[] bytes = new byte[content.readableBytes()];
         content.readBytes(bytes);
+        recordFrameReceived("binary", bytes.length);
         if (handler != null && wsContext != null) {
             handler.onBinaryMessage(wsContext, bytes);
         } else {
@@ -167,6 +219,9 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
             }
         }
         Logger.log(evt);
+        QRestMetrics m = server.getMetrics();
+        if (m != null)
+            m.webSocketError(metricsRoute(), metricsQueue(), cause);
         if (handler != null && wsContext != null) {
             handler.onError(wsContext, cause);
         }
@@ -199,6 +254,11 @@ public class WebSocketSession extends ChannelInboundHandlerAdapter {
         server.getLog().info("WebSocket closed: " + ctx.channel());
         if (handler != null && wsContext != null) {
             handler.onClose(wsContext, 1000, "Connection closed");
+        }
+        if (closeRecorded.compareAndSet(false, true)) {
+            QRestMetrics m = server.getMetrics();
+            if (m != null)
+                m.webSocketClosed(metricsRoute(), metricsQueue(), lastCloseStatus);
         }
     }
 

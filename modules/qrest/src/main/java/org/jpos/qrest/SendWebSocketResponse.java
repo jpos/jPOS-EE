@@ -32,6 +32,7 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 import static org.jpos.qrest.WsConstants.*;
 
@@ -84,13 +85,27 @@ public class SendWebSocketResponse implements AbortParticipant, Configurable {
 
     private void sendResponse(Context ctx, ChannelHandlerContext ch, boolean isAbort) {
         Object response = ctx.get(Constants.RESPONSE);
+        WebSocketSession ws = ch.pipeline().get(WebSocketSession.class);
+        QRestMetrics m = ws != null
+          ? ws.getServer().getMetrics()
+          : ch.channel().attr(RestSession.METRICS).get();
+
+        RestServer.WebSocketRouteMatch match = ws != null ? ws.getRouteMatch() : null;
+        if (match == null && ws != null) {
+            String wsPath = ctx.get(WS_PATH);
+            match = ws.getServer().resolveWebSocketRoute(wsPath);
+        }
+        String route = match != null ? match.route() : QRestMetrics.UNMATCHED_ROUTE;
+        String queue = match != null ? match.queue() : QRestMetrics.UNKNOWN_QUEUE;
 
         if (response == null) {
             Result result = ctx.getResult();
             if (result != null && result.hasFailures()) {
                 String errorMsg = result.failure().getMessage();
-                sendText(ch, errorMsg != null ? errorMsg : "Error");
+                sendText(ch, errorMsg != null ? errorMsg : "Error", m, route, queue);
                 if (closeOnError) {
+                    if (m != null)
+                        m.webSocketFrameSent(route, queue, "close", 0L);
                     ch.writeAndFlush(new CloseWebSocketFrame(1011, "Internal Error"));
                 }
             }
@@ -99,36 +114,40 @@ public class SendWebSocketResponse implements AbortParticipant, Configurable {
 
         try {
             if (response instanceof String) {
-                sendText(ch, (String) response);
+                sendText(ch, (String) response, m, route, queue);
             } else if (response instanceof byte[]) {
-                sendBinary(ch, (byte[]) response);
+                sendBinary(ch, (byte[]) response, m, route, queue);
             } else if (response instanceof WebSocketResponse) {
                 WebSocketResponse wsResponse = (WebSocketResponse) response;
                 if (wsResponse.isBinary()) {
-                    sendBinary(ch, wsResponse.getBinaryContent());
+                    sendBinary(ch, wsResponse.getBinaryContent(), m, route, queue);
                 } else {
-                    sendText(ch, wsResponse.getTextContent());
+                    sendText(ch, wsResponse.getTextContent(), m, route, queue);
                 }
             } else {
                 // JSON serialize other objects
-                ObjectMapper m = ctx.get(SendResponse.MAPPER);
-                if (m == null) {
-                    m = jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
+                ObjectMapper mapperLocal = ctx.get(SendResponse.MAPPER);
+                if (mapperLocal == null) {
+                    mapperLocal = jsonIncludeNulls ? mapper : Mapper.getMapperNoNulls();
                 }
-                String json = m.writeValueAsString(response);
-                sendText(ch, json);
+                String json = mapperLocal.writeValueAsString(response);
+                sendText(ch, json, m, route, queue);
             }
         } catch (JsonProcessingException e) {
             ctx.log(e);
-            sendText(ch, "{\"error\":\"JSON serialization failed\"}");
+            sendText(ch, "{\"error\":\"JSON serialization failed\"}", m, route, queue);
         }
     }
 
-    private void sendText(ChannelHandlerContext ch, String text) {
+    private void sendText(ChannelHandlerContext ch, String text, QRestMetrics m, String route, String queue) {
+        if (m != null)
+            m.webSocketFrameSent(route, queue, "text", text.getBytes(StandardCharsets.UTF_8).length);
         ch.writeAndFlush(new TextWebSocketFrame(text));
     }
 
-    private void sendBinary(ChannelHandlerContext ch, byte[] data) {
+    private void sendBinary(ChannelHandlerContext ch, byte[] data, QRestMetrics m, String route, String queue) {
+        if (m != null)
+            m.webSocketFrameSent(route, queue, "binary", data.length);
         ByteBuf buffer = ch.alloc().buffer(data.length);
         buffer.writeBytes(data);
         ch.writeAndFlush(new BinaryWebSocketFrame(buffer));

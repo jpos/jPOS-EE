@@ -118,4 +118,33 @@ class QRestAccessTest {
         assertFalse(json.contains("body"), "QRestAccess must not carry a body field");
         assertNotNull(json);
     }
+
+    @Test
+    void toStringUsesCompactAccessLogFormat() {
+        QRestAccess evt = new QRestAccess(
+          Instant.parse("2026-05-07T12:00:00Z"),
+          "GET",
+          "/api/logs/histogram",
+          200,
+          19L,
+          "0:0:0:0:0:0:0:1",
+          "TXNMGR.WEB",
+          0L,
+          1801L
+        );
+
+        assertEquals(
+          "GET /api/logs/histogram 200 19ms [remote=::1 queue=TXNMGR.WEB in=0B out=1801B]",
+          evt.toString()
+        );
+    }
+
+    @Test
+    void toStringOmitsMissingDetails() {
+        QRestAccess evt = new QRestAccess(
+          null, "GET", "/health", null, null, null, null, null, null
+        );
+
+        assertEquals("GET /health", evt.toString());
+    }
 }

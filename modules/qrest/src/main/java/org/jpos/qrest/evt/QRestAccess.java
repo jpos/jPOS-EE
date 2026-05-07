@@ -23,6 +23,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.jpos.log.AuditLogEvent;
 
 import java.time.Instant;
+import java.util.StringJoiner;
 
 /**
  * Structured access-log entry emitted once per QRest HTTP request.
@@ -43,4 +44,49 @@ public record QRestAccess(
     String queue,
     Long requestBytes,
     Long responseBytes
-) implements AuditLogEvent { }
+) implements AuditLogEvent {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder()
+          .append(display(method))
+          .append(' ')
+          .append(display(path));
+        if (status != null)
+            sb.append(' ').append(status);
+        if (elapsed != null)
+            sb.append(' ').append(elapsed).append("ms");
+
+        StringJoiner details = new StringJoiner(" ");
+        add(details, "remote", normalizedRemote(remote));
+        add(details, "queue", queue);
+        add(details, "in", bytes(requestBytes));
+        add(details, "out", bytes(responseBytes));
+        String detailString = details.toString();
+        if (!detailString.isEmpty())
+            sb.append(" [").append(detailString).append(']');
+        return sb.toString();
+    }
+
+    private static void add(StringJoiner joiner, String name, String value) {
+        if (value != null && !value.isBlank())
+            joiner.add(name + '=' + value);
+    }
+
+    private static String display(String value) {
+        return value != null && !value.isBlank() ? value : "-";
+    }
+
+    private static String bytes(Long value) {
+        return value != null ? value + "B" : null;
+    }
+
+    private static String normalizedRemote(String value) {
+        if (value == null)
+            return null;
+        return switch (value) {
+            case "0:0:0:0:0:0:0:0" -> "::";
+            case "0:0:0:0:0:0:0:1" -> "::1";
+            default -> value;
+        };
+    }
+}

@@ -102,6 +102,9 @@ public class SendResponse implements AbortParticipant, Configurable {
         if (response != null)
             state.status = response.status().code();
         state.responseBytes = responseBytes;
+        QRestMetrics metrics = ch.channel().attr(RestSession.METRICS).get();
+        if (metrics != null)
+            metrics.requestCompleted(state);
         BiConsumer<QRestAccess, UUID> emitter = ch.channel().attr(RestSession.ACCESS_EMITTER).get();
         if (emitter != null)
             emitter.accept(state.toAccess(), ch.channel().attr(RestSession.TRACE_ID).get());

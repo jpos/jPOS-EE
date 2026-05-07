@@ -48,6 +48,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     static final AttributeKey<RestAccessState> ACCESS_STATE = AttributeKey.valueOf("qrestAccessState");
     static final AttributeKey<BiConsumer<QRestAccess, UUID>> ACCESS_EMITTER = AttributeKey.valueOf("qrestAccessEmitter");
     static final AttributeKey<UUID> TRACE_ID = AttributeKey.valueOf("qrestTraceId");
+    static final AttributeKey<QRestMetrics> METRICS = AttributeKey.valueOf("qrestMetrics");
 
     RestSession(RestServer server) {
         this.server = server;
@@ -59,6 +60,9 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         super.handlerAdded(ctx);
         ctx.channel().attr(ACCESS_EMITTER).set(this::emitAccessLog);
         ctx.channel().attr(TRACE_ID).set(UuidV7.randomUuidV7());
+        QRestMetrics m = server.getMetrics();
+        if (m != null)
+            ctx.channel().attr(METRICS).set(m);
     }
 
     @Override
@@ -110,6 +114,10 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         if (state != null && state.status == null)
             state.status = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
 
+        QRestMetrics m = server.getMetrics();
+        if (m != null && state != null)
+            m.requestFailed(state, cause);
+
         ctx.writeAndFlush(new DefaultFullHttpResponse(
           version,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
@@ -127,8 +135,12 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         RestAccessState state = ctx.channel().attr(ACCESS_STATE).getAndSet(null);
-        if (state != null)
+        if (state != null) {
+            QRestMetrics m = server.getMetrics();
+            if (m != null)
+                m.requestCompleted(state);
             emitAccessLog(state.toAccess(), ctx.channel().attr(TRACE_ID).get());
+        }
     }
 
     @Override
@@ -163,7 +175,19 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         state.path = stripQuery(request.uri());
         state.remote = remoteAddress(ch);
         state.requestBytes = (long) request.content().readableBytes();
+        state.scheme = server.isTLSEnabled() ? "https" : "http";
+        state.protocolVersion = stripProtocol(request.protocolVersion().text());
         ch.channel().attr(ACCESS_STATE).set(state);
+        QRestMetrics m = server.getMetrics();
+        if (m != null)
+            m.requestStarted(state);
+    }
+
+    private static String stripProtocol(String text) {
+        if (text == null)
+            return null;
+        int slash = text.indexOf('/');
+        return slash >= 0 ? text.substring(slash + 1) : text;
     }
 
     private String stripQuery(String uri) {

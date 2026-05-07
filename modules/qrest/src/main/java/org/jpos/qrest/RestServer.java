@@ -84,6 +84,9 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private int maxWebSocketFrameSize;
     private Map<String,String> websocketRoutes = new LinkedHashMap<>();
     private Map<String, WebSocketHandler> websocketHandlers = new LinkedHashMap<>();
+    private QRestMetrics metrics;
+    private QRestMetrics.PathLabel pathLabel;
+    private int metricsMaxRoutes;
 
     public static final int DEFAULT_MAX_CONTENT_LENGTH = 512*1024;
     public static final int DEFAULT_MAX_WEBSOCKET_FRAME_SIZE = 65536;
@@ -91,6 +94,10 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     @Override
     protected void initService() throws GeneralSecurityException, IOException {
         sp = SpaceFactory.getSpace();
+        metrics = new QRestMetrics(
+          getServer() != null ? getServer().getMeterRegistry() : null,
+          getName(), pathLabel, metricsMaxRoutes
+        );
         final SSLContext sslContext = enableTLS ? getSSLContext() : null;
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
@@ -173,14 +180,24 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
 
     @SuppressWarnings("unchecked")
     public void queue (FullHttpRequest request, Context ctx) {
-        String q = getQueue(request);
+        RouteMatch match = resolveRoute(request);
         ChannelHandlerContext ch = ctx.get(Constants.SESSION);
         if (ch != null) {
             RestAccessState state = ch.channel().attr(RestSession.ACCESS_STATE).get();
-            if (state != null)
-                state.queue = q;
+            if (state != null) {
+                state.queue = match.queue();
+                state.route = match.route();
+            }
         }
-        sp.out(q, ctx, 60000L);
+        sp.out(match.queue(), ctx, 60000L);
+    }
+
+    QRestMetrics getMetrics() {
+        return metrics;
+    }
+
+    boolean isTLSEnabled() {
+        return enableTLS;
     }
 
     /**
@@ -261,6 +278,8 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         validateHeaders = cfg.getBoolean("validateHeaders", DEFAULT_CHUNKED_SUPPORTED);
         websocketPath = cfg.get("websocket-path", null);
         maxWebSocketFrameSize = cfg.getInt("maxWebSocketFrameSize", DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
+        pathLabel = QRestMetrics.parsePathLabel(cfg.get("metrics-path-label", "route"));
+        metricsMaxRoutes = cfg.getInt("metrics-max-routes", 200);
     }
 
     @Override
@@ -377,7 +396,9 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         return System.getProperty("jpos.ssl.keypass", null);
     }
 
-    private String getQueue(FullHttpRequest request) {
+    record RouteMatch(String queue, String route) { }
+
+    RouteMatch resolveRoute(FullHttpRequest request) {
         List<Route<String>> routesByMethod = routes.get(request.method().name());
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
 
@@ -385,10 +406,11 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
             Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.uri())).findFirst();
             String path = URI.create(decoder.uri()).getPath();
             if (route.isPresent()) {
-                return route.get().apply(route.get(), path);
+                Route<String> r = route.get();
+                return new RouteMatch(r.apply(r, path), r.path());
             }
         }
-        return cfg.get("queue");
+        return new RouteMatch(cfg.get("queue"), null);
     }
 
     private CorsConfig getCorsConfig(Element e) {

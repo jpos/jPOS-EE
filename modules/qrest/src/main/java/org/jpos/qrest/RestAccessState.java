@@ -39,8 +39,12 @@ final class RestAccessState {
     Integer status;
     String remote;
     String queue;
+    String route;
+    String scheme;
+    String protocolVersion;
     Long requestBytes;
     Long responseBytes;
+    boolean recorded;
 
     QRestAccess toAccess() {
         Long elapsed = startNanos != null

@@ -49,6 +49,12 @@ public class Route<T> implements BiFunction<Route<T>, String,T> {
     public boolean matches (String uri) {
         return pathPattern.matcher(uri).matches();
     }
+    public String path() {
+        return path;
+    }
+    public String method() {
+        return method;
+    }
     public boolean hasPathParams() {
         return !params.isEmpty();
     }

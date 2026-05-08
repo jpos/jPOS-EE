@@ -155,6 +155,23 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     }
 
     /**
+     * Records the matched route template on the per-request access state held
+     * on the netty channel. Intended for use by TransactionManager participants
+     * that resolve the {@link Route} match themselves (e.g. {@code Router},
+     * {@code Q2Info}) so that downstream metrics can label by route pattern
+     * instead of falling back to the {@code _unmatched} sentinel.
+     *
+     * <p>No-op if {@code ch}, {@code route}, or the access state is {@code null}.</p>
+     */
+    public static void setMatchedRoute(io.netty.channel.ChannelHandlerContext ch, String route) {
+        if (ch == null || route == null || route.isEmpty())
+            return;
+        RestAccessState state = ch.channel().attr(ACCESS_STATE).get();
+        if (state != null)
+            state.route = route;
+    }
+
+    /**
      * Emits one structured QRest audit-log event. The trace-id (a session-scoped
      * UUIDv7) is attached to the {@link LogEvent} so all events from the same
      * keep-alive session share it. Visible for testing.

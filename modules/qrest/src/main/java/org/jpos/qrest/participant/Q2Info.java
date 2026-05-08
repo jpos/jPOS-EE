@@ -30,6 +30,7 @@ import org.jpos.core.Configuration;
 import org.jpos.q2.Q2;
 import org.jpos.q2.iso.QMUX;
 import org.jpos.qrest.Response;
+import org.jpos.qrest.RestSession;
 import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionManager;
@@ -38,6 +39,7 @@ import org.jpos.util.NameRegistrar;
 
 import static org.jpos.qrest.Constants.REQUEST;
 import static org.jpos.qrest.Constants.RESPONSE;
+import static org.jpos.qrest.Constants.SESSION;
 
 public class Q2Info implements TransactionParticipant, Configurable {
     // special temp key in response map to indicate a specific HttpResponseStatus value (should be removed from actual response)
@@ -60,6 +62,7 @@ public class Q2Info implements TransactionParticipant, Configurable {
 
         HttpResponseStatus status = HttpResponseStatus.NOT_FOUND;
         if (route.isPresent()) {
+            RestSession.setMatchedRoute(ctx.get(SESSION), route.get().path());
             if (route.get().isValid(path)) {
                 response = new LinkedHashMap<>();
                 response.putAll(route.get().apply(route.get(), path));

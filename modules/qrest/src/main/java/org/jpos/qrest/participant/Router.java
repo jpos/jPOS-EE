@@ -18,12 +18,14 @@
 
 package org.jpos.qrest.participant;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QFactory;
+import org.jpos.qrest.RestSession;
 import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.GroupSelector;
@@ -61,6 +63,8 @@ public class Router implements GroupSelector, XmlConfigurable {
                 Map m = r.parameters(path);
                 if (m != null)
                     ctx.put(PATHPARAMS, m);
+
+                RestSession.setMatchedRoute(ctx.get(SESSION), r.path());
 
                 ctx.log("Matched Route: "+r);
                 return r.apply(r, path);

@@ -104,7 +104,7 @@ public abstract class TestBase {
         if (!cfgDir.exists())
             cfgDir.mkdirs();
         Properties props = new Properties();
-        props.setProperty("hibernate.globally_quoted_identifiers", "true");
+        props.setProperty("hibernate.globally_quoted_identifiers", "false");
         props.setProperty("hibernate.connection.provider_class", "org.hibernate.agroal.internal.AgroalConnectionProvider");
         props.setProperty("hibernate.connection.username", System.getProperty("db.username"));
         props.setProperty("hibernate.connection.password", System.getProperty("db.password"));

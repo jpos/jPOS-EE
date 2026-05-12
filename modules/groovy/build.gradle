@@ -6,6 +6,9 @@ dependencies {
     api libs.groovy.sh
     api libs.groovy.sql
 
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
+
     // implementation libraries.jline
     // api group: 'org.fusesource.jansi', name: 'jansi', version: '1.11'
     // api libraries.groovySql

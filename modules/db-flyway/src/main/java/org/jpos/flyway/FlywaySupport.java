@@ -27,12 +27,16 @@ import org.flywaydb.core.internal.configuration.ConfigUtils;
 import org.jpos.core.Environment;
 import org.jpos.ee.DB;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 public class FlywaySupport implements LogCreator, Log {
+
+    private String dbId = "";
 
     protected Flyway getFlyway(String configModifier, String args[]) {
         LogFactory.setFallbackLogCreator(this);
@@ -46,7 +50,42 @@ public class FlywaySupport implements LogCreator, Log {
             p.getProperty("hibernate.connection.username"),
             p.getProperty("hibernate.connection.password"))
           .outOfOrder(has(args, "--out-of-order"));
-        return config.load();
+        Flyway flyway = config.load();
+        this.dbId = resolveDbId(configModifier, flyway);
+        return flyway;
+    }
+
+    public String getDbId() {
+        return dbId;
+    }
+
+    private String resolveDbId(String configModifier, Flyway flyway) {
+        String catalog = null;
+        try (Connection c = flyway.getConfiguration().getDataSource().getConnection()) {
+            catalog = c.getCatalog();
+            if (catalog == null || catalog.isEmpty())
+                catalog = c.getSchema();
+        } catch (SQLException ignored) {
+            // fall through to URL parsing
+        }
+        if (catalog == null || catalog.isEmpty())
+            catalog = extractDbFromUrl(flyway.getConfiguration().getUrl());
+        if (catalog == null || catalog.isEmpty())
+            catalog = "?";
+        return (configModifier != null && !configModifier.isEmpty())
+          ? configModifier + "@" + catalog
+          : catalog;
+    }
+
+    private String extractDbFromUrl(String url) {
+        if (url == null) return null;
+        int q = url.indexOf('?');
+        String base = q >= 0 ? url.substring(0, q) : url;
+        int slash = base.lastIndexOf('/');
+        if (slash >= 0 && slash < base.length() - 1)
+            return base.substring(slash + 1);
+        int colon = base.lastIndexOf(':');
+        return colon >= 0 && colon < base.length() - 1 ? base.substring(colon + 1) : null;
     }
 
     public Log createLogger(Class<?> clazz) {
@@ -60,33 +99,37 @@ public class FlywaySupport implements LogCreator, Log {
 
     @Override
     public void debug(String message) {
-        System.out.println("DEBUG: " + message);
+        System.out.println("DEBUG: " + prefix() + message);
     }
 
     @Override
     public void info(String message) {
-        System.out.println(message);
+        System.out.println(prefix() + message);
     }
 
     @Override
     public void warn(String message) {
-        System.err.println("WARNING: " + message);
+        System.err.println("WARNING: " + prefix() + message);
     }
 
     @Override
     public void error(String message) {
-        System.err.println("ERROR: " + message);
+        System.err.println("ERROR: " + prefix() + message);
     }
 
     @Override
     public void error(String message, Exception e) {
-        System.err.println("ERROR: " + message);
+        System.err.println("ERROR: " + prefix() + message);
         e.printStackTrace(System.err);
     }
 
     @Override
     public void notice(String message) {
-        System.out.println(message);
+        System.out.println(prefix() + message);
+    }
+
+    private String prefix() {
+        return dbId.isEmpty() ? "" : "[" + dbId + "] ";
     }
 
     private boolean has (String[] args, String arg) {

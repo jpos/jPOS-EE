@@ -33,46 +33,52 @@ public class FlywayService extends QBeanSupport implements XmlConfigurable {
 
     @Override
     protected void initService() {
+        String dbId = "?";
+        String currentCommand = "init";
         try {
-            Flyway flyway = new FlywaySupport().getFlyway(cfg.get("config-modifier", null),
+            FlywaySupport support = new FlywaySupport();
+            Flyway flyway = support.getFlyway(cfg.get("config-modifier", null),
               cfg.getBoolean("out-of-order") ? new String[] { "--out-of-order" } : new String[] {}
             );
+            dbId = support.getDbId();
             for (String command : commands.split("\\s+")) {
-                switch (command.toLowerCase()) {
+                currentCommand = command.toLowerCase();
+                String tag = "FLYWAY [" + dbId + "] " + currentCommand + ":";
+                switch (currentCommand) {
                     case "info":
                         MigrationInfoService info = flyway.info();
                         MigrationInfo current = info.current();
                         MigrationVersion currentSchemaVersion = current == null ? MigrationVersion.EMPTY : current.getVersion();
                         MigrationVersion schemaVersionToOutput = currentSchemaVersion == null ? MigrationVersion.EMPTY : currentSchemaVersion;
-                        getLog().info ("Schema version: " + schemaVersionToOutput + System.lineSeparator() + MigrationInfoDumper.dumpToAsciiTable(info.all()));
+                        getLog().info (tag + " schema version " + schemaVersionToOutput + System.lineSeparator() + MigrationInfoDumper.dumpToAsciiTable(info.all()));
                         break;
                     case "baseline":
                         flyway.baseline();
-                        getLog().info("FLYWAY: baseline done");
+                        getLog().info(tag + " done");
                         break;
                     case "repair":
                         flyway.repair();
-                        getLog().info("FLYWAY: repair done");
+                        getLog().info(tag + " done");
                         break;
                     case "migrate":
                         var result = flyway.migrate();
-                        getLog().info ("FLYWAY: applied " + result.migrationsExecuted + " migration(s)");
+                        getLog().info (tag + " applied " + result.migrationsExecuted + " migration(s)");
                         break;
                     case "validate":
                         flyway.validate();
-                        getLog().info("FLYWAY: validate done");
+                        getLog().info(tag + " done");
                         break;
                     case "clean":
                         flyway.clean();
-                        getLog().info("FLYWAY: clean done");
+                        getLog().info(tag + " done");
                         break;
                     default:
                         if (!command.isEmpty())
-                            getLog().warn("FLYWAY: invalid command '" + command + "'");
+                            getLog().warn("FLYWAY [" + dbId + "]: invalid command '" + command + "'");
                 }
             }
         } catch (Exception e) {
-            getLog().error(e);
+            getLog().error("FLYWAY [" + dbId + "] " + currentCommand + " failed", e);
         }
     }
 

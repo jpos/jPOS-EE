@@ -1,9 +1,9 @@
 [versions]
-restAssured = '5.5.7'
+restAssured = '6.0.0'
 testcontainers = '1.21.4'
-junit-jupiter = '5.11.4'
-junit-launcher = '1.11.4'
-kafkastreams_testutils = '4.2.0'
+junit-jupiter = '6.1.0'
+junit-launcher = '6.1.0'
+kafkastreams_testutils = '4.3.0'
 mockito = "5.23.0"
 mockitojupiter = "5.23.0"
 hamcrest = "3.0"
@@ -34,4 +34,3 @@ junit_platform = [
     "junit_jupiter_engine",
     "junit_platform_launcher"
 ]
-

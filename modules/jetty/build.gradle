@@ -6,6 +6,5 @@ dependencies {
     implementation libs.jetty.xml
     implementation libs.jetty.deploy
     implementation libs.jetty.ee10.webapp 
-    runtimeOnly 'org.slf4j:slf4j-simple:2.0.17'
+    runtimeOnly libs.slf4j.simple
 }
-

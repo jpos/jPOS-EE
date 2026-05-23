@@ -536,6 +536,68 @@ class TagsTypePersistenceTest {
     }
 
     /**
+     * Verifies that {@code session.isDirty()} correctly reflects the
+     * dirty state of the persistence context when Tags is modified.
+     * <p>
+     * Unlike the Interceptor-based tests, this uses Hibernate's built-in
+     * dirty check directly — {@code isDirty()} runs the same snapshot
+     * comparison that drives {@code onFlushDirty} under the hood.
+     * <p>
+     * <strong>Caveat:</strong> {@code isDirty()} is a coarse check — it
+     * returns true if <em>any</em> entity in the persistence context is
+     * dirty, not specifically the one we modified. In this test it is
+     * reliable because only one entity is loaded, but in general it can
+     * fire for unrelated reasons (collection changes, other entities
+     * modified by triggers/interceptors, etc.). The Interceptor-based
+     * approach in {@link #testFlushDetectsDirtyWhenEntityModified()} is
+     * more precise because it tells us exactly which entity triggered
+     * the dirty event and which properties changed.
+     * <p>
+     * <strong>Before modification:</strong> {@code isDirty()} returns false
+     * (snapshot matches current value — confirmed by the fix).<br>
+     * <strong>After modification:</strong> {@code isDirty()} returns true
+     * (snapshot is null, current is non-null Tags).
+     */
+    @Test
+    void testIsDirtyDetectsTagsModification() throws Exception {
+        Long accountId;
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            db.open();
+            db.beginTransaction();
+            FinalAccount account = new FinalAccount();
+            account.setCode("TEST-ISDIRTY-" + System.currentTimeMillis());
+            account.setTags(null);
+            db.session().persist(account);
+            accountId = account.getId();
+            db.commit();
+        }
+
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            db.open();
+            Session s = db.session();
+
+            s.beginTransaction();
+
+            Account a = s.find(Account.class, accountId);
+            assertNull(a.getTags());
+
+            assertFalse(s.isDirty(),
+                    "isDirty() should be false after loading an unmodified entity. " +
+                            "deepCopy(null) must return null to keep the snapshot " +
+                            "consistent with the current value.");
+
+            a.setTags(new Tags("aaa,bbb"));
+
+            assertTrue(s.isDirty(),
+                    "isDirty() should be true after Tags changes from null to non-null. " +
+                            "This confirms that Hibernate's dirty-checking correctly " +
+                            "detects the modification via the TagsType.equals() comparison.");
+
+            db.commit();
+        }
+    }
+
+    /**
      * Verifies that Tags can be transitioned from null → non-null in an update.
      * <p>
      * This is a critical lifecycle: an entity starts with no Tags, then gains

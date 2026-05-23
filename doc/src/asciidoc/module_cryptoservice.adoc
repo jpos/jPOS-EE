@@ -52,6 +52,30 @@ Here is a sample usage:
 <3> `kid` stands for Key ID, we store the key UUID here
 <4> `secureData` is a general purpose blob
 
+For callers that need row-swap protection or other external context binding,
+`CryptoService` also supports authenticated associated data (AAD) using
+AES-GCM:
+
+[source,java]
+-------------
+   SecureData sd = getCryptoService().aesEncrypt(clearText, aad);
+   byte[] decrypted = getCryptoService().aesDecrypt(jobId, sd.getId(), sd.getEncoded(), aad);
+-------------
+
+The AAD is authenticated by the cipher but is not stored in the cryptogram and
+is not returned as plaintext. Decryption with different AAD fails before any
+plaintext is returned. AES-GCM cryptograms use a versioned binary encoding so
+they can be distinguished from the original AES-CBC format; existing AES-CBC
+cryptograms remain readable through the original `aesDecrypt` API.
+
+[NOTE]
+======
+Existing consumers do not need to rewrite stored rows immediately. MGL
+consumers such as MFA secrets, kubeconfigs, and AI credentials can keep reading
+their current framed AES-CBC ciphertexts and write new AES-GCM/AAD ciphertexts
+on the next save or update.
+======
+
 The crypto service can be configured using a QBean descriptor like this:
 
 [source,xml]
@@ -245,4 +269,3 @@ repeated by removing custodian-1 from the list of recipients.
 The REKEY process is highly sensitive. It is recommended to back up the JE
 store or sysconfig table (depending on the provider in use) before proceeding.
 ======
-

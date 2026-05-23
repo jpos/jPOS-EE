@@ -31,6 +31,7 @@ import org.jpos.util.*;
 import org.jpos.security.SensitiveString;
 
 import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.Closeable;
@@ -72,6 +73,12 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     private Semaphore sem = new Semaphore(1);
     private AtomicBoolean lazy = new AtomicBoolean(false);
     private static final String AES = "AES/CBC/PKCS5Padding";
+    private static final String AES_GCM = "AES/GCM/NoPadding";
+    private static final byte AES_GCM_FORMAT = 2;
+    private static final int AES_CBC_IV_LENGTH = 16;
+    private static final int AES_GCM_NONCE_LENGTH = 12;
+    private static final int AES_GCM_TAG_LENGTH_BITS = 128;
+    private static final int AES_GCM_TAG_LENGTH_BYTES = AES_GCM_TAG_LENGTH_BITS / 8;
     private String pubKeyRing;
     private String privKeyRing;
     private long waitTimeout;
@@ -119,6 +126,54 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
     }
 
     /**
+     * Encrypts data using AES-GCM and authenticates caller-provided associated data.
+     *
+     * <p>Encoded format:</p>
+     * <pre>
+     * byte 0        format version / algorithm id: 0x02 (AES-GCM)
+     * byte 1        nonce length: 12
+     * bytes 2..13   nonce
+     * bytes 14..n   ciphertext || 128-bit authentication tag
+     * </pre>
+     *
+     * <p>The AAD is authenticated by the cipher but is not stored in the cryptogram.</p>
+     *
+     * @param b data to encrypt
+     * @param aad associated data to authenticate, null is treated as empty
+     * @return SecureData object including cryptogram, key id, and nonce
+     * @throws Exception if crypto service not properly started
+     */
+    public SecureData aesEncrypt (byte[] b, byte[] aad) throws Exception {
+        if (lazy.getAndSet(false))
+            new Thread(this, getName()+"-lazy").start();
+
+        final Cipher cipher = Cipher.getInstance(AES_GCM, "BC");
+        final byte[] nonce = randomNonce();
+
+        if (!ready.await(waitTimeout, TimeUnit.MILLISECONDS))
+            throw new IllegalStateException("Service unavailable");
+
+        sem.acquire();
+        if (isExpired()) {
+            this.timestamp = System.currentTimeMillis();
+            new Thread(this, getName() + "-renew").start();
+        }
+        SecretKey wk = sk;
+        UUID wid = id;
+        sem.release();
+
+        cipher.init(Cipher.ENCRYPT_MODE, wk, new GCMParameterSpec(AES_GCM_TAG_LENGTH_BITS, nonce));
+        updateAAD(cipher, aad);
+        byte[] enc = cipher.doFinal(b);
+        ByteBuffer buf = ByteBuffer.allocate(2 + nonce.length + enc.length);
+        buf.put(AES_GCM_FORMAT);
+        buf.put((byte) nonce.length);
+        buf.put(nonce);
+        buf.put(enc);
+        return new SecureData(wid, buf.array());
+    }
+
+    /**
      * Decrypts data. Requires a "loaded" key (@see loadKey method).
      *
      * @param jobId jobId
@@ -129,20 +184,50 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
      */
     public byte[] aesDecrypt (UUID jobId, UUID keyId, byte[] encoded) throws Exception
     {
-        UUID xid = xor(jobId, keyId);
-        SecretKey sk = keys.rdp(xid);
-        if (sk == null && unlock != null) {
-            loadKey(jobId, keyId, unlock.get().toCharArray());
-            sk = keys.rdp(xid);
-        }
-        if (sk == null) {
-            throw new SecurityException("Key not loaded");
-        }
-        byte[] iv = new byte[16];
+        SecretKey sk = getLoadedKey(jobId, keyId);
+        byte[] iv = new byte[AES_CBC_IV_LENGTH];
         byte[] cryptogram = new byte[encoded.length - iv.length];
         System.arraycopy(encoded, 0, iv, 0, iv.length);
         System.arraycopy(encoded, iv.length, cryptogram, 0, cryptogram.length);
         return decrypt(sk, new IvParameterSpec(iv), cryptogram);
+    }
+
+    /**
+     * Decrypts AES-GCM data and authenticates caller-provided associated data.
+     *
+     * @param jobId jobId
+     * @param keyId the key id
+     * @param encoded encoded cryptogram
+     * @param aad associated data to authenticate, null is treated as empty
+     * @return clear text
+     * @throws Exception if key is not loaded, encoded data is malformed, or authentication fails
+     */
+    public byte[] aesDecrypt (UUID jobId, UUID keyId, byte[] encoded, byte[] aad) throws Exception
+    {
+        try {
+            if (encoded == null || encoded.length < 2 || encoded[0] != AES_GCM_FORMAT) {
+                throw new GeneralSecurityException("Invalid cryptogram");
+            }
+
+            int nonceLength = Byte.toUnsignedInt(encoded[1]);
+            if (nonceLength != AES_GCM_NONCE_LENGTH ||
+              encoded.length < 2 + nonceLength + AES_GCM_TAG_LENGTH_BYTES) {
+                throw new GeneralSecurityException("Invalid cryptogram");
+            }
+
+            SecretKey sk = getLoadedKey(jobId, keyId);
+            byte[] nonce = new byte[nonceLength];
+            byte[] cryptogram = new byte[encoded.length - 2 - nonceLength];
+            System.arraycopy(encoded, 2, nonce, 0, nonce.length);
+            System.arraycopy(encoded, 2 + nonce.length, cryptogram, 0, cryptogram.length);
+
+            final Cipher cipher = Cipher.getInstance(AES_GCM, "BC");
+            cipher.init(Cipher.DECRYPT_MODE, sk, new GCMParameterSpec(AES_GCM_TAG_LENGTH_BITS, nonce));
+            updateAAD(cipher, aad);
+            return cipher.doFinal(cryptogram);
+        } catch (GeneralSecurityException | RuntimeException e) {
+            throw new SecurityException("Invalid cryptogram", e);
+        }
     }
 
     /**
@@ -319,10 +404,35 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
         return cipher.doFinal(cryptogram);
     }
 
+    private SecretKey getLoadedKey(UUID jobId, UUID keyId) throws Exception {
+        UUID xid = xor(jobId, keyId);
+        SecretKey sk = keys.rdp(xid);
+        if (sk == null && unlock != null) {
+            loadKey(jobId, keyId, unlock.get().toCharArray());
+            sk = keys.rdp(xid);
+        }
+        if (sk == null) {
+            throw new SecurityException("Key not loaded");
+        }
+        return sk;
+    }
+
     private byte[] randomIV() {
-        final byte[] b = new byte[16];
+        final byte[] b = new byte[AES_CBC_IV_LENGTH];
         rnd.nextBytes(b);
         return b;
+    }
+
+    private byte[] randomNonce() {
+        final byte[] b = new byte[AES_GCM_NONCE_LENGTH];
+        rnd.nextBytes(b);
+        return b;
+    }
+
+    private void updateAAD(Cipher cipher, byte[] aad) {
+        if (aad != null && aad.length > 0) {
+            cipher.updateAAD(aad);
+        }
     }
 
     private boolean isExpired () {

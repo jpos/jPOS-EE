@@ -1411,75 +1411,82 @@ public class GLSession {
     (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
       throws HibernateException, GLException
     {
-        checkPermission(GLPermission.READ, journal);
-        Objects.requireNonNull(journal, "Journal must not be null");
-        Objects.requireNonNull(acct, "Account must not be null");
+        FlushMode previousFlushMode = session.getHibernateFlushMode();
+        session.setHibernateFlushMode(FlushMode.MANUAL);
+        try {
+            checkPermission(GLPermission.READ, journal);
+            Objects.requireNonNull(journal, "Journal must not be null");
+            Objects.requireNonNull(acct, "Account must not be null");
 
-        final BigDecimal[] balance = {ZERO, ZERO};
-        final short[] layersCopy = Arrays.copyOf(layers, layers.length);
+            final BigDecimal[] balance = {ZERO, ZERO};
+            final short[] layersCopy = Arrays.copyOf(layers, layers.length);
 
-        if (acct.getChildren() != null && !acct.getChildren().isEmpty()) {
-            if (acct.isChart()) {
-                return getChartBalances(journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
+            if (acct.getChildren() != null && !acct.getChildren().isEmpty()) {
+                if (acct.isChart()) {
+                    return getChartBalances(journal, (CompositeAccount) acct, date, inclusive, layersCopy, maxId);
+                }
+
+                for (Account child : acct.getChildren()) {
+                    BigDecimal[] childBalance = getBalancesORM(journal, child, date, inclusive, layersCopy, maxId);
+                    balance[0] = balance[0].add(childBalance[0]);
+                }
+                return balance;
             }
 
-            for (Account child : acct.getChildren()) {
-                BigDecimal[] childBalance = getBalancesORM(journal, child, date, inclusive, layersCopy, maxId);
-                balance[0] = balance[0].add(childBalance[0]);
+            if (acct.isFinalAccount()) {
+                final CriteriaBuilder cb = session.getCriteriaBuilder();
+
+                // Query for entries with their increase/decrease status
+                CriteriaQuery<GLEntry> entryQuery = cb.createQuery(GLEntry.class);
+                Root<GLEntry> entryRoot = entryQuery.from(GLEntry.class);
+                Join<GLEntry, GLTransaction> txnJoin = entryRoot.join("transaction");
+
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(cb.equal(entryRoot.get("account"), acct));
+                predicates.add(cb.equal(txnJoin.get("journal"), journal));
+
+                if (maxId > 0L) {
+                    predicates.add(cb.le(entryRoot.get("id"), maxId));
+                }
+
+                if (layersCopy.length > 0) {
+                    List<Short> layerList = new ArrayList<>(layersCopy.length);
+                    for (short s : layersCopy) {
+                        layerList.add(s);
+                    }
+                    predicates.add(entryRoot.get("layer").in(layerList));
+                }
+
+                Checkpoint checkpoint = null;
+                if (date != null) {
+                    Date adjustedDate = inclusive ? Util.tomorrow(date) : Util.floor(date);
+                    predicates.add(cb.lessThan(txnJoin.get("postDate"), adjustedDate));
+
+                    checkpoint = getRecentCheckpoint(journal, acct, date, inclusive, layersCopy);
+                    if (checkpoint != null) {
+                        balance[0] = checkpoint.getBalance();
+                        predicates.add(cb.greaterThanOrEqualTo(txnJoin.get("postDate"), checkpoint.getDate()));
+                    }
+                } else if (!ignoreBalanceCache) {
+                    BalanceCache cache = getBalanceCache(journal, acct, layersCopy);
+                    if (cache != null && (maxId == 0 || cache.getRef() <= maxId)) {
+                        balance[0] = cache.getBalance();
+                        predicates.add(cb.gt(entryRoot.get("id"), cache.getRef()));
+                    }
+                }
+
+                entryQuery.select(entryRoot)
+                  .where(predicates.toArray(new Predicate[0]));
+
+                session.flush();
+                List<GLEntry> entries = session.createQuery(entryQuery).getResultList();
+                balance[0] = applyEntries (balance[0], entries);
+                balance[1] = new BigDecimal(entries.size());
             }
             return balance;
+        } finally {
+            session.setHibernateFlushMode(previousFlushMode);
         }
-
-        if (acct.isFinalAccount()) {
-            final CriteriaBuilder cb = session.getCriteriaBuilder();
-
-            // Query for entries with their increase/decrease status
-            CriteriaQuery<GLEntry> entryQuery = cb.createQuery(GLEntry.class);
-            Root<GLEntry> entryRoot = entryQuery.from(GLEntry.class);
-            Join<GLEntry, GLTransaction> txnJoin = entryRoot.join("transaction");
-
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(entryRoot.get("account"), acct));
-            predicates.add(cb.equal(txnJoin.get("journal"), journal));
-
-            if (maxId > 0L) {
-                predicates.add(cb.le(entryRoot.get("id"), maxId));
-            }
-
-            if (layersCopy.length > 0) {
-                List<Short> layerList = new ArrayList<>(layersCopy.length);
-                for (short s : layersCopy) {
-                    layerList.add(s);
-                }
-                predicates.add(entryRoot.get("layer").in(layerList));
-            }
-
-            Checkpoint checkpoint = null;
-            if (date != null) {
-                Date adjustedDate = inclusive ? Util.tomorrow(date) : Util.floor(date);
-                predicates.add(cb.lessThan(txnJoin.get("postDate"), adjustedDate));
-
-                checkpoint = getRecentCheckpoint(journal, acct, date, inclusive, layersCopy);
-                if (checkpoint != null) {
-                    balance[0] = checkpoint.getBalance();
-                    predicates.add(cb.greaterThanOrEqualTo(txnJoin.get("postDate"), checkpoint.getDate()));
-                }
-            } else if (!ignoreBalanceCache) {
-                BalanceCache cache = getBalanceCache(journal, acct, layersCopy);
-                if (cache != null && (maxId == 0 || cache.getRef() <= maxId)) {
-                    balance[0] = cache.getBalance();
-                    predicates.add(cb.gt(entryRoot.get("id"), cache.getRef()));
-                }
-            }
-
-            entryQuery.select(entryRoot)
-              .where(predicates.toArray(new Predicate[0]));
-
-            List<GLEntry> entries = session.createQuery(entryQuery).getResultList();
-            balance[0] = applyEntries (balance[0], entries);
-            balance[1] = new BigDecimal(entries.size());
-        }
-        return balance;
     }
     /**
      * Get Both Balances at given date.
@@ -1519,106 +1526,111 @@ public class GLSession {
     private BigDecimal[] getBalances0(Journal journal, Account acct, Date date, boolean inclusive,
                                       short[] layers, long maxId, BalanceCache bcache)
       throws HibernateException, GLException {
+        FlushMode previousFlushMode = session.getHibernateFlushMode();
+        session.setHibernateFlushMode(FlushMode.MANUAL);
+        try {
+            StringBuilder select;
+            switch (nativeDialect) {
+                case MYSQL:
+                    select = new StringBuilder(MYSQL_GET_BALANCES);
+                    break;
+                case POSTGRESQL:
+                    select = new StringBuilder(POSTGRESQL_GET_BALANCES);
+                    break;
+                default:
+                    return getBalancesORM(journal, acct, date, inclusive, layers, maxId);
+            }
 
-        StringBuilder select;
-        switch (nativeDialect) {
-            case MYSQL:
-                select = new StringBuilder(MYSQL_GET_BALANCES);
-                break;
-            case POSTGRESQL:
-                select = new StringBuilder(POSTGRESQL_GET_BALANCES);
-                break;
-            default:
-                return getBalancesORM(journal, acct, date, inclusive, layers, maxId);
-        }
+            db.session().flush();
+            checkPermission(GLPermission.READ, journal);
+            BigDecimal[] balance = {ZERO, ZERO};
+            select.append(", transacc as txn\n");
 
-        db.session().flush();
-        checkPermission(GLPermission.READ, journal);
-        BigDecimal[] balance = {ZERO, ZERO};
-        select.append(", transacc as txn\n");
+            if (date == null && !ignoreBalanceCache) {
+                short[] layersCopy = Arrays.copyOf(layers, layers.length);
+                if (bcache == null)
+                    bcache = getBalanceCache(journal, acct, layersCopy);
+                if (maxId > 0 && bcache != null && bcache.getRef() > maxId)
+                    bcache = null;
+            }
 
-        if (date == null && !ignoreBalanceCache) {
-            short[] layersCopy = Arrays.copyOf(layers, layers.length);
-            if (bcache == null)
-                bcache = getBalanceCache(journal, acct, layersCopy);
-            if (maxId > 0 && bcache != null && bcache.getRef() > maxId)
-                bcache = null;
-        }
+            if (!acct.isFinalAccount()) {
+                select.append(", acct as acct");
+            }
 
-        if (!acct.isFinalAccount()) {
-            select.append(", acct as acct");
-        }
+            StringBuffer qs = new StringBuffer();
+            if (maxId > 0L) {
+                where(qs, "entry.id <= :maxId");
+            }
+            if (bcache != null) {
+                where(qs, "entry.id > :bcache_ref");
+            }
+            if (acct.isFinalAccount()) {
+                where(qs, "entry.account = :acctId");
+            } else if (acct.isChart()) {
+                where(qs, "entry.account = acct.id");
+                where(qs, "acct.root = :acctId");
+            } else {
+                where(qs, "entry.account = acct.id");
+                where(qs, "acct.code like :code");
+            }
+            where(qs, "(entry.transaction = txn.id and txn.journal = :journal)\n");
+            if (date != null) {
+                where(qs, "txn.postDate < :date");
+            }
+            where(qs, "entry.layer in");
+            qs.append("  (");
+            qs.append(layersToString(layers, ','));
+            qs.append(')');
+            select.append(qs);
 
-        StringBuffer qs = new StringBuffer();
-        if (maxId > 0L) {
-            where(qs, "entry.id <= :maxId");
-        }
-        if (bcache != null) {
-            where(qs, "entry.id > :bcache_ref");
-        }
-        if (acct.isFinalAccount()) {
-            where(qs, "entry.account = :acctId");
-        } else if (acct.isChart()) {
-            where(qs, "entry.account = acct.id");
-            where(qs, "acct.root = :acctId");
-        } else {
-            where(qs, "entry.account = acct.id");
-            where(qs, "acct.code like :code");
-        }
-        where(qs, "(entry.transaction = txn.id and txn.journal = :journal)\n");
-        if (date != null) {
-            where(qs, "txn.postDate < :date");
-        }
-        where(qs, "entry.layer in");
-        qs.append("  (");
-        qs.append(layersToString(layers, ','));
-        qs.append(')');
-        select.append(qs);
+            // Hibernate 6 Native Query Implementation
+            NativeQuery<Object[]> q = session.createNativeQuery(select.toString());
+            q.addScalar("balance", StandardBasicTypes.BIG_DECIMAL)
+              .addScalar("entry_count", StandardBasicTypes.LONG);
 
-        // Hibernate 6 Native Query Implementation
-        NativeQuery<Object[]> q = session.createNativeQuery(select.toString());
-        q.addScalar("balance", StandardBasicTypes.BIG_DECIMAL)
-          .addScalar("entry_count", StandardBasicTypes.LONG);
+            if (acct.isFinalAccount() || acct.isChart()) {
+                q.setParameter("acctId", acct.getId());
+            } else {
+                q.setParameter("code", acct.getCode() + "%");
+            }
+            q.setParameter("journal", journal.getId());
 
-        if (acct.isFinalAccount() || acct.isChart()) {
-            q.setParameter("acctId", acct.getId());
-        } else {
-            q.setParameter("code", acct.getCode() + "%");
-        }
-        q.setParameter("journal", journal.getId());
+            if (date != null) {
+                q.setParameter("date", inclusive ? Util.tomorrow(date) : date);
+            }
 
-        if (date != null) {
-            q.setParameter("date", inclusive ? Util.tomorrow(date) : date);
-        }
+            if (maxId > 0L) {
+                q.setParameter("maxId", maxId);
+            }
 
-        if (maxId > 0L) {
-            q.setParameter("maxId", maxId);
-        }
+            if (bcache != null) {
+                q.setParameter("bcache_ref", bcache.getRef());
+            }
 
-        if (bcache != null) {
-            q.setParameter("bcache_ref", bcache.getRef());
-        }
+            List<Object[]> result = q.list();
+            if (!result.isEmpty()) {
+                Object[] row = result.get(0);
+                BigDecimal bd = (BigDecimal) row[0];  // balance column
+                Long count = (Long) row[1];           // entry_count column
 
-        List<Object[]> result = q.list();
-        if (!result.isEmpty()) {
-            Object[] row = result.get(0);
-            BigDecimal bd = (BigDecimal) row[0];  // balance column
-            Long count = (Long) row[1];           // entry_count column
-
-            if (bd != null) {
-                balance[0] = bd;
-                balance[1] = new BigDecimal(count);
-                if (acct.isCredit()) {
-                    balance[0] = balance[0].negate();
+                if (bd != null) {
+                    balance[0] = bd;
+                    balance[1] = new BigDecimal(count);
+                    if (acct.isCredit()) {
+                        balance[0] = balance[0].negate();
+                    }
                 }
             }
-        }
 
-        if (bcache != null) {
-            balance[0] = balance[0].add(bcache.getBalance());
-        }
+            if (bcache != null) {
+                balance[0] = balance[0].add(bcache.getBalance());
+            }
 
-        return balance;
+            return balance;
+        } finally {
+            session.setHibernateFlushMode(previousFlushMode);
+        }
     }
     
     public List<FinalAccount> getDeepFinalChildren(Account acct) throws HibernateException, GLException {

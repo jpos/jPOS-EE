@@ -404,6 +404,20 @@ class TagsTypePersistenceTest {
                                 Object[] currentState, Object[] previousState,
                                 String[] propertyNames, Type[] types) {
                             flushDirtyCalled.set(true);
+                            // Debug: dump all property values at flush time.
+                            // NOTE: this will NEVER produce output when the test passes,
+                            // because the whole point is that onFlushDirty is NOT called
+                            // when the entity hasn't been modified (post-fix).
+                            // If you see this output, the fix is broken.
+                            System.out.println("=== onFlushDirty [entity not modified] ===");
+                            System.out.println("  entity: " + entity.getClass().getName() + "@" + System.identityHashCode(entity));
+                            System.out.println("  id: " + id);
+                            for (int i = 0; i < propertyNames.length; i++) {
+                                System.out.println("  [" + i + "] " + propertyNames[i]
+                                        + "  prev=" + (previousState != null ? previousState[i] : "NULL")
+                                        + "  curr=" + (currentState != null ? currentState[i] : "NULL")
+                                        + "  type=" + (types != null ? types[i].getClass().getSimpleName() : "NULL"));
+                            }
                             return false;
                         }
                     })
@@ -437,6 +451,84 @@ class TagsTypePersistenceTest {
                                 "deepCopy(null) returned non-null, causing a snapshot " +
                                 "mismatch. This triggers spurious UPDATEs and can " +
                                 "cause deadlocks under concurrent access.");
+
+                s.getTransaction().commit();
+            }
+        }
+    }
+
+    /**
+     * Verifies that onFlushDirty correctly fires when an entity IS modified
+     * before the flush, confirming that dirty-checking works properly for
+     * legitimate changes.
+     * <p>
+     * This is the positive counterpart of
+     * {@link #testNoSpuriousFlushWhenEntityNotModified()} — if the entity
+     * has actually been modified, Hibernate MUST detect the change and fire
+     * {@code onFlushDirty} during flush.
+     * <p>
+     * <strong>With the fix</strong> ({@code deepCopy(null) = null}):
+     * The snapshot is null, the current value is a non-null Tags.
+     * {@code equals(null, nonNull) == false} → entity is correctly dirty → 
+     * {@code onFlushDirty} fires → test PASSES.
+     */
+    @Test
+    void testFlushDetectsDirtyWhenEntityModified() throws Exception {
+        Long accountId;
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            db.open();
+            db.beginTransaction();
+            FinalAccount account = new FinalAccount();
+            account.setCode("TEST-FLUSH-MOD-" + System.currentTimeMillis());
+            account.setTags(null);
+            db.session().persist(account);
+            accountId = account.getId();
+            db.commit();
+        }
+
+        AtomicBoolean flushDirtyCalled = new AtomicBoolean(false);
+
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            SessionFactory sf = db.getSessionFactory();
+            try (Session s = sf.withOptions()
+                    .interceptor(new Interceptor() {
+                        @Override
+                        public boolean onFlushDirty(
+                                Object entity, Object id,
+                                Object[] currentState, Object[] previousState,
+                                String[] propertyNames, Type[] types) {
+                            flushDirtyCalled.set(true);
+                            // Debug: dump all property values at flush time
+                            System.out.println("=== onFlushDirty [entity modified] ===");
+                            System.out.println("  entity: " + entity.getClass().getName() + "@" + System.identityHashCode(entity));
+                            System.out.println("  id: " + id);
+                            for (int i = 0; i < propertyNames.length; i++) {
+                                System.out.println("  [" + i + "] " + propertyNames[i]
+                                        + "  prev=" + (previousState != null ? previousState[i] : "NULL")
+                                        + "  curr=" + (currentState != null ? currentState[i] : "NULL")
+                                        + "  type=" + (types != null ? types[i].getClass().getSimpleName() : "NULL"));
+                            }
+                            return false;
+                        }
+                    })
+                    .openSession()) {
+
+                s.beginTransaction();
+
+                Account a = s.find(Account.class, accountId);
+                assertNull(a.getTags(),
+                        "Tags should be null immediately after load");
+
+                // Modify the entity — set Tags to a non-null value.
+                a.setTags(new Tags("aaa,bbb"));
+
+                s.flush();
+
+                assertTrue(flushDirtyCalled.get(),
+                        "Hibernate must detect the modification and fire " +
+                                "onFlushDirty when Tags changes from null to non-null. " +
+                                "This confirms that dirty-checking correctly identifies " +
+                                "legitimate entity modifications.");
 
                 s.getTransaction().commit();
             }

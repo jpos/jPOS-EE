@@ -11,13 +11,6 @@ dependencies {
     implementation libs.javaxCache
     implementation libs.ehCache
     implementation libs.jcache
-
-    /* TagsTypePersistenceTest needs the GL Account hierarchy
-     * (CompositeAccount, FinalAccount) from the minigl module,
-     * and a real PostgreSQL driver + Testcontainer for integration testing. */
-    testImplementation project(':modules:db-postgresql')
-    testImplementation project(':modules:minigl')
-    testImplementation testlibs.testcontainers.postgresql
     testImplementation testlibs.bundles.junit
     testRuntimeOnly testlibs.bundles.junit.platform
 }

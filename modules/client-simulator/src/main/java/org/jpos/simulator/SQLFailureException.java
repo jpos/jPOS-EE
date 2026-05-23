@@ -20,13 +20,14 @@ package org.jpos.simulator;
 
 /**
  * Exception thrown when SQL execution fails and continue-on-error is disabled.
- * <p>
- * This exception is thrown by {@link TestRunner#executeSQL(String, boolean)} when:
+ *
+ * <p>This exception is thrown by {@link TestRunner#executeSQL(String, boolean)} when:
+ *
  * <ul>
  *   <li>The SQL statement(s) cannot be executed</li>
  *   <li>The {@code continueOnError} parameter is {@code false}</li>
  * </ul>
- * </p>
+ *
  * <p>
  * It carries the failed SQL statement and the underlying cause.
  * </p>

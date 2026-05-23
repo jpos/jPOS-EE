@@ -25,24 +25,24 @@ import java.io.PrintStream;
 
 /**
  * Represents a single test case within a simulator test suite.
+ *
  * <p>
  * A TestCase encapsulates all information needed to execute a single ISO-8583
  * message test, including the request, expected response, evaluation scripts,
  * and SQL statements to be executed before and/or after the test.
- * </p>
- * <p>
- * The test lifecycle is:
+ *
+ * <p>The test lifecycle is:
+ *
  * <ol>
- *   <li>{@link #start()} - marks test start time</li>
+ *   <li>{@link #start()} - marks the test start time</li>
  *   <li>Optional: execute pre-evaluation script via BSH</li>
- *   <li>Optional: execute preSQL via JDBC</li>
+ *   <li>Optional: execute pre-SQL via JDBC</li>
  *   <li>Send request to MUX</li>
  *   <li>Receive and validate response</li>
- *   <li>Optional: execute postSQL via JDBC</li>
+ *   <li>Optional: execute post-SQL via JDBC</li>
  *   <li>Optional: execute post-evaluation script via BSH</li>
- *   <li>{@link #end()} - marks test end time</li>
+ *   <li>{@link #end()} - marks the test end time</li>
  * </ol>
- * </p>
  *
  * @author Alejandro P. Revilla
  * @author <a href="mailto:support@jpos.org">jPOS Support Team</a>
@@ -251,7 +251,6 @@ public class TestCase implements Loggeable {
      * <p>
      * Example:
      * <pre>setPreSQL("INSERT INTO audit_log (test_name) VALUES ('test1')");</pre>
-     * </p>
      *
      * @param preSQL SQL statement(s) to execute pre-request, or null for no pre-SQL
      * @see #getPreSQL()
@@ -280,7 +279,6 @@ public class TestCase implements Loggeable {
      * <p>
      * Example:
      * <pre>setPostSQL("UPDATE test_status SET done=1 WHERE id=123; INSERT INTO results VALUES (456)");</pre>
-     * </p>
      *
      * @param postSQL SQL statement(s) to execute post-response, or null for no post-SQL
      * @see #getPostSQL()

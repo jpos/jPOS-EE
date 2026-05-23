@@ -45,9 +45,11 @@ import org.xml.sax.SAXException;
 
 /**
  * TestRunner executes a suite of simulator test cases against an ISO-8583 MUX.
+ *
  * <p>
  * TestRunner is a QBean that loads test case definitions from an XML configuration
  * and executes them sequentially. Each test case can include:
+ *
  * <ul>
  *   <li>Pre-evaluation BeanShell scripts (to prepare request data)</li>
  *   <li>Pre-SQL statements (to perform database operations before the request)</li>
@@ -55,9 +57,8 @@ import org.xml.sax.SAXException;
  *   <li>Post-SQL statements (to perform database operations after the response)</li>
  *   <li>Post-evaluation BeanShell scripts (to validate response data)</li>
  * </ul>
- * </p>
- * <p>
- * Configuration example in a Q2 deploy.xml:
+ *
+ * <p>Configuration example in a Q2 deploy.xml:
  * <pre>
  * &lt;test-runner realm="simulator" class="org.jpos.simulator.TestRunner"&gt;
  *     &lt;property name="mux" value="mux.selector"/&gt;
@@ -75,7 +76,6 @@ import org.xml.sax.SAXException;
  *     &lt;/test-suite&gt;
  * &lt;/test-runner&gt;
  * </pre>
- * </p>
  *
  * @author Alejandro P. Revilla
  * @author <a href="mailto:support@jpos.org">jPOS Support Team</a>
@@ -186,32 +186,32 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
     }
   }
 
- /**
-    * Runs the complete test suite, executing each test case in order.
-    * <p>
-    * For each test case:
-    * <ol>
-    *   <li>Execute pre-evaluation script (if configured)</li>
-     *   <li>Execute pre-SQL (if configured) — catches {@link SQLFailureException}</li>
-    *   <li>Clone and expand the request message</li>
-    *   <li>Send request to MUX and measure elapsed time</li>
-     *   <li>Execute post-SQL (if configured and response was expected) — catches {@link SQLFailureException}</li>
-    *   <li>Validate response and set result code</li>
-    * </ol>
-    * </p>
-    * <p>
-    * When {@code continue-on-sql-error="no"} is set on a test case, SQL execution failures
-    * are caught, logged, and cause the test to fail. If {@code continue="yes"} is also set,
-    * subsequent tests will still run.
-    * </p>
-    *
-    * @param suite List of TestCase objects to execute
-    * @param mux The MUX to use for sending/receiving messages
-    * @param bsh BeanShell interpreter for script evaluation
-    * @throws ISOException if message processing fails
-    * @throws IOException if file operations fail
-    * @throws EvalError if script evaluation fails
-    */
+  /**
+   * Runs the complete test suite, executing each test case in order.
+   *
+   * <p>For each test case:
+   *
+   * <ol>
+   *   <li>Execute pre-evaluation script (if configured)</li>
+   *   <li>Execute pre-SQL (if configured) — catches {@link SQLFailureException}</li>
+   *   <li>Clone and expand the request message</li>
+   *   <li>Send request to MUX and measure elapsed time</li>
+   *   <li>Execute post-SQL (if configured and response was expected) — catches {@link SQLFailureException}</li>
+   *   <li>Validate response and set result code</li>
+   * </ol>
+   *
+   * <p>When {@code continue-on-sql-error="no"} is set on a test case, SQL execution failures
+   * are caught, logged, and cause the test to fail. If {@code continue="yes"} is also set,
+   * subsequent tests will still run.
+   * </p>
+   *
+   * @param suite List of TestCase objects to execute
+   * @param mux   The MUX to use for sending/receiving messages
+   * @param bsh   BeanShell interpreter for script evaluation
+   * @throws ISOException if message processing fails
+   * @throws IOException  if file operations fail
+   * @throws EvalError    if script evaluation fails
+   */
   private void runSuite(List suite, MUX mux, Interpreter bsh)
     throws ISOException, IOException, EvalError {
     LogEvent evt = getLog().createLogEvent("results");
@@ -243,7 +243,7 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
           } catch (SQLFailureException e) {
             getLog().error(e);
             tc.setResultCode(TestCase.FAILURE);
-            if (!tc.isContinueOnErrors()) break;
+            break;
           }
         }
         // Apply property substitutions and expand request
@@ -261,7 +261,7 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
             } catch (SQLFailureException e) {
               getLog().error(e);
               tc.setResultCode(TestCase.FAILURE);
-              if (!tc.isContinueOnErrors()) break;
+              break;
             }
           }
           evt.addMessage(i + ": " + tc.toString());
@@ -282,10 +282,11 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
             } catch (SQLFailureException e) {
               getLog().error(e);
               tc.setResultCode(TestCase.FAILURE);
-              if (!tc.isContinueOnErrors()) break;
+              break;
             }
           }
-          tc.setResultCode(TestCase.OK);
+          if (tc.getResultCode() == -1)
+            tc.setResultCode(TestCase.OK);
           evt.addMessage(i + ": " + tc.toString() + " (response ignored)");
         }
       }
@@ -324,8 +325,9 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
 
   /**
    * Initializes a test suite from the XML configuration element.
-   * <p>
-   * Each &lt;test&gt; element creates a TestCase with the following properties:
+   *
+   * <p>Each &lt;test&gt; element creates a TestCase with the following properties:
+   *
    * <ul>
    *   <li>name: Test case name (defaults to file attribute)</li>
    *   <li>file: Base filename for _s (send) and _r (receive) message files</li>
@@ -334,15 +336,14 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
    *   <li>timeout: Per-test timeout override (default uses global timeout)</li>
    *   <li>init: Pre-evaluation BeanShell script</li>
    *   <li>post: Post-evaluation BeanShell script</li>
-  *   <li>pre-sql: SQL to execute before sending request</li>
-    *   <li>post-sql: SQL to execute after receiving response</li>
-    *   <li>continue-on-sql-error: "no" to fail test on SQL error (default: true/yes)</li>
-    * </ul>
-    * </p>
+   *   <li>pre-sql: SQL to execute before sending request</li>
+   *   <li>post-sql: SQL to execute after receiving response</li>
+   *   <li>continue-on-sql-error: "no" to fail test on SQL error (default: true/yes)</li>
+   * </ul>
    *
    * @param suite The XML element containing test case definitions
    * @return List of initialized TestCase objects
-   * @throws IOException if message files cannot be read
+   * @throws IOException  if message files cannot be read
    * @throws ISOException if message files cannot be parsed
    */
   private List<TestCase> initSuite(Element suite)
@@ -703,10 +704,11 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
     return (long) (d * 100.00);
   }
 
-   /**
+    /**
      * Executes SQL statement(s) using the Hibernate-managed database connection.
-     * <p>
-     * This method:
+     *
+     * <p>This method:
+     *
      * <ul>
      *   <li>Opens a connection via {@link DB}</li>
      *   <li>Begins a transaction</li>
@@ -716,13 +718,12 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
      *   <li>Commits the transaction on success</li>
      *   <li>Rolls back the transaction on failure if {@code continueOnError} is false</li>
      * </ul>
-     * </p>
-     * <p>
-     * If the SQL is null, empty, or whitespace-only, the method returns immediately
+     *
+     * <p>If the SQL is null, empty, or whitespace-only, the method returns immediately
      * without any database operations.
      * </p>
      * <p>
-      * When {@code continueOnError} is false and an error occurs, a {@link SQLFailureException}
+     * When {@code continueOnError} is false and an error occurs, a {@link SQLFailureException}
      * is thrown to stop test execution. When true, errors are logged but the method returns normally.
      * </p>
      * <p>
@@ -730,8 +731,8 @@ public class TestRunner extends org.jpos.q2.QBeanSupport implements Runnable {
      * should contain Hibernate connection properties (url, username, password, driver).
      * </p>
      *
-     * @param sql SQL statement(s) to execute. Multiple statements separated by semicolons.
-      * @param continueOnError if false, throws {@link SQLFailureException} on error
+     * @param sql             SQL statement(s) to execute. Multiple statements separated by semicolons.
+     * @param continueOnError if false, throws {@link SQLFailureException} on error
      * @see DB
      * @see TestCase#getPreSQL()
      * @see TestCase#getPostSQL()

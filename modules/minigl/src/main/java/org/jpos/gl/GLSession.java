@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.hibernate.*;
 import org.hibernate.exception.ConstraintViolationException;
@@ -289,7 +288,7 @@ public class GLSession {
           Account.class
         );
         query.setParameter("code", code);
-        return query.uniqueResultOptional().orElse(null);
+        return query.setReadOnly(true).uniqueResultOptional().orElse(null);
 
     }
 
@@ -310,7 +309,7 @@ public class GLSession {
           "from org.jpos.gl.CompositeAccount acct where parent is null",
           Account.class
         );
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -334,7 +333,7 @@ public class GLSession {
         );
         query.setParameter("chart", chart);
         query.setParameter("code", code);
-        return query.uniqueResultOptional().orElse(null);
+        return query.setReadOnly(true).uniqueResultOptional().orElse(null);
     }
 
     /**
@@ -492,7 +491,7 @@ public class GLSession {
         query.setParameter("chart", chart);
         query.setParameter("code", code);
 
-        return query.uniqueResultOptional().orElse(null);
+        return query.setReadOnly(true).uniqueResultOptional().orElse(null);
     }
     /**
      * Retrieves a list of final accounts associated with the specified chart of accounts.
@@ -519,7 +518,7 @@ public class GLSession {
         );
         query.setParameter("chart", chart);
 
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -545,7 +544,7 @@ public class GLSession {
           CompositeAccount.class
         );
         query.setParameter("parent", parent);
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -572,7 +571,7 @@ public class GLSession {
         );
         query.setParameter("parent", parent);
 
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -599,7 +598,7 @@ public class GLSession {
         );
         query.setParameter("chart", chart);
 
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -629,7 +628,7 @@ public class GLSession {
         query.setParameter("chart", chart);
         query.setParameter("code", code);
 
-        return query.uniqueResultOptional().orElse(null);
+        return query.setReadOnly(true).uniqueResultOptional().orElse(null);
     }
 
     /**
@@ -731,7 +730,7 @@ public class GLSession {
         );
         query.setParameter("name", name);
 
-        Journal journal = query.uniqueResultOptional()
+        Journal journal = query.setReadOnly(true).uniqueResultOptional()
           .orElseThrow(() -> new GLException("Journal '" + name + "' does not exist"));
 
         checkPermission(GLPermission.READ, journal);
@@ -758,7 +757,7 @@ public class GLSession {
           "from org.jpos.gl.Journal j order by j.chart",
           Journal.class
         );
-        return query.getResultList();
+        return query.setReadOnly(true).getResultList();
     }
 
     /**
@@ -943,6 +942,7 @@ public class GLSession {
         final GLTransaction txn = session.get(GLTransaction.class, id);
 
         if (txn != null) {
+            session.setReadOnly(txn, true);
             final Journal transactionJournal = txn.getJournal();
             if (transactionJournal == null || !transactionJournal.equals(journal)) {
                 throw new GLException("Transaction %d belongs to journal %s (expected %s)"
@@ -1057,6 +1057,7 @@ public class GLSession {
 
         // Create the query from the CriteriaQuery.
         Query<GLTransaction> query = session.createQuery(cq);
+        query.setReadOnly(true);
 
         // Set pagination if applicable.
         if (pageSize > 0 && firstResult > 0) {
@@ -1411,6 +1412,13 @@ public class GLSession {
     (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
       throws HibernateException, GLException
     {
+        return getBalancesORM0(journal, acct, date, inclusive, layers, maxId);
+    }
+
+    private BigDecimal[] getBalancesORM0
+    (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId)
+      throws HibernateException, GLException
+    {
         checkPermission(GLPermission.READ, journal);
         Objects.requireNonNull(journal, "Journal must not be null");
         Objects.requireNonNull(acct, "Account must not be null");
@@ -1424,7 +1432,7 @@ public class GLSession {
             }
 
             for (Account child : acct.getChildren()) {
-                BigDecimal[] childBalance = getBalancesORM(journal, child, date, inclusive, layersCopy, maxId);
+                BigDecimal[] childBalance = getBalancesORM0(journal, child, date, inclusive, layersCopy, maxId);
                 balance[0] = balance[0].add(childBalance[0]);
             }
             return balance;
@@ -1529,7 +1537,7 @@ public class GLSession {
                 select = new StringBuilder(POSTGRESQL_GET_BALANCES);
                 break;
             default:
-                return getBalancesORM(journal, acct, date, inclusive, layers, maxId);
+                return getBalancesORM0(journal, acct, date, inclusive, layers, maxId);
         }
 
         db.session().flush();
@@ -1727,7 +1735,8 @@ public class GLSession {
         cq.orderBy(orders);
 
         // Execute query
-        TypedQuery<GLEntry> query = session.createQuery(cq);
+        Query<GLEntry> query = session.createQuery(cq);
+        query.setReadOnly(true);
         if (maxResults > 0) {
             query.setMaxResults(maxResults);
         }
@@ -1804,7 +1813,7 @@ public class GLSession {
         q.setMaxResults(1);
         //q.setReadOnly(true);
 
-        return q.uniqueResult();
+        return q.setReadOnly(true).uniqueResult();
     }
 
     /**
@@ -1842,6 +1851,7 @@ public class GLSession {
           .orderBy(cb.desc(root.get("ref")));
 
         List<BalanceCache> results = session.createQuery(cq)
+          .setReadOnly(true)
           .setMaxResults(1)
           .getResultList();
 
@@ -2179,7 +2189,7 @@ public class GLSession {
         else if (acct.isFinalAccount()) {
             Date sod = Util.floor (date);   // sod = start of day
             invalidateCheckpoints (journal, new Account[] { acct }, sod, sod, layers);
-            BigDecimal b[] = getBalances (journal, acct, sod, false, layers, 0L);
+            BigDecimal b[] = getBalances0 (journal, acct, sod, false, layers, 0L, null);
             if (b[1].intValue() >= threshold) {
                 Checkpoint c = new Checkpoint ();
                 c.setDate (sod);
@@ -2362,7 +2372,7 @@ public class GLSession {
         Iterator iter = acct.getChildren().iterator();
         while (iter.hasNext()) {
             Account a = (Account) iter.next();
-            BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
+            BigDecimal[] b = getBalances0 (journal, a, date, inclusive, layers, maxId, null);
             if (a.isDebit()) {
                 balance[0] = balance[0].add (b[0]);
                 balance[1] = balance[1].add (b[1]);

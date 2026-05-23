@@ -48,7 +48,7 @@ public class TagsType implements UserType<Tags> {
 
     @Override
     public int hashCode(Tags x) {
-        return x.hashCode();
+        return x == null ? 0 : x.hashCode();
     }
 
     @Override
@@ -70,7 +70,7 @@ public class TagsType implements UserType<Tags> {
 
     @Override
     public Tags deepCopy(Tags value) {
-        return value != null ? new Tags(value.toString()) : new Tags();
+        return value == null ? null : new Tags(value.toString());
     }
 
     @Override
@@ -80,11 +80,11 @@ public class TagsType implements UserType<Tags> {
 
     @Override
     public Serializable disassemble(Tags value) {
-        return value.toString();
+        return value == null ? null : value.toString();
     }
 
     @Override
     public Tags assemble(Serializable cached, Object owner) {
-        return null;
+        return cached == null ? null : new Tags((String) cached);
     }
 }

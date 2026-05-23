@@ -598,6 +598,48 @@ class TagsTypePersistenceTest {
     }
 
     /**
+     * Verifies that {@code session.isDirty()} returns false when a null-Tags
+     * entity is loaded and not modified — the negative counterpart of
+     * {@link #testIsDirtyDetectsTagsModification()}.
+     * <p>
+     * This guards against the regression where {@code deepCopy(null)} returns
+     * a non-null empty {@code Tags()}, creating a snapshot mismatch that would
+     * cause {@code isDirty()} to return true even with zero changes.
+     */
+    @Test
+    void testIsDirtyFalseWhenTagsNotModified() throws Exception {
+        Long accountId;
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            db.open();
+            db.beginTransaction();
+            FinalAccount account = new FinalAccount();
+            account.setCode("TEST-ISDIRTY-NOMOD-" + System.currentTimeMillis());
+            account.setTags(null);
+            db.session().persist(account);
+            accountId = account.getId();
+            db.commit();
+        }
+
+        try (DB db = new DB(CONFIG_MODIFIER)) {
+            db.open();
+            Session s = db.session();
+
+            s.beginTransaction();
+
+            Account a = s.find(Account.class, accountId);
+            assertNull(a.getTags());
+
+            // No modifications — isDirty must be false.
+            assertFalse(s.isDirty(),
+                    "isDirty() should be false when a null-Tags entity is loaded " +
+                            "and not modified. deepCopy(null) returning non-null would " +
+                            "make this assertion fail.");
+
+            db.commit();
+        }
+    }
+
+    /**
      * Verifies that Tags can be transitioned from null → non-null in an update.
      * <p>
      * This is a critical lifecycle: an entity starts with no Tags, then gains

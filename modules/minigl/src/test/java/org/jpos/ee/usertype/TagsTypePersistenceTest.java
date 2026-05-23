@@ -19,10 +19,8 @@
 package org.jpos.ee.usertype;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.*;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hibernate.Interceptor;
@@ -33,20 +31,20 @@ import org.jpos.ee.DB;
 import org.jpos.gl.Account;
 import org.jpos.gl.CompositeAccount;
 import org.jpos.gl.FinalAccount;
+import org.jpos.gl.TestBase;
 import org.jpos.util.Tags;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
- * Integration tests for {@link TagsType} using PostgreSQL via Testcontainers.
+ * Integration tests for {@link TagsType} using the minigl module's
+ * PostgreSQL test infrastructure (via {@link TestBase}).
  * <p>
  * These tests validate that the fix applied in commit b6bf9f9ca074 (PR #377)
  * correctly handles null Tags in Hibernate's dirty-checking mechanism at the
- * database level. Unlike the unit tests in {@link TagsTypeTest}, this class
- * uses a real PostgreSQL database to verify the full Hibernate lifecycle:
+ * database level. They reuse the minigl module's existing Testcontainers
+ * PostgreSQL container and GL schema.
+ * <p>
+ * Test scenarios:
  * <ol>
  * <li>Entity persistence and retrieval with null Tags</li>
  * <li>Null → non-null and non-null → null transition of Tags fields</li>
@@ -56,175 +54,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
  *     {@link TagsType#disassemble disassemble}/{@link TagsType#assemble
  *     assemble} contract must handle null without exceptions</li>
  * </ol>
- * <p>
- * <strong>Test Strategy:</strong> Uses the {@link Account} hierarchy from the
- * {@code minigl} module as a realistic domain entity that carries a
- * {@link Tags}
- * field. A PostgreSQL Testcontainer is provisioned per test class with a
- * minimal
- * schema matching the {@code acct} table structure. The {@code CONFIG_MODIFIER}
- * mechanism in {@link DB} is used to configure Hibernate properties without
- * affecting the main application configuration.
- * <p>
- * <strong>Schema Note:</strong> The table schema created in
- * {@link #createSchema()}
- * mirrors the relevant columns from the jPOS GL accounting module. Only the
- * columns
- * needed for these tests (id, subclass, code, description, tags, and the
- * parent-relationship columns) are included.
- * <p>
- * <strong>Why PostgreSQL:</strong> The bug manifests specifically during
- * Hibernate's
- * dirty-checking at flush time, which triggers UPDATE statements. To verify
- * that
- * these UPDATEs are eliminated (or at least harmless), we need a real database
- * that acquires row-level locks and serializes transactions — behavior that
- * in-memory databases may not fully reproduce.
  *
  * @see TagsType The Hibernate UserType under test
  * @see TagsTypeTest Unit tests for TagsType
  */
-@TestInstance(PER_CLASS)
-class TagsTypePersistenceTest {
-
-    /** Name of the test database created in the PostgreSQL container. */
-    private static final String TEST_DB_NAME = "jposee_tags_test";
-
-    /** PostgreSQL user for the test database. */
-    private static final String TEST_DB_USER = "jpos";
-
-    /** PostgreSQL password for the test database. */
-    private static final String TEST_DB_PASS = "password";
-
-    /**
-     * Config modifier key used to register Hibernate properties without conflicting
-     * with the application's main configuration. This isolates test configuration
-     * from any running jPOS instance.
-     *
-     * @see DB#registerProperties(String, Properties)
-     * @see DB#invalidateSessionFactory(String)
-     */
-    private static final String CONFIG_MODIFIER = "tagstest";
-
-    /**
-     * Singleton PostgreSQL container shared across all tests. Uses Postgres 17
-     * with {@code withReuse(true)} to keep the container running between test
-     * runs for faster iteration during development.
-     *
-     * @implNote The {@code @SuppressWarnings("resource")} annotation is necessary
-     *           because the container is never explicitly closed — it is stopped in
-     *           {@link #tearDown()}. Testcontainers recommends this pattern for
-     *           static
-     *           containers.
-     */
-    @SuppressWarnings("resource")
-    private static final PostgreSQLContainer<?> DB_CONTAINER = new PostgreSQLContainer<>("postgres:17")
-            .withDatabaseName(TEST_DB_NAME)
-            .withUsername(TEST_DB_USER)
-            .withPassword(TEST_DB_PASS)
-            .withReuse(true);
-
-    /**
-     * Starts the PostgreSQL container, configures Hibernate properties, and
-     * creates the test schema. Called once before any test in this class.
-     * <p>
-     * The container start can take 10-30 seconds on first run (image pull).
-     * Subsequent runs are faster if {@code withReuse(true)} is active and
-     * the Testcontainers Ryuk reaper is running.
-     */
-    @BeforeAll
-    static void setUp() {
-        DB_CONTAINER.start();
-        configureDBProperties();
-        createSchema();
-    }
-
-    /**
-     * Cleans up the Hibernate session factory registered for this config modifier
-     * and stops the PostgreSQL container. Called once after all tests complete.
-     * <p>
-     * {@link DB#invalidateSessionFactory(String)} ensures the test-specific
-     * connection pool is properly closed before the container stops, preventing
-     * connection leak warnings.
-     */
-    @AfterAll
-    static void tearDown() {
-        DB.invalidateSessionFactory(CONFIG_MODIFIER);
-        DB_CONTAINER.stop();
-    }
-
-    /**
-     * Registers Hibernate properties for the test config modifier.
-     * <p>
-     * Uses Agroal connection pooling with a small pool (1-8 connections) suitable
-     * for testing. The JDBC URL is obtained dynamically from the running container.
-     * Globally quoted identifiers are disabled for schema compatibility with the
-     * pre-existing table DDL.
-     */
-    private static void configureDBProperties() {
-        Properties props = new Properties();
-
-        // Disable globally quoted identifiers because the acct table DDL
-        // (see createSchema) uses unquoted column names. Hibernate's default
-        // "false" is correct here — the pre-existing schema does not quote.
-        props.setProperty("hibernate.globally_quoted_identifiers", "false");
-        props.setProperty("hibernate.connection.provider_class",
-                "org.hibernate.agroal.internal.AgroalConnectionProvider");
-        props.setProperty("hibernate.connection.username", TEST_DB_USER);
-        props.setProperty("hibernate.connection.password", TEST_DB_PASS);
-        props.setProperty("hibernate.connection.url", DB_CONTAINER.getJdbcUrl());
-        // Agroal is Hibernate's recommended connection pool for production use.
-        // We configure a small pool (min=1, max=8) since tests are single-threaded
-        // in most cases but concurrent tests may need additional connections.
-        props.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
-        props.setProperty("hibernate.agroal.minSize", "1");
-        props.setProperty("hibernate.agroal.maxSize", "8");
-
-        // Register these properties under a unique config modifier key so they
-        // do not interfere with any running jPOS application configuration.
-        // DB.registerProperties stores them in an internal map keyed by modifier;
-        // DB.getMetadata() later retrieves them by this key.
-        DB.registerProperties(CONFIG_MODIFIER, props);
-    }
-
-    /**
-     * Creates the {@code acct} table used by the GL account hierarchy if it does
-     * not already exist.
-     * <p>
-     * The schema matches the columns needed to persist {@link CompositeAccount}
-     * and {@link FinalAccount} entities. Only the columns exercised by these tests
-     * are included — additional columns from the full GL schema (balances, audit
-     * fields, etc.) are omitted for simplicity.
-     * <p>
-     * Note: This uses a native PostgreSQL DDL statement rather than Hibernate's
-     * {@code hbm2ddl.auto} to give explicit control over the schema structure
-     * and avoid unintended table/constraint generation.
-     */
-    @SuppressWarnings("deprecation")
-    private static void createSchema() {
-        try (DB db = new DB(CONFIG_MODIFIER)) {
-            String createTableSql = """
-                    CREATE TABLE IF NOT EXISTS acct (
-                        id BIGINT PRIMARY KEY,
-                        subclass VARCHAR(1),
-                        code VARCHAR(255) NOT NULL,
-                        description VARCHAR(255),
-                        tags VARCHAR(255),
-                        created DATE,
-                        expiration DATE,
-                        type SMALLINT,
-                        currency CHAR(5),
-                        parent BIGINT,
-                        root BIGINT,
-                        layer SMALLINT DEFAULT 0
-                    )
-                    """;
-            db.open();
-            db.beginTransaction();
-            db.session().createNativeQuery(createTableSql).executeUpdate();
-            db.commit();
-        }
-    }
+class TagsTypePersistenceTest extends TestBase {
 
     /**
      * Verifies that entities with null Tags can be persisted and reloaded
@@ -245,7 +79,7 @@ class TagsTypePersistenceTest {
      */
     @Test
     void testPersistAndLoadNullTags() {
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
 
@@ -299,7 +133,7 @@ class TagsTypePersistenceTest {
      */
     @Test
     void testPersistAndLoadNonNullTags() {
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
 
@@ -356,7 +190,7 @@ class TagsTypePersistenceTest {
     void testNoSpuriousFlushWhenEntityNotModified() throws Exception {
         // Create entity with null Tags using the standard DB infrastructure.
         Long accountId;
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
             FinalAccount account = new FinalAccount();
@@ -394,7 +228,7 @@ class TagsTypePersistenceTest {
          * which accepts a per-session Interceptor. DB's own session is
          * left null (no open() call), so db.close() is a no-op.
          */
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             SessionFactory sf = db.getSessionFactory();
             try (Session s = sf.withOptions()
                     .interceptor(new Interceptor() {
@@ -475,7 +309,7 @@ class TagsTypePersistenceTest {
     @Test
     void testFlushDetectsDirtyWhenEntityModified() throws Exception {
         Long accountId;
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
             FinalAccount account = new FinalAccount();
@@ -488,7 +322,7 @@ class TagsTypePersistenceTest {
 
         AtomicBoolean flushDirtyCalled = new AtomicBoolean(false);
 
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             SessionFactory sf = db.getSessionFactory();
             try (Session s = sf.withOptions()
                     .interceptor(new Interceptor() {
@@ -561,7 +395,7 @@ class TagsTypePersistenceTest {
     @Test
     void testIsDirtyDetectsTagsModification() throws Exception {
         Long accountId;
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
             FinalAccount account = new FinalAccount();
@@ -572,7 +406,7 @@ class TagsTypePersistenceTest {
             db.commit();
         }
 
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             Session s = db.session();
 
@@ -609,7 +443,7 @@ class TagsTypePersistenceTest {
     @Test
     void testIsDirtyFalseWhenTagsNotModified() throws Exception {
         Long accountId;
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
             FinalAccount account = new FinalAccount();
@@ -620,7 +454,7 @@ class TagsTypePersistenceTest {
             db.commit();
         }
 
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             Session s = db.session();
 
@@ -650,7 +484,7 @@ class TagsTypePersistenceTest {
      */
     @Test
     void testUpdateTagsFromNullToNonNull() {
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
 
@@ -713,7 +547,7 @@ class TagsTypePersistenceTest {
      */
     @Test
     void testUpdateTagsFromNonNullToNull() {
-        try (DB db = new DB(CONFIG_MODIFIER)) {
+        try (DB db = new DB()) {
             db.open();
             db.beginTransaction();
 

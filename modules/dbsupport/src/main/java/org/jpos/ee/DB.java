@@ -137,10 +137,49 @@ public class DB implements Closeable {
     }
 
     /**
+     * Creates a DB backed by the given Hibernate Session, bypassing
+     * all SessionFactory initialization.
+     * <p>
+     * This constructor is intended for unit testing. It allows DAOs,
+     * managers, and other consumers to be tested with a mock or
+     * lightweight Session without a real database or configuration.
+     * No <code>SessionFactory</code> is created — the injected session
+     * is returned directly by {@link #open()} and {@link #session()}.
+     * <p>
+     * <b>Lifecycle note:</b> calling {@link #close()} will close the
+     * injected session (a no-op for mock sessions). After close, the
+     * internal session reference is set to null, and subsequent calls
+     * to {@link #commit()} and {@link #rollback()} are no-ops.
+     * <p>
+     * <b>Restrictions:</b> {@link #getSessionFactory()} and
+     * {@link #createSchema(String, boolean)} throw
+     * {@link IllegalStateException} because there is no real
+     * <code>SessionFactory</code> backing this instance.
+     *
+     * @param session the Hibernate Session to wrap (must not be null)
+     */
+    public DB(Session session) {
+        super();
+        if (session == null)
+            throw new IllegalArgumentException("session must not be null");
+        this.session = session;
+    }
+
+    /**
      * @return Hibernate's session factory
+     * @throws IllegalStateException if this DB was created via
+     *   {@link #DB(Session)} (no <code>SessionFactory</code> exists)
      */
     public SessionFactory getSessionFactory() {
         Semaphore sfSem = sfSems.get(configModifier);
+        // When DB was created via DB(Session), no semaphore was
+        // registered for the (null) configModifier.  Detect that
+        // case here rather than letting tryAcquire NPE.
+        if (sfSem == null) {
+            throw new IllegalStateException(
+              "SessionFactory not available (DB was created with Session injection)"
+            );
+        }
         SessionFactory sf;
         String cm  = configModifier != null ? configModifier : "";
         try {
@@ -573,6 +612,14 @@ public class DB implements Closeable {
 
     private Metadata getMetadata() throws IOException, ConfigurationException, InterruptedException, DocumentException {
         Semaphore mdSem = mdSems.get(configModifier);
+        // Same guard as getSessionFactory(): DB(Session) does not
+        // register a semaphore, so reaching this method is a misuse
+        // that should fail with a clear message, not an NPE.
+        if (mdSem == null) {
+            throw new IllegalStateException(
+              "Metadata not available (DB was created with Session injection)"
+            );
+        }
         if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
             throw new RuntimeException ("Unable to acquire lock");
 

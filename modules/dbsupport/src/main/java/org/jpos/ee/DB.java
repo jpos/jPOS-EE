@@ -67,6 +67,7 @@ public class DB implements Closeable {
     Session session;
     Log log;
     String configModifier;
+    private boolean sessionInjected;
     private Dialect dialect;
 
     private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
@@ -137,9 +138,40 @@ public class DB implements Closeable {
     }
 
     /**
+     * Creates a DB backed by the given Hibernate Session, bypassing
+     * all SessionFactory initialization.
+     *
+     * @param session the Hibernate Session to wrap
+     */
+    public DB(Session session) {
+        this(session, null);
+    }
+
+    /**
+     * Creates a DB backed by the given Hibernate Session, bypassing
+     * all SessionFactory initialization.
+     *
+     * @param session the Hibernate Session to wrap
+     * @param configModifier modifier associated with this DB instance
+     */
+    public DB(Session session, String configModifier) {
+        super();
+        if (session == null)
+            throw new IllegalArgumentException("session must not be null");
+        this.session = session;
+        this.configModifier = configModifier;
+        this.sessionInjected = true;
+    }
+
+    /**
      * @return Hibernate's session factory
      */
     public SessionFactory getSessionFactory() {
+        if (sessionInjected) {
+            throw new IllegalStateException(
+              "SessionFactory not available (DB was created with Session injection)"
+            );
+        }
         Semaphore sfSem = sfSems.get(configModifier);
         SessionFactory sf;
         String cm  = configModifier != null ? configModifier : "";
@@ -572,6 +604,11 @@ public class DB implements Closeable {
     }
 
     private Metadata getMetadata() throws IOException, ConfigurationException, InterruptedException, DocumentException {
+        if (sessionInjected) {
+            throw new IllegalStateException(
+              "Metadata not available (DB was created with Session injection)"
+            );
+        }
         Semaphore mdSem = mdSems.get(configModifier);
         if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
             throw new RuntimeException ("Unable to acquire lock");

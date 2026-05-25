@@ -25,6 +25,11 @@ import org.hibernate.Session;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+
 /**
  * Unit tests for the session-injection constructor in {@link DB}.
  * <p>
@@ -165,10 +170,9 @@ class DBTest {
 
     @Test
     void testGetSessionFactoryThrowsWhenUsingSessionInjection() {
-        // DB(Session) does not register a semaphore in sfSems.
-        // getSessionFactory() checks sfSems.get(configModifier) and
-        // throws before it ever reaches tryAcquire (which would NPE
-        // on a null semaphore).  The message must mention both
+        // DB(Session) sets sessionInjected = true.  getSessionFactory()
+        // checks the instance flag first and throws before any access
+        // to static semaphore maps.  The message must mention both
         // "SessionFactory not available" and "Session injection" so
         // users can diagnose the cause.
         Session mockSession = mock(Session.class);
@@ -176,6 +180,52 @@ class DBTest {
         IllegalStateException ex = assertThrows(IllegalStateException.class, db::getSessionFactory);
         assertTrue(ex.getMessage().contains("SessionFactory not available"));
         assertTrue(ex.getMessage().contains("Session injection"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testGetSessionFactoryThrowsEvenAfterWarmedStaticState() throws Exception {
+        // Prime the static semaphore maps with a unique non-null key,
+        // simulating the state where a prior DB(configModifier) has
+        // registered semaphores for that modifier in the same JVM.
+        // Without an instance-level guard, a later DB(mockSession, key)
+        // would find the warm semaphore and try to acquire it, leaking
+        // into real Hibernate bootstrap.  The sessionInjected flag
+        // prevents this regardless of the static map state.
+        // Uses a unique key rather than null to avoid polluting the
+        // default configModifier slot that other tests may rely on.
+        var sfField = DB.class.getDeclaredField("sfSems");
+        sfField.setAccessible(true);
+        var mdField = DB.class.getDeclaredField("mdSems");
+        mdField.setAccessible(true);
+        Map<String, Semaphore> sfSems = (Map<String, Semaphore>) sfField.get(null);
+        Map<String, Semaphore> mdSems = (Map<String, Semaphore>) mdField.get(null);
+        String testKey = "_test_warmed_" + UUID.randomUUID();
+        sfSems.put(testKey, new Semaphore(1));
+        mdSems.put(testKey, new Semaphore(1));
+        try {
+            Session mockSession = mock(Session.class);
+            DB db = new DB(mockSession, testKey);
+            IllegalStateException ex = assertThrows(IllegalStateException.class, db::getSessionFactory);
+            assertTrue(ex.getMessage().contains("SessionFactory not available"));
+        } finally {
+            sfSems.remove(testKey);
+            mdSems.remove(testKey);
+        }
+    }
+
+    @Test
+    void testGetMetadataThrowsWithSessionInjection() throws Exception {
+        // getMetadata() is private and uses the same sessionInjected
+        // guard as getSessionFactory().  Verify it throws the
+        // appropriate message via reflection.
+        Session mockSession = mock(Session.class);
+        DB db = new DB(mockSession);
+        var method = DB.class.getDeclaredMethod("getMetadata");
+        method.setAccessible(true);
+        var thrown = assertThrows(InvocationTargetException.class, () -> method.invoke(db));
+        assertEquals(IllegalStateException.class, thrown.getCause().getClass());
+        assertTrue(thrown.getCause().getMessage().contains("Metadata not available"));
     }
 
     // ---------------------------------------------------------------
@@ -381,13 +431,32 @@ class DBTest {
 
     @Test
     void testToStringWithSessionInjection() {
-        // DB.toString() returns "DB{" + (configModifier ?: "") + "}".
-        // Since DB(Session) never sets configModifier, it stays null
-        // and toString renders as "DB{}".  This distinguishes
-        // session-injected DBs from configurator-backed ones
-        // (e.g. "DB{mysql}" or "DB{mysql:v1}").
+        // DB(Session) delegates to DB(Session, null), so
+        // configModifier is null and toString() renders "DB{}".
         Session mockSession = mock(Session.class);
         DB db = new DB(mockSession);
+        assertEquals("DB{}", db.toString());
+    }
+
+    @Test
+    void testSessionInjectionWithConfigModifier() {
+        // DB(Session, String) stores the modifier.  toString()
+        // includes it, which matters for callers that route or
+        // log based on the modifier label.
+        Session mockSession = mock(Session.class);
+        DB db = new DB(mockSession, "tenant-a");
+        assertSame(mockSession, db.session());
+        assertEquals("DB{tenant-a}", db.toString());
+    }
+
+    @Test
+    void testSessionInjectionWithNullConfigModifier() {
+        // DB(Session, null) should behave identically to
+        // DB(Session): configModifier stays null, toString
+        // renders "DB{}".
+        Session mockSession = mock(Session.class);
+        DB db = new DB(mockSession, (String) null);
+        assertSame(mockSession, db.session());
         assertEquals("DB{}", db.toString());
     }
 

@@ -249,3 +249,423 @@ At the end, you get a ticket with the test results.
 </log>
 --------------------------------------------------------
 
+==== SQL Execution Support
+
+The client simulator supports optional SQL execution before and after test cases,
+enabling database state verification and cleanup.
+
+[source,xml]
+-------------------------------------------------
+<test file="mytest" name="Test with SQL">
+  <pre-sql>
+    DELETE FROM transactions WHERE trace_id = '000001';
+  </pre-sql>
+  <post-sql>
+    INSERT INTO audit_log (test_name, status) VALUES ('mytest', 'passed');
+  </post-sql>
+</test>
+-------------------------------------------------
+
+The `pre-sql` element contains SQL to execute before the request is sent,
+and `post-sql` contains SQL to execute after the response is received.
+
+===== When to Use SQL Execution
+
+SQL execution is useful for:
+
+* **Setting up test prerequisites** - Ensure required data exists in the database
+* **Partial approval testing** - Set account balances to trigger specific responses
+* **Insufficient balance declines** - Verify decline logic when balance is low
+* **Transaction limits** - Configure daily limits, credit limits for testing
+* **State verification** - Record test outcomes in an audit table
+* **Data cleanup** - Remove test data before or after test runs
+* **Foreign key setup** - Create related records needed for transactions
+
+**Example: Partial Approval Test**
+
+[source,xml]
+-------------------------------------------------
+<test file="partial-auth" name="Partial Approval - Low Balance">
+  <pre-sql>
+    UPDATE accounts SET balance = 50.00 WHERE account_id = '123456';
+  </pre-sql>
+  <post-sql>
+    INSERT INTO test_results (test_name, response_code, timestamp)
+    VALUES ('partial-auth', '14', NOW());
+  </post-sql>
+</test>
+-------------------------------------------------
+
+**Example: Insufficient Balance Decline**
+
+[source,xml]
+-------------------------------------------------
+<test file="decline-low-balance" name="Decline - Insufficient Balance">
+  <pre-sql>
+    UPDATE accounts SET available_balance = 10.00,
+                        ledger_balance = 10.00
+    WHERE card_number = '4111111111111111';
+  </pre-sql>
+</test>
+-------------------------------------------------
+
+**Example: Credit Limit Testing**
+
+[source,xml]
+-------------------------------------------------
+<test file="over-limit" name="Decline - Over Credit Limit">
+  <pre-sql>
+    UPDATE credit_accounts SET current_balance = 9500.00,
+                               credit_limit = 10000.00
+    WHERE account_id = 'CREDIT001';
+  </pre-sql>
+</test>
+-------------------------------------------------
+
+**Example: Daily Limit Exhaustion**
+
+[source,xml]
+-------------------------------------------------
+<test file="daily-limit-exceeded" name="Decline - Daily Limit">
+  <pre-sql>
+    INSERT INTO daily_transactions (card_id, amount, date, count)
+    VALUES ('4111111111111111', 9500.00, CURRENT_DATE, 15)
+    ON CONFLICT DO NOTHING;
+  </pre-sql>
+</test>
+-------------------------------------------------
+
+**Example: Audit Logging**
+
+[source,xml]
+-------------------------------------------------
+<test file="purchase" name="Purchase Test with Audit">
+  <pre-sql>
+    DELETE FROM pending_transactions WHERE trace = '000001';
+  </pre-sql>
+  <post-sql>
+    UPDATE audit_log SET status = 'completed',
+                        response_time = 150
+    WHERE test_name = 'Purchase Test'
+    AND timestamp > NOW() - INTERVAL '1 minute';
+  </post-sql>
+</test>
+-------------------------------------------------
+
+===== Resetting State for Subsequent Tests
+
+The `post-sql` element can be used to reset database state after a test,
+preparing for the next test in the suite. This is useful when tests depend
+on known starting conditions.
+
+**Example: Reset Balance After Test**
+
+[source,xml]
+-------------------------------------------------
+<test file="low-balance-decline" name="Decline - Low Balance">
+  <pre-sql>
+    UPDATE accounts SET balance = 5.00 WHERE account_id = '001';
+  </pre-sql>
+  <post-sql>
+    UPDATE accounts SET balance = 1000.00 WHERE account_id = '001';
+  </post-sql>
+</test>
+-------------------------------------------------
+
+**Example: Chain Tests with State Setup**
+
+In a test suite where multiple tests operate on the same account, use
+`pre-sql` to set up the required state and `post-sql` to restore it:
+
+[source,xml]
+-------------------------------------------------
+<!-- Test 1: Set low balance -->
+<test file="low-balance-test" name="Test Low Balance">
+  <pre-sql>
+    UPDATE accounts SET balance = 5.00 WHERE account_id = '001';
+  </pre-sql>
+</test>
+
+<!-- Test 2: Restore balance for next test -->
+<test file="normal-balance-test" name="Test Normal Balance" continue="yes">
+  <post-sql>
+    UPDATE accounts SET balance = 1000.00 WHERE account_id = '001';
+  </post-sql>
+</test>
+-------------------------------------------------
+
+[NOTE]
+======
+When tests run in sequence, ensure the `post-sql` of one test sets up
+the correct initial state for the next test. Use the `continue="yes"`
+attribute to allow the suite to continue even if one test fails due to
+SQL issues.
+======
+
+===== Execution Order
+
+===== init Script Scope
+
+The `init` script can appear in two locations with different scoping:
+
+**Suite-level `init`** (inside `<test-suite>`):
+
+[source,xml]
+-------------------------------------------------
+<test-suite>
+  <init>
+    // Suite-level init runs once at startup - variables and methods
+    // persist for ALL tests in the suite
+
+    import org.jpos.iso.ISODate;
+    import org.jpos.iso.ISOUtil;
+    import org.jpos.space.*;
+    import java.util.Date;
+
+    // State variables shared across tests
+    String STAN;
+    String RRN;
+    String DE_39;
+
+    // Helper methods - available to all tests
+    String get_stan() {
+        return ISOUtil.zeropad(
+            Long.toString(System.currentTimeMillis() % 1000000L), 6);
+    }
+
+    String get_rrn() {
+        return ISODate.formatDate(new Date(), "MMddHH") + get_stan();
+    }
+
+    // Reset function to clear state between tests
+    reset_vars() {
+        STAN = RRN = DE_39 = null;
+    }
+  </init>
+
+  <test file="echo" count="10" />
+  <test file="auth" />
+</test-suite>
+-------------------------------------------------
+
+**Test-level `init`** (inside individual `<test>`):
+
+[source,xml]
+-------------------------------------------------
+<test file="special-test" name="Special Test">
+  <init>
+    // Runs before this specific test's request
+    String trace = String.valueOf(System.currentTimeMillis() % 1000000);
+  </init>
+</test>
+-------------------------------------------------
+
+[NOTE]
+======
+**Variable Scope Behavior:**
+
+* A single shared BeanShell interpreter is used throughout the test suite
+* Suite-level `init` runs once at startup; variables and methods persist for ALL tests
+* Test-level `init` creates *local* variables that shadow outer variables
+  for the duration of that script only
+* Suite-level init typically defines:
+  ** Constants (String ACQ_ID = "12345678901")
+  ** Helper methods (String get_stan() { ... })
+  ** State variables to link tests (String STAN, RRN)
+  ** Reset/cleanup functions (reset_vars() { ... })
+
+To avoid confusion, avoid shadowing suite-level variables with the same name
+in test-level init.
+======
+
+**Example: Variable Scoping**
+
+[source,xml]
+-------------------------------------------------
+<test-suite>
+  <init>
+    // Runs once - variable persists throughout suite
+    String variableA = "100";
+  </init>
+
+  <test file="test1" name="Test 1">
+    <init>
+      // Creates LOCAL variableA="200", shadows suite-level
+      // After this script ends, local variable is gone
+      String variableA = "200";
+    </init>
+  </test>
+
+  <test file="test2" name="Test 2">
+    <init>
+      // Creates LOCAL variableA="300"
+      String variableA = "300";
+    </init>
+  </test>
+
+  <test file="test3" name="Test 3">
+    <!-- No init - uses suite-level variableA="100" -->
+  </test>
+</test-suite>
+-------------------------------------------------
+
+Result: Test3 sees `variableA = "100"` (the suite-level value).
+
+If test3 used `variableA = "500"` (without `String`), it would modify the
+suite-level variable to "500", affecting all subsequent tests.
+======
+
+The execution order for a test case is:
+
+. `init` - BeanShell script run before field evaluation
+. `pre-sql` - SQL executed before the request is sent
+. Request/Response - ISO message sent and response received
+. `post` - BeanShell script executed after response, can modify or verify response
+. `post-sql` - SQL executed after the response processing completes
+
+[source,xml]
+-------------------------------------------------
+<test file="mypackage" name="Test with All SQL">
+  <init>
+    // Runs first - can set variables for use in scripts
+    String expectedAmount = "100.00";
+  </init>
+  <pre-sql>
+    -- Runs second - set up test data
+    UPDATE accounts SET balance = 50.00 WHERE id = '001';
+  </pre-sql>
+  <post>
+    // Runs after response is received - can verify or modify response
+    // If this script returns false, the test fails
+    System.out.println("Response code: " + response.getString(39));
+  </post>
+  <post-sql>
+    -- Runs last - record result or reset state
+    INSERT INTO test_log (name, result) VALUES ('Test with All SQL', 'OK');
+  </post-sql>
+</test>
+-------------------------------------------------
+
+[NOTE]
+======
+The `init` block runs before any field scripts are evaluated, so variables
+defined there can be used in field value scripts (using `!` or `#` syntax).
+
+The `post` script can return `true` or `false`. If it returns `false`,
+the test case will be marked as FAILED regardless of whether the response
+fields matched. The `testcase` and `response` variables are available in
+the `post` script context.
+======
+
+===== SQL Logging
+
+When SQL is executed, the results are logged:
+
+* `SELECT` queries: Log each row with column names and values
+* `INSERT/UPDATE/DELETE`: Log affected row count
+* Errors: Log the exception with the failed SQL statement
+
+[source,xml]
+-------------------------------------------------
+<pre-sql>
+  SELECT id, name, balance FROM accounts WHERE customer_id = 'C001';
+</pre-sql>
+-------------------------------------------------
+
+Would produce log output such as:
+
+[source]
+-------------------------------------------------
+SQL: Executed: SELECT id, name, balance FROM accounts WHERE customer_id = 'C001'
+SQL: Row: id=1 name=John balance=1500.00
+SQL: Row: id=2 name=Jane balance=2300.00
+-------------------------------------------------
+
+===== Database Configuration
+
+By default, tests use a Testcontainers-based PostgreSQL instance. The database
+can be configured using the `test.clientsim_db_driver` system property:
+
+* `-Dtest.clientsim_db_driver=postgres` (default) - Use PostgreSQL via Testcontainers
+* `-Dtest.clientsim_db_driver=mysql` - Use MySQL via Testcontainers
+* `-Dtest.clientsim_db_driver=local` - Use a pre-configured local database
+
+For local database mode, set these system properties:
+* `db.connection` - JDBC URL
+* `db.username` - Database username
+* `db.password` - Database password
+* `db.driver` - JDBC driver class name
+
+===== Database Dependencies
+
+When using a local database (not Testcontainers), ensure you have the appropriate
+JDBC driver in your classpath. The client-simulator uses Hibernate with an Agroal
+connection pool.
+
+[NOTE]
+======
+Version numbers shown are examples. Use the appropriate version for your
+environment and check the jPOS-EE Bill of Materials (BOM) for managed versions.
+======
+
+[source,groovy]
+-------------------------------------------------
+// PostgreSQL
+implementation 'org.postgresql:postgresql:42.7.11'
+
+// MySQL
+implementation 'com.mysql:mysql-connector-j:9.7.0'
+
+// H2 (for testing)
+implementation 'com.h2database:h2:2.4.240'
+-------------------------------------------------
+
+===== db.properties Configuration
+
+The client simulator reads database configuration from `cfg/db.properties`.
+This file is automatically generated by the test framework when using Testcontainers,
+but for production use, you should create it manually.
+
+[source,properties]
+-------------------------------------------------
+# Connection settings
+hibernate.connection.username=jpos
+hibernate.connection.password=password
+hibernate.connection.url=jdbc:postgresql://localhost:5432/jposee
+hibernate.connection.driver_class=org.postgresql.Driver
+
+# Connection pool provider (Agroal for performance)
+hibernate.connection.provider_class=org.hibernate.agroal.internal.AgroalConnectionProvider
+
+# Connection pool size (tune for your workload)
+hibernate.agroal.minSize=1
+hibernate.agroal.maxSize=8
+-------------------------------------------------
+
+[NOTE]
+======
+The `cfg/db.properties` file must exist in the working directory where
+jPOS is running. If using Testcontainers for testing, this file is
+automatically generated with the appropriate container credentials.
+======
+
+===== Supported Databases
+
+The SQL execution feature has been tested with:
+
+* **PostgreSQL** - Recommended for production use
+* **MySQL** - Supported with some behavior differences (see below)
+* **H2** - Useful for local development and testing
+
+[NOTE]
+======
+**MySQL behavioral differences:**
+
+* Whitespace-only SQL throws a SQLException at the JDBC level
+* Auto-increment syntax differs: use `AUTO_INCREMENT` instead of `SERIAL`
+* Multi-statement execution (semicolon-separated) is not supported in a single call
+
+When writing portable SQL, avoid whitespace-only strings and use individual
+statements instead of semicolon-separated multi-statement SQL.
+======
+

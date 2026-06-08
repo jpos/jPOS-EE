@@ -68,6 +68,7 @@ public class DB implements Closeable {
     Log log;
     String configModifier;
     private Dialect dialect;
+    private boolean sessionInjected;
 
     private static Map<String,Semaphore> sfSems = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Semaphore> mdSems = Collections.synchronizedMap(new HashMap<>());
@@ -137,9 +138,69 @@ public class DB implements Closeable {
     }
 
     /**
+     * Creates a DB backed by the given Hibernate Session, bypassing
+     * all SessionFactory initialization.
+     * <p>
+     * This constructor is intended for unit testing. It allows DAOs,
+     * managers, and other consumers to be tested with a mock or
+     * lightweight Session without a real database or configuration.
+     * No <code>SessionFactory</code> is created — the injected session
+     * is returned directly by {@link #open()} and {@link #session()}.
+     * <p>
+     * <b>Lifecycle note:</b> calling {@link #close()} will close the
+     * injected session (a no-op for mock sessions). After close, the
+     * internal session reference is set to null, and subsequent calls
+     * to {@link #commit()} and {@link #rollback()} are no-ops.
+     * <p>
+     * <b>Restrictions:</b> {@link #getSessionFactory()} and
+     * {@link #createSchema(String, boolean)} throw
+     * {@link IllegalStateException} because there is no real
+     * <code>SessionFactory</code> backing this instance.
+     *
+     * @param session the Hibernate Session to wrap (must not be null)
+     */
+    public DB(Session session) {
+        this(session, null);
+    }
+
+    /**
+     * Creates a DB backed by the given Hibernate Session with an
+     * explicit config modifier, bypassing all SessionFactory
+     * initialization.
+     * <p>
+     * This variant is useful when code that consumes this DB instance
+     * interrogates the config modifier (e.g. for logging or routing)
+     * but the session is provided externally (e.g. from a mock or a
+     * pre-existing session).  The {@code configModifier} is stored
+     * but does not affect Hibernate bootstrap — no
+     * <code>SessionFactory</code> or <code>Metadata</code> is created.
+     * <p>
+     * All other lifecycle notes and restrictions from
+     * {@link #DB(Session)} apply.
+     *
+     * @param session the Hibernate Session to wrap (must not be null)
+     * @param configModifier the config modifier label, or null
+     */
+    public DB(Session session, String configModifier) {
+        super();
+        if (session == null)
+            throw new IllegalArgumentException("session must not be null");
+        this.session = session;
+        this.configModifier = configModifier;
+        this.sessionInjected = true;
+    }
+
+    /**
      * @return Hibernate's session factory
+     * @throws IllegalStateException if this DB was created via
+     *   {@link #DB(Session)} (no <code>SessionFactory</code> exists)
      */
     public SessionFactory getSessionFactory() {
+        if (sessionInjected) {
+            throw new IllegalStateException(
+              "SessionFactory not available (DB was created with Session injection)"
+            );
+        }
         Semaphore sfSem = sfSems.get(configModifier);
         SessionFactory sf;
         String cm  = configModifier != null ? configModifier : "";
@@ -572,6 +633,11 @@ public class DB implements Closeable {
     }
 
     private Metadata getMetadata() throws IOException, ConfigurationException, InterruptedException, DocumentException {
+        if (sessionInjected) {
+            throw new IllegalStateException(
+              "Metadata not available (DB was created with Session injection)"
+            );
+        }
         Semaphore mdSem = mdSems.get(configModifier);
         if (!mdSem.tryAcquire(60, TimeUnit.SECONDS))
             throw new RuntimeException ("Unable to acquire lock");

@@ -2,5 +2,7 @@ description = 'jPOS-EE :: Store and Forward (SAF) Module'
 
 dependencies {
     api project(':modules:core')
-}
 
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
+}

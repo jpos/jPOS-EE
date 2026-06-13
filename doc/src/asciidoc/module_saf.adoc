@@ -137,3 +137,40 @@ The module integrates with the jPOS `Logger` and `LogEvent` utilities to provide
 * Logs transmission attempts and responses.
 * Reports expired or ignored messages.
 * Provides status information using the `getStatus()` method.
+
+==== Metrics
+
+When Q2 has a Micrometer `MeterRegistry` configured, the SAF module registers
+the following meters tagged with `saf=<service-name>`:
+
+* `jpos.saf.queue.size`
++
+Current queue depth gauge. This is registered when SAF uses a `JDBMSpace`
+backing store.
+
+* `jpos.saf.send.duration`
++
+Timer for SAF send attempts, with percentile histogram publishing enabled and
+percentiles `0.5`, `0.95`, and `0.99`.
+
+* `jpos.saf.send.success`
++
+Counter incremented on valid responses, tagged with `mti` and `rc`.
+
+* `jpos.saf.send.retried`
++
+Counter incremented when the response code is in `retry-response-codes`,
+tagged with `mti` and `rc`.
+
+* `jpos.saf.send.expired`
++
+Counter incremented when a queued message is discarded because it expired or
+reached the maximum retransmission count, tagged with `mti` and `reason`.
+
+* `jpos.saf.send.discarded`
++
+Counter incremented when a response code is outside `valid-response-codes`,
+tagged with `mti` and `reason`.
+
+If no Micrometer registry is configured, SAF metrics remain disabled and SAF
+continues operating without meter registration.

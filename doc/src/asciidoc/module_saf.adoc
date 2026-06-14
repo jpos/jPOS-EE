@@ -166,6 +166,8 @@ tagged with `mti` and `rc`.
 +
 Counter incremented when a queued message is discarded because it expired or
 reached the maximum retransmission count, tagged with `mti` and `reason`.
+When both conditions apply to the same entry, both reason-tagged counters are
+incremented.
 
 * `jpos.saf.send.discarded`
 +

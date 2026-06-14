@@ -118,6 +118,23 @@ class SAFTest {
     }
 
     @Test
+    void sendCountsBothIgnoreReasonsWhenEntryIsExpiredAndMaxRetransmissionsExceeded() throws Exception {
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        SAF saf = newSAF(registry, new StaticMux(null));
+        saf.expiration = 1L;
+        saf.maxRetransmissions = 1;
+        SAF.Entry entry = new SAF.Entry(request("0200"));
+        entry.time = System.currentTimeMillis() - 5_000L;
+        entry.count = 2;
+
+        SAF.Entry result = invokeSend(saf, entry);
+
+        assertNull(result);
+        assertCounter(registry, "jpos.saf.send.expired", "saf", "test-saf", "mti", "0200", "reason", "expired");
+        assertCounter(registry, "jpos.saf.send.expired", "saf", "test-saf", "mti", "0200", "reason", "max-retransmissions");
+    }
+
+    @Test
     void sendRecordsDurationOnTimeoutAndIsoException() throws Exception {
         SimpleMeterRegistry registry = new SimpleMeterRegistry();
         SAF timeoutSaf = newSAF(registry, new StaticMux(null));

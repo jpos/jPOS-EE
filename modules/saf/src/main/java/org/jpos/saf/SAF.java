@@ -227,7 +227,10 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     private Entry send(Entry entry) {
         String mti = getMTI(entry);
         if (shouldIgnore(entry)) {
-            metrics.sendExpired(mti, isMaxRetransmission(entry) ? "max-retransmissions" : "expired");
+            if (isMaxRetransmission(entry))
+                metrics.sendExpired(mti, "max-retransmissions");
+            if (isExpired(entry))
+                metrics.sendExpired(mti, "expired");
             LogEvent evt = getLog().createLogEvent("saf-warning");
             if (isMaxRetransmission(entry))
                 evt.addMessage("max retransmission count (" + maxRetransmissions + ") has been reached.");

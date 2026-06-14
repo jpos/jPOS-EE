@@ -18,6 +18,7 @@
 
 package org.jpos.saf;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.PrintStream;
 import java.util.Date;
 import java.io.Serializable;
@@ -53,11 +54,16 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     String queue;
     String head;
     String delayQueue;
+    SAFMetrics metrics;
 
     public void initService() {
         queue = getName();
         head = getName() + ".head";
         delayQueue = getName() + ".delayed";
+        MeterRegistry registry = getServer() != null ? getServer().getMeterRegistry() : null;
+        metrics = new SAFMetrics(registry, getName());
+        if (psp instanceof JDBMSpace)
+            metrics.registerQueueDepthGauge(() -> ((JDBMSpace) psp).size(queue));
         NameRegistrar.register(getName(), this);
     }
 
@@ -189,6 +195,10 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
         return sb.toString();
     }
 
+    SAFMetrics getSAFMetrics() {
+        return metrics;
+    }
+
     private boolean latchMsg() {
         Entry entry = (Entry) psp.rdp(head);
         if (entry == null) {
@@ -215,7 +225,12 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
     }
 
     private Entry send(Entry entry) {
+        String mti = getMTI(entry);
         if (shouldIgnore(entry)) {
+            if (isMaxRetransmission(entry))
+                metrics.sendExpired(mti, "max-retransmissions");
+            if (isExpired(entry))
+                metrics.sendExpired(mti, "expired");
             LogEvent evt = getLog().createLogEvent("saf-warning");
             if (isMaxRetransmission(entry))
                 evt.addMessage("max retransmission count (" + maxRetransmissions + ") has been reached.");
@@ -227,6 +242,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
             Logger.log(evt);
             return null;
         }
+        long start = System.nanoTime();
         try {
             ISOMsg resp = mux.request(entry.msg, waitForResponse);
             if (resp == null) {
@@ -239,6 +255,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
                 if (retryResponseCodes != null && retryResponseCodes.indexOf(rc) >= 0) {
                     // this result code requires retransmission, so we don't increase
                     // the retransmission counter. The request may expire though
+                    metrics.sendRetried(mti, rc);
                     LogEvent evt = createLogEvent("info", entry, resp);
                     evt.addMessage("response code '"
                             + resp.getString(39)
@@ -255,6 +272,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
                             + "' is in valid-response-codes list ("
                             + validResponseCodes + ")");
                     Logger.log(evt);
+                    metrics.sendSucceeded(mti, rc);
                     // GOOD - Message was sent
                     if (entry.responseKey != null) {
                         if (entry.wipePreviousResponse)
@@ -272,6 +290,7 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
                             + "' not in valid-response-codes list ("
                             + validResponseCodes + ")");
                     Logger.log(evt);
+                    metrics.sendDiscarded(mti, "not-in-valid-codes");
                 }
             }
             if (entry.count == 1 && flagRetransmissions.indexOf(entry.msg.getMTI()) >= 0)
@@ -282,8 +301,18 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
             evt.addMessage("--- stack trace ---");
             evt.addMessage(e);
             Logger.log(evt);
+        } finally {
+            metrics.sendCompleted(System.nanoTime() - start);
         }
         return entry;
+    }
+
+    private String getMTI(Entry entry) {
+        try {
+            return entry != null && entry.msg != null ? entry.msg.getMTI() : "unknown";
+        } catch (ISOException e) {
+            return "unknown";
+        }
     }
 
     private LogEvent createLogEvent(String type, Entry entry, ISOMsg resp) {
@@ -344,4 +373,3 @@ public class SAF extends QBeanSupport implements Runnable, Loggeable {
         }
     }
 }
-

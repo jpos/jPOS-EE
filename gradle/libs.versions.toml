@@ -12,13 +12,13 @@ jsonSchemaValidator = '2.2.14'
 guava = '33.6.0-jre'
 jakartaActivation = '2.0.1'
 angusActivation = '2.0.3'
-hibernate = '6.6.50.Final'
-hibernateTools = '6.6.50.Final'
+hibernate = '6.6.53.Final'
+hibernateTools = '6.6.52.Final'
 hibernateValidator = '6.2.5.Final'
 dom4j = '2.2.0'
 jdbcPostgresql = '42.7.11'
 jdbcMysql = '9.7.0'
-agroal = '3.1.2'
+agroal = '3.2'
 flyway = '11.20.3'
 h2 = '2.4.240'
 httpClient = '5.6.1'
@@ -29,7 +29,7 @@ ehCache = '3.12.0'
 jetty = '12.1.10'
 groovy = '4.0.32'
 kafka = '4.3.0'
-awssdk = '2.46.4'
+awssdk = '2.46.10'
 jakartaWsRs = '4.0.0'
 
 [libraries]
@@ -55,7 +55,7 @@ jakartaActivation = { module = 'com.sun.activation:jakarta.activation', version.
 angusActivation = { module = 'org.eclipse.angus:angus-activation', version.ref = 'angusActivation' }
 hibernate = { module = 'org.hibernate:hibernate-core', version.ref='hibernate' }
 hibernateToolsOrm = { module='org.hibernate.tool:hibernate-tools-orm', version.ref='hibernateTools' }
-hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernate' }
+hibernateToolsUtils = { module='org.hibernate.tool:hibernate-tools-utils', version.ref='hibernateTools' }
 hibernateAgroal = { module='org.hibernate:hibernate-agroal', version.ref='hibernate' }
 dom4j = { module = 'org.dom4j:dom4j', version.ref='dom4j' }
 jdbcPostgresql = { module = 'org.postgresql:postgresql', version.ref='jdbcPostgresql' }

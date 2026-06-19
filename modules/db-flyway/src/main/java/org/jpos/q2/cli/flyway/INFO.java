@@ -32,7 +32,7 @@ public class INFO extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
         try {
-            Flyway flyway = getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args);
+            Flyway flyway = getFlyway(FLYWAY.getTarget(cli), args);
             MigrationInfoService info = flyway.info();
             MigrationInfo current = info.current();
             MigrationVersion currentSchemaVersion = current == null ? MigrationVersion.EMPTY : current.getVersion();

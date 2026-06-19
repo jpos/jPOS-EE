@@ -18,27 +18,19 @@
 
 package org.jpos.q2.cli;
 
-import org.flywaydb.core.Flyway;
-import org.jpos.ee.DB;
+import org.jpos.flyway.FlywayTarget;
 import org.jpos.q2.CLIContext;
 import org.jpos.q2.CLISubSystem;
 
-import java.util.Properties;
-
 public class FLYWAY implements CLISubSystem {
-    public static final String PREFIX = "flyway.dbmodifier";
+    public static final String TARGET = "flyway.target";
 
     @Override
     public String getPrompt(CLIContext ctx, String[] args) {
-        String prefix = null;
-        if (args.length > 1) {
-            prefix = args[1];
-            ctx.getUserData().put(PREFIX, prefix);
-        } else {
-            ctx.getUserData().remove(PREFIX);
-        }
-        new DB(prefix); // force DB initialization
-        return  "flyway" + (prefix != null ? "[" + args[1] + "]" : "") + "> ";
+        FlywayTarget target = FlywayTarget.fromCli(args);
+        ctx.getUserData().put(TARGET, target);
+        String label = target.label();
+        return  "flyway" + (!label.isEmpty() ? "[" + label + "]" : "") + "> ";
     }
 
     @Override
@@ -46,11 +38,8 @@ public class FLYWAY implements CLISubSystem {
         return new String[] { "org.jpos.q2.cli.flyway." };
     }
 
-    private Flyway getFlyWay() {
-        Properties p = new DB().getProperties();
-        return Flyway.configure().dataSource(
-          p.getProperty("hibernate.connection.url"),
-          p.getProperty("hibernate.connection.username"),
-          p.getProperty("hibernate.connection.password")).load();
+    public static FlywayTarget getTarget(CLIContext ctx) {
+        FlywayTarget target = (FlywayTarget) ctx.getUserData().get(TARGET);
+        return target != null ? target : FlywayTarget.DEFAULT;
     }
 }

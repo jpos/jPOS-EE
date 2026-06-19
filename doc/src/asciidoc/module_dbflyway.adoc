@@ -26,6 +26,54 @@ flyway:
 <1> Sets `flyway.table` property, in this example, we override the new default value `flyway_schema_history` for
     backward compatibility.
 
+The `flyway` subsystem can also be opened against a database selected by a
+jPOS-EE DB config modifier. This is useful for multi-tenant applications that
+register per-tenant DB configurations at runtime:
+
+[source,shell]
+-------------
+flyway --db entity-acme:tenant
+-------------
+
+For backward compatibility, a single positional argument is treated as the DB
+config modifier, so the following is equivalent:
+
+[source,shell]
+-------------
+flyway entity-acme:tenant
+-------------
+
+Entering the subsystem only records the target; it does not bootstrap Hibernate
+metadata or create a `SessionFactory`. The Flyway commands resolve the JDBC
+properties for the target DB and run Flyway directly.
+
+The Flyway history table can be selected independently of the DB target:
+
+[source,shell]
+-------------
+flyway --db entity-acme:tenant --table flyway_schema_history_jpts
+-------------
+
+or by using a prefix shorthand:
+
+[source,shell]
+-------------
+flyway --db entity-acme:tenant --prefix jpts
+-------------
+
+The prefix shorthand maps `jpts` to `jpts_schema_history`. Use `--table` when an
+application needs an exact history table name, such as
+`flyway_schema_history_jpts`.
+
+Inside the subsystem, commands are unchanged:
+
+[source,shell]
+-------------
+info
+migrate --out-of-order
+validate
+-------------
+
 [NOTE]
 ======
 By default, the `clean` command is disabled, unless `flyway.cleanDisabled: false` is placed in the environment.
@@ -46,14 +94,19 @@ The QBean descriptor looks like this:
 [source,xml]
 ------------
 <flyway class="org.jpos.flyway.FlywayService" logger="Q2">
-    <property name="out-of-order" value="true" />                   <1>
+    <property name="config-modifier" value="entity-acme:tenant" />  <1>
+    <property name="table" value="flyway_schema_history_jpts" />    <2>
+    <property name="out-of-order" value="true" />                   <3>
     <commands>
         info
         migrate
     </commands>
 </flyway>
 ------------
-<1> Optional property used by Flyway migrate.
+<1> Optional DB config modifier. If omitted, Flyway uses the default DB configuration.
+<2> Optional exact Flyway history table name. `table-prefix` is also available
+    and maps `foo` to `foo_schema_history`.
+<3> Optional property used by Flyway migrate.
 
 
 Valid commands are:
@@ -77,4 +130,3 @@ These Flyway commands use stdout for their output. We recommend to add
 <property name="redirect" value="stdout, stderr" />
 to your 00_logger.xml configuration in order to get unified logs.
 ======
-

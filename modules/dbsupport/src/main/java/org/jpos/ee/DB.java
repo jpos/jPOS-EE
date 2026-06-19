@@ -227,6 +227,53 @@ public class DB implements Closeable {
         return properties.get(cm);
     }
 
+    /**
+     * Resolves Hibernate database properties for a config modifier without
+     * building Hibernate metadata or a SessionFactory.
+     *
+     * <p>This is intended for tools such as Flyway that only need JDBC
+     * connection settings. It follows the same modifier rules used by
+     * {@link #DB(String)}: registered runtime properties first, then the
+     * modifier-specific {@code DB_PROPERTIES} system property / file fallback,
+     * with DBInstantiator username/password overrides from {@code tspace:dbconfig}.</p>
+     *
+     * @param configModifier modifier, or null for the default database
+     * @return resolved properties
+     * @throws IOException if the property file cannot be read
+     */
+    public static Properties getProperties(String configModifier) throws IOException {
+        String cm = configModifier != null ? configModifier : "";
+        Properties dbProps;
+        if (cm.endsWith(".cfg.xml")) {
+            Configuration cfg = new Configuration();
+            cfg.configure(cm);
+            dbProps = cfg.getProperties();
+        } else {
+            dbProps = registeredProperties.get(cm);
+            if (dbProps != null) {
+                Properties registered = dbProps;
+                dbProps = new Properties();
+                dbProps.putAll(registered);
+            } else {
+                String dbPropertiesPrefix = "";
+                if (configModifier != null) {
+                    String[] ss = configModifier.split(":");
+                    if (ss.length > 0)
+                        dbPropertiesPrefix = ss[0] + ":";
+                }
+                String propFile = System.getProperty(
+                  dbPropertiesPrefix + "DB_PROPERTIES",
+                  "cfg/" + dbPropertiesPrefix + "db.properties"
+                );
+                dbProps = loadProperties(propFile);
+            }
+            resolveEnvironment(dbProps);
+            applySpaceOverrides(dbProps, configModifier);
+        }
+        properties.put(cm, dbProps);
+        return dbProps;
+    }
+
     public Dialect getDialect() {
         return dialect;
     }
@@ -370,7 +417,7 @@ public class DB implements Closeable {
         return doc.getRootElement().element("mappings");
     }
 
-    private Properties loadProperties(String filename) throws IOException {
+    private static Properties loadProperties(String filename) throws IOException {
         Properties props = new Properties();
         if (filename.startsWith("jar:") && filename.length()>4) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -385,6 +432,30 @@ public class DB implements Closeable {
             }
         }
         return props;
+    }
+
+    private static void resolveEnvironment(Properties dbProps) {
+        for (Map.Entry<Object,Object> entry : dbProps.entrySet()) {
+            String k = (String) entry.getKey();
+            String v = Environment.get((String) entry.getValue());
+            dbProps.setProperty(k, v);
+        }
+    }
+
+    private static void applySpaceOverrides(Properties dbProps, String configModifier) {
+        String dbPropertiesPrefix = "";
+        if (configModifier != null) {
+            String[] ss = configModifier.split(":");
+            if (ss.length > 0)
+                dbPropertiesPrefix = ss[0] + ":";
+        }
+        Space sp = SpaceFactory.getSpace("tspace:dbconfig");
+        String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
+        String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+        if (user != null)
+            dbProps.setProperty("hibernate.connection.username", user);
+        if (pass != null)
+            dbProps.setProperty("hibernate.connection.password", pass);
     }
 
     /**

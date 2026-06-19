@@ -38,9 +38,9 @@ public class FlywaySupport implements LogCreator, Log {
 
     private String dbId = "";
 
-    protected Flyway getFlyway(String configModifier, String args[]) {
+    protected Flyway getFlyway(FlywayTarget target, String args[]) {
         LogFactory.setFallbackLogCreator(this);
-        Properties p = new DB(configModifier).getProperties();
+        Properties p = getDbProperties(target);
 
         FluentConfiguration config = Flyway.configure()
           .locations("classpath:db/migration")
@@ -50,16 +50,37 @@ public class FlywaySupport implements LogCreator, Log {
             p.getProperty("hibernate.connection.username"),
             p.getProperty("hibernate.connection.password"))
           .outOfOrder(has(args, "--out-of-order"));
+        String historyTable = target.historyTable();
+        if (historyTable != null)
+            config.table(historyTable);
         Flyway flyway = config.load();
-        this.dbId = resolveDbId(configModifier, flyway);
+        this.dbId = resolveDbId(target, flyway);
         return flyway;
+    }
+
+    protected Flyway getFlyway(String configModifier, String args[]) {
+        return getFlyway(new FlywayTarget(configModifier, null, null), args);
     }
 
     public String getDbId() {
         return dbId;
     }
 
-    private String resolveDbId(String configModifier, Flyway flyway) {
+    private Properties getDbProperties(FlywayTarget target) {
+        try {
+            Properties p = DB.getProperties(target.configModifier());
+            if (p.getProperty("hibernate.connection.url") == null)
+                throw new IllegalArgumentException(
+                  "Missing hibernate.connection.url for Flyway target " + target.label()
+                );
+            return p;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to resolve Flyway DB properties for target "
+              + target.label(), e);
+        }
+    }
+
+    private String resolveDbId(FlywayTarget target, Flyway flyway) {
         String catalog = null;
         try (Connection c = flyway.getConfiguration().getDataSource().getConnection()) {
             catalog = c.getCatalog();
@@ -72,9 +93,11 @@ public class FlywaySupport implements LogCreator, Log {
             catalog = extractDbFromUrl(flyway.getConfiguration().getUrl());
         if (catalog == null || catalog.isEmpty())
             catalog = "?";
-        return (configModifier != null && !configModifier.isEmpty())
-          ? configModifier + "@" + catalog
+        String db = (target.configModifier() != null && !target.configModifier().isEmpty())
+          ? target.configModifier() + "@" + catalog
           : catalog;
+        String historyTable = target.historyTable();
+        return historyTable != null ? db + "/" + historyTable : db;
     }
 
     private String extractDbFromUrl(String url) {

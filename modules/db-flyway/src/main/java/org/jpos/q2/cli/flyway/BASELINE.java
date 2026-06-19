@@ -27,7 +27,7 @@ public class BASELINE extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
         try {
-            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).baseline();
+            getFlyway(FLYWAY.getTarget(cli), args).baseline();
         } catch (Exception e) {
             cli.println(e.getMessage());
         }

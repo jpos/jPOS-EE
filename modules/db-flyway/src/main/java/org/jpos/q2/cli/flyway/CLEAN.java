@@ -39,7 +39,7 @@ public class CLEAN extends FlywaySupport implements CLICommand{
 
         if (superSure) {
             try {
-                getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).clean();
+                getFlyway(FLYWAY.getTarget(cli), args).clean();
             } catch (FlywayException e) {
                 cli.println (e.getMessage());
             }

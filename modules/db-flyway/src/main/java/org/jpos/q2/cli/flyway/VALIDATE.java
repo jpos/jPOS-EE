@@ -27,7 +27,7 @@ public class VALIDATE extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
         try {
-            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).validate();
+            getFlyway(FLYWAY.getTarget(cli), args).validate();
         } catch (Exception e) {
             cli.println(e.getMessage());
         }

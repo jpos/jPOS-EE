@@ -27,7 +27,7 @@ public class REPAIR extends FlywaySupport implements CLICommand{
     @Override
     public void exec(CLIContext cli, String[] args) {
         try {
-            getFlyway((String) cli.getUserData().get(FLYWAY.PREFIX), args).repair();
+            getFlyway(FLYWAY.getTarget(cli), args).repair();
         } catch (Exception e) {
             cli.println(e.getMessage());
         }

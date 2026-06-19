@@ -37,7 +37,7 @@ public class FlywayService extends QBeanSupport implements XmlConfigurable {
         String currentCommand = "init";
         try {
             FlywaySupport support = new FlywaySupport();
-            Flyway flyway = support.getFlyway(cfg.get("config-modifier", null),
+            Flyway flyway = support.getFlyway(FlywayTarget.fromConfiguration(cfg),
               cfg.getBoolean("out-of-order") ? new String[] { "--out-of-order" } : new String[] {}
             );
             dbId = support.getDbId();

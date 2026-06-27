@@ -1,7 +1,7 @@
 plugins {
     id 'org.jpos.jposapp' version '0.0.18'
     id 'idea'
-    id 'org.gradlex.extra-java-module-info' version '1.14'
+    id 'org.gradlex.extra-java-module-info' version '1.14.2'
     id 'org.owasp.dependencycheck' version '12.2.2'
 }
 

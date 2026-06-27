@@ -1,5 +1,5 @@
 plugins {
-    id 'org.gradlex.extra-java-module-info' version '1.14'
+    id 'org.gradlex.extra-java-module-info' version '1.14.2'
 }
 
 description = 'jPOS-EE :: Quartz integration'
@@ -16,4 +16,3 @@ dependencies {
     testImplementation testlibs.bundles.junit
     testRuntimeOnly testlibs.bundles.junit.platform
 }
-

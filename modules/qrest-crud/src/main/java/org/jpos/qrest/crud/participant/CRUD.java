@@ -122,6 +122,8 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
     private Class<T> managedORMClass;
     private Class<I> managedDTOInputClass;
     private Class<O> managedDTOOutputClass;
+    private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
+    private int maxResults;
 
     /**
      * Prepares this transaction participant for the requested HTTP method.
@@ -241,6 +243,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             setIdMethodName = "set" + cfg.get("id", "Id");
             idType = getManagedORMClass().getMethod(getIdMethodName).getGenericReturnType().getTypeName();
             idClass = getIdClass();
+            maxResults = cfg.getInt("maxResults", 1000);
         } catch (NoSuchMethodException | ClassNotFoundException e) {
             throw new ConfigurationException(e);
         }
@@ -351,9 +354,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
                 return null;
             }
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            Validator validator = factory.getValidator();
-            Set<ConstraintViolation<Object>> violations = validator.validate(entity);
+            Set<ConstraintViolation<Object>> violations = VALIDATOR.validate(entity);
             if (!violations.isEmpty()) {
                 for (ConstraintViolation<Object> violation : violations) {
                     ctx.log("Validation error: " + violation.getMessage());
@@ -622,11 +623,12 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
             Map<String, List<String>> queryParams = ctx.get(QUERYPARAMS);
             if (queryParams != null) {
                 Optional.ofNullable(queryParams.get("limit")).ifPresent(o -> {
-                    limit.set(Integer.parseInt(o.getFirst()));
+                    int requested = Math.max(1, parseIntOrDefault(o.getFirst(), limit.get()));
+                    limit.set(Math.min(requested, maxResults));
                     ctx.put("limit", limit.intValue());
                 });
                 Optional.ofNullable(queryParams.get("offset")).ifPresent(o -> {
-                    offset.set(Integer.parseInt(o.getFirst()));
+                    offset.set(Math.max(0, parseIntOrDefault(o.getFirst(), offset.get())));
                     ctx.put("offset", offset.intValue());
                 });
             }
@@ -923,9 +925,17 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
     protected Serializable getId(Object obj) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method method = obj.getClass().getMethod(getIdMethodName);
         Object id = method.invoke(obj, (Object[]) null);
-        if (id instanceof Number && ((long) id) == 0L)
+        if (id instanceof Number && ((Number) id).longValue() == 0L)
             id = null;
         return (Serializable) id;
+    }
+
+    private static int parseIntOrDefault(String s, int def) {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException | NullPointerException e) {
+            return def;
+        }
     }
 
     /**

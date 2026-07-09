@@ -450,8 +450,8 @@ public class DB implements Closeable {
                 dbPropertiesPrefix = ss[0] + ":";
         }
         Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-        String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-        String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+        String user = (String) sp.rdp(dbPropertiesPrefix +"connection.username");
+        String pass = (String) sp.rdp(dbPropertiesPrefix +"connection.password");
         if (user != null)
             dbProps.setProperty("hibernate.connection.username", user);
         if (pass != null)
@@ -757,8 +757,8 @@ public class DB implements Closeable {
 
                     // if DBInstantiator has put db user name and/or password in Space, set Hibernate config accordingly
                     Space sp = SpaceFactory.getSpace("tspace:dbconfig");
-                    String user = (String) sp.inp(dbPropertiesPrefix +"connection.username");
-                    String pass = (String) sp.inp(dbPropertiesPrefix +"connection.password");
+                    String user = (String) sp.rdp(dbPropertiesPrefix +"connection.username");
+                    String pass = (String) sp.rdp(dbPropertiesPrefix +"connection.password");
                     if (user != null) {
                         ssrb.applySetting("hibernate.connection.username", user);
                         dbProps.setProperty("hibernate.connection.username", user);

@@ -20,16 +20,24 @@ package org.jpos.qrest;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator;
 
 import java.util.HashMap;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -81,6 +89,15 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void handleWebSocketUpgrade(ChannelHandlerContext ctx, FullHttpRequest request) {
+        if (!isAllowedOrigin(ctx, request)) {
+            server.getLog().warn("Rejected WebSocket cross-site Origin: " +
+                request.headers().get(HttpHeaderNames.ORIGIN) + " path=" + request.uri());
+            ctx.writeAndFlush(new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN
+            )).addListener(ChannelFutureListener.CLOSE);
+            return;
+        }
+
         String wsUrl = getWebSocketUrl(ctx, request);
 
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
@@ -137,6 +154,50 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
         String scheme = ctx.pipeline().get("ssl") != null ? "wss" : "ws";
         String host = request.headers().get(HttpHeaderNames.HOST);
         return scheme + "://" + host + request.uri();
+    }
+
+    private boolean isAllowedOrigin(ChannelHandlerContext ctx, FullHttpRequest request) {
+        String origin = request.headers().get(HttpHeaderNames.ORIGIN);
+        if (origin == null || origin.isBlank()) return true;
+
+        Set<String> allowed = server.getWebSocketAllowedOrigins();
+        if (allowed.contains("*") || allowed.contains(origin)) return true;
+
+        String normalized = normalizeOrigin(origin);
+        return normalized != null &&
+            (allowed.contains(normalized) ||
+             isSameOrigin(ctx.pipeline().get("ssl") != null,
+                 request.headers().get(HttpHeaderNames.HOST), normalized));
+    }
+
+    static boolean isSameOrigin(boolean tls, String hostHeader, String origin) {
+        if (hostHeader == null || hostHeader.isBlank()) return false;
+        String expectedScheme = tls ? "https" : "http";
+        String expected = normalizeHostOrigin(expectedScheme, hostHeader);
+        return expected != null && expected.equals(normalizeOrigin(origin));
+    }
+
+    static String normalizeOrigin(String origin) {
+        try {
+            URI uri = new URI(origin);
+            String scheme = uri.getScheme();
+            String host = uri.getHost();
+            if (scheme == null || host == null) return null;
+            scheme = scheme.toLowerCase(Locale.ROOT);
+            if (!scheme.equals("http") && !scheme.equals("https")) return null;
+            int port = uri.getPort() >= 0 ? uri.getPort() : defaultPort(scheme);
+            return scheme + "://" + host.toLowerCase(Locale.ROOT) + ":" + port;
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+    private static String normalizeHostOrigin(String scheme, String hostHeader) {
+        return normalizeOrigin(scheme + "://" + hostHeader);
+    }
+
+    private static int defaultPort(String scheme) {
+        return "https".equals(scheme) ? 443 : 80;
     }
 
     /**

@@ -82,6 +82,7 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
     private CorsConfig defaultCorsConfig;
     private String websocketPath;
     private int maxWebSocketFrameSize;
+    private Set<String> websocketAllowedOrigins = Set.of();
     private Map<String,String> websocketRoutes = new LinkedHashMap<>();
     private Map<String, WebSocketHandler> websocketHandlers = new LinkedHashMap<>();
     private QRestMetrics metrics;
@@ -194,6 +195,10 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
 
     QRestMetrics getMetrics() {
         return metrics;
+    }
+
+    Set<String> getWebSocketAllowedOrigins() {
+        return websocketAllowedOrigins;
     }
 
     boolean isTLSEnabled() {
@@ -322,8 +327,33 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         validateHeaders = cfg.getBoolean("validateHeaders", DEFAULT_CHUNKED_SUPPORTED);
         websocketPath = cfg.get("websocket-path", null);
         maxWebSocketFrameSize = cfg.getInt("maxWebSocketFrameSize", DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
+        websocketAllowedOrigins = parseWebSocketAllowedOrigins(cfg);
         pathLabel = QRestMetrics.parsePathLabel(cfg.get("metrics-path-label", "route"));
         metricsMaxRoutes = cfg.getInt("metrics-max-routes", 200);
+    }
+
+    private static Set<String> parseWebSocketAllowedOrigins(Configuration cfg) {
+        Set<String> origins = new LinkedHashSet<>();
+        addOrigins(origins, cfg.get("websocket-allowed-origins", null));
+        String[] repeated = cfg.getAll("websocket-allowed-origin");
+        if (repeated != null) {
+            for (String origin : repeated) {
+                addOrigins(origins, origin);
+            }
+        }
+        return Collections.unmodifiableSet(origins);
+    }
+
+    private static void addOrigins(Set<String> origins, String raw) {
+        if (raw == null) return;
+        for (String origin : raw.split(",")) {
+            String trimmed = origin.trim();
+            if (!trimmed.isEmpty()) {
+                String normalized = "*".equals(trimmed) ? trimmed :
+                  WebSocketUpgradeHandler.normalizeOrigin(trimmed);
+                origins.add(normalized != null ? normalized : trimmed);
+            }
+        }
     }
 
     @Override

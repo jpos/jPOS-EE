@@ -25,6 +25,7 @@ import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
 import org.jpos.core.XmlConfigurable;
 import org.jpos.q2.QFactory;
+import org.jpos.qrest.HttpParams;
 import org.jpos.qrest.RestSession;
 import org.jpos.qrest.Route;
 import org.jpos.transaction.Context;
@@ -53,7 +54,7 @@ public class Router implements GroupSelector, XmlConfigurable {
         List<Route<String>> routesByMethod = routes.get(method);
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
         if (!decoder.parameters().isEmpty())
-            ctx.put(QUERYPARAMS, decoder.parameters());
+            ctx.put(QUERYPARAMS, new HttpParams(decoder.parameters()));
 
         if (routesByMethod != null) {
             Optional<Route<String>> route = routesByMethod.stream().filter(r -> r.matches(decoder.path())).findFirst();

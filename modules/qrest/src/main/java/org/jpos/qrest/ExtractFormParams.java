@@ -30,21 +30,40 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.jpos.qrest.Constants.*;
 
+/**
+ * Extracts {@code application/x-www-form-urlencoded} parameters from the
+ * request body into the context under {@link Constants#FORMPARAMS}.
+ *
+ * <p>Parameters are stored as an {@link HttpParams} map, so sensitive values
+ * ({@code password}, {@code pin}, {@code token}, …) are masked in every
+ * context dump and audit log rendering while remaining readable by
+ * downstream participants. The built-in masked-name list can be extended
+ * (never disabled) with the {@code masked-params} property, a comma or
+ * whitespace separated list of additional parameter names:</p>
+ *
+ * <pre>
+ *   &lt;property name="masked-params" value="totp, security-answer" /&gt;
+ * </pre>
+ */
 public class ExtractFormParams implements TransactionParticipant, Configurable {
     private static final Pattern FORM_PARAM_PATTERN = Pattern.compile("([^&]*)=([^&]*)");
     @Config("ignore-content-type") boolean ignoreContentType;
+    private Set<String> maskedParams = Set.of();
 
     @Override
     public void setConfiguration(Configuration cfg) throws ConfigurationException {
         ignoreContentType = cfg.getBoolean("ignore-content-type", false);
+        maskedParams = Arrays.stream(cfg.get("masked-params", "").split("[,\\s]+"))
+          .filter(s -> !s.isBlank())
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
@@ -54,7 +73,7 @@ public class ExtractFormParams implements TransactionParticipant, Configurable {
         String contentType = request.headers().get("Content-Type");
         if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
             try {
-                Map<String,List<String>> params = new LinkedHashMap<>();
+                HttpParams params = new HttpParams(maskedParams);
                 ctx.put (FORMPARAMS, params);
                 String body = request.content().toString(CharsetUtil.UTF_8);
                 Matcher m = FORM_PARAM_PATTERN.matcher(body);

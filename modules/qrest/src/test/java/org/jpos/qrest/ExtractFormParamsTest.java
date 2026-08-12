@@ -21,6 +21,7 @@ package org.jpos.qrest;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.jpos.core.SimpleConfiguration;
 import org.jpos.transaction.Context;
 import org.jpos.transaction.TransactionConstants;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -94,6 +96,35 @@ class ExtractFormParamsTest {
         Map<String, List<String>> params = ctx.get(Constants.FORMPARAMS);
         assertNotNull(params);
         assertTrue(params.isEmpty());
+    }
+
+    @Test
+    void sensitiveParamsAreMaskedInLogOutputButReadable() {
+        Context ctx = contextWithForm("nick=admin&password=admin8583");
+        participant.prepare(0L, ctx);
+
+        Map<String, List<String>> params = ctx.get(Constants.FORMPARAMS);
+        assertInstanceOf(HttpParams.class, params);
+        assertEquals(List.of("admin8583"), params.get("password"));
+        assertFalse(params.toString().contains("admin8583"), "log rendering leaked the password");
+        assertTrue(params.toString().contains("admin"));
+    }
+
+    @Test
+    void maskedParamsPropertyExtendsDefaults() throws Exception {
+        Properties props = new Properties();
+        props.setProperty("masked-params", "totp, security-answer");
+        participant.setConfiguration(new SimpleConfiguration(props));
+
+        Context ctx = contextWithForm("totp=123456&security-answer=rex&nick=admin");
+        participant.prepare(0L, ctx);
+
+        HttpParams params = ctx.get(Constants.FORMPARAMS);
+        assertEquals(List.of("123456"), params.get("totp"));
+        String rendered = params.toString();
+        assertFalse(rendered.contains("123456"), "configured masked param leaked");
+        assertFalse(rendered.contains("rex"), "configured masked param leaked");
+        assertTrue(rendered.contains("admin"));
     }
 
     @Test

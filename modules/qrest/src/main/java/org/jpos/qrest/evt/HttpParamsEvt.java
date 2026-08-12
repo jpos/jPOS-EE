@@ -18,21 +18,26 @@
 
 package org.jpos.qrest.evt;
 
-import org.jpos.log.AuditLogEventProvider;
-import org.jpos.log.AuditLogEventType;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.jpos.log.AuditLogEvent;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Registers QRest's structured audit-log event types via {@link java.util.ServiceLoader}.
+ * Structured, already-masked snapshot of an HTTP parameter map
+ * ({@code FORMPARAMS}/{@code QUERYPARAMS}) for typed log writers.
+ *
+ * <p>Produced by {@link org.jpos.qrest.HttpParams#toAuditEvent()}; values of
+ * sensitive parameters arrive here replaced by
+ * {@link org.jpos.qrest.HttpParams#MASK}, so this event never carries
+ * credentials regardless of the log writer in use.</p>
+ *
+ * @param params parameter name to values, sensitive values masked
+ *
+ * @since 3.0.2
  */
-public class QRestAuditLogEventProvider implements AuditLogEventProvider {
-    @Override
-    public Collection<AuditLogEventType> types() {
-        return List.of(
-          new AuditLogEventType("qrest-access", QRestAccess.class),
-          new AuditLogEventType("http-params", HttpParamsEvt.class)
-        );
-    }
-}
+@JacksonXmlRootElement(localName = "http-params")
+public record HttpParamsEvt(
+    Map<String, List<String>> params
+) implements AuditLogEvent { }

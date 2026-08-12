@@ -207,6 +207,35 @@ class RestSessionTest {
     }
 
     @Test
+    void forwardedHeaderFromUntrustedPeerIsIgnored() throws Exception {
+        // trusted-proxy-cidrs is configured, but the EmbeddedChannel peer
+        // ("embedded", not an address literal) is not inside it — a forged
+        // X-Forwarded-For from such a peer must never become the logged
+        // remote, or any direct caller could pick its own audit identity.
+        CapturingRestServer proxied = new CapturingRestServer();
+        proxied.setName("rest-proxied");
+        proxied.setConfiguration(new SimpleConfiguration(new java.util.Properties() {{
+            put("trusted-proxy-cidrs", "10.42.0.0/16");
+        }}));
+        CapturingRestSession psession = new CapturingRestSession(proxied);
+        EmbeddedChannel pchannel = new EmbeddedChannel(psession);
+
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(
+          HttpVersion.HTTP_1_1, HttpMethod.GET, "/balance");
+        request.headers().set("X-Forwarded-For", "203.0.113.7");
+        pchannel.writeInbound(request);
+        Context ctx = proxied.lastQueuedContext;
+        ctx.put(Constants.RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+        new SendResponse().commit(1L, ctx);
+        while (pchannel.readOutbound() != null) { }
+
+        assertEquals(1, psession.emitted.size());
+        assertNotEquals("203.0.113.7", psession.emitted.get(0).remote(),
+          "X-Forwarded-For from an untrusted socket peer must not be believed");
+        pchannel.finishAndReleaseAll();
+    }
+
+    @Test
     void emitsNothingIfChannelClosesWithoutAnyRequest() {
         channel.close().syncUninterruptibly();
 

@@ -43,6 +43,7 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
 public class RestSession extends ChannelInboundHandlerAdapter {
     private RestServer server;
     private String contentKey;
+    private TrustedProxies trustedProxies;
     private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
     static final AttributeKey<RestAccessState> ACCESS_STATE = AttributeKey.valueOf("qrestAccessState");
@@ -53,6 +54,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     RestSession(RestServer server) {
         this.server = server;
         contentKey = server.getConfiguration().get("content", null);
+        trustedProxies = TrustedProxies.parse(
+          server.getConfiguration().get("trusted-proxy-cidrs", null));
     }
 
     @Override
@@ -190,7 +193,15 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         state.startNanos = System.nanoTime();
         state.method = request.method().name();
         state.path = stripQuery(request.uri());
-        state.remote = remoteAddress(ch);
+        // Behind a proxy the socket peer is the proxy, not the caller. When
+        // the peer is inside trusted-proxy-cidrs, record the client the
+        // outermost trusted proxy witnessed (rightmost untrusted entry of
+        // X-Forwarded-For); from any other peer the header is untrusted
+        // client input and the socket address is the only honest answer.
+        String peer = remoteAddress(ch);
+        state.remote = trustedProxies != null
+          ? trustedProxies.resolveClient(peer, request.headers().getAll("X-Forwarded-For"))
+          : peer;
         state.requestBytes = (long) request.content().readableBytes();
         state.scheme = server.isTLSEnabled() ? "https" : "http";
         state.protocolVersion = stripProtocol(request.protocolVersion().text());

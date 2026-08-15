@@ -26,6 +26,7 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -60,7 +61,7 @@ import java.util.concurrent.Semaphore;
  * </ul>
  * <p>
  * <h2>Transaction model in DB</h2>
- * {@code DB} has two {@code beginTransaction} overloads:
+ * {@code DB} has three {@code beginTransaction} overloads:
  * <dl>
  *   <dt>{@code beginTransaction()} (no-arg)</dt>
  *   <dd>Calls {@code session.beginTransaction()} — Hibernate creates and
@@ -74,6 +75,10 @@ import java.util.concurrent.Semaphore;
  *       {@code getTransaction()} returns the already-active transaction
  *       if one exists, so this overload can be called on a session that
  *       already has a transaction in progress.</dd>
+ *   <dt>{@code beginTransaction(Duration timeout)}</dt>
+ *   <dd>Uses the no-argument overload for {@code Duration.ZERO}; otherwise,
+ *       it rounds positive fractional seconds up before delegating to the
+ *       integer-seconds overload required by Hibernate.</dd>
  * </dl>
  * <p>
  * {@code commit()} and {@code rollback()} are guard methods:
@@ -359,6 +364,51 @@ class DBTest {
 
         verify(mockTx, never()).setTimeout(anyInt());
         verify(mockTx).begin();
+    }
+
+    @Test
+    void testBeginTransactionWithZeroDurationUsesSessionDefault() {
+        Session mockSession = mock(Session.class);
+        org.hibernate.Transaction mockTx = mock(org.hibernate.Transaction.class);
+        when(mockSession.beginTransaction()).thenReturn(mockTx);
+
+        DB db = new DB(mockSession);
+        db.beginTransaction(Duration.ZERO);
+
+        verify(mockSession).beginTransaction();
+        verify(mockSession, never()).getTransaction();
+    }
+
+    @Test
+    void testBeginTransactionWithDurationRoundsUpToSeconds() {
+        Session mockSession = mock(Session.class);
+        org.hibernate.Transaction mockTx = mock(org.hibernate.Transaction.class);
+        when(mockSession.getTransaction()).thenReturn(mockTx);
+
+        DB db = new DB(mockSession);
+        db.beginTransaction(Duration.ofMillis(1001));
+
+        verify(mockTx).setTimeout(2);
+        verify(mockTx).begin();
+    }
+
+    @Test
+    void testBeginTransactionWithNegativeDurationFails() {
+        Session mockSession = mock(Session.class);
+        DB db = new DB(mockSession);
+
+        assertThrows(IllegalArgumentException.class, () -> db.beginTransaction(Duration.ofSeconds(-1)));
+        verifyNoInteractions(mockSession);
+    }
+
+    @Test
+    void testBeginTransactionWithOversizedDurationFails() {
+        Session mockSession = mock(Session.class);
+        DB db = new DB(mockSession);
+
+        assertThrows(IllegalArgumentException.class,
+          () -> db.beginTransaction(Duration.ofSeconds((long) Integer.MAX_VALUE + 1)));
+        verifyNoInteractions(mockSession);
     }
 
     // ---------------------------------------------------------------

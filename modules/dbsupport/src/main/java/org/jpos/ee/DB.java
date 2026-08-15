@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -614,6 +615,31 @@ public class DB implements Closeable {
         return tx;
     }
 
+    /**
+     * Begins a transaction with the given timeout.
+     *
+     * <p>A zero duration preserves the session-defined default. Hibernate
+     * provides transaction timeouts with one-second accuracy, so positive
+     * durations with a fractional second are rounded up.</p>
+     *
+     * @param timeout transaction timeout
+     * @return newly created Transaction
+     * @throws IllegalArgumentException if the timeout is negative or too large
+     * @throws HibernateException if the transaction cannot be started
+     */
+    public synchronized Transaction beginTransaction(Duration timeout) throws HibernateException
+    {
+        if (timeout.isNegative())
+            throw new IllegalArgumentException("timeout must not be negative");
+        if (timeout.isZero())
+            return beginTransaction();
+
+        long seconds = timeout.toSeconds();
+        if (seconds > Integer.MAX_VALUE || (seconds == Integer.MAX_VALUE && timeout.getNano() > 0))
+            throw new IllegalArgumentException("timeout is too large");
+        return beginTransaction((int) seconds + (timeout.getNano() > 0 ? 1 : 0));
+    }
+
     public synchronized Log getLog()
     {
         if (log == null)
@@ -643,9 +669,26 @@ public class DB implements Closeable {
     }
 
     public static <T> T execWithTransaction(DBAction<T> action) throws Exception {
+        return execWithTransaction(action, Duration.ZERO);
+    }
+
+    /**
+     * Executes an action within a transaction using the given timeout.
+     *
+     * <p>A zero duration preserves the session-defined default. Hibernate
+     * provides transaction timeouts with one-second accuracy, so positive
+     * durations with a fractional second are rounded up.</p>
+     *
+     * @param action action to execute
+     * @param timeout transaction timeout
+     * @return the action result
+     * @param <T> action result type
+     * @throws Exception if the action or transaction fails
+     */
+    public static <T> T execWithTransaction(DBAction<T> action, Duration timeout) throws Exception {
         try (DB db = new DB()) {
             db.open();
-            db.beginTransaction();
+            db.beginTransaction(timeout);
             T obj = action.exec(db);
             db.commit();
             return obj;
@@ -653,9 +696,27 @@ public class DB implements Closeable {
     }
 
     public static <T> T execWithTransaction(String configModifier, DBAction<T> action) throws Exception {
+        return execWithTransaction(configModifier, action, Duration.ZERO);
+    }
+
+    /**
+     * Executes an action within a transaction using the given configuration and timeout.
+     *
+     * <p>A zero duration preserves the session-defined default. Hibernate
+     * provides transaction timeouts with one-second accuracy, so positive
+     * durations with a fractional second are rounded up.</p>
+     *
+     * @param configModifier configuration modifier
+     * @param action action to execute
+     * @param timeout transaction timeout
+     * @return the action result
+     * @param <T> action result type
+     * @throws Exception if the action or transaction fails
+     */
+    public static <T> T execWithTransaction(String configModifier, DBAction<T> action, Duration timeout) throws Exception {
         try (DB db = new DB(configModifier)) {
             db.open();
-            db.beginTransaction();
+            db.beginTransaction(timeout);
             T obj = action.exec(db);
             db.commit();
             return obj;

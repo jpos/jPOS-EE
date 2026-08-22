@@ -348,7 +348,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
     protected @Nullable T getAndValidateEntity(Context ctx) {
         T entity = null;
         try {
-            String jsonRequest = ctx.get(JSON_REQUEST.name());
+            String jsonRequest = ctx.get(JSON_REQUEST);
             entity = fromDTO(ctx, Converter.getMapper().readValue(jsonRequest, getManagedDTOInputClass()));
             if (!isValidId(entity, ctx)) {
                 ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
@@ -362,7 +362,7 @@ public abstract class CRUD<T, I, O> implements TransactionParticipant, Configura
                 ctx.put(TEMP_RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
                 return null;
             }
-            ctx.remove(JSON_REQUEST.name()); // unclutter context
+            ctx.remove(JSON_REQUEST); // unclutter context
         } catch (QRestException e) {
             ctx.log(e.getMessage() + " (" + Caller.info(0) + ")");
             ctx.put(TEMP_RESPONSE, e.getResponse());

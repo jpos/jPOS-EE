@@ -18,10 +18,12 @@
 
 package org.jpos.qrest;
 
+import org.jpos.util.Inhibit;
+
 /**
  * Constants for WebSocket-related context keys.
  */
-public enum WsConstants {
+public enum WsConstants implements Inhibit {
     /** The WebSocketSession handler for the connection */
     WS_SESSION,
     /** The WebSocket frame content (text or binary) */

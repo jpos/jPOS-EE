@@ -231,7 +231,7 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     private boolean checkMandatoryJson (Context ctx) {
         boolean validParams = true;
         for (Map.Entry<String,JsonSchema> entry : mandatoryJson.entrySet()) {
-            String value = ctx.getString(entry.getKey());
+            String value = ctx.getString(contextKey(entry.getKey()));
             ProcessingReport report;
             if (value != null) {
                 try {
@@ -254,7 +254,7 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
     private boolean checkOptionalJson (Context ctx) {
         boolean validParams = true;
         for (Map.Entry<String,JsonSchema> entry : optionalJson.entrySet()) {
-            String value = ctx.getString(entry.getKey());
+            String value = ctx.getString(contextKey(entry.getKey()));
             ProcessingReport report;
             if (value != null) {
                 try {
@@ -272,5 +272,9 @@ public class ValidateParams implements TransactionParticipant, XmlConfigurable {
             }
         }
         return validParams;
+    }
+
+    private Object contextKey(String name) {
+        return Constants.JSON_REQUEST.name().equals(name) ? Constants.JSON_REQUEST : name;
     }
 }

@@ -33,7 +33,7 @@ public class ExtractJSONRequest implements TransactionParticipant {
     public int prepare(long id, Serializable context) {
         Context ctx = (Context) context;
         FullHttpRequest request = ctx.get(REQUEST);
-        ctx.put (JSON_REQUEST.name(), request.content().toString(CharsetUtil.UTF_8));
+        ctx.put (JSON_REQUEST, request.content().toString(CharsetUtil.UTF_8));
         return PREPARED | READONLY | NO_JOIN;
     }
 }

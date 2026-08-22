@@ -124,7 +124,7 @@ public class  ExtractJSONObject implements TransactionParticipant, Configurable 
                 ctx.put(RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
                 return null;
             }
-            ctx.remove(JSON_REQUEST.name()); // unclutter context
+            ctx.remove(JSON_REQUEST); // unclutter context
         } catch (JsonProcessingException e) {
             ctx.log (e);
         }

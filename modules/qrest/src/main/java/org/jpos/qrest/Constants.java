@@ -18,7 +18,9 @@
 
 package org.jpos.qrest;
 
-public enum Constants {
+import org.jpos.util.Inhibit;
+
+public enum Constants implements Inhibit {
     SESSION,
     REQUEST,
     JSON_REQUEST,

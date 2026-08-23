@@ -40,7 +40,7 @@ subprojects {
     group = 'org.jpos.ee'
     version = binding.variables.get("PROJECT_VERSION") ?: "0.0.1"
     def isSnapshot = version.contains("SNAPSHOT")
-    if (name != 'bom') {
+    if (name != 'bom' && project.path != ':modules') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
         apply plugin: 'project-report'
@@ -161,16 +161,6 @@ subprojects {
                 maxParallelForks = Runtime.runtime.availableProcessors()
             }
         }
-        task aggregatedJavadoc (type: Javadoc, description: "Aggregated Javadocs") {
-            source subprojects.collect {project ->
-                project.sourceSets.main.allJava
-            }
-            destinationDir = new File(buildDir, 'docs/javadoc')
-            classpath = files(subprojects.collect { project ->
-                project.sourceSets.main.compileClasspath
-            })
-            failOnError = false
-        }
         repositories {
             maven {
                 url = 'file:///opt/local/maven'
@@ -200,16 +190,9 @@ subprojects {
     }
 }
 
-// Configure IDEA to use Git
+// Configure IDEA
 idea {
     project {
-        ipr {
-            withXml { 
-                provider -> provider.node.component.find { 
-                    it.@name == 'VcsDirectoryMappings' 
-                }.mapping.@vcs = 'Git' 
-            }
-        }
         languageLevel = '25'
     }
 }

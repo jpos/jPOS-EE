@@ -21,6 +21,7 @@ package org.jpos.qrest;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -39,9 +40,12 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -135,6 +139,55 @@ class RestSessionTest {
           "channelInactive must not double-count a request that SendResponse already emitted");
 
         assertNoLegacyAcceptOrCloseLogs();
+    }
+
+    @Test
+    void queuedRequestMasksAuthHeadersInLogOutputButKeepsThemReadable() {
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(
+          HttpVersion.HTTP_1_1, HttpMethod.GET, "/q2/version");
+        request.headers().set("Authorization", "ApiKey cpk_HZFAsGc5.aScGZUit1yhMpZgy");
+        request.headers().set("Cookie", "JSESSIONID=abc123");
+        channel.writeInbound(request);
+
+        Context ctx = server.lastQueuedContext;
+        assertNotNull(ctx, "RestSession.channelRead must have queued a transaction Context");
+        FullHttpRequest queued = ctx.get(Constants.REQUEST);
+        assertInstanceOf(LoggeableHttpRequest.class, queued);
+        assertEquals("ApiKey cpk_HZFAsGc5.aScGZUit1yhMpZgy", queued.headers().get("Authorization"),
+          "real header must stay readable through the interface");
+        String rendered = queued.toString();
+        assertFalse(rendered.contains("aScGZUit1yhMpZgy"), "log rendering leaked the api secret");
+        assertFalse(rendered.contains("abc123"), "log rendering leaked the cookie value");
+        assertTrue(rendered.contains("ApiKey cpk_HZFAsGc5.***"));
+
+        ctx.put(Constants.RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+        new SendResponse().commit(1L, ctx);
+        drainOutbound();
+        assertEquals(0, queued.refCnt(), "SendResponse must release the wrapped request");
+    }
+
+    @Test
+    void maskedHeadersPropertyExtendsDefaults() throws Exception {
+        CapturingRestServer extServer = new CapturingRestServer();
+        extServer.setName("rest-test-masked-headers");
+        Properties props = new Properties();
+        props.setProperty("masked-headers", "X-Api-Key");
+        extServer.setConfiguration(new SimpleConfiguration(props));
+        EmbeddedChannel extChannel = new EmbeddedChannel(new CapturingRestSession(extServer));
+        try {
+            DefaultFullHttpRequest request = new DefaultFullHttpRequest(
+              HttpVersion.HTTP_1_1, HttpMethod.GET, "/q2/version");
+            request.headers().set("X-Api-Key", "sup3rs3cret");
+            extChannel.writeInbound(request);
+
+            FullHttpRequest queued = extServer.lastQueuedContext.get(Constants.REQUEST);
+            assertEquals("sup3rs3cret", queued.headers().get("X-Api-Key"));
+            String rendered = queued.toString();
+            assertFalse(rendered.contains("sup3rs3cret"), "configured masked header leaked");
+            assertTrue(rendered.contains("X-Api-Key"), "masked header names should stay visible");
+        } finally {
+            extChannel.finishAndReleaseAll();
+        }
     }
 
     @Test

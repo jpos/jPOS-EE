@@ -35,8 +35,11 @@ import org.jpos.util.Logger;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
@@ -44,6 +47,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     private RestServer server;
     private String contentKey;
     private TrustedProxies trustedProxies;
+    private Set<String> maskedHeaders;
     private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
     static final AttributeKey<RestAccessState> ACCESS_STATE = AttributeKey.valueOf("qrestAccessState");
@@ -56,6 +60,9 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         contentKey = server.getConfiguration().get("content", null);
         trustedProxies = TrustedProxies.parse(
           server.getConfiguration().get("trusted-proxy-cidrs", null));
+        maskedHeaders = Arrays.stream(server.getConfiguration().get("masked-headers", "").split("[,\\s]+"))
+          .filter(s -> !s.isBlank())
+          .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
@@ -82,7 +89,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             captureRequest(ch, request);
             Context ctx = new Context();
             ctx.put(Constants.SESSION, ch);
-            ctx.put(Constants.REQUEST, request);
+            ctx.put(Constants.REQUEST, new LoggeableHttpRequest(request, maskedHeaders));
             ch.channel().attr(httpVersion).set(request.protocolVersion());
 
             if (contentKey != null)

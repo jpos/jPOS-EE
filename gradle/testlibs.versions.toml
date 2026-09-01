@@ -9,8 +9,9 @@ mockitojupiter = "5.23.0"
 hamcrest = "3.0"
 
 [libraries]
-restAssured = { module = 'io.rest-assured:rest-assured', version.ref='restAssured' } 
+restAssured = { module = 'io.rest-assured:rest-assured', version.ref='restAssured' }
 testcontainers_postgresql = { group = "org.testcontainers", name="postgresql", version.ref = "testcontainers" }
+testcontainers_mysql = { group = "org.testcontainers", name="mysql", version.ref = "testcontainers" }
 testcontainers_kafka = { group = "org.testcontainers", name="kafka", version.ref = "testcontainers" }
 kafkastreams_testutils = { module = "org.apache.kafka:kafka-streams-test-utils", version.ref = "kafkastreams_testutils" }
 

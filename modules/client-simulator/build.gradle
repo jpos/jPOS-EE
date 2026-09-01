@@ -1,6 +1,27 @@
 description = 'jPOS-EE :: Client Simulator'
 
+// Decide driver at configuration time (default: postgres)
+def dbDriver = (project.findProperty('test.clientsim_db_driver')
+        ?: System.getProperty('test.clientsim_db_driver')
+        ?: 'postgres').toString()
+
+logger.lifecycle("Client Simulator: tests will use DB driver: ${dbDriver}")
+
 dependencies {
     api project(':modules:core')
+    api project(':modules:dbsupport')
+
+    testImplementation project(':modules:db-postgresql')
+    testImplementation project(':modules:db-mysql')
+    testImplementation testlibs.testcontainers.postgresql
+    testImplementation testlibs.testcontainers.mysql
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
+    testRuntimeOnly 'commons-codec:commons-codec' // required by tar operations in testcontainers
+}
+
+test {
+    maxParallelForks = 1
+    systemProperty "test.clientsim_db_driver", System.getProperty("test.clientsim_db_driver", "postgres")
 }
 

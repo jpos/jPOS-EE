@@ -103,7 +103,7 @@ public class TestRunner
     private void runSuite (List suite, MUX mux, Interpreter bsh)
         throws ISOException, IOException, EvalError
     {
-        LogEvent evt = getLog().createLogEvent ("results");
+        LogEvent evt = getLog().createLogEvent (ClientSimulatorLogEventProvider.RESULTS);
         LogEvent evt_error = null;
         Iterator iter = suite.iterator();
         long start = System.currentTimeMillis();

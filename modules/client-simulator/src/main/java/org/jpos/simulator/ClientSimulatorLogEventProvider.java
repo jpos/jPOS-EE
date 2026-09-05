@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jpos.qrest.evt;
+package org.jpos.simulator;
 
 import org.jpos.log.AuditLogEventProvider;
 import org.jpos.log.AuditLogEventType;
@@ -26,22 +26,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Registers QRest's structured audit-log event types via {@link java.util.ServiceLoader}.
+ * Registers the log kinds emitted by the client simulator
+ * via {@link java.util.ServiceLoader}.
  */
-public class QRestAuditLogEventProvider implements AuditLogEventProvider {
-    /** Kind of a REST access-log event. */
-    public static final String QREST_ACCESS = "qrest-access";
+public class ClientSimulatorLogEventProvider implements AuditLogEventProvider {
+    /** Kind of a test-suite results report. */
+    public static final String RESULTS = "clientsim-results";
 
     @Override
     public Collection<AuditLogEventType> types() {
-        return List.of(
-          new AuditLogEventType(QREST_ACCESS, QRestAccess.class, QREST_ACCESS),
-          new AuditLogEventType("http-params", HttpParamsEvt.class) // secondary payload, implies no kind
-        );
+        return List.of();
     }
 
     @Override
     public Collection<Kind.Def> kinds() {
-        return List.of(new Kind.Def(QREST_ACCESS, Kind.Family.TELEMETRY));
+        return List.of(new Kind.Def(RESULTS, Kind.Family.TELEMETRY));
     }
 }

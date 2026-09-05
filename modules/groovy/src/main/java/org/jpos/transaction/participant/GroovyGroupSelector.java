@@ -24,6 +24,7 @@ import org.jdom2.Element;
 import org.jpos.core.ConfigurationException;
 import org.jpos.groovy.GroovySetup;
 import org.jpos.transaction.GroupSelector;
+import org.jpos.util.Kind;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
@@ -40,7 +41,7 @@ public class GroovyGroupSelector extends GroovyParticipant implements GroupSelec
 
     @Override
     public String select(long id, Serializable context) {
-        LogEvent ev = new LogEvent(this, "select");
+        LogEvent ev = new LogEvent(this, Kind.SELECT);
         String result = null;
         if (select == null)  {
             result =  defaultSelect(id, context); // nothing to do

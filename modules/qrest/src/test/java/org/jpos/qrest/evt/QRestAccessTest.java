@@ -147,4 +147,11 @@ class QRestAccessTest {
 
         assertEquals("GET /health", evt.toString());
     }
+    @Test
+    void qrestAccessKindIsRegisteredAndImpliedByItsType() {
+        assertTrue(org.jpos.util.Kind.isRegistered(QRestAuditLogEventProvider.QREST_ACCESS), "kind registered");
+        assertEquals(org.jpos.util.Kind.Family.TELEMETRY, org.jpos.util.Kind.family(QRestAuditLogEventProvider.QREST_ACCESS));
+        assertEquals(QRestAuditLogEventProvider.QREST_ACCESS, org.jpos.util.Kind.kindOf("qrest-access"), "type implies the kind");
+        assertEquals(org.jpos.util.Kind.INFO, org.jpos.util.Kind.kindOf("http-params"), "secondary payload implies none");
+    }
 }

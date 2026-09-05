@@ -372,7 +372,7 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
 
     private void registerKey(String k, String v, boolean override) throws Exception {
         ksProvider.put(k, v, override);
-        LogEvent evt = getLog().createLogEvent("security");
+        LogEvent evt = getLog().createLogEvent(Kind.SET_KEY);
         evt.addMessage("<id>" + k + "</id>");
         evt.addMessage(System.lineSeparator() + v);
         Logger.log(evt);

@@ -228,4 +228,9 @@ public class PaymentCryptographyAdapterTest {
 
         assertThat(ISOUtil.hexString(encPIN.getPINBlock()), is(translatedPin));
     }
+    @org.junit.jupiter.api.Test
+    void apcOperationKindIsRegistered() {
+        org.junit.jupiter.api.Assertions.assertTrue(org.jpos.util.Kind.isRegistered(PaymentCryptographyLogEventProvider.APC_OPERATION));
+        org.junit.jupiter.api.Assertions.assertEquals(org.jpos.util.Kind.Family.SECURITY, org.jpos.util.Kind.family(PaymentCryptographyLogEventProvider.APC_OPERATION));
+    }
 }

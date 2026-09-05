@@ -29,6 +29,7 @@ import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.transaction.Context;
+import org.jpos.qrest.evt.QRestAuditLogEventProvider;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
 
@@ -187,7 +188,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
      * keep-alive session share it. Visible for testing.
      */
     protected void emitAccessLog(QRestAccess access, UUID traceId) {
-        LogEvent evt = new LogEvent(server.getLog(), "qrest-access");
+        LogEvent evt = new LogEvent(server.getLog(), QRestAuditLogEventProvider.QREST_ACCESS);
         if (traceId != null)
             evt.withTraceId(traceId);
         evt.addMessage(access);

@@ -312,7 +312,7 @@ public class PaymentCryptographyAdapter extends BaseSMAdapter<SecureKey> {
     protected SecureKey importKeyImpl(SecureKey kek, SecureKey key, SecureKeySpec keySpec, boolean checkParity)
       throws SMException {
 
-        LogEvent evt = new LogEvent(this, "apc-operation");
+        LogEvent evt = new LogEvent(this, PaymentCryptographyLogEventProvider.APC_OPERATION);
         List<Loggeable> params = new ArrayList<>();
 
         try {
@@ -432,7 +432,7 @@ public class PaymentCryptographyAdapter extends BaseSMAdapter<SecureKey> {
     protected EncryptedPIN translatePINImpl(EncryptedPIN pinUnderKd1, SecureKey kd1, SecureKey kd2,
                                             byte destinationPINBlockFormat) throws SMException {
 
-        LogEvent evt = new LogEvent(this, "apc-operation");
+        LogEvent evt = new LogEvent(this, PaymentCryptographyLogEventProvider.APC_OPERATION);
         List<Loggeable> params = new ArrayList<>();
 
         try {

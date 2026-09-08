@@ -184,7 +184,7 @@ public class RestServer extends QBeanSupport implements Runnable, XmlConfigurabl
         RouteMatch match = resolveRoute(request);
         ChannelHandlerContext ch = ctx.get(Constants.SESSION);
         if (ch != null) {
-            RestAccessState state = ch.channel().attr(RestSession.ACCESS_STATE).get();
+            RestAccessState state = RestSession.accessState(ctx);
             if (state != null) {
                 state.queue = match.queue();
                 state.route = match.route();

@@ -23,6 +23,7 @@ import org.jpos.util.Inhibit;
 public enum Constants implements Inhibit {
     SESSION,
     REQUEST,
+    ACCESS_STATE,
     JSON_REQUEST,
     QUERYPARAMS,
     PATHPARAMS,

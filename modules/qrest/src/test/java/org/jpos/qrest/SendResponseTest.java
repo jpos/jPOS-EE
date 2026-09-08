@@ -46,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import io.netty.buffer.PooledByteBufAllocator;
 
 class SendResponseTest {
     private SendResponse participant;
@@ -173,6 +175,51 @@ class SendResponseTest {
         FullHttpResponse outbound = channel.readOutbound();
         if (outbound != null)
             outbound.release();
+    }
+
+    @Test
+    void missingResponseProduces404AndReleasesRequest() {
+        FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/missing");
+        Context ctx = new Context();
+        ctx.put(Constants.SESSION, channelHandlerContext);
+        ctx.put(Constants.REQUEST, request);
+        participant.commit(30, ctx);
+        assertEquals(0, request.refCnt());
+        FullHttpResponse response = channel.readOutbound();
+        assertEquals(HttpResponseStatus.NOT_FOUND, response.status());
+        response.release();
+    }
+
+    @Test
+    void responseConstructionFailureStillReleasesRequest() {
+        FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/failure");
+        Context ctx = createContext(request);
+        // Dispose the response supplied by the helper before replacing it.
+        ((FullHttpResponse) ctx.get(Constants.RESPONSE)).release();
+        ctx.put(Constants.RESPONSE, new Response(HttpResponseStatus.OK, null) {
+            @Override
+            public Object body() {
+                throw new IllegalArgumentException("cannot construct response");
+            }
+        });
+        assertThrows(IllegalArgumentException.class, () -> participant.commit(31, ctx));
+        assertEquals(0, request.refCnt());
+    }
+
+    @Test
+    void headerFailureReleasesBothRequestAndUnsentResponse() throws Exception {
+        participant.setConfiguration(new org.jpos.core.SimpleConfiguration(
+          new java.util.Properties() {{ setProperty("content-type", "invalid\r\nheader"); }}));
+        FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/headers");
+        Context ctx = createContext(request);
+        ((FullHttpResponse) ctx.get(Constants.RESPONSE)).release();
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+          PooledByteBufAllocator.DEFAULT.directBuffer().writeByte(1));
+        ctx.put(Constants.RESPONSE, response);
+        assertThrows(IllegalArgumentException.class, () -> participant.abort(32, ctx));
+        assertEquals(0, request.refCnt());
+        assertEquals(0, response.refCnt());
+        assertNull(channel.readOutbound());
     }
 
     private Context createContext(FullHttpRequest request) {

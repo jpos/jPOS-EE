@@ -23,13 +23,9 @@ import org.jpos.qrest.evt.QRestAccess;
 import java.time.Instant;
 
 /**
- * Per-channel mutable accumulator that gathers QRest request/response metadata
- * during a session and is converted to an immutable {@link QRestAccess} when
- * the session closes.
- *
- * <p>Held on the netty channel via {@link RestSession#ACCESS_STATE} so the
- * same instance is visible to {@link RestSession} (capture), {@link RestServer}
- * (queue selection), and {@link SendResponse} (response data).</p>
+ * Per-request access metadata, shared by the Context and the channel's pending
+ * set. Completion and deadline cancellation are serialized on this object.
+ * It deliberately holds no request body or Context reference.
  */
 final class RestAccessState {
     Instant ts;
@@ -45,6 +41,8 @@ final class RestAccessState {
     Long requestBytes;
     Long responseBytes;
     boolean recorded;
+    boolean completed;
+    java.util.concurrent.ScheduledFuture<?> deadline;
 
     QRestAccess toAccess() {
         Long elapsed = startNanos != null

@@ -62,7 +62,7 @@ public class Q2Info implements TransactionParticipant, Configurable {
 
         HttpResponseStatus status = HttpResponseStatus.NOT_FOUND;
         if (route.isPresent()) {
-            RestSession.setMatchedRoute(ctx.get(SESSION), route.get().path());
+            RestSession.setMatchedRouteForContext(ctx, route.get().path());
             if (route.get().isValid(path)) {
                 response = new LinkedHashMap<>();
                 response.putAll(route.get().apply(route.get(), path));

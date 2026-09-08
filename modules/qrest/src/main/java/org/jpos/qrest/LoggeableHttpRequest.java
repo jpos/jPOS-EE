@@ -19,6 +19,8 @@
 package org.jpos.qrest;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -77,6 +79,32 @@ public class LoggeableHttpRequest implements FullHttpRequest, Loggeable {
           .filter(s -> s != null && !s.isBlank())
           .map(s -> s.toLowerCase(Locale.ROOT))
           .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Detach an aggregated request from Netty's reference-counted transport storage.
+     * The caller still owns, and must release, {@code request}.
+     *
+     * <p>The body is an independent Java byte array, not a pooled/direct buffer or
+     * a retained slice. Its unreleasable view deliberately follows the Context's
+     * GC lifetime: queue expiry, disconnects and missing response participants
+     * cannot leak a pooled buffer or invalidate a running participant's reads.
+     * Ordinary wrappers constructed with {@link #LoggeableHttpRequest(FullHttpRequest)}
+     * retain their original reference-counting semantics.</p>
+     *
+     * @param request source request
+     * @param extraMasked additional headers to mask
+     * @return independently owned, heap-backed request
+     */
+    static LoggeableHttpRequest snapshot(FullHttpRequest request, Collection<String> extraMasked) {
+        byte[] body = new byte[request.content().readableBytes()];
+        request.content().getBytes(request.content().readerIndex(), body);
+        FullHttpRequest copy = new DefaultFullHttpRequest(
+          request.protocolVersion(), request.method(), request.uri(),
+          Unpooled.unreleasableBuffer(Unpooled.wrappedBuffer(body)),
+          request.headers().copy(), request.trailingHeaders().copy());
+        copy.setDecoderResult(request.decoderResult());
+        return new LoggeableHttpRequest(copy, extraMasked);
     }
 
     /**

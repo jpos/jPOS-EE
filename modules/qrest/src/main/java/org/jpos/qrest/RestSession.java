@@ -27,6 +27,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.transaction.Context;
 import org.jpos.qrest.evt.QRestAuditLogEventProvider;
@@ -39,6 +40,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     private String contentKey;
     private TrustedProxies trustedProxies;
     private Set<String> maskedHeaders;
+    private final int requestTimeout;
+    static final AttributeKey<Set<RestAccessState>> PENDING = AttributeKey.valueOf("qrestPendingAccess");
     private AttributeKey<HttpVersion> httpVersion = AttributeKey.valueOf("httpVersion");
 
     static final AttributeKey<RestAccessState> ACCESS_STATE = AttributeKey.valueOf("qrestAccessState");
@@ -58,6 +63,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
 
     RestSession(RestServer server) {
         this.server = server;
+        requestTimeout = server.getConfiguration().getInt("request-timeout",
+          server.getConfiguration().getInt("timeout", 300));
         contentKey = server.getConfiguration().get("content", null);
         trustedProxies = TrustedProxies.parse(
           server.getConfiguration().get("trusted-proxy-cidrs", null));
@@ -69,6 +76,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         super.handlerAdded(ctx);
+        ctx.channel().attr(PENDING).set(ConcurrentHashMap.newKeySet());
         ctx.channel().attr(ACCESS_EMITTER).set(this::emitAccessLog);
         ctx.channel().attr(TRACE_ID).set(UuidV7.randomUuidV7());
         QRestMetrics m = server.getMetrics();
@@ -87,15 +95,21 @@ public class RestSession extends ChannelInboundHandlerAdapter {
                     return;
                 }
             }
-            captureRequest(ch, request);
-            Context ctx = new Context();
-            ctx.put(Constants.SESSION, ch);
-            ctx.put(Constants.REQUEST, new LoggeableHttpRequest(request, maskedHeaders));
-            ch.channel().attr(httpVersion).set(request.protocolVersion());
-
-            if (contentKey != null)
-                ctx.put(contentKey, request.content().toString(CharsetUtil.UTF_8));
-            server.queue(request, ctx);
+            try {
+                // Never transfer pooled transport storage into a leased Space entry.
+                FullHttpRequest detached = LoggeableHttpRequest.snapshot(request, maskedHeaders);
+                RestAccessState state = captureRequest(ch, detached);
+                Context ctx = new Context();
+                ctx.put(Constants.SESSION, ch);
+                ctx.put(Constants.REQUEST, detached);
+                ctx.put(Constants.ACCESS_STATE, state);
+                ch.channel().attr(httpVersion).set(detached.protocolVersion());
+                if (contentKey != null)
+                    ctx.put(contentKey, detached.content().toString(CharsetUtil.UTF_8));
+                server.queue(detached, ctx);
+            } finally {
+                ReferenceCountUtil.release(request);
+            }
         } else {
             super.channelRead(ch, msg);
         }
@@ -120,19 +134,21 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         Logger.log(evt);
 
         HttpVersion version = ctx.channel().attr(httpVersion).get();
+        if (version == null)
+            version = HttpVersion.HTTP_1_1;
 
         RestAccessState state = ctx.channel().attr(ACCESS_STATE).get();
-        if (state != null && state.status == null)
-            state.status = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
-
-        QRestMetrics m = server.getMetrics();
-        if (m != null && state != null)
-            m.requestFailed(state, cause);
+        if (state != null) {
+            synchronized (state) {
+                if (!state.completed && state.status == null)
+                    state.status = HttpResponseStatus.INTERNAL_SERVER_ERROR.code();
+            }
+        }
 
         ctx.writeAndFlush(new DefaultFullHttpResponse(
           version,
           HttpResponseStatus.INTERNAL_SERVER_ERROR,
-          copiedBuffer(cause.getMessage().getBytes())
+          copiedBuffer("Internal Server Error", CharsetUtil.UTF_8)
         ));
         ctx.close();
     }
@@ -145,13 +161,59 @@ public class RestSession extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        RestAccessState state = ctx.channel().attr(ACCESS_STATE).getAndSet(null);
-        if (state != null) {
-            QRestMetrics m = server.getMetrics();
-            if (m != null)
-                m.requestCompleted(state);
-            emitAccessLog(state.toAccess(), ctx.channel().attr(TRACE_ID).get());
+        completePending(ctx);
+    }
+
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        try {
+            completePending(ctx);
+        } finally {
+            super.handlerRemoved(ctx);
         }
+    }
+
+    private static void completePending(ChannelHandlerContext ch) {
+        Set<RestAccessState> pending = ch.channel().attr(PENDING).get();
+        if (pending != null)
+            for (RestAccessState state : pending.toArray(RestAccessState[]::new))
+                completeAccess(ch, state, null, null);
+        // Compatibility for callers which install access state directly.
+        completeAccess(ch, ch.channel().attr(ACCESS_STATE).get(), null, null);
+    }
+
+    static RestAccessState accessState(Context ctx) {
+        RestAccessState state = ctx.get(Constants.ACCESS_STATE);
+        ChannelHandlerContext ch = ctx.get(Constants.SESSION);
+        return state != null || ch == null ? state : ch.channel().attr(ACCESS_STATE).get();
+    }
+
+    /** Complete each request once, even when write completion races channel closure. */
+    static boolean completeAccess(ChannelHandlerContext ch, RestAccessState state, Integer status, Long bytes) {
+        if (ch == null || state == null)
+            return false;
+        synchronized (state) {
+            if (state.completed)
+                return false;
+            state.completed = true;
+            if (state.deadline != null)
+                state.deadline.cancel(false);
+            if (status != null)
+                state.status = status;
+            if (bytes != null)
+                state.responseBytes = bytes;
+            ch.channel().attr(ACCESS_STATE).compareAndSet(state, null);
+            Set<RestAccessState> pending = ch.channel().attr(PENDING).get();
+            if (pending != null)
+                pending.remove(state);
+            QRestMetrics metrics = ch.channel().attr(METRICS).get();
+            if (metrics != null)
+                metrics.requestCompleted(state);
+            BiConsumer<QRestAccess, UUID> emitter = ch.channel().attr(ACCESS_EMITTER).get();
+            if (emitter != null)
+                emitter.accept(state.toAccess(), ch.channel().attr(TRACE_ID).get());
+        }
+        return true;
     }
 
     @Override
@@ -159,7 +221,6 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleState e = ((IdleStateEvent) evt).state();
             if (e == IdleState.READER_IDLE) {
-                ctx.fireChannelInactive();
                 ctx.close();
             }
         }
@@ -182,6 +243,16 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             state.route = route;
     }
 
+    /** Set the route on this request, independent of other requests on the connection.
+     * @param ctx transaction context
+     * @param route matched route template
+     */
+    public static void setMatchedRouteForContext(Context ctx, String route) {
+        RestAccessState state = accessState(ctx);
+        if (state != null && route != null && !route.isEmpty())
+            state.route = route;
+    }
+
     /**
      * Emits one structured QRest audit-log event. The trace-id (a session-scoped
      * UUIDv7) is attached to the {@link LogEvent} so all events from the same
@@ -195,7 +266,7 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         Logger.log(evt);
     }
 
-    private void captureRequest(ChannelHandlerContext ch, FullHttpRequest request) {
+    private RestAccessState captureRequest(ChannelHandlerContext ch, FullHttpRequest request) {
         RestAccessState state = new RestAccessState();
         state.ts = Instant.now();
         state.startNanos = System.nanoTime();
@@ -214,9 +285,21 @@ public class RestSession extends ChannelInboundHandlerAdapter {
         state.scheme = server.isTLSEnabled() ? "https" : "http";
         state.protocolVersion = stripProtocol(request.protocolVersion().text());
         ch.channel().attr(ACCESS_STATE).set(state);
+        ch.channel().attr(PENDING).get().add(state);
         QRestMetrics m = server.getMetrics();
         if (m != null)
             m.requestStarted(state);
+        if (requestTimeout > 0) {
+            state.deadline = ch.executor().schedule(() -> {
+                // This bounds response waiting, not transaction execution.
+                // A participant may still safely use its heap snapshot.
+                if (completeAccess(ch, state, null, null)) {
+                    server.getLog().warn("HTTP response timeout");
+                    ch.close();
+                }
+            }, requestTimeout, TimeUnit.SECONDS);
+        }
+        return state;
     }
 
     private static String stripProtocol(String text) {

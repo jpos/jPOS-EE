@@ -65,7 +65,7 @@ public class Router implements GroupSelector, XmlConfigurable {
                 if (m != null)
                     ctx.put(PATHPARAMS, m);
 
-                RestSession.setMatchedRoute(ctx.get(SESSION), r.path());
+                RestSession.setMatchedRouteForContext(ctx, r.path());
 
                 ctx.log("Matched Route: "+r);
                 return r.apply(r, path);

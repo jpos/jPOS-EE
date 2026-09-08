@@ -20,6 +20,7 @@ package org.jpos.qrest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,15 +28,12 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
-import org.jpos.qrest.evt.QRestAccess;
 import org.jpos.rc.Result;
 import org.jpos.transaction.AbortParticipant;
 import org.jpos.transaction.Context;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -56,58 +54,58 @@ public class SendResponse implements AbortParticipant, Configurable {
 
     @Override
     public void commit (long id, Serializable context) {
-        Context ctx = (Context) context;
-        ChannelHandlerContext ch = ctx.get(SESSION);
-        FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx, protocolVersion(request));
-        sendResponse(ctx, ch, request, response);
+        respond((Context) context);
     }
 
     @Override
     public void abort (long id, Serializable context) {
-        Context ctx = (Context) context;
-        ChannelHandlerContext ch = ctx.get(SESSION);
-        FullHttpRequest request = ctx.get(REQUEST);
-        FullHttpResponse response = getResponse(ctx, protocolVersion(request));
-        sendResponse(ctx, ch, request, response);
+        respond((Context) context);
     }
 
-    private void sendResponse (Context ctx, ChannelHandlerContext ch, FullHttpRequest request, FullHttpResponse response) {
-        boolean keepAlive = request != null && HttpUtil.isKeepAlive(request);
-        HttpHeaders headers = response.headers();
+    private void respond(Context ctx) {
+        ChannelHandlerContext ch = ctx.get(SESSION);
+        FullHttpRequest request = ctx.get(REQUEST);
+        FullHttpResponse response = null;
+        boolean handedOff = false;
+        RestAccessState state = RestSession.accessState(ctx);
         try {
+            response = getResponse(ctx, protocolVersion(request));
+            if (ch == null || !ch.channel().isActive()) {
+                RestSession.completeAccess(ch, state, null, null);
+                return;
+            }
+            boolean keepAlive = request != null && HttpUtil.isKeepAlive(request);
+            HttpHeaders headers = response.headers();
             if (keepAlive)
                 headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-
             if (contentType != null)
                 headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
             long responseBytes = response.content().readableBytes();
+            int status = response.status().code();
             headers.set(HttpHeaderNames.CONTENT_LENGTH, responseBytes);
-            captureResponse(ch, response, responseBytes);
             ChannelFuture cf = ch.writeAndFlush(response);
-
+            handedOff = true;
+            cf.addListener(future -> {
+                RestSession.completeAccess(ch, state,
+                  future.isSuccess() ? status : null, future.isSuccess() ? responseBytes : null);
+                if (!future.isSuccess())
+                    ch.close();
+            });
             if (!keepAlive)
                 cf.addListener(ChannelFutureListener.CLOSE);
+        } catch (RuntimeException | Error e) {
+            RestSession.completeAccess(ch, state, null, null);
+            if (ch != null)
+                ch.close();
+            throw e;
         } finally {
-            releaseRequest(ctx, request);
+            try {
+                if (!handedOff && response != null)
+                    ReferenceCountUtil.release(response);
+            } finally {
+                releaseRequest(ctx, request);
+            }
         }
-    }
-
-    private void captureResponse(ChannelHandlerContext ch, FullHttpResponse response, long responseBytes) {
-        if (ch == null)
-            return;
-        RestAccessState state = ch.channel().attr(RestSession.ACCESS_STATE).getAndSet(null);
-        if (state == null)
-            return;
-        if (response != null)
-            state.status = response.status().code();
-        state.responseBytes = responseBytes;
-        QRestMetrics metrics = ch.channel().attr(RestSession.METRICS).get();
-        if (metrics != null)
-            metrics.requestCompleted(state);
-        BiConsumer<QRestAccess, UUID> emitter = ch.channel().attr(RestSession.ACCESS_EMITTER).get();
-        if (emitter != null)
-            emitter.accept(state.toAccess(), ch.channel().attr(RestSession.TRACE_ID).get());
     }
 
     private void releaseRequest (Context ctx, FullHttpRequest request) {
@@ -151,24 +149,22 @@ public class SendResponse implements AbortParticipant, Configurable {
                     isJson = true;
                 }
 
-                httpResponse = new DefaultFullHttpResponse(
-                  version,
-                  response.status(),
-                  copiedBuffer(responseBody));
-
-                HttpHeaders httpHeaders = httpResponse.headers();
-
-                for (Map.Entry<String, String> header : response.getHeaders().entrySet()) {
-                    httpHeaders.add(header.getKey(), header.getValue());
+                ByteBuf content = copiedBuffer(responseBody);
+                try {
+                    httpResponse = new DefaultFullHttpResponse(version, response.status(), content);
+                    HttpHeaders httpHeaders = httpResponse.headers();
+                    for (Map.Entry<String, String> header : response.getHeaders().entrySet())
+                        httpHeaders.add(header.getKey(), header.getValue());
+                    if (response.contentType() != null)
+                        httpHeaders.set(CONTENT_TYPE, response.contentType());
+                    else if (isJson)
+                        httpHeaders.set(CONTENT_TYPE, APPLICATION_JSON);
+                    if (corsHeader != null)
+                        httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
+                } catch (RuntimeException | Error e) {
+                    content.release();
+                    throw e;
                 }
-
-                if (response.contentType() != null)
-                    httpResponse.headers().set(CONTENT_TYPE, response.contentType());
-                else if (isJson)
-                    httpResponse.headers().set(CONTENT_TYPE, APPLICATION_JSON);
-
-                if (corsHeader != null)
-                    httpHeaders.add("Access-Control-Allow-Origin", corsHeader);
             } catch (JsonProcessingException e) {
                 ctx.log(e);
                 httpResponse = error(HttpResponseStatus.INTERNAL_SERVER_ERROR, version);

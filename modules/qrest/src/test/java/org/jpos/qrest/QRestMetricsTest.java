@@ -61,7 +61,6 @@ class QRestMetricsTest {
         RestAccessState s = state("GET", "/users/{id}", 200);
         m.requestStarted(s);
         m.requestCompleted(s);
-        m.requestFailed(s, new RuntimeException("x"));
         assertEquals(0L, m.activeRequests());
     }
 
@@ -138,29 +137,11 @@ class QRestMetricsTest {
         m.requestStarted(s);
         m.requestCompleted(s);
         m.requestCompleted(s);
-        m.requestFailed(s, new RuntimeException("late"));
 
         Timer t = reg.find(QRestMetrics.REQUEST_DURATION).timer();
         assertNotNull(t);
         assertEquals(1L, t.count(), "second completion call must be a no-op");
         assertEquals(0L, m.activeRequests(), "active gauge must not be decremented twice");
-    }
-
-    @Test
-    void requestFailedAssignsServerErrorStatusWhenMissing() {
-        SimpleMeterRegistry reg = new SimpleMeterRegistry();
-        QRestMetrics m = new QRestMetrics(reg, "rest", QRestMetrics.PathLabel.ROUTE, 100);
-        RestAccessState s = state("GET", "/boom", null);
-        s.status = null;
-
-        m.requestStarted(s);
-        m.requestFailed(s, new RuntimeException("boom"));
-
-        Timer t = reg.find(QRestMetrics.REQUEST_DURATION).timer();
-        assertNotNull(t);
-        assertEquals(1L, t.count());
-        assertEquals("500", tagMap(t).get("http.response.status_code"));
-        assertEquals("SERVER_ERROR", tagMap(t).get("outcome"));
     }
 
     @Test

@@ -775,3 +775,47 @@ Connected (press CTRL+C to quit)
 < [/127.0.0.1:54321]: Hello everyone!
 ------------
 
+
+===== Request ownership and unanswered requests
+
+QRest detaches each aggregated HTTP request before placing it in the transaction
+Context: it copies the readable body into a Java byte array and copies the headers
+and trailers, then releases the original reference-counted Netty request in a
+`finally` block. The `REQUEST` value remains a masked `FullHttpRequest`, but its
+body is an unreleasable, unpooled heap view managed by GC with the Context. This
+costs one body copy (bounded by `maxContentLength`) and deliberately avoids
+keeping pooled/direct transport storage alive across a Space queue lease.
+`retain()` and `release()` on this snapshot do not govern its lifetime; ordinary
+`LoggeableHttpRequest` wrappers created by applications keep their delegate's
+reference-counting behavior. Copies created explicitly by participants still
+follow the Netty ownership rules of their backing buffers.
+
+Consequently, queue expiry, an omitted `SendResponse`, or a disconnect cannot leak
+the original pooled request, and closing a channel cannot free the body under a
+running participant. This does not cancel a queued or running transaction: its
+heap snapshot stays valid while application code retains it. The existing
+60-second Space lease remains a queue-residency limit, not a transaction deadline.
+
+The optional `request-timeout` property bounds the wait for a response, in seconds.
+It defaults to the existing `timeout` property (300 seconds by default); a value
+of zero disables this per-request deadline. Unlike the reader-idle timer, it is
+not extended by subsequent traffic on a keep-alive connection. On expiry QRest
+logs a response-timeout warning and closes the connection, completing outstanding
+access records without inventing an HTTP status. It does not send a synthetic
+response or cancel transaction processing. Configure it to accommodate legitimate
+long-running requests. Successful completion cancels the deadline. With defaults,
+a request abandoned after its 60-second Space lease may wait until approximately
+300 seconds before the connection closes without a response; on an otherwise idle
+connection the reader-idle timer and response deadline fall due at roughly the
+same time. Neither mechanism detects lease expiry or synthesizes a 503.
+
+Access state is tracked per request and completed once on write completion,
+disconnect, handler removal, or response timeout. Failed writes are not recorded
+as successful responses. This fixes tracking of overlapping requests; it does
+not introduce HTTP pipelining response ordering. Applications should continue
+to avoid overlapping HTTP/1.1 requests on one connection.
+
+Client-visible compatibility note: QRest's exception handler now returns the fixed
+body `Internal Server Error` with HTTP 500 instead of exposing the exception's
+message. Exceptions with no message are handled the same way; their handling no
+longer fails while constructing the error response.

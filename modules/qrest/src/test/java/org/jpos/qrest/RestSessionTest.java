@@ -163,7 +163,8 @@ class RestSessionTest {
         ctx.put(Constants.RESPONSE, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         new SendResponse().commit(1L, ctx);
         drainOutbound();
-        assertEquals(0, queued.refCnt(), "SendResponse must release the wrapped request");
+        assertEquals(0, request.refCnt(), "the pooled transport request must already be released");
+        assertEquals(1, queued.refCnt(), "the detached heap snapshot follows the Context GC lifetime");
     }
 
     @Test

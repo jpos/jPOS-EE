@@ -163,19 +163,6 @@ final class QRestMetrics {
         }
     }
 
-    /**
-     * Records a failed request that never produced a normal response. Sets status to 500
-     * if missing and routes through {@link #requestCompleted(RestAccessState)} so the
-     * idempotency guarantee still holds.
-     */
-    void requestFailed(RestAccessState state, Throwable t) {
-        if (registry == null || state == null || state.recorded)
-            return;
-        if (state.status == null)
-            state.status = 500;
-        requestCompleted(state);
-    }
-
     private Tags tagsFor(RestAccessState state) {
         Tags tags = Tags.of(
           "http.request.method", normalizeMethod(state.method),

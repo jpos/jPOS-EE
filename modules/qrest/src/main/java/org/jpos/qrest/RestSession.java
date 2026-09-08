@@ -91,6 +91,8 @@ public class RestSession extends ChannelInboundHandlerAdapter {
             if (request.method().equals(HttpMethod.OPTIONS)) {
                 CorsConfig corsConfig = server.getCorsConfig(request);
                 if (corsConfig != null) {
+                    // CorsHandler releases consumed requests or transfers ownership downstream;
+                    // these requests must stay outside the snapshot/release finally below.
                     new CorsHandler(corsConfig).channelRead(ch, msg);
                     return;
                 }

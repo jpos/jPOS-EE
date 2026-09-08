@@ -803,10 +803,19 @@ not extended by subsequent traffic on a keep-alive connection. On expiry QRest
 logs a response-timeout warning and closes the connection, completing outstanding
 access records without inventing an HTTP status. It does not send a synthetic
 response or cancel transaction processing. Configure it to accommodate legitimate
-long-running requests. Successful completion cancels the deadline.
+long-running requests. Successful completion cancels the deadline. With defaults,
+a request abandoned after its 60-second Space lease may wait until approximately
+300 seconds before the connection closes without a response; on an otherwise idle
+connection the reader-idle timer and response deadline fall due at roughly the
+same time. Neither mechanism detects lease expiry or synthesizes a 503.
 
 Access state is tracked per request and completed once on write completion,
 disconnect, handler removal, or response timeout. Failed writes are not recorded
 as successful responses. This fixes tracking of overlapping requests; it does
 not introduce HTTP pipelining response ordering. Applications should continue
 to avoid overlapping HTTP/1.1 requests on one connection.
+
+Client-visible compatibility note: QRest's exception handler now returns the fixed
+body `Internal Server Error` with HTTP 500 instead of exposing the exception's
+message. Exceptions with no message are handled the same way; their handling no
+longer fails while constructing the error response.

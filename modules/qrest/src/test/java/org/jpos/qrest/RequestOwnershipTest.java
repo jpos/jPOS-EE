@@ -23,9 +23,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.jpos.core.SimpleConfiguration;
@@ -237,6 +240,84 @@ class RequestOwnershipTest {
         assertEquals(0, server.metrics.activeRequests());
     }
 
+    @Test
+    void corsPreflightReleasesPooledRequestWithoutQueueing() {
+        assertCorsOwnership(true, "https://allowed.test", HttpResponseStatus.OK);
+    }
+
+    @Test
+    void corsForbiddenRequestIsReleasedWithoutQueueing() {
+        assertCorsOwnership(false, "https://denied.test", HttpResponseStatus.FORBIDDEN);
+    }
+
+    @Test
+    void corsPassThroughTransfersOwnershipDownstream() {
+        // EmbeddedChannel captures unhandled inbound messages instead of releasing
+        // them like a normal pipeline tail. Install an explicit consuming handler.
+        java.util.concurrent.atomic.AtomicBoolean consumed = new java.util.concurrent.atomic.AtomicBoolean();
+        channel.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+            @Override
+            public void channelRead(ChannelHandlerContext ctx, Object msg) {
+                consumed.set(true);
+                ReferenceCountUtil.release(msg);
+            }
+        });
+        assertCorsOwnership(false, "https://allowed.test", null);
+        assertTrue(consumed.get());
+    }
+
+    private void assertCorsOwnership(boolean preflight, String origin, HttpResponseStatus expected) {
+        server.cors = CorsConfigBuilder.forOrigin("https://allowed.test")
+          .allowedRequestMethods(HttpMethod.POST).shortCircuit().build();
+        FullHttpRequest source = request("/cors", "body");
+        source.setMethod(HttpMethod.OPTIONS);
+        source.headers().set(HttpHeaderNames.ORIGIN, origin);
+        if (preflight)
+            source.headers().set(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD, "POST");
+        channel.writeInbound(source);
+        assertEquals(0, source.refCnt());
+        assertNull(server.last, "CORS-handled OPTIONS must not reach the TM queue");
+        assertEquals(0, server.metrics.activeRequests());
+        FullHttpResponse response = channel.readOutbound();
+        if (expected == null) {
+            assertNull(response);
+        } else {
+            assertNotNull(response);
+            try {
+                assertEquals(expected, response.status());
+            } finally {
+                response.release();
+            }
+        }
+    }
+
+    @Test
+    void nullMessageExceptionReturnsGeneric500() {
+        assertGenericError(new RuntimeException());
+    }
+
+    @Test
+    void exceptionMessageIsNotExposedToTheClient() {
+        assertGenericError(new RuntimeException("private server diagnostic"));
+    }
+
+    private void assertGenericError(Throwable error) {
+        channel.writeInbound(request("/exception", "body"));
+        channel.pipeline().fireExceptionCaught(error);
+        FullHttpResponse response = channel.readOutbound();
+        assertNotNull(response);
+        try {
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, response.status());
+            assertEquals("Internal Server Error", response.content().toString(CharsetUtil.UTF_8));
+        } finally {
+            response.release();
+        }
+        assertFalse(channel.isActive());
+        assertEquals(1, events.size());
+        assertEquals(500, events.getFirst().status());
+        assertEquals(0, server.metrics.activeRequests());
+    }
+
     private static FullHttpRequest request(String path, String body) {
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer();
         buffer.writeCharSequence(body, CharsetUtil.UTF_8);
@@ -255,6 +336,12 @@ class RequestOwnershipTest {
         final ShortLeaseSpace space = new ShortLeaseSpace();
         Context last;
         boolean failQueue;
+        CorsConfig cors;
+
+        @Override
+        public CorsConfig getCorsConfig(FullHttpRequest request) {
+            return cors;
+        }
 
         QueueServer() throws Exception {
             var field = RestServer.class.getDeclaredField("sp");

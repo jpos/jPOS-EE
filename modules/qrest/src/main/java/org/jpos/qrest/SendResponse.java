@@ -63,49 +63,47 @@ public class SendResponse implements AbortParticipant, Configurable {
     }
 
     private void respond(Context ctx) {
-        synchronized (ctx) {
-            ChannelHandlerContext ch = ctx.get(SESSION);
-            FullHttpRequest request = ctx.get(REQUEST);
-            FullHttpResponse response = null;
-            boolean handedOff = false;
-            RestAccessState state = RestSession.accessState(ctx);
-            try {
-                response = getResponse(ctx, protocolVersion(request));
-                if (ch == null || !ch.channel().isActive()) {
-                    RestSession.completeAccess(ch, state, null, null);
-                    return;
-                }
-                boolean keepAlive = request != null && HttpUtil.isKeepAlive(request);
-                HttpHeaders headers = response.headers();
-                if (keepAlive)
-                    headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                if (contentType != null)
-                    headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
-                long responseBytes = response.content().readableBytes();
-                int status = response.status().code();
-                headers.set(HttpHeaderNames.CONTENT_LENGTH, responseBytes);
-                ChannelFuture cf = ch.writeAndFlush(response);
-                handedOff = true;
-                cf.addListener(future -> {
-                    RestSession.completeAccess(ch, state,
-                      future.isSuccess() ? status : null, future.isSuccess() ? responseBytes : null);
-                    if (!future.isSuccess())
-                        ch.close();
-                });
-                if (!keepAlive)
-                    cf.addListener(ChannelFutureListener.CLOSE);
-            } catch (RuntimeException | Error e) {
+        ChannelHandlerContext ch = ctx.get(SESSION);
+        FullHttpRequest request = ctx.get(REQUEST);
+        FullHttpResponse response = null;
+        boolean handedOff = false;
+        RestAccessState state = RestSession.accessState(ctx);
+        try {
+            response = getResponse(ctx, protocolVersion(request));
+            if (ch == null || !ch.channel().isActive()) {
                 RestSession.completeAccess(ch, state, null, null);
-                if (ch != null)
+                return;
+            }
+            boolean keepAlive = request != null && HttpUtil.isKeepAlive(request);
+            HttpHeaders headers = response.headers();
+            if (keepAlive)
+                headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            if (contentType != null)
+                headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
+            long responseBytes = response.content().readableBytes();
+            int status = response.status().code();
+            headers.set(HttpHeaderNames.CONTENT_LENGTH, responseBytes);
+            ChannelFuture cf = ch.writeAndFlush(response);
+            handedOff = true;
+            cf.addListener(future -> {
+                RestSession.completeAccess(ch, state,
+                  future.isSuccess() ? status : null, future.isSuccess() ? responseBytes : null);
+                if (!future.isSuccess())
                     ch.close();
-                throw e;
+            });
+            if (!keepAlive)
+                cf.addListener(ChannelFutureListener.CLOSE);
+        } catch (RuntimeException | Error e) {
+            RestSession.completeAccess(ch, state, null, null);
+            if (ch != null)
+                ch.close();
+            throw e;
+        } finally {
+            try {
+                if (!handedOff && response != null)
+                    ReferenceCountUtil.release(response);
             } finally {
-                try {
-                    if (!handedOff && response != null)
-                        ReferenceCountUtil.release(response);
-                } finally {
-                    releaseRequest(ctx, request);
-                }
+                releaseRequest(ctx, request);
             }
         }
     }

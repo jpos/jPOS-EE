@@ -23,6 +23,7 @@ import org.jpos.util.Inhibit;
 public enum Constants implements Inhibit {
     SESSION,
     REQUEST,
+    // Keep this an Inhibit key: a plain String key would expose access state in Context dumps.
     ACCESS_STATE,
     JSON_REQUEST,
     QUERYPARAMS,

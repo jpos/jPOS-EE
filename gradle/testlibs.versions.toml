@@ -1,8 +1,8 @@
 [versions]
 restAssured = '6.0.1'
 testcontainers = '1.21.4'
-junit-jupiter = '6.1.2'
-junit-launcher = '6.1.2'
+junit-jupiter = '6.1.3'
+junit-launcher = '6.1.3'
 kafkastreams_testutils = '4.3.1'
 mockito = "5.23.0"
 mockitojupiter = "5.23.0"

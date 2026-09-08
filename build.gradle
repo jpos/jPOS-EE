@@ -175,15 +175,13 @@ subprojects {
     configurations.configureEach {
         resolutionStrategy {
             // Keep commons-codec pinned above vulnerable transitive versions.
-            force 'commons-codec:commons-codec:1.20.0'
+            force 'commons-codec:commons-codec:1.22.1'
 
             //json-schema-validator depends on vulnerable rhino 1.7.7.2
             force 'org.mozilla:rhino:1.7.15.1'
 
-            //org.testcontainsers.postgresql:1.21.3 depends on vulnerable
-            //  commons-compress 1.24.0, and
-            //  commons-lang3 3.14.0
-            force 'org.apache.commons:commons-compress:1.26.0'
+            // Keep patched Commons libraries above older transitive versions.
+            force 'org.apache.commons:commons-compress:1.28.0'
             force 'org.apache.commons:commons-lang3:3.20.0'
 
         }

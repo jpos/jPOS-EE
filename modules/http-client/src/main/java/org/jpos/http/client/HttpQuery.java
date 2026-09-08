@@ -31,6 +31,7 @@ import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBu
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.client5.http.protocol.RedirectStrategy;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.async.methods.*;
 
@@ -340,6 +341,8 @@ public class HttpQuery extends Log implements AbortParticipant, Configurable, De
             if (sc != null) {
                 TlsStrategy tls = ClientTlsStrategyBuilder.create()
                   .setSslContext(sc)
+                  // Preserve the explicitly requested trust-all mode with handshake-time verification.
+                  .setHostVerificationPolicy(HostnameVerificationPolicy.CLIENT)
                   .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                   .build();
 

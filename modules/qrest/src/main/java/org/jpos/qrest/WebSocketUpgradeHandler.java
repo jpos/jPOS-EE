@@ -33,8 +33,10 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator;
 
 import java.util.HashMap;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,7 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
     private final RestServer server;
     private final Pattern pathPattern;
     private final int maxFrameSize;
+    private final TrustedProxies trustedProxies;
 
     private static final int DEFAULT_MAX_FRAME_SIZE = 65536;
 
@@ -61,6 +64,8 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
         this.server = server;
         this.pathPattern = compilePathPattern(websocketPath);
         this.maxFrameSize = maxFrameSize;
+        this.trustedProxies = TrustedProxies.parse(
+            server.getConfiguration().get("trusted-proxy-cidrs", null));
     }
 
     @Override
@@ -166,8 +171,51 @@ public class WebSocketUpgradeHandler extends ChannelInboundHandlerAdapter {
         String normalized = normalizeOrigin(origin);
         return normalized != null &&
             (allowed.contains(normalized) ||
-             isSameOrigin(ctx.pipeline().get("ssl") != null,
-                 request.headers().get(HttpHeaderNames.HOST), normalized));
+             normalized.equals(expectedOrigin(ctx, request)));
+    }
+
+    private String expectedOrigin(ChannelHandlerContext ctx, FullHttpRequest request) {
+        String scheme = ctx.pipeline().get("ssl") != null ? "https" : "http";
+        String host = request.headers().get(HttpHeaderNames.HOST);
+        // Trust the connection peer, never an address asserted in X-Forwarded-For.
+        if (trustedProxies != null &&
+            ctx.channel().remoteAddress() instanceof InetSocketAddress peer &&
+            peer.getAddress() != null && trustedProxies.isTrusted(peer.getAddress().getHostAddress())) {
+            List<String> protos = request.headers().getAll("X-Forwarded-Proto");
+            if (!protos.isEmpty()) {
+                String proto = singleForwardedValue(protos);
+                if (proto == null || !("http".equalsIgnoreCase(proto) || "https".equalsIgnoreCase(proto)))
+                    return null;
+                scheme = proto.toLowerCase(Locale.ROOT);
+            }
+            List<String> hosts = request.headers().getAll("X-Forwarded-Host");
+            if (!hosts.isEmpty()) {
+                host = singleForwardedValue(hosts);
+                if (!isForwardedAuthority(scheme, host))
+                    return null;
+            }
+        }
+        return host == null || host.isBlank() ? null : normalizeHostOrigin(scheme, host);
+    }
+
+    private static String singleForwardedValue(List<String> values) {
+        if (values.size() != 1)
+            return null;
+        String value = values.get(0).trim();
+        return value.isEmpty() || value.indexOf(',') >= 0 ? null : value;
+    }
+
+    private static boolean isForwardedAuthority(String scheme, String authority) {
+        if (authority == null || authority.endsWith(":"))
+            return false;
+        try {
+            URI uri = new URI(scheme + "://" + authority);
+            return uri.getHost() != null && uri.getRawUserInfo() == null &&
+                uri.getRawPath().isEmpty() && uri.getRawQuery() == null && uri.getRawFragment() == null &&
+                (uri.getPort() == -1 || (uri.getPort() > 0 && uri.getPort() <= 65535));
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     static boolean isSameOrigin(boolean tls, String hostHeader, String origin) {

@@ -776,6 +776,49 @@ Connected (press CTRL+C to quit)
 ------------
 
 
+===== WebSocket origins behind reverse proxies
+
+WebSocket upgrades with an `Origin` header must match the request's origin
+(scheme, host, and effective port), or an entry in `websocket-allowed-origins`
+(or repeated `websocket-allowed-origin` properties). The explicit allowlist
+remains an override. Requests without an Origin retain the existing behavior.
+
+For a direct connection, the expected scheme comes from the local TLS handler
+and the authority from `Host`. When TLS terminates at a reverse proxy, configure
+`trusted-proxy-cidrs` with the proxy's actual connection addresses:
+
+[source,xml]
+------------
+<property name="trusted-proxy-cidrs" value="192.0.2.10/32,2001:db8::10/128" />
+------------
+
+Only when the *socket peer* belongs to that set does QRest honor
+`X-Forwarded-Proto` (`http` or `https`) and optional `X-Forwarded-Host` (a host
+and optional port, including bracketed IPv6). Missing headers retain the
+corresponding local scheme or `Host`. For example, a trusted proxy can send
+`Host: internal:8080`, `X-Forwarded-Proto: https`, and
+`X-Forwarded-Host: public.example:8443` to match
+`Origin: https://public.example:8443`. Default ports 80 and 443 are normalized.
+
+Each forwarded header must have a single, nonblank value. Repeated headers,
+comma-separated chains, invalid schemes, and malformed authorities do not
+qualify for automatic same-origin acceptance; an explicit allowlist entry can
+still permit the origin. Authorities must not contain user information, paths,
+queries, or fragments. QRest does not infer a port from `X-Forwarded-Port` or
+interpret the separate `Forwarded` header for this check.
+
+Without configured trusted proxies, or for an untrusted/non-IP socket peer,
+these forwarded headers are ignored. `X-Forwarded-For` never establishes proxy
+trust for origin checking. Direct HTTP/TLS origin matching is unchanged.
+
+IMPORTANT: The same `trusted-proxy-cidrs` setting used for access-log client
+attribution now also authorizes origin metadata. Trust only controlled proxy
+peers. They must overwrite or sanitize client-supplied forwarded proto/host
+headers and validate the public host; merely forwarding those headers unchanged
+would let clients influence this security decision. Multi-proxy deployments must
+provide a single sanitized external scheme and authority, not appended lists.
+
+
 ===== Request ownership and unanswered requests
 
 QRest detaches each aggregated HTTP request before placing it in the transaction

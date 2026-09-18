@@ -48,7 +48,20 @@ DB.exec ((db) -> {
 });
 -------------
 
-or `execWithTransaction` that encloses your function within a `beginTransaction/commit` block.
+or `execWithTransaction` that begins a transaction and commits it when your function
+returns successfully. All overloads, including those taking a configuration modifier
+or a `Duration` timeout, attempt rollback if the action or commit fails. The original
+exception (or `Error`) is rethrown; cleanup failures are attached as suppressed exceptions.
+The action should leave transaction completion to the helper.
+
+`DB.close()` also attempts rollback of unfinished, rollback-capable transactions before
+closing the session, including when used directly in try-with-resources. It does not
+undo an explicit commit. Applications must explicitly commit work they want to retain;
+closing a session is not a commit operation. Session close is still attempted when
+rollback fails.
+
+A failed commit can have an uncertain database outcome. These helpers do not retry
+the action or guarantee that a commit already accepted by the database can be undone.
 
 [source,java]
 -------------

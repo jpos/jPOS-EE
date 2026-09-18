@@ -441,6 +441,7 @@ class DBTest {
         Session mockSession = mock(Session.class);
         DB db = new DB(mockSession);
         db.close();
+        clearInvocations(mockSession); // close now checks for unfinished transactions.
         db.commit();
 
         verify(mockSession, never()).getTransaction();
@@ -470,6 +471,7 @@ class DBTest {
         Session mockSession = mock(Session.class);
         DB db = new DB(mockSession);
         db.close();
+        clearInvocations(mockSession); // Verify only calls made after close.
         db.rollback();
 
         verify(mockSession, never()).getTransaction();

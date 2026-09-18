@@ -12,6 +12,8 @@ dependencies {
     implementation libs.ehCache
     implementation libs.jcache
     testImplementation testlibs.bundles.junit
+    testImplementation testlibs.testcontainers.postgresql
+    testRuntimeOnly libs.jdbcPostgresql
     testImplementation testlibs.mockito
     testRuntimeOnly testlibs.bundles.junit.platform
 }

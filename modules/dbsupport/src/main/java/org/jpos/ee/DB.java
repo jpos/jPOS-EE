@@ -522,7 +522,10 @@ public class DB implements Closeable {
     }
 
     /**
-     * close hibernate session
+     * Rolls back unfinished work and closes the Hibernate session.
+     * An explicitly committed transaction is left unchanged. If rollback fails,
+     * session close is still attempted and its failure is suppressed on the
+     * rollback failure. The session reference is cleared even if cleanup fails.
      *
      * @throws HibernateException
      */
@@ -530,8 +533,24 @@ public class DB implements Closeable {
     {
         if (session != null)
         {
-            session.close();
-            session = null;
+            Throwable failure = null;
+            try {
+                rollback();
+            } catch (RuntimeException | Error e) {
+                failure = e;
+                throw e;
+            } finally {
+                try {
+                    session.close();
+                } catch (RuntimeException | Error e) {
+                    if (failure == null)
+                        throw e;
+                    if (failure != e)
+                        failure.addSuppressed(e);
+                } finally {
+                    session = null;
+                }
+            }
         }
     }
 
@@ -679,6 +698,10 @@ public class DB implements Closeable {
      * provides transaction timeouts with one-second accuracy, so positive
      * durations with a fractional second are rounded up.</p>
      *
+     * <p>Action or commit failures trigger a rollback attempt before closing.
+     * Cleanup failures are suppressed on the original failure. No retry is
+     * performed: a failed commit can still have an uncertain database outcome.</p>
+     *
      * @param action action to execute
      * @param timeout transaction timeout
      * @return the action result
@@ -686,13 +709,7 @@ public class DB implements Closeable {
      * @throws Exception if the action or transaction fails
      */
     public static <T> T execWithTransaction(DBAction<T> action, Duration timeout) throws Exception {
-        try (DB db = new DB()) {
-            db.open();
-            db.beginTransaction(timeout);
-            T obj = action.exec(db);
-            db.commit();
-            return obj;
-        }
+        return execWithTransaction(null, action, timeout);
     }
 
     public static <T> T execWithTransaction(String configModifier, DBAction<T> action) throws Exception {
@@ -706,6 +723,10 @@ public class DB implements Closeable {
      * provides transaction timeouts with one-second accuracy, so positive
      * durations with a fractional second are rounded up.</p>
      *
+     * <p>Action or commit failures trigger a rollback attempt before closing.
+     * Cleanup failures are suppressed on the original failure. No retry is
+     * performed: a failed commit can still have an uncertain database outcome.</p>
+     *
      * @param configModifier configuration modifier
      * @param action action to execute
      * @param timeout transaction timeout
@@ -715,11 +736,21 @@ public class DB implements Closeable {
      */
     public static <T> T execWithTransaction(String configModifier, DBAction<T> action, Duration timeout) throws Exception {
         try (DB db = new DB(configModifier)) {
-            db.open();
-            db.beginTransaction(timeout);
-            T obj = action.exec(db);
-            db.commit();
-            return obj;
+            try {
+                db.open();
+                db.beginTransaction(timeout);
+                T obj = action.exec(db);
+                db.commit();
+                return obj;
+            } catch (Exception | Error failure) {
+                try {
+                    db.rollback();
+                } catch (RuntimeException | Error cleanupFailure) {
+                    if (failure != cleanupFailure)
+                        failure.addSuppressed(cleanupFailure);
+                }
+                throw failure;
+            }
         }
     }
 

@@ -4,8 +4,8 @@ testcontainers = '1.21.4'
 junit-jupiter = '6.1.3'
 junit-launcher = '6.1.3'
 kafkastreams_testutils = '4.3.1'
-mockito = "5.23.0"
-mockitojupiter = "5.23.0"
+mockito = "5.24.0"
+mockitojupiter = "5.24.0"
 hamcrest = "3.0"
 
 [libraries]

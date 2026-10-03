@@ -30,12 +30,25 @@ import org.jpos.util.Log;
 import org.jpos.util.Logger;
 import org.jpos.util.LogEvent;
 
+/**
+ * @deprecated scheduled for removal in the next release.
+ */
+@Deprecated(since = "3.0.3", forRemoval = true)
 @SuppressWarnings("unchecked")
-public class ReplicatedSpace 
+public class ReplicatedSpace
     extends Log
-    implements LocalSpace, Receiver 
+    implements LocalSpace, Receiver
 {
+    /**
+     * Default {@link ObjectInputFilter} pattern applied to every incoming message.
+     * Space keys/values of other types require a custom pattern (see {@code serial-filter}).
+     */
+    public static final String DEFAULT_SERIAL_FILTER =
+        "maxdepth=20;maxrefs=100000;maxarray=10000000;" +
+        "org.jpos.space.*;org.jpos.iso.*;" +
+        "java.lang.*;java.util.*;java.util.concurrent.*;java.math.*;java.time.*;!*";
     JChannel channel;
+    ObjectInputFilter serialFilter;
     String nodeName;
     String nodePrefix;
     String seqName;
@@ -60,8 +73,21 @@ public class ReplicatedSpace
             boolean trace, boolean replicate)
         throws Exception
     {
+        this (sp, groupName, configFile, logger, realm, trace, replicate, DEFAULT_SERIAL_FILTER);
+    }
+    public ReplicatedSpace (
+            Space sp,
+            String groupName,
+            String configFile,
+            Logger logger,
+            String realm,
+            boolean trace, boolean replicate,
+            String serialFilter)
+        throws Exception
+    {
         super ();
         this.sp = sp;
+        this.serialFilter = ObjectInputFilter.Config.createFilter (serialFilter);
         setLogger (logger, realm);
         initChannel(groupName, configFile);
         this.nodeName = channel.getAddress().toString();
@@ -87,7 +113,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.OUT, key, value, timeout);
-            channel.send (new BytesMessage(null, r));
+            channel.send (new BytesMessage (null, serialize (r)));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not out " + key);
@@ -102,7 +128,7 @@ public class ReplicatedSpace
         getCoordinator();
         try {
             Request r = new Request (Request.PUSH, key, value, timeout);
-            channel.send (new BytesMessage (null, r));
+            channel.send (new BytesMessage (null, serialize (r)));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not push " + key);
@@ -117,7 +143,7 @@ public class ReplicatedSpace
         getCoordinator();   
         try {
             Request r = new Request (Request.PUT, key, value, timeout);
-            channel.send (new BytesMessage (null, r));
+            channel.send (new BytesMessage (null, serialize (r)));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
             if (o == null)
                 throw new SpaceError ("Could not put " + key);
@@ -147,7 +173,14 @@ public class ReplicatedSpace
     @Override
     public void receive (Message msg) {
         LogEvent evt = null;
-        Object obj = msg.getObject();
+        Object obj;
+        try {
+            // never msg.getObject(): JGroups deserializes without a filter
+            obj = deserialize (msg.getArray(), msg.getOffset(), msg.getLength(), serialFilter);
+        } catch (Exception e) {
+            warn ("rejected message from " + msg.getSrc() + ": " + e);
+            return;
+        }
         if (trace && logger != null) {
             evt = createTrace (" receive: " + msg.toString());
             if (obj != null) {
@@ -454,17 +487,34 @@ public class ReplicatedSpace
     private void send (Address destination, Request r) 
     {
         try {
-            channel.send (new BytesMessage (destination, r));
+            channel.send (new BytesMessage (destination, serialize (r)));
         } catch (Exception e) {
             error (e);
         }
     }
-    private void sendToCoordinator (Request r) 
+    private static byte[] serialize (Request r) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream (baos)) {
+            out.writeObject (r);
+        }
+        return baos.toByteArray();
+    }
+    static Request deserialize (byte[] b, int offset, int length, ObjectInputFilter serialFilter) throws IOException, ClassNotFoundException {
+        if (b == null)
+            throw new InvalidObjectException ("empty message");
+        try (ObjectInputStream in = new ObjectInputStream (new ByteArrayInputStream (b, offset, length))) {
+            in.setObjectInputFilter (serialFilter);
+            if (in.readObject() instanceof Request r)
+                return r;
+            throw new InvalidObjectException ("not a Request");
+        }
+    }
+    private void sendToCoordinator (Request r)
     {
         while (true) {
             Address coordinator = getCoordinator();
             try {
-                channel.send (new BytesMessage (coordinator, r));
+                channel.send (new BytesMessage (coordinator, serialize (r)));
                 break;
             } catch (Exception e) {
                 error ("error " + e.getMessage() + ", retrying");

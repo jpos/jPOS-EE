@@ -25,7 +25,10 @@ import org.jpos.util.NameRegistrar;
 /**
  * RemoteSpaceAdaptor
  * @author Alejandro Revilla
+ * @deprecated scheduled for removal in the next release.
  */
+@Deprecated(since = "3.0.3", forRemoval = true)
+@SuppressWarnings("removal")
 public class ReplicatedSpaceAdaptor extends QBeanSupport {
     private Space sp = null;
     private ReplicatedSpace rs = null;
@@ -47,8 +50,10 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
                 getLog().getLogger(),
                 getLog().getRealm(),
                 cfg.getBoolean ("trace"),
-                cfg.getBoolean ("replicate", false)
+                cfg.getBoolean ("replicate", false),
+                cfg.get ("serial-filter", ReplicatedSpace.DEFAULT_SERIAL_FILTER)
             );
+            getLog().warn ("rspace is deprecated and scheduled for removal in the next release");
             NameRegistrar.register (rspaceUri, rs);
         } catch (Throwable t) {
             throw new ConfigurationException (t);

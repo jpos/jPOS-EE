@@ -3,5 +3,7 @@ description = 'jPOS-EE :: RSpace Module'
 dependencies {
     api libs.jpos
     api libs.jgroups
+    testImplementation testlibs.bundles.junit
+    testRuntimeOnly testlibs.bundles.junit.platform
 }
 

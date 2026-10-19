@@ -1,35 +1,35 @@
 [versions]
 jpos = "3.0.3-SNAPSHOT"
-commonsLang3 = "3.20.0"
+commonsLang3 = "3.21.0"
 quartz = "2.5.2"
 slf4j = "2.0.20"
 jakartaBind = "4.0.5"
-logback = '1.6.4'
-jacksonDatabind = '2.22.3'
-netty = '4.2.18.Final'
+logback = '1.6.5'
+jacksonDatabind = '2.22.4'
+netty = '4.2.19.Final'
 freemarker = '2.3.35'
 jsonSchemaValidator = '2.2.14'
-guava = '33.7.1-jre'
+guava = '33.7.2-jre'
 jakartaActivation = '2.0.1'
 angusActivation = '2.0.3'
 hibernate = '6.6.58.Final'
 hibernateTools = '6.6.58.Final'
-hibernateValidator = '6.2.5.Final'
+hibernateValidator = '6.2.6.Final'
 dom4j = '2.2.0'
-jdbcPostgresql = '42.7.13'
+jdbcPostgresql = '42.7.14'
 jdbcMysql = '9.7.0'
 agroal = '3.2.1'
 flyway = '11.20.3'
 h2 = '2.5.252'
-httpClient = '5.6.4'
-jgroups = '5.5.7.Final'
+httpClient = '5.6.5'
+jgroups = '5.5.8.Final'
 xmlBind = "4.0.5"
 javaxCache = '1.1.1'
 ehCache = '3.12.0'
-jetty = '12.1.13'
+jetty = '12.1.14'
 groovy = '4.0.33'
 kafka = '4.3.1'
-awssdk = '2.55.6'
+awssdk = '2.55.16'
 jakartaWsRs = '4.0.0'
 
 [libraries]

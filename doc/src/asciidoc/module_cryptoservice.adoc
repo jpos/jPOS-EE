@@ -101,6 +101,12 @@ The crypto service can be configured using a QBean descriptor like this:
 <7> internal key cache time-to-live (in millis).
 <8> CryptoServiceKeyStoreProvider class configuration.
 
+A process that runs no Q2, such as a one-shot job or a command line tool, has no
+`ks-provider` element to configure the key store from. It sets the provider directly
+with `setKeyStoreProvider(CryptoServiceKeyStoreProvider)` after
+`setConfiguration(Configuration)`, and the service behaves as if the element had
+named that provider.
+
 [TIP]
 =====
 We currently support two CryptoServiceKeyStoreProvider classes:

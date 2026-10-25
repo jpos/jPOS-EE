@@ -445,6 +445,26 @@ public final class CryptoService extends QBeanSupport implements Runnable, XmlCo
           a.getLeastSignificantBits() ^ b.getLeastSignificantBits());
     }
 
+    /**
+     * Sets the key store provider directly, for a process that runs no Q2 and so
+     * cannot use the {@code ks-provider} element of {@link #setConfiguration(Element)}:
+     * a one-shot job, a command line tool. The provider is initialized here, as the
+     * XML path initializes it.
+     *
+     * @param provider the key store that holds this service's PGP-wrapped data keys
+     * @throws ConfigurationException if the provider fails to initialize
+     */
+    public void setKeyStoreProvider(CryptoServiceKeyStoreProvider provider) throws ConfigurationException {
+        if (provider == null)
+            throw new ConfigurationException("ks-provider is required");
+        try {
+            provider.init();
+        } catch (Throwable t) {
+            throw new ConfigurationException(t);
+        }
+        ksProvider = provider;
+    }
+
     @Override
     public void setConfiguration(Element e) throws ConfigurationException {
         Element kse = e.getChild("ks-provider");
